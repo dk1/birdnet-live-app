@@ -1236,5 +1236,196 @@
   "mapPickerConfirm": "Use this location",
   "@mapPickerConfirm": {
     "description": "Button to confirm map-picked location"
+  },
+
+  "surveySetupTitle": "Survey Setup",
+  "@surveySetupTitle": {
+    "description": "Title of the survey setup wizard"
+  },
+  "surveyBack": "Back",
+  "@surveyBack": {
+    "description": "Back button in survey wizard"
+  },
+  "surveyNext": "Next",
+  "@surveyNext": {
+    "description": "Next button in survey wizard"
+  },
+  "surveyStart": "Start Survey",
+  "@surveyStart": {
+    "description": "Start survey button"
+  },
+  "surveyName": "Survey Name",
+  "@surveyName": {
+    "description": "Label for survey name field"
+  },
+  "surveyNameHint": "e.g. Morning Transect A",
+  "@surveyNameHint": {
+    "description": "Hint for survey name field"
+  },
+  "surveyTransectId": "Transect ID",
+  "@surveyTransectId": {
+    "description": "Label for transect ID field"
+  },
+  "surveyTransectIdHint": "e.g. T-001",
+  "@surveyTransectIdHint": {
+    "description": "Hint for transect ID field"
+  },
+  "surveyObserverName": "Observer Name",
+  "@surveyObserverName": {
+    "description": "Label for observer name field"
+  },
+  "surveyObserverNameHint": "e.g. Jane Doe",
+  "@surveyObserverNameHint": {
+    "description": "Hint for observer name field"
+  },
+  "surveyLocation": "Location Tracking",
+  "@surveyLocation": {
+    "description": "Label for location tracking mode selector"
+  },
+  "surveyLocationGps": "GPS",
+  "@surveyLocationGps": {
+    "description": "Continuous GPS tracking option"
+  },
+  "surveyLocationManual": "Manual",
+  "@surveyLocationManual": {
+    "description": "Manual GPS capture option"
+  },
+  "surveyLocationSkip": "Skip",
+  "@surveyLocationSkip": {
+    "description": "No GPS tracking option"
+  },
+  "surveyLocationUnavailable": "Location permission not granted",
+  "@surveyLocationUnavailable": {
+    "description": "Warning when location permission is not available"
+  },
+  "surveyManualGpsWarning": "Manual mode captures GPS only when you open the app. Detection locations will be interpolated between captures.",
+  "@surveyManualGpsWarning": {
+    "description": "Warning about manual GPS mode limitations"
+  },
+  "surveyLatitude": "Latitude",
+  "@surveyLatitude": {
+    "description": "Latitude label"
+  },
+  "surveyLongitude": "Longitude",
+  "@surveyLongitude": {
+    "description": "Longitude label"
+  },
+  "surveyPickOnMap": "Pick on map",
+  "@surveyPickOnMap": {
+    "description": "Button to pick location on map"
+  },
+  "surveyLocationSkipNote": "No GPS track will be recorded.",
+  "@surveyLocationSkipNote": {
+    "description": "Note when skipping location tracking"
+  },
+  "surveyParametersTitle": "Parameters",
+  "@surveyParametersTitle": {
+    "description": "Title for survey parameters step"
+  },
+  "surveyInferenceRate": "Inference Rate",
+  "@surveyInferenceRate": {
+    "description": "Label for inference rate slider"
+  },
+  "surveyGpsInterval": "GPS Interval",
+  "@surveyGpsInterval": {
+    "description": "Label for GPS interval selector"
+  },
+  "surveyMaxDuration": "Max Duration",
+  "@surveyMaxDuration": {
+    "description": "Label for max duration slider"
+  },
+  "surveyHours": "hours",
+  "@surveyHours": {
+    "description": "Unit label for hours"
+  },
+  "surveyRecordingMode": "Recording",
+  "@surveyRecordingMode": {
+    "description": "Label for recording mode selector"
+  },
+  "surveyRecordingFull": "Full",
+  "@surveyRecordingFull": {
+    "description": "Full continuous recording option"
+  },
+  "surveyRecordingDetections": "Clips",
+  "@surveyRecordingDetections": {
+    "description": "Record only around detections option"
+  },
+  "surveyRecordingOff": "Off",
+  "@surveyRecordingOff": {
+    "description": "No recording option"
+  },
+  "surveyDetectionSampling": "Detection Sampling",
+  "@surveyDetectionSampling": {
+    "description": "Label for detection sampling mode selector"
+  },
+  "surveySamplingAll": "All",
+  "@surveySamplingAll": {
+    "description": "Keep all detections sampling mode"
+  },
+  "surveySamplingTopN": "Top N",
+  "@surveySamplingTopN": {
+    "description": "Keep top N per species sampling mode"
+  },
+  "surveySamplingSmart": "Smart",
+  "@surveySamplingSmart": {
+    "description": "Spatially distributed sampling mode"
+  },
+  "surveyTopNPerSpecies": "Top N per Species",
+  "@surveyTopNPerSpecies": {
+    "description": "Label for top N slider"
+  },
+  "surveyReadyTitle": "Ready",
+  "@surveyReadyTitle": {
+    "description": "Title for the ready step"
+  },
+  "surveyManualGpsReadyWarning": "Manual GPS mode — open the app periodically to capture location fixes.",
+  "@surveyManualGpsReadyWarning": {
+    "description": "Warning on ready screen about manual GPS"
+  },
+  "surveyStopTitle": "Stop Survey?",
+  "@surveyStopTitle": {
+    "description": "Title of stop survey confirmation dialog"
+  },
+  "surveyStopMessage": "This will finalize the survey and save results.",
+  "@surveyStopMessage": {
+    "description": "Body of stop survey confirmation dialog"
+  },
+  "surveyStopConfirm": "Stop & Save",
+  "@surveyStopConfirm": {
+    "description": "Confirm button in stop survey dialog"
+  },
+  "surveyStop": "Stop",
+  "@surveyStop": {
+    "description": "Stop button label"
+  },
+  "surveyListening": "Listening...",
+  "@surveyListening": {
+    "description": "Status text while survey is actively listening"
+  },
+  "surveyStarting": "Starting...",
+  "@surveyStarting": {
+    "description": "Status text while survey is loading"
+  },
+  "surveyJustNow": "just now",
+  "@surveyJustNow": {
+    "description": "Time label for very recent detection"
+  },
+  "surveyAutoStopped": "Survey auto-stopped: {reason}",
+  "@surveyAutoStopped": {
+    "description": "Snackbar message when survey auto-stops",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "surveyMinutesAgo": "{count} min ago",
+  "@surveyMinutesAgo": {
+    "description": "Time label for minutes ago",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

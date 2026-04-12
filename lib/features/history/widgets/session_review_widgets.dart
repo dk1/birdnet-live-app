@@ -161,6 +161,35 @@ class _SummaryHeader extends StatelessWidget {
                 ),
               ],
             ),
+          // ── Survey-specific info ─────────────────────────
+          if (session.type == SessionType.survey) ...[
+            if (session.distanceMeters != null &&
+                session.distanceMeters! > 0) ...[
+              const SizedBox(height: 4),
+              _StatChip(
+                icon: Icons.straighten_outlined,
+                label: session.distanceMeters! >= 1000
+                    ? '${(session.distanceMeters! / 1000).toStringAsFixed(1)} km'
+                    : '${session.distanceMeters!.round()} m',
+              ),
+            ],
+            if (session.transectId != null &&
+                session.transectId!.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              _StatChip(
+                icon: Icons.route_outlined,
+                label: session.transectId!,
+              ),
+            ],
+            if (session.observerName != null &&
+                session.observerName!.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              _StatChip(
+                icon: Icons.person_outline,
+                label: session.observerName!,
+              ),
+            ],
+          ],
         ],
       ),
     );

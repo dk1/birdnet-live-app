@@ -71,6 +71,7 @@ import '../spectrogram/color_maps.dart';
 import 'session_export.dart';
 import 'session_map_screen.dart';
 import '../settings/settings_screen.dart';
+import '../survey/widgets/survey_map_widget.dart';
 import '../../core/services/reverse_geocoding_service.dart';
 
 part 'widgets/session_review_widgets.dart';
@@ -1182,6 +1183,18 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                       )
                   : null,
             ),
+
+            // ── Survey track map ────────────────────────────
+            if (widget.session.type == SessionType.survey &&
+                widget.session.gpsTrack.isNotEmpty)
+              SizedBox(
+                height: 200,
+                child: SurveyMapWidget(
+                  gpsTrack: widget.session.gpsTrack,
+                  detections: _detections,
+                  autoFollow: false,
+                ),
+              ),
 
             // ── Spectrogram ─────────────────────────────────
             if (_audioAvailable) ...[

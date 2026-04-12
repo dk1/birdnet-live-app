@@ -9,6 +9,7 @@ import '../live/live_screen.dart';
 import '../file_analysis/file_analysis_screen.dart';
 import '../point_count/point_count_setup_screen.dart';
 import '../settings/settings_screen.dart';
+import '../survey/survey_setup_screen.dart';
 
 // =============================================================================
 // Home Screen — Main Menu
@@ -170,7 +171,7 @@ class _ModeGrid extends StatelessWidget {
             label: l10n.surveyMode,
             description: l10n.surveyModeDescription,
             color: theme.colorScheme.tertiary,
-            comingSoon: true,
+            onTap: () => _openSurvey(context),
           ),
           _ModeCard(
             icon: Icons.audio_file_rounded,
@@ -200,6 +201,14 @@ class _ModeGrid extends StatelessWidget {
     );
   }
 
+  void _openSurvey(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const SurveySetupScreen(),
+      ),
+    );
+  }
+
   void _openFileAnalysis(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -219,7 +228,6 @@ class _ModeCard extends StatelessWidget {
     required this.label,
     required this.description,
     required this.color,
-    this.comingSoon = false,
     this.onTap,
   });
 
@@ -227,14 +235,12 @@ class _ModeCard extends StatelessWidget {
   final String label;
   final String description;
   final Color color;
-  final bool comingSoon;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
 
     return Material(
       color: isDark
@@ -243,69 +249,41 @@ class _ModeCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: comingSoon ? null : onTap,
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Icon in a tinted circle.
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: color.withAlpha(isDark ? 50 : 30),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(icon, color: color, size: 24),
-                  ),
-                  const Spacer(),
-                  Text(
-                    label,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: comingSoon
-                          ? theme.colorScheme.onSurface.withAlpha(100)
-                          : theme.colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    description,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withAlpha(100),
-                      fontSize: 11,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icon in a tinted circle.
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color.withAlpha(isDark ? 50 : 30),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: color, size: 24),
               ),
-            ),
-            // "Coming Soon" badge.
-            if (comingSoon)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    l10n.comingSoon,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontSize: 9,
-                      color: theme.colorScheme.onSurface.withAlpha(120),
-                    ),
-                  ),
+              const Spacer(),
+              Text(
+                label,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                description,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withAlpha(100),
+                  fontSize: 11,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );
