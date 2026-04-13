@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.6] — 2026-04-13
+
+### Fixed
+- GPS jitter filtering: reject fixes with >30 m horizontal accuracy, speed gate (>30 km/h) discards teleport jumps, jitter threshold raised from 3 m to 5 m
+
+### Changed
+- Survey notification now shows species count alongside detections (“42 det · 12 spp”)
+
 ## [0.2.5] — 2026-04-13
 
 ### Added

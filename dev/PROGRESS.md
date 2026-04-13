@@ -8,9 +8,9 @@ This file tracks development progress. Update after each work session.
 
 | Item | Status |
 |------|--------|
-| Current Step | Survey Setup Mic Input & Summary Ranking |
+| Current Step | GPS Jitter Fix & Notification Species Count |
 | Last Updated | 2026-04-13 |
-| Version | 0.2.5+34 |
+| Version | 0.2.6+35 |
 | Unit Tests | 480 passing |
 | Integration Tests | 3 (geo_soundscape, memory_stress, model_output) |
 | Blockers | None |
@@ -18,6 +18,20 @@ This file tracks development progress. Update after each work session.
 ---
 
 ## Progress Log
+
+### 2026-04-13 — GPS Jitter Fix & Notification Species Count
+
+**Completed:**
+- GPS jitter filtering improved in `SurveyGpsTracker`: accuracy gate (reject >30 m), speed gate (reject >30 km/h implied speed), jitter threshold raised 3 m → 5 m
+- Survey foreground notification now shows species count: "42 det · 12 spp" format
+- All 480 tests passing, `flutter analyze` clean
+
+**Files Modified:**
+- `lib/features/survey/survey_gps_tracker.dart` — accuracy filter in `_onPosition`, speed-based rejection in `_addPoint`, constants updated
+- `lib/features/survey/survey_controller.dart` — `_buildNotificationText()` includes species count
+- `pubspec.yaml` — version 0.2.6+35
+- `CHANGELOG.md` — v0.2.6 entry
+- `README.md` — version badge synced
 
 ### 2026-04-13 — Survey Setup Mic Input & Summary Ranking
 

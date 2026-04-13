@@ -786,9 +786,10 @@ class SurveyController {
     final mm = (e.inMinutes % 60).toString().padLeft(2, '0');
     final ss = (e.inSeconds % 60).toString().padLeft(2, '0');
     final det = _session?.detections.length ?? 0;
+    final spp = _session?.uniqueSpeciesCount ?? 0;
     final dist = _gpsTracker?.distanceMeters ?? 0;
     final km = (dist / 1000).toStringAsFixed(1);
-    return '\u23F1 $hh:$mm:$ss   \uD83D\uDC26 $det detections   '
+    return '\u23F1 $hh:$mm:$ss   \uD83D\uDC26 $det det · $spp spp   '
         '\uD83D\uDCCD $km km';
   }
 

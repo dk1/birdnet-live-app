@@ -183,13 +183,28 @@ class SurveyGpsTracker {
   // ── Private ─────────────────────────────────────────────────────────────
 
   void _onPosition(Position position) {
+    // Reject fixes with very poor horizontal accuracy — these are typically
+    // indoor or heavily obstructed readings that introduce large jitter.
+    if (position.accuracy > _maxAccuracyMeters) {
+      debugPrint('[SurveyGpsTracker] skipping low-accuracy fix '
+          '(${position.accuracy.toStringAsFixed(0)} m)');
+      return;
+    }
     final point = _positionToGpsPoint(position, measured: true);
     _addPoint(point);
   }
 
+  /// Reject GPS fixes with horizontal accuracy worse than this (meters).
+  static const double _maxAccuracyMeters = 30.0;
+
   /// Minimum distance (meters) a new point must be from the last recorded
   /// point to be added to the track.  Eliminates GPS jitter when standing.
-  static const double _jitterThresholdMeters = 3.0;
+  static const double _jitterThresholdMeters = 5.0;
+
+  /// Maximum plausible speed in meters per second.
+  /// Points implying faster movement are treated as GPS jumps and discarded.
+  /// 30 km/h ≈ 8.3 m/s — generous for walking/birding surveys.
+  static const double _maxSpeedMps = 8.3;
 
   void _addPoint(GpsPoint point) {
     if (track.isNotEmpty) {
@@ -199,9 +214,19 @@ class SurveyGpsTracker {
         LatLng(prev.latitude, prev.longitude),
         LatLng(point.latitude, point.longitude),
       );
-      // Skip points that are within jitter distance — still update the
-      // lastPoint timestamp so detection tagging stays current.
+      // Skip points that are within jitter distance.
       if (d < _jitterThresholdMeters) return;
+
+      // Speed gate: reject implausible jumps.
+      final dtSeconds =
+          point.timestamp.difference(prev.timestamp).inMilliseconds / 1000.0;
+      if (dtSeconds > 0 && d / dtSeconds > _maxSpeedMps) {
+        debugPrint('[SurveyGpsTracker] skipping speed outlier '
+            '(${(d / dtSeconds).toStringAsFixed(1)} m/s over '
+            '${d.toStringAsFixed(0)} m)');
+        return;
+      }
+
       distanceMeters += d;
     }
     track.add(point);
