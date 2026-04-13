@@ -23,6 +23,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../shared/providers/settings_providers.dart';
@@ -334,9 +335,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                 labelStyle: theme.textTheme.labelSmall,
               ),
 
-              // ── Tab content (50% of screen) ───────────────────
+              // ── Tab content (40% of screen) ───────────────────
               Expanded(
-                flex: 1,
+                flex: 2,
                 child: TabBarView(
                   controller: _tabController,
                   children: [
@@ -344,6 +345,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                     SurveyMapWidget(
                       gpsTrack: controller.gpsTracker?.track ?? [],
                       detections: session?.detections ?? [],
+                      initialCenter: widget.startLatitude != null &&
+                              widget.startLongitude != null
+                          ? LatLng(
+                              widget.startLatitude!, widget.startLongitude!)
+                          : null,
                     ),
 
                     // Spectrogram tab.
@@ -369,7 +375,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
               // ── Recent detections ─────────────────────────────
               Expanded(
-                flex: 1,
+                flex: 3,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
                   child: ClipRRect(

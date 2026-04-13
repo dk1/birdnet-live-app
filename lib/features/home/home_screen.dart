@@ -79,8 +79,8 @@ class _LogoHeader extends ConsumerWidget {
       children: [
         // Circular logo with subtle glow.
         Container(
-          width: 96,
-          height: 96,
+          width: 120,
+          height: 120,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             boxShadow: [
@@ -94,8 +94,8 @@ class _LogoHeader extends ConsumerWidget {
           child: ClipOval(
             child: Image.asset(
               'assets/images/app-icon.png',
-              width: 96,
-              height: 96,
+              width: 120,
+              height: 120,
               fit: BoxFit.cover,
             ),
           ),

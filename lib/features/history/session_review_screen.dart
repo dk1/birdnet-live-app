@@ -60,6 +60,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../shared/models/gps_point.dart';
 import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/taxonomy_service.dart';
@@ -857,6 +858,18 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     });
   }
 
+  /// Open fullscreen survey track map with all detections.
+  void _openFullscreenSurveyMap(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => _FullscreenSurveyMapScreen(
+          gpsTrack: widget.session.gpsTrack,
+          detections: _detections,
+        ),
+      ),
+    );
+  }
+
   /// Highlight a detection on the map and scroll to show it.
   void _showDetectionOnMap(DetectionRecord detection) {
     if (detection.latitude == null || detection.longitude == null) return;
@@ -1217,9 +1230,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                     tooltip: l10n.sessionDiscard,
                     onPressed: _discard,
                   ),
-                  // Continue button for unfinished survey sessions.
-                  if (widget.session.type == SessionType.survey &&
-                      widget.session.isActive)
+                  // Continue / resume button for survey sessions.
+                  if (widget.session.type == SessionType.survey)
                     IconButton(
                       icon: Icon(Icons.play_arrow_rounded,
                           color: theme.colorScheme.primary),
@@ -1256,15 +1268,43 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             // ── Survey track map ────────────────────────────
             if (widget.session.type == SessionType.survey &&
                 widget.session.gpsTrack.isNotEmpty)
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.35,
-                child: SurveyMapWidget(
-                  gpsTrack: widget.session.gpsTrack,
-                  detections: _detections,
-                  autoFollow: false,
-                  fitAllPoints: true,
-                  highlightedDetection: _highlightedDetection,
-                  onCameraMove: _onMapCameraMove,
+              GestureDetector(
+                onTap: () => _openFullscreenSurveyMap(context),
+                child: Stack(
+                  children: [
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.25,
+                      child: AbsorbPointer(
+                        child: SurveyMapWidget(
+                          gpsTrack: widget.session.gpsTrack,
+                          detections: _detections,
+                          autoFollow: false,
+                          fitAllPoints: true,
+                          highlightedDetection: _highlightedDetection,
+                          onCameraMove: _onMapCameraMove,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withValues(alpha: 0.8),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.fullscreen,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
@@ -1534,5 +1574,34 @@ String _sessionReviewTitle(AppLocalizations l10n, LiveSession session) {
       return l10n.sessionTitlePointCountNum(n);
     case SessionType.survey:
       return l10n.sessionTitleSurveyNum(n);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fullscreen Survey Track Map
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Fullscreen map showing the complete survey track with species markers.
+class _FullscreenSurveyMapScreen extends StatelessWidget {
+  const _FullscreenSurveyMapScreen({
+    required this.gpsTrack,
+    required this.detections,
+  });
+
+  final List<GpsPoint> gpsTrack;
+  final List<DetectionRecord> detections;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.surveyTrackMap)),
+      body: SurveyMapWidget(
+        gpsTrack: gpsTrack,
+        detections: detections,
+        autoFollow: false,
+        fitAllPoints: true,
+      ),
+    );
   }
 }

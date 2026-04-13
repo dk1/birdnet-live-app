@@ -1459,5 +1459,9 @@
   "sessionShowOnMap": "Show on map",
   "@sessionShowOnMap": {
     "description": "Tooltip for showing a detection on the map in session review"
+  },
+  "surveyTrackMap": "Survey Track",
+  "@surveyTrackMap": {
+    "description": "Title for the fullscreen survey track map screen"
   }
 }

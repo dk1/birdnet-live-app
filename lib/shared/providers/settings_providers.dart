@@ -260,7 +260,7 @@ final pointCountDurationProvider =
 final surveyInferenceRateProvider =
     StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return DoubleSettingNotifier(prefs, PrefKeys.surveyInferenceRate, 0.25);
+  return DoubleSettingNotifier(prefs, PrefKeys.surveyInferenceRate, 0.3);
 });
 
 /// GPS logging interval in seconds (default 10).
@@ -274,7 +274,7 @@ final surveyGpsIntervalProvider =
 final surveyMaxDurationProvider =
     StateNotifierProvider<IntSettingNotifier, int>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return IntSettingNotifier(prefs, PrefKeys.surveyMaxDuration, 12);
+  return IntSettingNotifier(prefs, PrefKeys.surveyMaxDuration, 8);
 });
 
 /// Auto-stop battery threshold in percent (default 0 = off).

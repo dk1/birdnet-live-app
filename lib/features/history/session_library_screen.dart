@@ -15,6 +15,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../shared/providers/settings_providers.dart';
+import '../explore/explore_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import 'session_review_screen.dart';
@@ -263,7 +265,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
 // Session Tile
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _SessionTile extends StatelessWidget {
+class _SessionTile extends ConsumerWidget {
   const _SessionTile({
     required this.session,
     required this.onTap,
@@ -275,7 +277,7 @@ class _SessionTile extends StatelessWidget {
   final VoidCallback onDelete;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final dateStr = DateFormat.yMMMd().format(session.startTime);
     final timeStr = DateFormat.jm().format(session.startTime);
@@ -378,21 +380,29 @@ class _SessionTile extends StatelessWidget {
                   ),
                 ],
               ),
-              if (_topSpecies(session).isNotEmpty) ...[
+              if (_topSpeciesSci(session).isNotEmpty) ...[
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
-                  children: _topSpecies(session)
-                      .map((name) => Chip(
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: VisualDensity.compact,
-                            label:
-                                Text(name, style: theme.textTheme.labelSmall),
-                            padding: EdgeInsets.zero,
-                          ))
-                      .toList(),
+                  children: _topSpeciesSci(session).map((entry) {
+                    final speciesLocale =
+                        ref.watch(effectiveSpeciesLocaleProvider);
+                    final taxonomy =
+                        ref.watch(taxonomyServiceProvider).valueOrNull;
+                    final displayName = taxonomy
+                            ?.lookup(entry.key)
+                            ?.commonNameForLocale(speciesLocale) ??
+                        entry.value;
+                    return Chip(
+                      materialTapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
+                      label: Text(displayName,
+                          style: theme.textTheme.labelSmall),
+                      padding: EdgeInsets.zero,
+                    );
+                  }).toList(),
                 ),
               ],
               const SizedBox(height: 12),
@@ -483,15 +493,22 @@ IconData _sessionTypeIcon(SessionType type) {
   }
 }
 
-/// Returns the common names of the top 5 most-detected species.
-List<String> _topSpecies(LiveSession session) {
+/// Returns the top 5 most-detected species as (scientificName, commonName)
+/// pairs, ordered by detection count.  The common name is the raw English
+/// fallback — callers should translate via [TaxonomyService] if available.
+List<MapEntry<String, String>> _topSpeciesSci(LiveSession session) {
   final counts = <String, int>{};
+  final names = <String, String>{};
   for (final d in session.detections) {
-    counts[d.commonName] = (counts[d.commonName] ?? 0) + 1;
+    counts[d.scientificName] = (counts[d.scientificName] ?? 0) + 1;
+    names.putIfAbsent(d.scientificName, () => d.commonName);
   }
   final sorted = counts.entries.toList()
     ..sort((a, b) => b.value.compareTo(a.value));
-  return sorted.take(5).map((e) => e.key).toList();
+  return sorted
+      .take(5)
+      .map((e) => MapEntry(e.key, names[e.key]!))
+      .toList();
 }
 
 /// Returns a numbered card title such as "Live Session #3".

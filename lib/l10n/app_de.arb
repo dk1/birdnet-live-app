@@ -362,5 +362,6 @@
   "surveyTabSummarySpecies": "Arten",
   "surveyTabSummaryDetections": "Erkennungen",
   "surveyTabSummaryRate": "Rate",
-  "sessionShowOnMap": "Auf Karte zeigen"
+  "sessionShowOnMap": "Auf Karte zeigen",
+  "surveyTrackMap": "Umfragestrecke"
 }

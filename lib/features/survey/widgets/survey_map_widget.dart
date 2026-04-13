@@ -42,6 +42,7 @@ class SurveyMapWidget extends ConsumerStatefulWidget {
     this.fitAllPoints = false,
     this.highlightedDetection,
     this.onCameraMove,
+    this.initialCenter,
   });
 
   /// GPS track points.
@@ -61,6 +62,10 @@ class SurveyMapWidget extends ConsumerStatefulWidget {
 
   /// Called when the camera moves with the visible bounds.
   final void Function(LatLngBounds bounds)? onCameraMove;
+
+  /// Starting center when no GPS track points are available yet.
+  /// Falls back to Berlin (52.52, 13.405) if null.
+  final LatLng? initialCenter;
 
   @override
   ConsumerState<SurveyMapWidget> createState() => _SurveyMapWidgetState();
@@ -253,8 +258,8 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
       center = trackPoints.last;
       zoom = 18;
     } else {
-      center = const LatLng(52.52, 13.405); // Berlin default
-      zoom = 10;
+      center = widget.initialCenter ?? const LatLng(52.52, 13.405);
+      zoom = widget.initialCenter != null ? 18 : 10;
     }
 
     return FlutterMap(
