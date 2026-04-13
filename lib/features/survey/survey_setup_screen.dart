@@ -40,7 +40,7 @@ class SurveySetupScreen extends ConsumerStatefulWidget {
 class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
     with WidgetsBindingObserver {
   int _step = 0;
-  static const _totalSteps = 3;
+  static const _totalSteps = 4;
 
   // ── Step 1: Survey Details ────────────────────────────────────────────
   _LocationChoice _locationChoice = _LocationChoice.gps;
@@ -248,8 +248,9 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
                       },
                     ),
                   1 => const _ParametersStep(key: ValueKey(1)),
+                  2 => const _FieldTipsStep(key: ValueKey(2)),
                   _ => _ReadyStep(
-                      key: const ValueKey(2),
+                      key: const ValueKey(3),
                       hasBackgroundGps: _hasBackgroundGps,
                     ),
                 },
@@ -686,7 +687,61 @@ class _ParametersStep extends ConsumerWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Step 3 — Ready
+// Step 3 — Field Tips
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _FieldTipsStep extends StatelessWidget {
+  const _FieldTipsStep({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    final tips = [
+      (Icons.directions_walk_rounded, l10n.surveyTipWalkSteady),
+      (Icons.air_rounded, l10n.surveyTipWind),
+      (Icons.mic_external_on_rounded, l10n.surveyTipMic),
+      (Icons.volume_off_rounded, l10n.surveyTipSilence),
+      (Icons.wb_twilight_rounded, l10n.surveyTipTime),
+      (Icons.repeat_rounded, l10n.surveyTipRepeat),
+      (Icons.battery_saver_rounded, l10n.surveyTipBattery),
+    ];
+
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      children: [
+        const SizedBox(height: 8),
+        Text(
+          l10n.surveyFieldTips,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ...tips.map((tip) {
+          final (icon, text) = tip;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon, size: 22, color: theme.colorScheme.secondary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(text, style: theme.textTheme.bodyMedium),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Step 4 — Ready
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _ReadyStep extends ConsumerWidget {

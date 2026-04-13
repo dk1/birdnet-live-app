@@ -627,8 +627,28 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     if (mounted) Navigator.of(context).pop();
   }
 
-  /// Resume an unfinished survey session.
-  void _continueSurvey() {
+  /// Resume an unfinished survey session (after user confirmation).
+  Future<void> _continueSurvey() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.surveyResumeTitle),
+        content: Text(l10n.surveyResumeMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.surveyResumeConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
         builder: (_) => SurveyLiveScreen(
@@ -848,14 +868,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       isScrollControlled: true,
       builder: (_) => const _SessionHelpSheet(),
     );
-  }
-
-  /// Update visible map bounds and rebuild the filtered species list.
-  void _onMapCameraMove(LatLngBounds bounds) {
-    if (!mounted) return;
-    setState(() {
-      _visibleMapBounds = bounds;
-    });
   }
 
   /// Open fullscreen survey track map with all detections.
@@ -1268,44 +1280,44 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             // ── Survey track map ────────────────────────────
             if (widget.session.type == SessionType.survey &&
                 widget.session.gpsTrack.isNotEmpty)
-              GestureDetector(
-                onTap: () => _openFullscreenSurveyMap(context),
-                child: Stack(
-                  children: [
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.25,
-                      child: AbsorbPointer(
-                        child: SurveyMapWidget(
-                          gpsTrack: widget.session.gpsTrack,
-                          detections: _detections,
-                          autoFollow: false,
-                          fitAllPoints: true,
-                          highlightedDetection: _highlightedDetection,
-                          onCameraMove: _onMapCameraMove,
+              Stack(
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.25,
+                    child: IgnorePointer(
+                      child: SurveyMapWidget(
+                        gpsTrack: widget.session.gpsTrack,
+                        detections: _detections,
+                        autoFollow: false,
+                        fitAllPoints: true,
+                        highlightedDetection: _highlightedDetection,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Material(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surface
+                          .withValues(alpha: 0.8),
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => _openFullscreenSurveyMap(context),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            Icons.fullscreen,
+                            size: 20,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                       ),
                     ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surface
-                              .withValues(alpha: 0.8),
-                          shape: BoxShape.circle,
-                        ),
-                        padding: const EdgeInsets.all(4),
-                        child: Icon(
-                          Icons.fullscreen,
-                          size: 20,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
 
             // ── Spectrogram ─────────────────────────────────

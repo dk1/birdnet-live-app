@@ -1463,5 +1463,74 @@
   "surveyTrackMap": "Survey Track",
   "@surveyTrackMap": {
     "description": "Title for the fullscreen survey track map screen"
+  },
+  "surveyFieldTips": "Field Tips",
+  "@surveyFieldTips": {
+    "description": "Section title for survey best-practice tips"
+  },
+  "surveyTipWalkSteady": "Walk at a steady, slow pace. Stopping frequently helps the classifier capture clean 3-second audio windows.",
+  "@surveyTipWalkSteady": {
+    "description": "Survey tip about walking pace"
+  },
+  "surveyTipWind": "Avoid windy conditions — wind noise masks bird calls and reduces detection accuracy.",
+  "@surveyTipWind": {
+    "description": "Survey tip about wind"
+  },
+  "surveyTipMic": "Keep the microphone unobstructed. Don\u2019t cover it with your hand or put the phone in a pocket.",
+  "@surveyTipMic": {
+    "description": "Survey tip about microphone placement"
+  },
+  "surveyTipSilence": "Stay quiet during the survey. Talking, music, and other human sounds create false positives.",
+  "@surveyTipSilence": {
+    "description": "Survey tip about silence"
+  },
+  "surveyTipTime": "Survey during dawn chorus (first 3 hours after sunrise) for peak bird activity and species diversity.",
+  "@surveyTipTime": {
+    "description": "Survey tip about timing"
+  },
+  "surveyTipRepeat": "Repeat the same route under similar conditions for comparable results across sessions.",
+  "@surveyTipRepeat": {
+    "description": "Survey tip about repeatability"
+  },
+  "surveyTipBattery": "Enable battery saver or plug in for long surveys. GPS and inference can drain the battery quickly.",
+  "@surveyTipBattery": {
+    "description": "Survey tip about battery"
+  },
+  "surveyResumeTitle": "Resume Survey?",
+  "@surveyResumeTitle": {
+    "description": "Title for the resume survey confirmation dialog"
+  },
+  "surveyResumeMessage": "This will continue the survey from where it left off. New detections will be appended to the existing session.",
+  "@surveyResumeMessage": {
+    "description": "Body text for the resume survey confirmation dialog"
+  },
+  "surveyResumeConfirm": "Resume",
+  "@surveyResumeConfirm": {
+    "description": "Confirm button for resume survey dialog"
+  },
+  "sessionViewDetailed": "Detailed",
+  "@sessionViewDetailed": {
+    "description": "Label for detailed session list view mode"
+  },
+  "sessionViewCompact": "Compact",
+  "@sessionViewCompact": {
+    "description": "Label for compact session list view mode"
+  },
+  "sessionViewBySpecies": "By Species",
+  "@sessionViewBySpecies": {
+    "description": "Label for group-by-species session view mode"
+  },
+  "sessionViewTooltip": "View mode",
+  "@sessionViewTooltip": {
+    "description": "Tooltip for the session list view-mode toggle"
+  },
+  "sessionSpeciesSessionCount": "{count, plural, =1{1 session} other{{count} sessions}}",
+  "@sessionSpeciesSessionCount": {
+    "description": "Number of sessions containing a species",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

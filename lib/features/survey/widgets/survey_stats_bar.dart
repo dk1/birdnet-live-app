@@ -129,7 +129,11 @@ class _StatChip extends StatelessWidget {
   }
 }
 
-/// Small mic icon with a colored dot indicating audio health.
+/// Small emoji indicating audio health.
+///
+///   👍 = good ambient signal (typical birdsong environment)
+///   👉 = marginal (very quiet or moderately loud)
+///   👎 = bad (silence / no signal, or clipping / wind noise)
 class _AudioLevelChip extends StatelessWidget {
   const _AudioLevelChip({
     required this.level,
@@ -143,22 +147,14 @@ class _AudioLevelChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.mic_rounded, size: 16, color: color),
-        const SizedBox(width: 3),
-        // Small vertical bar that scales with audio level (0-12 px).
-        Container(
-          width: 4,
-          height: 12 * level.clamp(0, 1),
-          constraints: const BoxConstraints(minHeight: 2),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-      ],
-    );
+    final String emoji;
+    if (color == Colors.green) {
+      emoji = '👍';
+    } else if (color == Colors.amber) {
+      emoji = '👉';
+    } else {
+      emoji = '👎';
+    }
+    return Text(emoji, style: const TextStyle(fontSize: 16));
   }
 }
