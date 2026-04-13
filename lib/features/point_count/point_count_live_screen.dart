@@ -319,69 +319,99 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       child: Scaffold(
         body: SafeArea(
           bottom: false,
-          child: Column(
-            children: [
-              // ── Status bar with countdown ─────────────────────
-              _CountdownStatusBar(
-                remaining: _remaining,
-                totalDuration: Duration(minutes: widget.durationMinutes),
-                liveState: liveState,
-                onStop: _confirmStopEarly,
-              ),
-
-              // ── Progress bar ──────────────────────────────────
-              _CountdownProgressBar(
-                remaining: _remaining,
-                totalDuration: Duration(minutes: widget.durationMinutes),
-              ),
-
-              // ── Spectrogram ───────────────────────────────────
-              Expanded(
-                flex: 2,
-                child: Container(
-                  color: theme.colorScheme.surfaceContainerLowest,
-                  child: _PointCountSpectrogram(
-                    isCapturing: isCapturing && !_spectrogramPaused,
-                  ),
-                ),
-              ),
-
-              // ── Session info ──────────────────────────────────
-              _PointCountInfoBar(
-                detections: detections,
-                controller: ref.read(liveControllerProvider),
-                visible: isActive,
-              ),
-
-              // ── Detection list ────────────────────────────────
-              Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-                  child: ClipRRect(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: DetectionList(
-                      detections: detections,
-                      isActive: isActive,
-                      onDetectionTap: (detection) {
-                        SpeciesInfoOverlay.show(
-                          context,
-                          ref,
-                          scientificName: detection.scientificName,
-                          commonName: detection.commonName,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-            ],
-          ),
+          child: _buildBody(
+              context, theme, liveState, isActive, isCapturing, detections),
         ),
       ),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    ThemeData theme,
+    LiveState liveState,
+    bool isActive,
+    bool isCapturing,
+    List<DetectionRecord> detections,
+  ) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final statusBar = _CountdownStatusBar(
+      remaining: _remaining,
+      totalDuration: Duration(minutes: widget.durationMinutes),
+      liveState: liveState,
+      onStop: _confirmStopEarly,
+    );
+    final progressBar = _CountdownProgressBar(
+      remaining: _remaining,
+      totalDuration: Duration(minutes: widget.durationMinutes),
+    );
+    final spectrogram = Container(
+      color: theme.colorScheme.surfaceContainerLowest,
+      child: _PointCountSpectrogram(
+        isCapturing: isCapturing && !_spectrogramPaused,
+      ),
+    );
+    final sessionInfo = _PointCountInfoBar(
+      detections: detections,
+      controller: ref.read(liveControllerProvider),
+      visible: isActive,
+    );
+    final detectionList = Padding(
+      padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        child: DetectionList(
+          detections: detections,
+          isActive: isActive,
+          onDetectionTap: (detection) {
+            SpeciesInfoOverlay.show(
+              context,
+              ref,
+              scientificName: detection.scientificName,
+              commonName: detection.commonName,
+            );
+          },
+        ),
+      ),
+    );
+
+    if (isLandscape) {
+      return Column(
+        children: [
+          statusBar,
+          progressBar,
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    children: [
+                      Expanded(child: spectrogram),
+                      sessionInfo,
+                    ],
+                  ),
+                ),
+                Expanded(flex: 1, child: detectionList),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        statusBar,
+        progressBar,
+        Expanded(flex: 2, child: spectrogram),
+        sessionInfo,
+        Expanded(flex: 3, child: detectionList),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

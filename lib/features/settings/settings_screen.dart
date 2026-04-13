@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../shared/providers/app_providers.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/widgets/content_width_constraint.dart';
 import '../about/about_screen.dart';
 import '../audio/audio_providers.dart';
 
@@ -115,7 +116,8 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.settings),
       ),
-      body: ListView(
+      body: ContentWidthConstraint(
+          child: ListView(
         children: [
           // --- General ---
           if (_showSection('general')) ...[
@@ -430,7 +432,7 @@ class SettingsScreen extends ConsumerWidget {
 
           const SizedBox(height: 32),
         ],
-      ),
+      )),
     );
   }
 

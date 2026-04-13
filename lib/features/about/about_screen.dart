@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../shared/widgets/content_width_constraint.dart';
 
 /// Provider for app package info.
 final packageInfoProvider = FutureProvider<PackageInfo>((ref) {
@@ -25,7 +26,8 @@ class AboutScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.about),
       ),
-      body: ListView(
+      body: ContentWidthConstraint(
+          child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           // App icon and title
@@ -193,7 +195,7 @@ class AboutScreen extends ConsumerWidget {
 
           const SizedBox(height: 32),
         ],
-      ),
+      )),
     );
   }
 

@@ -18,6 +18,7 @@ import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
 import 'live_controller.dart';
 import 'live_providers.dart';
+import 'live_session.dart';
 import 'widgets/detection_list_widget.dart';
 
 // =============================================================================
@@ -358,64 +359,107 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         body: SafeArea(
           bottom: false,
-          child: Column(
-            children: [
-              // ── Compact Status Bar ──────────────────────────────
-              _CompactStatusBar(
-                liveState: liveState,
-                ref: ref,
-              ),
-
-              // ── Error Banner ────────────────────────────────────
-              if (liveState == LiveState.error)
-                _StatusBanner(liveState: liveState, ref: ref),
-
-              // ── Spectrogram ─────────────────────────────────────
-              Expanded(
-                flex: 2,
-                child: Container(
-                  color: theme.colorScheme.surfaceContainerLowest,
-                  child: _LiveSpectrogram(isCapturing: isCapturing),
-                ),
-              ),
-
-              // ── Session Info (always present to avoid layout shift) ──
-              _SessionInfoBar(
-                liveCount: detections.length,
-                controller: ref.read(liveControllerProvider),
-                visible: isActive || isPaused,
-              ),
-
-              // ── Detection List ──────────────────────────────────
-              Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-                  child: ClipRRect(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: DetectionList(
-                      detections: detections,
-                      isActive: isActive || isPaused,
-                      onDetectionTap: (detection) {
-                        SpeciesInfoOverlay.show(
-                          context,
-                          ref,
-                          scientificName: detection.scientificName,
-                          commonName: detection.commonName,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-
-              // Bottom padding so the FAB doesn't overlap the last item.
-              const SizedBox(height: 72),
-            ],
+          child: _buildBody(
+            context,
+            theme: theme,
+            liveState: liveState,
+            isActive: isActive,
+            isPaused: isPaused,
+            isCapturing: isCapturing,
+            detections: detections,
           ),
         ),
       ),
+    );
+  }
+
+  /// Builds the main body, switching between portrait (vertical stack)
+  /// and landscape (side-by-side) layouts.
+  Widget _buildBody(
+    BuildContext context, {
+    required ThemeData theme,
+    required LiveState liveState,
+    required bool isActive,
+    required bool isPaused,
+    required bool isCapturing,
+    required List<DetectionRecord> detections,
+  }) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final statusBar = _CompactStatusBar(liveState: liveState, ref: ref);
+    final errorBanner = liveState == LiveState.error
+        ? _StatusBanner(liveState: liveState, ref: ref)
+        : null;
+    final spectrogram = Container(
+      color: theme.colorScheme.surfaceContainerLowest,
+      child: _LiveSpectrogram(isCapturing: isCapturing),
+    );
+    final sessionInfo = _SessionInfoBar(
+      liveCount: detections.length,
+      controller: ref.read(liveControllerProvider),
+      visible: isActive || isPaused,
+    );
+    final detectionList = Padding(
+      padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        child: DetectionList(
+          detections: detections,
+          isActive: isActive || isPaused,
+          onDetectionTap: (detection) {
+            SpeciesInfoOverlay.show(
+              context,
+              ref,
+              scientificName: detection.scientificName,
+              commonName: detection.commonName,
+            );
+          },
+        ),
+      ),
+    );
+
+    if (isLandscape) {
+      return Column(
+        children: [
+          statusBar,
+          if (errorBanner != null) errorBanner,
+          Expanded(
+            child: Row(
+              children: [
+                // Left: spectrogram + session info
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    children: [
+                      Expanded(child: spectrogram),
+                      sessionInfo,
+                    ],
+                  ),
+                ),
+                // Right: detection list
+                Expanded(
+                  flex: 1,
+                  child: detectionList,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 72),
+        ],
+      );
+    }
+
+    // Portrait: original vertical stack.
+    return Column(
+      children: [
+        statusBar,
+        if (errorBanner != null) errorBanner,
+        Expanded(flex: 2, child: spectrogram),
+        sessionInfo,
+        Expanded(flex: 3, child: detectionList),
+        const SizedBox(height: 72),
+      ],
     );
   }
 }

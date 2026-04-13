@@ -10,6 +10,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../shared/widgets/content_width_constraint.dart';
+
 /// Comprehensive help screen with mode-by-mode explanations.
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
@@ -21,7 +23,8 @@ class HelpScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.helpTitle)),
-      body: ListView(
+      body: ContentWidthConstraint(
+          child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         children: [
           // ── Introduction ────────────────────────────────────
@@ -98,7 +101,7 @@ class HelpScreen extends StatelessWidget {
           _TipRow(text: l10n.helpTipGeoFilter),
           const SizedBox(height: 24),
         ],
-      ),
+      )),
     );
   }
 }

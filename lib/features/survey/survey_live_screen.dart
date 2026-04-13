@@ -304,104 +304,136 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       child: Scaffold(
         body: SafeArea(
           bottom: false,
-          child: Column(
-            children: [
-              // ── Status bar ────────────────────────────────────
-              _SurveyStatusBar(
-                elapsed: controller.elapsed,
-                isActive: isActive,
-                onStop: _confirmStop,
-              ),
-
-              // ── Tab bar ───────────────────────────────────────
-              TabBar(
-                controller: _tabController,
-                tabs: [
-                  Tab(
-                    icon: const Icon(Icons.map_outlined, size: 18),
-                    text: l10n.surveyTabMap,
-                  ),
-                  Tab(
-                    icon: const Icon(Icons.graphic_eq, size: 18),
-                    text: l10n.surveyTabSpectrogram,
-                  ),
-                  Tab(
-                    icon: Icon(MdiIcons.chartBar, size: 18),
-                    text: l10n.surveyTabSummary,
-                  ),
-                ],
-                labelPadding: const EdgeInsets.symmetric(horizontal: 8),
-                indicatorWeight: 2,
-                labelStyle: theme.textTheme.labelSmall,
-              ),
-
-              // ── Tab content (40% of screen) ───────────────────
-              Expanded(
-                flex: 2,
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    // Map tab.
-                    SurveyMapWidget(
-                      gpsTrack: controller.gpsTracker?.track ?? [],
-                      detections: session?.detections ?? [],
-                      initialCenter: widget.startLatitude != null &&
-                              widget.startLongitude != null
-                          ? LatLng(
-                              widget.startLatitude!, widget.startLongitude!)
-                          : null,
-                    ),
-
-                    // Spectrogram tab.
-                    _SurveySpectrogram(
-                      ringBuffer: ringBuffer,
-                      isActive: isActive,
-                    ),
-
-                    // Summary tab.
-                    _SurveySummaryTab(session: session),
-                  ],
-                ),
-              ),
-
-              // ── Stats bar ─────────────────────────────────────
-              SurveyStatsBar(
-                distanceMeters: controller.gpsTracker?.distanceMeters ?? 0,
-                detectionCount: session?.detections.length ?? 0,
-                speciesCount: session?.uniqueSpeciesCount ?? 0,
-                audioLevel: ringBuffer.rmsLevel(),
-                peakLevel: ringBuffer.peakLevel(),
-              ),
-
-              // ── Recent detections ─────────────────────────────
-              Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-                  child: ClipRRect(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: DetectionList(
-                      detections: _recentDetections(session),
-                      isActive: isActive,
-                      onDetectionTap: (detection) {
-                        SpeciesInfoOverlay.show(
-                          context,
-                          ref,
-                          scientificName: detection.scientificName,
-                          commonName: detection.commonName,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-            ],
+          child: _buildBody(
+            context,
+            theme: theme,
+            l10n: l10n,
+            isActive: isActive,
+            session: session,
+            controller: controller,
+            ringBuffer: ringBuffer,
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context, {
+    required ThemeData theme,
+    required AppLocalizations l10n,
+    required bool isActive,
+    required dynamic session,
+    required dynamic controller,
+    required dynamic ringBuffer,
+  }) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final statusBar = _SurveyStatusBar(
+      elapsed: controller.elapsed,
+      isActive: isActive,
+      onStop: _confirmStop,
+    );
+    final tabBar = TabBar(
+      controller: _tabController,
+      tabs: [
+        Tab(
+          icon: const Icon(Icons.map_outlined, size: 18),
+          text: l10n.surveyTabMap,
+        ),
+        Tab(
+          icon: const Icon(Icons.graphic_eq, size: 18),
+          text: l10n.surveyTabSpectrogram,
+        ),
+        Tab(
+          icon: Icon(MdiIcons.chartBar, size: 18),
+          text: l10n.surveyTabSummary,
+        ),
+      ],
+      labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+      indicatorWeight: 2,
+      labelStyle: theme.textTheme.labelSmall,
+    );
+    final tabContent = TabBarView(
+      controller: _tabController,
+      children: [
+        SurveyMapWidget(
+          gpsTrack: controller.gpsTracker?.track ?? [],
+          detections: session?.detections ?? [],
+          initialCenter:
+              widget.startLatitude != null && widget.startLongitude != null
+                  ? LatLng(widget.startLatitude!, widget.startLongitude!)
+                  : null,
+        ),
+        _SurveySpectrogram(ringBuffer: ringBuffer, isActive: isActive),
+        _SurveySummaryTab(session: session),
+      ],
+    );
+    final statsBar = SurveyStatsBar(
+      distanceMeters: controller.gpsTracker?.distanceMeters ?? 0,
+      detectionCount: session?.detections.length ?? 0,
+      speciesCount: session?.uniqueSpeciesCount ?? 0,
+      audioLevel: ringBuffer.rmsLevel(),
+      peakLevel: ringBuffer.peakLevel(),
+    );
+    final detectionList = Padding(
+      padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        child: DetectionList(
+          detections: _recentDetections(session),
+          isActive: isActive,
+          onDetectionTap: (detection) {
+            SpeciesInfoOverlay.show(
+              context,
+              ref,
+              scientificName: detection.scientificName,
+              commonName: detection.commonName,
+            );
+          },
+        ),
+      ),
+    );
+
+    if (isLandscape) {
+      return Column(
+        children: [
+          statusBar,
+          Expanded(
+            child: Row(
+              children: [
+                // Left: tabs (map/spectrogram/summary) + stats
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    children: [
+                      tabBar,
+                      Expanded(child: tabContent),
+                      statsBar,
+                    ],
+                  ),
+                ),
+                // Right: detection list
+                Expanded(flex: 1, child: detectionList),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      );
+    }
+
+    // Portrait: original vertical stack.
+    return Column(
+      children: [
+        statusBar,
+        tabBar,
+        Expanded(flex: 2, child: tabContent),
+        statsBar,
+        Expanded(flex: 3, child: detectionList),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

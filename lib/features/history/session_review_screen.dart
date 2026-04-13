@@ -1182,303 +1182,337 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             ),
           ],
         ),
-        body: Column(
-          children: [
-            // ── Toolbar ─────────────────────────────────────
-            Container(
-              color: theme.colorScheme.surfaceContainerLow,
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.add_circle_outline),
-                    tooltip: l10n.sessionAddContent,
-                    onPressed: _showAddMenu,
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.undo,
-                        color: _canUndo
-                            ? null
-                            : theme.colorScheme.onSurface.withAlpha(80)),
-                    tooltip: l10n.sessionUndo,
-                    onPressed: _canUndo ? _undo : null,
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.redo,
-                        color: _canRedo
-                            ? null
-                            : theme.colorScheme.onSurface.withAlpha(80)),
-                    tooltip: l10n.sessionRedo,
-                    onPressed: _canRedo ? _redo : null,
-                  ),
-                  if (_audioAvailable)
-                    IconButton(
-                      icon: Icon(
-                        _trimMode
-                            ? Icons.content_cut
-                            : Icons.content_cut_outlined,
-                      ),
-                      tooltip: l10n.sessionTrimRecording,
-                      onPressed: _toggleTrimMode,
-                      color: _trimMode ? theme.colorScheme.primary : null,
+        body: _buildReviewBody(context, theme, l10n),
+      ),
+    );
+  }
+
+  // ── Review Body — orientation-aware layout ────────────────────────
+
+  Widget _buildReviewBody(
+      BuildContext context, ThemeData theme, AppLocalizations l10n) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final toolbar = _buildToolbar(theme, l10n);
+    final speciesList = _buildSpeciesList(theme, l10n);
+
+    if (isLandscape) {
+      // Landscape: toolbar on top, then left = scrollable media, right = species.
+      return Column(
+        children: [
+          toolbar,
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left: scrollable media column.
+                Expanded(
+                  flex: 1,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: _buildMediaWidgets(context, theme, l10n),
                     ),
-                  IconButton(
-                    icon: Icon(Icons.save,
-                        color: _isDirty
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurface.withAlpha(80)),
-                    tooltip: l10n.sessionSave,
-                    onPressed: _isDirty ? _save : null,
                   ),
-                  if (_audioAvailable)
-                    IconButton(
-                      icon: const Icon(Icons.share),
-                      tooltip: l10n.sessionShare,
-                      onPressed: _share,
-                    ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    tooltip: l10n.sessionDiscard,
-                    onPressed: _discard,
-                  ),
-                  // Continue / resume button for survey sessions.
-                  if (widget.session.type == SessionType.survey)
-                    IconButton(
-                      icon: Icon(Icons.play_arrow_rounded,
-                          color: theme.colorScheme.primary),
-                      tooltip: l10n.surveyContinue,
-                      onPressed: _continueSurvey,
-                    ),
-                  IconButton(
-                    icon: const Icon(Icons.help_outline),
-                    tooltip: l10n.sessionHelpTitle,
-                    onPressed: _showHelp,
-                  ),
-                ],
-              ),
+                ),
+                const VerticalDivider(width: 1),
+                // Right: species list.
+                Expanded(flex: 1, child: speciesList),
+              ],
             ),
+          ),
+        ],
+      );
+    }
 
-            // ── Summary header ──────────────────────────────
-            _SummaryHeader(
-              session: widget.session,
-              detectionCount: _detections.length,
-              locationName: _locationName,
-              onShowMap: widget.session.latitude != null
-                  ? () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => SessionMapScreen(
-                            latitude: widget.session.latitude!,
-                            longitude: widget.session.longitude!,
-                            locationName: _locationName,
-                          ),
-                        ),
-                      )
-                  : null,
-            ),
+    // Portrait: original vertical stack.
+    return Column(
+      children: [
+        toolbar,
+        ..._buildMediaWidgets(context, theme, l10n),
+        const Divider(height: 1),
+        Expanded(child: speciesList),
+      ],
+    );
+  }
 
-            // ── Survey track map ────────────────────────────
-            if (widget.session.type == SessionType.survey &&
-                widget.session.gpsTrack.isNotEmpty)
-              Stack(
-                children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.25,
-                    child: ClipRRect(
-                      child: SurveyMapWidget(
-                        gpsTrack: widget.session.gpsTrack,
-                        detections: _detections,
-                        autoFollow: false,
-                        fitAllPoints: true,
-                        highlightedDetection: _highlightedDetection,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Material(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surface
-                          .withValues(alpha: 0.8),
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => _openFullscreenSurveyMap(context),
-                        child: Padding(
-                          padding: const EdgeInsets.all(6),
-                          child: Icon(
-                            Icons.fullscreen,
-                            size: 20,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+  Widget _buildToolbar(ThemeData theme, AppLocalizations l10n) {
+    return Container(
+      color: theme.colorScheme.surfaceContainerLow,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline),
+            tooltip: l10n.sessionAddContent,
+            onPressed: _showAddMenu,
+          ),
+          IconButton(
+            icon: Icon(Icons.undo,
+                color: _canUndo
+                    ? null
+                    : theme.colorScheme.onSurface.withAlpha(80)),
+            tooltip: l10n.sessionUndo,
+            onPressed: _canUndo ? _undo : null,
+          ),
+          IconButton(
+            icon: Icon(Icons.redo,
+                color: _canRedo
+                    ? null
+                    : theme.colorScheme.onSurface.withAlpha(80)),
+            tooltip: l10n.sessionRedo,
+            onPressed: _canRedo ? _redo : null,
+          ),
+          if (_audioAvailable)
+            IconButton(
+              icon: Icon(
+                _trimMode ? Icons.content_cut : Icons.content_cut_outlined,
               ),
+              tooltip: l10n.sessionTrimRecording,
+              onPressed: _toggleTrimMode,
+              color: _trimMode ? theme.colorScheme.primary : null,
+            ),
+          IconButton(
+            icon: Icon(Icons.save,
+                color: _isDirty
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface.withAlpha(80)),
+            tooltip: l10n.sessionSave,
+            onPressed: _isDirty ? _save : null,
+          ),
+          if (_audioAvailable)
+            IconButton(
+              icon: const Icon(Icons.share),
+              tooltip: l10n.sessionShare,
+              onPressed: _share,
+            ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            tooltip: l10n.sessionDiscard,
+            onPressed: _discard,
+          ),
+          if (widget.session.type == SessionType.survey)
+            IconButton(
+              icon: Icon(Icons.play_arrow_rounded,
+                  color: theme.colorScheme.primary),
+              tooltip: l10n.surveyContinue,
+              onPressed: _continueSurvey,
+            ),
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: l10n.sessionHelpTitle,
+            onPressed: _showHelp,
+          ),
+        ],
+      ),
+    );
+  }
 
-            // ── Spectrogram ─────────────────────────────────
-            if (_audioAvailable) ...[
-              if (_trimMode &&
-                  (_fullSpectrogramImage ?? _spectrogramImage) != null)
-                _TrimSpectrogramView(
-                  spectrogramImage:
-                      (_fullSpectrogramImage ?? _spectrogramImage)!,
-                  durationSec: _fullDurationSec > 0
-                      ? _fullDurationSec
-                      : _duration.inMicroseconds / 1000000.0,
-                  initialStartSec: _trimStartSec ?? 0.0,
-                  initialEndSec: _trimEndSec ??
-                      (_fullDurationSec > 0
-                          ? _fullDurationSec
-                          : _duration.inMicroseconds / 1000000.0),
-                  onChanged: _onTrimChanged,
+  /// Builds the media widgets: summary header, map, spectrogram, trim bar,
+  /// and annotations. Used by both portrait and landscape layouts.
+  List<Widget> _buildMediaWidgets(
+      BuildContext context, ThemeData theme, AppLocalizations l10n) {
+    return [
+      _SummaryHeader(
+        session: widget.session,
+        detectionCount: _detections.length,
+        locationName: _locationName,
+        onShowMap: widget.session.latitude != null
+            ? () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => SessionMapScreen(
+                      latitude: widget.session.latitude!,
+                      longitude: widget.session.longitude!,
+                      locationName: _locationName,
+                    ),
+                  ),
                 )
-              else
-                Stack(
-                  children: [
-                    _SpectrogramStrip(
-                      spectrogramImage: _spectrogramImage,
-                      decoding: _decoding,
-                      position: _position,
-                      duration: _duration,
-                      onSeek: _seekToPosition,
-                      onPause: _pausePlayer,
-                      isPlaying: _isPlaying,
-                    ),
-                    Positioned(
-                      left: 8,
-                      bottom: 8,
-                      child: _PlayPauseButton(
-                        isPlaying: _isPlaying,
-                        onToggle: () {
-                          if (_isPlaying) {
-                            _player.pause();
-                          } else {
-                            _player.play();
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-            ],
-
-            // ── Trim confirm bar ────────────────────────────
-            if (_trimMode)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                child: Row(
-                  children: [
-                    Text(
-                      l10n.sessionTrimRecording,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: _resetTrim,
-                      child: Text(l10n.sessionTrimReset),
-                    ),
-                    const SizedBox(width: 4),
-                    FilledButton(
-                      onPressed: _applyTrim,
-                      child: Text(l10n.sessionTrimApply),
-                    ),
-                  ],
+            : null,
+      ),
+      if (widget.session.type == SessionType.survey &&
+          widget.session.gpsTrack.isNotEmpty)
+        Stack(
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.25,
+              child: ClipRRect(
+                child: SurveyMapWidget(
+                  gpsTrack: widget.session.gpsTrack,
+                  detections: _detections,
+                  autoFollow: false,
+                  fitAllPoints: true,
+                  highlightedDetection: _highlightedDetection,
                 ),
               ),
-
-            // ── Annotation chips ────────────────────────────
-            if (_annotations.isNotEmpty)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: [
-                    for (var i = 0; i < _annotations.length; i++)
-                      Chip(
-                        label: Text(
-                          _annotations[i].text,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        avatar: Icon(
-                          _annotations[i].offsetInRecording != null
-                              ? Icons.schedule
-                              : Icons.public,
-                          size: 16,
-                        ),
-                        deleteIcon: const Icon(Icons.close, size: 16),
-                        onDeleted: () => _deleteAnnotation(i),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                      ),
-                  ],
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Material(
+                color: Theme.of(context)
+                    .colorScheme
+                    .surface
+                    .withValues(alpha: 0.8),
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () => _openFullscreenSurveyMap(context),
+                  child: Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(
+                      Icons.fullscreen,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
                 ),
               ),
-
-            const Divider(height: 1),
-
-            // ── Species list ────────────────────────────────
-            Expanded(
-              child: _filteredSpeciesGroups.isEmpty
-                  ? Center(
-                      child: Text(
-                        l10n.sessionNoDetections,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: theme.colorScheme.onSurface.withAlpha(120),
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.only(bottom: 80),
-                      itemCount: _filteredSpeciesGroups.length,
-                      itemBuilder: (context, index) {
-                        final group = _filteredSpeciesGroups[index];
-                        final isExpanded =
-                            _expandedSpecies.contains(group.scientificName);
-                        final isActive = _isSpeciesActive(group);
-
-                        return _SpeciesTile(
-                          group: group,
-                          sessionStart: widget.session.startTime,
-                          isExpanded: isExpanded,
-                          isActive: isActive,
-                          isSurvey: widget.session.type == SessionType.survey,
-                          onToggleExpand: () => setState(() {
-                            if (isExpanded) {
-                              _expandedSpecies.remove(group.scientificName);
-                            } else {
-                              _expandedSpecies.add(group.scientificName);
-                            }
-                          }),
-                          onSpeciesInfo: () => SpeciesInfoOverlay.show(
-                            context,
-                            ref,
-                            scientificName: group.scientificName,
-                            commonName: group.commonName,
-                          ),
-                          onSeekCluster: _seekToCluster,
-                          onDeleteCluster: (cluster) =>
-                              _confirmDeleteDetection(group, cluster),
-                          onReplaceCluster: _replaceDetection,
-                          onShowOnMap: _showDetectionOnMap,
-                        );
-                      },
-                    ),
             ),
           ],
         ),
-      ),
+      if (_audioAvailable) ...[
+        if (_trimMode && (_fullSpectrogramImage ?? _spectrogramImage) != null)
+          _TrimSpectrogramView(
+            spectrogramImage: (_fullSpectrogramImage ?? _spectrogramImage)!,
+            durationSec: _fullDurationSec > 0
+                ? _fullDurationSec
+                : _duration.inMicroseconds / 1000000.0,
+            initialStartSec: _trimStartSec ?? 0.0,
+            initialEndSec: _trimEndSec ??
+                (_fullDurationSec > 0
+                    ? _fullDurationSec
+                    : _duration.inMicroseconds / 1000000.0),
+            onChanged: _onTrimChanged,
+          )
+        else
+          Stack(
+            children: [
+              _SpectrogramStrip(
+                spectrogramImage: _spectrogramImage,
+                decoding: _decoding,
+                position: _position,
+                duration: _duration,
+                onSeek: _seekToPosition,
+                onPause: _pausePlayer,
+                isPlaying: _isPlaying,
+              ),
+              Positioned(
+                left: 8,
+                bottom: 8,
+                child: _PlayPauseButton(
+                  isPlaying: _isPlaying,
+                  onToggle: () {
+                    if (_isPlaying) {
+                      _player.pause();
+                    } else {
+                      _player.play();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+      ],
+      if (_trimMode)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: Row(
+            children: [
+              Text(
+                l10n.sessionTrimRecording,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: _resetTrim,
+                child: Text(l10n.sessionTrimReset),
+              ),
+              const SizedBox(width: 4),
+              FilledButton(
+                onPressed: _applyTrim,
+                child: Text(l10n.sessionTrimApply),
+              ),
+            ],
+          ),
+        ),
+      if (_annotations.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              for (var i = 0; i < _annotations.length; i++)
+                Chip(
+                  label: Text(
+                    _annotations[i].text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  avatar: Icon(
+                    _annotations[i].offsetInRecording != null
+                        ? Icons.schedule
+                        : Icons.public,
+                    size: 16,
+                  ),
+                  deleteIcon: const Icon(Icons.close, size: 16),
+                  onDeleted: () => _deleteAnnotation(i),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
+            ],
+          ),
+        ),
+    ];
+  }
+
+  Widget _buildSpeciesList(ThemeData theme, AppLocalizations l10n) {
+    if (_filteredSpeciesGroups.isEmpty) {
+      return Center(
+        child: Text(
+          l10n.sessionNoDetections,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: theme.colorScheme.onSurface.withAlpha(120),
+          ),
+        ),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 80),
+      itemCount: _filteredSpeciesGroups.length,
+      itemBuilder: (context, index) {
+        final group = _filteredSpeciesGroups[index];
+        final isExpanded = _expandedSpecies.contains(group.scientificName);
+        final isActive = _isSpeciesActive(group);
+        return _SpeciesTile(
+          group: group,
+          sessionStart: widget.session.startTime,
+          isExpanded: isExpanded,
+          isActive: isActive,
+          isSurvey: widget.session.type == SessionType.survey,
+          onToggleExpand: () => setState(() {
+            if (isExpanded) {
+              _expandedSpecies.remove(group.scientificName);
+            } else {
+              _expandedSpecies.add(group.scientificName);
+            }
+          }),
+          onSpeciesInfo: () => SpeciesInfoOverlay.show(
+            context,
+            ref,
+            scientificName: group.scientificName,
+            commonName: group.commonName,
+          ),
+          onSeekCluster: _seekToCluster,
+          onDeleteCluster: (cluster) => _confirmDeleteDetection(group, cluster),
+          onReplaceCluster: _replaceDetection,
+          onShowOnMap: _showDetectionOnMap,
+        );
+      },
     );
   }
 

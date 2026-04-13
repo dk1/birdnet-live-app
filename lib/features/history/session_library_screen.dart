@@ -17,6 +17,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/widgets/content_width_constraint.dart';
 import '../explore/explore_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
@@ -217,7 +218,8 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
           ],
         ],
       ),
-      body: sessionsAsync.when(
+      body: ContentWidthConstraint(
+          child: sessionsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
         data: (sessions) {
@@ -288,7 +290,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
             },
           );
         },
-      ),
+      )),
     );
   }
 
