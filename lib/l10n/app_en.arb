@@ -1574,7 +1574,7 @@
   "@helpTitle": {
     "description": "Help screen title and menu label"
   },
-  "helpIntro": "BirdNET Live identifies bird species in real time using on-device AI. Point your phone at birdsong, and the app will tell you what you're hearing — no internet needed.",
+  "helpIntro": "BirdNET Live identifies species in real time using on-device AI. Point your phone at animal sounds, and the app will tell you what you're hearing — no internet needed.",
   "@helpIntro": {
     "description": "Introduction paragraph on the help screen"
   },
@@ -1582,7 +1582,7 @@
   "@helpLiveTitle": {
     "description": "Section title for Live mode help"
   },
-  "helpLiveBody": "Opens the microphone and shows real-time bird detections as they happen. A scrolling spectrogram visualizes the audio. Tap any detected species for detailed information.\n\nConfidence scores indicate how certain the model is. Higher thresholds mean fewer but more reliable results.",
+  "helpLiveBody": "Opens the microphone and shows real-time species detections as they happen. A scrolling spectrogram visualizes the audio. Tap any detected species for detailed information.\n\nConfidence scores indicate how certain the model is. Higher thresholds mean fewer but more reliable results.",
   "@helpLiveBody": {
     "description": "Help body text for Live mode"
   },
@@ -1590,7 +1590,7 @@
   "@helpPointCountTitle": {
     "description": "Section title for Point Count help"
   },
-  "helpPointCountBody": "Timed point-count surveys, a standard ornithological method. Set a duration and the app records detections at a fixed location. Your GPS coordinates are saved with the session.\n\nIdeal for monitoring bird abundance at study sites over time.",
+  "helpPointCountBody": "Timed point-count surveys, a standard bioacoustic monitoring method. Set a duration and the app records detections at a fixed location. Your GPS coordinates are saved with the session.\n\nIdeal for monitoring species abundance at study sites over time.",
   "@helpPointCountBody": {
     "description": "Help body text for Point Count mode"
   },
@@ -1598,7 +1598,7 @@
   "@helpSurveyTitle": {
     "description": "Section title for Survey mode help"
   },
-  "helpSurveyBody": "Walk a transect while the app continuously identifies birds in the background. GPS tracks your route and pins each detection on the map.\n\nA signal quality indicator shows whether audio conditions are good. After the survey, review your track, detections, and species on an interactive map.",
+  "helpSurveyBody": "Walk a transect while the app continuously identifies species in the background. GPS tracks your route and pins each detection on the map.\n\nA signal quality indicator shows whether audio conditions are good. After the survey, review your track, detections, and species on an interactive map.",
   "@helpSurveyBody": {
     "description": "Help body text for Survey mode"
   },
@@ -1614,7 +1614,7 @@
   "@helpExploreTitle": {
     "description": "Section title for Explore help"
   },
-  "helpExploreBody": "See which bird species are predicted at your location based on geography and time of year. Uses the BirdNET geo-model trained on GBIF occurrence data.\n\nTap any species to learn more about it, see photos, and hear reference recordings.",
+  "helpExploreBody": "See which species are predicted at your location based on geography and time of year. Uses the BirdNET geo-model trained on GBIF occurrence data.\n\nTap any species to learn more about it, see photos, and hear reference recordings.",
   "@helpExploreBody": {
     "description": "Help body text for Explore feature"
   },
@@ -1638,7 +1638,7 @@
   "@helpTipMic": {
     "description": "Tip about microphone placement"
   },
-  "helpTipDawn": "Survey during dawn chorus (first 3 hours after sunrise) for maximum species diversity.",
+  "helpTipDawn": "For birds, survey during dawn chorus (first 3 hours after sunrise) for maximum species diversity. Other taxa may peak at different times.",
   "@helpTipDawn": {
     "description": "Tip about timing"
   },
