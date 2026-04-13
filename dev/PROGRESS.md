@@ -8,9 +8,9 @@ This file tracks development progress. Update after each work session.
 
 | Item | Status |
 |------|--------|
-| Current Step | Survey Mode UX Polish |
+| Current Step | Session Library & Explore UX |
 | Last Updated | 2026-04-13 |
-| Version | 0.2.2+31 |
+| Version | 0.2.3+32 |
 | Unit Tests | 480 passing |
 | Integration Tests | 3 (geo_soundscape, memory_stress, model_output) |
 | Blockers | None |
@@ -18,6 +18,28 @@ This file tracks development progress. Update after each work session.
 ---
 
 ## Progress Log
+
+### 2026-04-13 — Session Library & Explore UX
+
+**Completed:**
+- Audio quality emoji: replaced mic icon + animated bar in `SurveyStatsBar` with thumbs-up/sideways/down emoji (👍/👉/👎) based on audio quality color thresholds
+- Survey field tips: added 4th step to survey setup wizard (Field Tips) with 7 best-practice tips (walk steady, wind, mic placement, silence, timing, repeatability, battery)
+- Map scroll freeze fix: replaced `AbsorbPointer` with `IgnorePointer` on inline survey map in session review; map is now a non-interactive preview with separate fullscreen button overlay
+- Resume confirmation: `_continueSurvey()` now shows AlertDialog asking user to confirm before resuming a survey session
+- Explore help consistency: converted `_showExploreHelp` from `AlertDialog` to `DraggableScrollableSheet` bottom sheet matching session review's `_SessionHelpSheet` pattern
+- Session view modes: added detailed (existing), compact (ListTile-based), and by-species (ExpansionTile grouped by species with thumbnails) views to session library; view toggle in AppBar
+- Removed unused `_onMapCameraMove` method from session review (inline map is now non-interactive)
+- 16 new l10n keys (EN + DE): survey field tips (8), resume dialog (3), session view modes (5)
+- All 480 tests passing, `flutter analyze` clean (zero errors)
+
+**Files Modified:**
+- `lib/features/survey/widgets/survey_stats_bar.dart` — emoji audio quality indicator
+- `lib/features/survey/survey_setup_screen.dart` — 4th step (Field Tips), `_FieldTipsStep` widget
+- `lib/features/history/session_review_screen.dart` — map freeze fix (IgnorePointer), resume confirmation dialog, removed unused `_onMapCameraMove`
+- `lib/features/explore/explore_screen.dart` — help overlay converted to bottom sheet (`_ExploreHelpSheet`)
+- `lib/features/history/session_library_screen.dart` — `_ViewMode` enum, view toggle, `_CompactSessionTile`, `_SpeciesGroupedView`
+- `lib/l10n/app_en.arb` — 16 new keys
+- `lib/l10n/app_de.arb` — 16 new keys (German)
 
 ### 2026-04-13 — Survey Mode UX Polish
 
