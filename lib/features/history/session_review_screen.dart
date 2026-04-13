@@ -1401,8 +1401,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                           sessionStart: widget.session.startTime,
                           isExpanded: isExpanded,
                           isActive: isActive,
-                          isSurvey:
-                              widget.session.type == SessionType.survey,
+                          isSurvey: widget.session.type == SessionType.survey,
                           onToggleExpand: () => setState(() {
                             if (isExpanded) {
                               _expandedSpecies.remove(group.scientificName);

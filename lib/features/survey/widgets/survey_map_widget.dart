@@ -198,8 +198,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
 
     for (final det in detectionsByLocation.values) {
       final isHighlighted = widget.highlightedDetection != null &&
-          det.scientificName ==
-              widget.highlightedDetection!.scientificName &&
+          det.scientificName == widget.highlightedDetection!.scientificName &&
           det.timestamp == widget.highlightedDetection!.timestamp;
 
       markers.add(
@@ -401,11 +400,13 @@ class _SpeciesMarker extends StatelessWidget {
           fit: BoxFit.cover,
           placeholder: (_, __) => Container(
             color: borderColor.withAlpha(60),
-            child: Icon(Icons.music_note, size: size * 0.45, color: borderColor),
+            child:
+                Icon(Icons.music_note, size: size * 0.45, color: borderColor),
           ),
           errorWidget: (_, __, ___) => Container(
             color: borderColor.withAlpha(60),
-            child: Icon(Icons.music_note, size: size * 0.45, color: borderColor),
+            child:
+                Icon(Icons.music_note, size: size * 0.45, color: borderColor),
           ),
         ),
       ),
