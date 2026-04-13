@@ -596,7 +596,11 @@ class _SurveySummaryTab extends StatelessWidget {
     }
 
     final sorted = speciesCounts.values.toList()
-      ..sort((a, b) => b.count.compareTo(a.count));
+      ..sort((a, b) {
+        final cmp = b.count.compareTo(a.count);
+        if (cmp != 0) return cmp;
+        return b.bestConfidence.compareTo(a.bestConfidence);
+      });
 
     final elapsed = DateTime.now().difference(session!.startTime);
     final rate = elapsed.inSeconds > 0
@@ -631,11 +635,22 @@ class _SurveySummaryTab extends StatelessWidget {
         const SizedBox(height: 8),
 
         // Species list.
-        for (final sp in sorted)
+        for (final (i, sp) in sorted.indexed)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 2),
             child: Row(
               children: [
+                SizedBox(
+                  width: 20,
+                  child: Text(
+                    '${i + 1}',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(100),
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+                const SizedBox(width: 4),
                 SizedBox(
                   width: 28,
                   child: Text(
@@ -659,6 +674,7 @@ class _SurveySummaryTab extends StatelessWidget {
                 Text(
                   '${(sp.bestConfidence * 100).toStringAsFixed(0)}%',
                   style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
                     color: sp.bestConfidence >= 0.7
                         ? Colors.green
                         : sp.bestConfidence >= 0.4

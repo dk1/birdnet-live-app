@@ -21,6 +21,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/map_picker_screen.dart';
+import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
 import '../settings/settings_screen.dart';
 import 'survey_live_screen.dart';
@@ -560,12 +561,50 @@ class _ParametersStep extends ConsumerWidget {
     final recordingMode = ref.watch(surveyRecordingModeProvider);
     final sampling = ref.watch(surveyDetectionSamplingProvider);
     final topN = ref.watch(surveyTopNPerSpeciesProvider);
+    final devicesAsync = ref.watch(inputDevicesProvider);
+    final selectedDevice = ref.watch(selectedDeviceProvider);
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       children: [
         Text(l10n.surveyParametersTitle, style: theme.textTheme.titleSmall),
         const SizedBox(height: 16),
+
+        // Microphone input
+        devicesAsync.when(
+          loading: () => ListTile(
+            leading: const Icon(Icons.mic_rounded),
+            title: Text(l10n.surveyMicrophone),
+            trailing: const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+          error: (_, __) => ListTile(
+            leading: const Icon(Icons.mic_rounded),
+            title: Text(l10n.surveyMicrophone),
+            trailing: const Text('—'),
+          ),
+          data: (devices) {
+            final label = selectedDevice == null
+                ? l10n.surveyMicSystemDefault
+                : devices
+                        .where((d) => d.id == selectedDevice)
+                        .map((d) => d.label.isEmpty ? d.id : d.label)
+                        .firstOrNull ??
+                    selectedDevice;
+            return ListTile(
+              leading: const Icon(Icons.mic_rounded),
+              title: Text(l10n.surveyMicrophone),
+              trailing: Text(label, style: theme.textTheme.bodySmall),
+              onTap: () => _showDevicePicker(
+                  context, ref, l10n, devices, selectedDevice),
+            );
+          },
+        ),
+
+        const Divider(height: 32),
 
         // Inference rate
         ListTile(
@@ -682,6 +721,54 @@ class _ParametersStep extends ConsumerWidget {
           ),
         ],
       ],
+    );
+  }
+
+  void _showDevicePicker(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    List<InputDeviceInfo> devices,
+    String? selected,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                l10n.surveyMicSelect,
+                style:
+                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              ),
+            ),
+            RadioListTile<String?>(
+              title: Text(l10n.surveyMicSystemDefault),
+              value: null,
+              groupValue: selected,
+              onChanged: (v) {
+                ref.read(selectedDeviceProvider.notifier).state = v;
+                Navigator.of(ctx).pop();
+              },
+            ),
+            ...devices.map(
+              (d) => RadioListTile<String?>(
+                title: Text(d.label.isEmpty ? d.id : d.label),
+                value: d.id,
+                groupValue: selected,
+                onChanged: (v) {
+                  ref.read(selectedDeviceProvider.notifier).state = v;
+                  Navigator.of(ctx).pop();
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
     );
   }
 }

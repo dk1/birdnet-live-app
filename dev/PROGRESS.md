@@ -8,9 +8,9 @@ This file tracks development progress. Update after each work session.
 
 | Item | Status |
 |------|--------|
-| Current Step | Help Screen & Home Footer |
+| Current Step | Survey Setup Mic Input & Summary Ranking |
 | Last Updated | 2026-04-13 |
-| Version | 0.2.4+33 |
+| Version | 0.2.5+34 |
 | Unit Tests | 480 passing |
 | Integration Tests | 3 (geo_soundscape, memory_stress, model_output) |
 | Blockers | None |
@@ -18,6 +18,23 @@ This file tracks development progress. Update after each work session.
 ---
 
 ## Progress Log
+
+### 2026-04-13 — Survey Setup Mic Input & Summary Ranking
+
+**Completed:**
+- Microphone input selector in survey setup: added device picker tile to `_ParametersStep` using `inputDevicesProvider` + `selectedDeviceProvider` with bottom-sheet radio picker (System default + device list)
+- Survey summary tab ranking: species sorted by detection count descending, then max confidence as tiebreaker; rank numbers shown next to each species; max confidence display bolded
+- 3 new l10n keys (EN + DE): `surveyMicrophone`, `surveyMicSystemDefault`, `surveyMicSelect`
+- All 480 tests passing, `flutter analyze` clean
+
+**Files Modified:**
+- `lib/features/survey/survey_setup_screen.dart` — import `audio_providers.dart`, mic picker tile + `_showDevicePicker()` in `_ParametersStep`
+- `lib/features/survey/survey_live_screen.dart` — summary sort by count+confidence, rank numbers, bold max score
+- `lib/l10n/app_en.arb` — 3 new keys
+- `lib/l10n/app_de.arb` — 3 new keys (German)
+- `pubspec.yaml` — version 0.2.5+34
+- `CHANGELOG.md` — v0.2.5 entry
+- `README.md` — version badge synced
 
 ### 2026-04-13 — Help Screen & Home Footer
 

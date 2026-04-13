@@ -1374,6 +1374,18 @@
   "@surveyTopNPerSpecies": {
     "description": "Label for top N slider"
   },
+  "surveyMicrophone": "Microphone",
+  "@surveyMicrophone": {
+    "description": "Label for microphone selector in survey setup"
+  },
+  "surveyMicSystemDefault": "System default",
+  "@surveyMicSystemDefault": {
+    "description": "Default microphone option"
+  },
+  "surveyMicSelect": "Select microphone",
+  "@surveyMicSelect": {
+    "description": "Title for microphone picker bottom sheet"
+  },
   "surveyReadyTitle": "Ready",
   "@surveyReadyTitle": {
     "description": "Title for the ready step"

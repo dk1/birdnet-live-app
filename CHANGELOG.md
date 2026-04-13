@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] — 2026-04-13
+
+### Added
+- Microphone input selector in survey setup wizard (Parameters step) — pick input device before starting a survey
+- Survey summary tab now shows rank numbers and sorts species by detection count then max confidence as tiebreaker
+
 ## [0.2.4] — 2026-04-13
 
 ### Added
