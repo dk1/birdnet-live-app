@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-BirdNET Live is a Flutter mobile app (Android/iOS/Windows) for real-time bird species identification using on-device ONNX inference. It detects bird calls from microphone audio and shows results alongside a live spectrogram.
+BirdNET Live is a Flutter mobile app (Android/iOS/Windows) for real-time species identification using on-device ONNX inference. It detects bird and other animal calls from microphone audio and shows results alongside a live spectrogram. Modes include Live, Point Count, Survey (GPS transect), and File Analysis.
 
 ## Tech Stack
 
@@ -21,7 +21,7 @@ Feature-based architecture under `lib/`:
 ```
 lib/
   core/          # App-wide constants, services, themes
-  shared/        # Shared models, providers, services (not feature-specific)
+  shared/        # Shared models, providers, services, widgets (not feature-specific)
   features/      # Feature modules (each with screen, providers, widgets)
     live/        # Live identification mode
     point_count/ # Timed point-count survey mode
@@ -79,7 +79,8 @@ Species images and descriptions come from `https://birdnet.cornell.edu/taxonomy/
 ## Coding Conventions
 
 - **American English**: All code, comments, documentation, and user-facing strings must use American English spelling (e.g., "color" not "colour", "initialize" not "initialise", "behavior" not "behaviour", "analyze" not "analyse", "center" not "centre", "serialize" not "serialise").
-- **Localization**: All user-facing strings go in `lib/l10n/app_en.arb` (English) and `app_de.arb` (German). Use `l10n.keyName` in widgets.
+- **Localization**: All user-facing strings go in `lib/l10n/app_en.arb` (English) and `app_de.arb` (German). Use `l10n.keyName` in widgets. Technical terms (Point Count, Survey, Session, Live Mode) and format identifiers (WAV, FLAC, CSV, JSON, GPX) stay in English in all locales.
+- **Responsive layouts**: Screens support portrait and landscape orientations. Tablet screens use `ContentWidthConstraint` (600 dp max-width) from `shared/widgets/`.
 - **Settings**: Add new settings via `PrefKeys` constant + provider in `settings_providers.dart` + UI in `settings_screen.dart` with `_sectionContexts` mapping.
 - **File headers**: Each Dart file has a `// ===...` block comment explaining purpose, usage, and design rationale.
 - **Tests**: Unit tests mirror the `lib/` structure under `test/`. Use `flutter test` to run.

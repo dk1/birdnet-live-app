@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Landscape layouts for Home, Live, Point Count, Survey Live, and Session Review screens
+- Tablet max-width constraint (600 dp) applied to 8 screens via shared `ContentWidthConstraint` widget
+- Comprehensive localization: ~40 new l10n keys covering settings labels, live screen status texts, detection list states, color map names, recording mode options, and microphone settings (English + German)
+- German technical term consistency: Point Count, Survey, and Session kept in English across the German UI
+
+### Changed
+- Home screen footer: single `Wrap` with all 5 buttons replacing two-row layout
+- Mode card descriptions rewritten as action-oriented phrases (English + German)
+- Help text updated to be taxonomically agnostic ("species" instead of "bird species", "animal sounds" instead of "birdsong")
+
 ## [0.2.6] — 2026-04-13
 
 ### Fixed

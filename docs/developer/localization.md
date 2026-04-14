@@ -4,7 +4,7 @@ Internationalization with ARB files.
 
 ## Overview
 
-BirdNET Live uses Flutter's built-in localization system with ARB (Application Resource Bundle) files.
+BirdNET Live uses Flutter's built-in localization system with ARB (Application Resource Bundle) files. All user-facing strings are localized — no hardcoded English in widgets.
 
 ## Supported Languages
 
@@ -12,6 +12,15 @@ BirdNET Live uses Flutter's built-in localization system with ARB (Application R
 |----------|------|--------|
 | English | `lib/l10n/app_en.arb` | Complete |
 | German | `lib/l10n/app_de.arb` | Complete |
+
+## Translation Conventions
+
+- **Technical terms kept in English**: Point Count, Survey, Session, Live Mode — these are established field terminology and are not translated in the German UI.
+- **Format identifiers kept as-is**: WAV, FLAC, CSV, JSON, GPX, Raven Selection Table.
+- **Language names untranslated**: "English", "Deutsch", "System" appear as-is in the language picker.
+- **Gain**: Kept as "Gain" in both languages (universal audio term).
+- **Settings labels**: All setting titles, mode names, color map names, and status messages are localized.
+- **Help text**: Written to be taxonomically agnostic ("species" not "bird species", "animal sounds" not "birdsong").
 
 ## Adding a String
 
