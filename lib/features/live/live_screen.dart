@@ -483,6 +483,7 @@ class _CompactStatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final isActive = liveState == LiveState.active;
     final isLoading = liveState == LiveState.loading;
 
@@ -490,22 +491,22 @@ class _CompactStatusBar extends StatelessWidget {
     Color statusColor;
 
     if (isActive) {
-      statusText = 'Identifying species…';
+      statusText = l10n.statusIdentifying;
       statusColor = theme.colorScheme.primary;
     } else if (liveState == LiveState.paused) {
-      statusText = 'Paused';
+      statusText = l10n.statusPaused;
       statusColor = theme.colorScheme.onSurface.withAlpha(180);
     } else if (isLoading) {
-      statusText = 'Loading model…';
+      statusText = l10n.statusLoadingModel;
       statusColor = theme.colorScheme.onSurface.withAlpha(153);
     } else if (liveState == LiveState.error) {
-      statusText = 'Error';
+      statusText = l10n.statusError;
       statusColor = theme.colorScheme.error;
     } else if (liveState == LiveState.ready) {
-      statusText = 'Ready';
+      statusText = l10n.statusReady;
       statusColor = theme.colorScheme.onSurface;
     } else {
-      statusText = 'Initialising…';
+      statusText = l10n.statusInitializing;
       statusColor = theme.colorScheme.onSurface.withAlpha(153);
     }
 
@@ -519,7 +520,7 @@ class _CompactStatusBar extends StatelessWidget {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             onPressed: () => Navigator.of(context).maybePop(),
-            tooltip: 'Back',
+            tooltip: l10n.tooltipBack,
           ),
 
           // Status text.
@@ -552,7 +553,7 @@ class _CompactStatusBar extends StatelessWidget {
                 ),
               );
             },
-            tooltip: 'Settings',
+            tooltip: l10n.settings,
           ),
         ],
       ),
@@ -654,7 +655,7 @@ class _StatusBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Model loading failed. Check assets.',
+              AppLocalizations.of(context)!.modelLoadFailed,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onErrorContainer,
               ),
@@ -664,7 +665,7 @@ class _StatusBanner extends StatelessWidget {
             onPressed: () {
               ref.read(liveControllerProvider).loadModel();
             },
-            child: const Text('Retry'),
+            child: Text(AppLocalizations.of(context)!.retry),
           ),
         ],
       ),

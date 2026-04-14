@@ -153,7 +153,7 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (v) => ref.read(audioGainProvider.notifier).set(v),
             ),
             _SliderTile(
-              title: 'High-pass filter (Hz)',
+              title: l10n.settingsHighPassFilter,
               value: ref.watch(highPassFilterProvider),
               min: 0,
               max: 500,
@@ -173,14 +173,14 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: l10n.settingsInferenceDescription,
             ),
             _ChoiceTile<int>(
-              title: 'Window duration',
+              title: l10n.settingsWindowDuration,
               value: ref.watch(windowDurationProvider),
               options: const {3: '3s', 5: '5s', 10: '10s'},
               onChanged: (v) =>
                   ref.read(windowDurationProvider.notifier).set(v),
             ),
             _SliderTile(
-              title: 'Confidence threshold',
+              title: l10n.settingsConfidenceThreshold,
               value: ref.watch(confidenceThresholdProvider).toDouble(),
               min: 0,
               max: 100,
@@ -199,7 +199,7 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (v) => ref.read(sensitivityProvider.notifier).set(v),
             ),
             _ChoiceTile<double>(
-              title: 'Inference rate',
+              title: l10n.settingsInferenceRate,
               value: ref.watch(inferenceRateProvider),
               options: {
                 0.25: '0.25 Hz',
@@ -230,7 +230,7 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: l10n.settingsSpectrogramDescription,
             ),
             _ChoiceTile<int>(
-              title: 'FFT size',
+              title: l10n.settingsFftSize,
               value: ref.watch(fftSizeProvider),
               options: const {
                 512: '512',
@@ -241,17 +241,17 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (v) => ref.read(fftSizeProvider.notifier).set(v),
             ),
             _ChoiceTile<String>(
-              title: 'Color map',
+              title: l10n.settingsColorMap,
               value: ref.watch(colorMapProvider),
-              options: const {
-                'viridis': 'Viridis',
-                'magma': 'Magma',
-                'grayscale': 'Grayscale',
+              options: {
+                'viridis': l10n.settingsColorMapViridis,
+                'magma': l10n.settingsColorMapMagma,
+                'grayscale': l10n.settingsColorMapGrayscale,
               },
               onChanged: (v) => ref.read(colorMapProvider.notifier).set(v),
             ),
             _ChoiceTile<int>(
-              title: 'Duration (scroll speed)',
+              title: l10n.settingsSpectrogramDuration,
               value: ref.watch(spectrogramDurationProvider),
               options: const {
                 5: '5 s',
@@ -264,7 +264,7 @@ class SettingsScreen extends ConsumerWidget {
                   ref.read(spectrogramDurationProvider.notifier).set(v),
             ),
             _ChoiceTile<int>(
-              title: 'Frequency range',
+              title: l10n.settingsFrequencyRange,
               value: ref.watch(spectrogramMaxFreqProvider),
               options: const {
                 4000: '4 kHz',
@@ -278,8 +278,8 @@ class SettingsScreen extends ConsumerWidget {
                   ref.read(spectrogramMaxFreqProvider.notifier).set(v),
             ),
             SwitchListTile(
-              title: const Text('Log amplitude'),
-              subtitle: const Text('Logarithmic scaling for better visibility'),
+              title: Text(l10n.settingsLogAmplitude),
+              subtitle: Text(l10n.settingsLogAmplitudeDescription),
               value: ref.watch(logAmplitudeProvider),
               onChanged: (v) => ref.read(logAmplitudeProvider.notifier).set(v),
             ),
@@ -293,19 +293,19 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: l10n.settingsRecordingDescription,
             ),
             _ChoiceTile<String>(
-              title: 'Format',
+              title: l10n.settingsRecordingFormat,
               value: ref.watch(recordingFormatProvider),
               options: const {'wav': 'WAV', 'flac': 'FLAC'},
               onChanged: (v) =>
                   ref.read(recordingFormatProvider.notifier).set(v),
             ),
             _ChoiceTile<String>(
-              title: 'Mode',
+              title: l10n.settingsRecordingMode,
               value: ref.watch(recordingModeProvider),
-              options: const {
-                'off': 'Off',
-                'full': 'Full',
-                'detections': 'Detections only',
+              options: {
+                'off': l10n.settingsRecordingModeOff,
+                'full': l10n.settingsRecordingModeFull,
+                'detections': l10n.settingsRecordingModeDetections,
               },
               onChanged: (v) => ref.read(recordingModeProvider.notifier).set(v),
             ),
@@ -378,7 +378,7 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: l10n.settingsExportDescription,
             ),
             _ChoiceTile<String>(
-              title: 'Format',
+              title: l10n.settingsExportFormat,
               value: ref.watch(exportFormatProvider),
               options: const {
                 'raven': 'Raven Selection Table',
@@ -389,7 +389,7 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (v) => ref.read(exportFormatProvider.notifier).set(v),
             ),
             SwitchListTile(
-              title: const Text('Include audio files'),
+              title: Text(l10n.settingsIncludeAudioFiles),
               value: ref.watch(includeAudioProvider),
               onChanged: (v) => ref.read(includeAudioProvider.notifier).set(v),
             ),
@@ -769,23 +769,25 @@ class _MicInputTile extends ConsumerWidget {
     final devicesAsync = ref.watch(inputDevicesProvider);
     final selected = ref.watch(selectedDeviceProvider);
 
+    final l10n = AppLocalizations.of(context)!;
+
     return devicesAsync.when(
-      loading: () => const ListTile(
-        title: Text('Microphone'),
-        trailing: SizedBox(
+      loading: () => ListTile(
+        title: Text(l10n.settingsMicrophone),
+        trailing: const SizedBox(
           width: 24,
           height: 24,
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
       ),
-      error: (_, __) => const ListTile(
-        title: Text('Microphone'),
-        trailing: Text('Error'),
+      error: (_, __) => ListTile(
+        title: Text(l10n.settingsMicrophone),
+        trailing: Text(l10n.statusError),
       ),
       data: (devices) {
         // Find the label for the currently selected device.
         final selectedLabel = selected == null
-            ? 'System default'
+            ? l10n.settingsSystemDefault
             : devices
                     .where((d) => d.id == selected)
                     .map((d) => d.label.isEmpty ? d.id : d.label)
@@ -793,7 +795,7 @@ class _MicInputTile extends ConsumerWidget {
                 selected;
 
         return ListTile(
-          title: const Text('Microphone'),
+          title: Text(l10n.settingsMicrophone),
           trailing: Text(
             selectedLabel,
             style: Theme.of(context).textTheme.bodySmall,
@@ -817,15 +819,17 @@ class _MicInputTile extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Text(
-                  'Select microphone',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                  AppLocalizations.of(context)!.settingsSelectMicrophone,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 16),
                 ),
               ),
               RadioListTile<String?>(
-                title: const Text('System default'),
+                title:
+                    Text(AppLocalizations.of(context)!.settingsSystemDefault),
                 value: null,
                 groupValue: selected,
                 onChanged: (v) {

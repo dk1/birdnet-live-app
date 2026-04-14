@@ -372,7 +372,7 @@ class _ModeCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Footer — 5 items in two rows (3 + 2)
+// Footer — 5 items that wrap naturally
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _Footer extends StatelessWidget {
@@ -383,65 +383,50 @@ class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = theme.colorScheme.onSurface.withAlpha(153);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 12,
       children: [
-        // ── Row 1: Settings, Explore, Sessions ──
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _FooterButton(
-              icon: Icons.tune_rounded,
-              label: l10n.settings,
-              color: color,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
-              ),
-            ),
-            const SizedBox(width: 12),
-            _FooterButton(
-              icon: Icons.search_rounded,
-              label: l10n.exploreMode,
-              color: color,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const ExploreScreen()),
-              ),
-            ),
-            const SizedBox(width: 12),
-            _FooterButton(
-              icon: Icons.library_music_outlined,
-              label: l10n.sessionLibraryTitle,
-              color: color,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                    builder: (_) => const SessionLibraryScreen()),
-              ),
-            ),
-          ],
+        _FooterButton(
+          icon: Icons.tune_rounded,
+          label: l10n.settings,
+          color: color,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+          ),
         ),
-        const SizedBox(height: 4),
-        // ── Row 2: Help, About ──
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _FooterButton(
-              icon: Icons.help_outline_rounded,
-              label: l10n.helpTitle,
-              color: color,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const HelpScreen()),
-              ),
-            ),
-            const SizedBox(width: 12),
-            _FooterButton(
-              icon: Icons.info_outline,
-              label: l10n.about,
-              color: color,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
-              ),
-            ),
-          ],
+        _FooterButton(
+          icon: Icons.search_rounded,
+          label: l10n.exploreMode,
+          color: color,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const ExploreScreen()),
+          ),
+        ),
+        _FooterButton(
+          icon: Icons.library_music_outlined,
+          label: l10n.sessionLibraryTitle,
+          color: color,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+                builder: (_) => const SessionLibraryScreen()),
+          ),
+        ),
+        _FooterButton(
+          icon: Icons.help_outline_rounded,
+          label: l10n.helpTitle,
+          color: color,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const HelpScreen()),
+          ),
+        ),
+        _FooterButton(
+          icon: Icons.info_outline,
+          label: l10n.about,
+          color: color,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
+          ),
         ),
       ],
     );

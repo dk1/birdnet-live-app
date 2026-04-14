@@ -476,7 +476,7 @@ class _CountdownStatusBar extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Loading model…',
+                          l10n.statusLoadingModel,
                           style: theme.textTheme.titleSmall?.copyWith(
                             color: theme.colorScheme.onSurface.withAlpha(153),
                           ),
