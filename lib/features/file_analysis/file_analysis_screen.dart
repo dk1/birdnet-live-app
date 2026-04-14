@@ -36,6 +36,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../core/services/reverse_geocoding_service.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../explore/explore_providers.dart';
 import '../history/session_review_screen.dart';
@@ -329,7 +330,8 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
                 )
               : null,
         ),
-        body: Column(
+        body: ContentWidthConstraint(
+            child: Column(
           children: [
             // ── Step indicator ─────────────────────────────────────
             _StepIndicator(
@@ -414,7 +416,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
                 onAnalyze: _currentStep == 3 ? _startAnalysis : null,
               ),
           ],
-        ),
+        )),
       ),
     );
   }

@@ -23,6 +23,18 @@ Live Mode is the primary feature of BirdNET Live. It uses your device's micropho
 | **Detection list** | Species detections sorted by confidence (bottom ~60%) |
 | **Capture button** | Mic (start), pause, or stop button (bottom center) |
 
+In **landscape orientation**, the spectrogram and detection list are placed side by side instead of stacked vertically.
+
+### Detection List States
+
+The detection list shows contextual messages depending on the session state:
+
+| State | Message |
+|-------|---------|
+| Session active, no detections yet | "Listening…" with a progress indicator |
+| Session active, detections present | "Detections" header with species cards |
+| Session not started | "Start a session to identify species" |
+
 ## Session Lifecycle
 
 ```

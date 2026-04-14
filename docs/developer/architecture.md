@@ -7,20 +7,30 @@ Application architecture and design patterns.
 The codebase is organized by feature rather than by layer. Each feature module contains its own screen, providers, widgets, and services:
 
 ```
-lib/features/live/
-  live_controller.dart       # Business logic + state machine
-  live_screen.dart           # UI (Scaffold, spectrogram, detection list)
-  live_session.dart          # Data models (LiveSession, DetectionRecord)
-  live_providers.dart        # Riverpod providers
-  widgets/
-    detection_list_widget.dart
+lib/features/
+  live/              # Real-time identification pipeline + UI
+  point_count/       # Timed point-count survey mode
+  survey/            # Long-running transect survey mode (GPS, sampling, map)
+  file_analysis/     # Offline file analysis wizard
+  explore/           # Species exploration by location (geo-model)
+  audio/             # Audio capture, ring buffer
+  inference/         # ONNX model wrappers (classifier, geo-model)
+  history/           # Session persistence, library, review, export
+  settings/          # Settings screen (context-aware filtering)
+  home/              # Home screen / main menu + help screen
+  about/             # Credits, links, legal
+  onboarding/        # Intro carousel + terms gate
+  recording/         # WAV/FLAC writing (full + detection clips)
+  spectrogram/       # FFT, color maps, CustomPainter
 ```
+
+Shared utilities live under `lib/shared/` (models, providers, services) and `lib/core/` (constants, theme). Reusable widgets such as `ContentWidthConstraint` (600 dp max-width for tablet layouts) are in `lib/shared/widgets/`.
 
 ## Key Design Decisions
 
 ### On-Device Inference
 
-All classification runs locally using ONNX Runtime. No audio data leaves the device. The model file (~259 MB) is extracted from the APK asset bundle to disk on first launch, and the inference isolate loads it by file path to avoid serializing large byte arrays.
+All classification runs locally using ONNX Runtime. No audio data leaves the device. The model file (~152 MB) is extracted from the APK asset bundle to disk on first launch, and the inference isolate loads it by file path to avoid serializing large byte arrays.
 
 ### Background Isolate for Inference
 

@@ -34,32 +34,97 @@ class HomeScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: isLandscape ? 48 : 24,
+                vertical: isLandscape ? 12 : 0,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
+                child: isLandscape
+                    ? _LandscapeHomeLayout(l10n: l10n, theme: theme)
+                    : _PortraitHomeLayout(l10n: l10n, theme: theme),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Portrait Layout — Original vertical arrangement
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _PortraitHomeLayout extends ConsumerWidget {
+  const _PortraitHomeLayout({required this.l10n, required this.theme});
+  final AppLocalizations l10n;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        const SizedBox(height: 32),
+        _LogoHeader(l10n: l10n, theme: theme),
+        const SizedBox(height: 24),
+        _ModeGrid(l10n: l10n, theme: theme),
+        const SizedBox(height: 24),
+        _Footer(l10n: l10n, theme: theme),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Landscape Layout — Logo + title left, grid + footer right
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _LandscapeHomeLayout extends ConsumerWidget {
+  const _LandscapeHomeLayout({required this.l10n, required this.theme});
+  final AppLocalizations l10n;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // ── Left: compact logo + title ────────────────────────
+        Expanded(
+          flex: 2,
+          child: _LogoHeader(
+            l10n: l10n,
+            theme: theme,
+            compact: true,
+          ),
+        ),
+        const SizedBox(width: 32),
+        // ── Right: mode grid + footer ─────────────────────────
+        Expanded(
+          flex: 3,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 32),
-
-              // ── Logo + Title ─────────────────────────────────
-              _LogoHeader(l10n: l10n, theme: theme),
-
-              const Spacer(),
-
-              // ── Mode Grid ────────────────────────────────────
-              _ModeGrid(l10n: l10n, theme: theme),
-
-              const Spacer(),
-
-              // ── Footer ───────────────────────────────────────
-              _Footer(l10n: l10n, theme: theme),
-
+              _ModeGrid(l10n: l10n, theme: theme, landscape: true),
               const SizedBox(height: 16),
+              _Footer(l10n: l10n, theme: theme),
             ],
           ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -69,39 +134,45 @@ class HomeScreen extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _LogoHeader extends ConsumerWidget {
-  const _LogoHeader({required this.l10n, required this.theme});
+  const _LogoHeader({
+    required this.l10n,
+    required this.theme,
+    this.compact = false,
+  });
   final AppLocalizations l10n;
   final ThemeData theme;
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final packageInfo = ref.watch(packageInfoProvider);
+    final logoSize = compact ? 72.0 : 120.0;
     return Column(
       children: [
         // Circular logo with subtle glow.
         Container(
-          width: 120,
-          height: 120,
+          width: logoSize,
+          height: logoSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
                 color: theme.colorScheme.primary.withAlpha(60),
-                blurRadius: 32,
-                spreadRadius: 4,
+                blurRadius: compact ? 16 : 32,
+                spreadRadius: compact ? 2 : 4,
               ),
             ],
           ),
           child: ClipOval(
             child: Image.asset(
               'assets/images/app-icon.png',
-              width: 120,
-              height: 120,
+              width: logoSize,
+              height: logoSize,
               fit: BoxFit.cover,
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: compact ? 12 : 20),
         Text(
           l10n.appTitle,
           style: theme.textTheme.headlineMedium?.copyWith(
@@ -137,21 +208,26 @@ class _LogoHeader extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _ModeGrid extends StatelessWidget {
-  const _ModeGrid({required this.l10n, required this.theme});
+  const _ModeGrid({
+    required this.l10n,
+    required this.theme,
+    this.landscape = false,
+  });
   final AppLocalizations l10n;
   final ThemeData theme;
+  final bool landscape;
 
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 400),
+      constraints: BoxConstraints(maxWidth: landscape ? 500 : 400),
       child: GridView.count(
         crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisSpacing: landscape ? 12 : 16,
+        mainAxisSpacing: landscape ? 12 : 16,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        childAspectRatio: 1.0,
+        childAspectRatio: landscape ? 1.6 : 1.0,
         children: [
           _ModeCard(
             icon: Icons.mic_rounded,
@@ -272,16 +348,20 @@ class _ModeCard extends StatelessWidget {
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
-              Text(
-                description,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withAlpha(100),
-                  fontSize: 11,
+              Flexible(
+                child: Text(
+                  description,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withAlpha(100),
+                    fontSize: 11,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -292,7 +372,7 @@ class _ModeCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Footer — 5 items in two rows (3 + 2)
+// Footer — 5 items that wrap naturally
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _Footer extends StatelessWidget {
@@ -303,65 +383,50 @@ class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = theme.colorScheme.onSurface.withAlpha(153);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 12,
       children: [
-        // ── Row 1: Settings, Explore, Sessions ──
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _FooterButton(
-              icon: Icons.tune_rounded,
-              label: l10n.settings,
-              color: color,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
-              ),
-            ),
-            const SizedBox(width: 12),
-            _FooterButton(
-              icon: Icons.search_rounded,
-              label: l10n.exploreMode,
-              color: color,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const ExploreScreen()),
-              ),
-            ),
-            const SizedBox(width: 12),
-            _FooterButton(
-              icon: Icons.library_music_outlined,
-              label: l10n.sessionLibraryTitle,
-              color: color,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                    builder: (_) => const SessionLibraryScreen()),
-              ),
-            ),
-          ],
+        _FooterButton(
+          icon: Icons.tune_rounded,
+          label: l10n.settings,
+          color: color,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+          ),
         ),
-        const SizedBox(height: 4),
-        // ── Row 2: Help, About ──
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _FooterButton(
-              icon: Icons.help_outline_rounded,
-              label: l10n.helpTitle,
-              color: color,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const HelpScreen()),
-              ),
-            ),
-            const SizedBox(width: 12),
-            _FooterButton(
-              icon: Icons.info_outline,
-              label: l10n.about,
-              color: color,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
-              ),
-            ),
-          ],
+        _FooterButton(
+          icon: Icons.search_rounded,
+          label: l10n.exploreMode,
+          color: color,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const ExploreScreen()),
+          ),
+        ),
+        _FooterButton(
+          icon: Icons.library_music_outlined,
+          label: l10n.sessionLibraryTitle,
+          color: color,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+                builder: (_) => const SessionLibraryScreen()),
+          ),
+        ),
+        _FooterButton(
+          icon: Icons.help_outline_rounded,
+          label: l10n.helpTitle,
+          color: color,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const HelpScreen()),
+          ),
+        ),
+        _FooterButton(
+          icon: Icons.info_outline,
+          label: l10n.about,
+          color: color,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
+          ),
         ),
       ],
     );

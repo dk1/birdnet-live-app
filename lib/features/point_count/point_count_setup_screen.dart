@@ -21,6 +21,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../explore/explore_providers.dart';
 import '../settings/settings_screen.dart';
@@ -143,7 +144,8 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
+        child: ContentWidthConstraint(
+            child: Column(
           children: [
             // Step indicator
             _StepIndicator(currentStep: _step, totalSteps: _totalSteps),
@@ -205,7 +207,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
               ),
             ),
           ],
-        ),
+        )),
       ),
     );
   }

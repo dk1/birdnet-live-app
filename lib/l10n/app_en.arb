@@ -349,19 +349,19 @@
   "@homeSubtitle": {
     "description": "Subtitle shown on the main menu screen"
   },
-  "liveModeDescription": "Real-time species ID",
+  "liveModeDescription": "Listen and identify species in real time",
   "@liveModeDescription": {
     "description": "Description for Live mode on the main menu"
   },
-  "surveyModeDescription": "Background biodiversity monitoring",
+  "surveyModeDescription": "Walk a transect and map species along the way",
   "@surveyModeDescription": {
     "description": "Description for Survey mode on the main menu"
   },
-  "pointCountModeDescription": "Timed point count surveys",
+  "pointCountModeDescription": "Record species at a fixed point for a set duration",
   "@pointCountModeDescription": {
     "description": "Description for Point Count mode on the main menu"
   },
-  "fileAnalysisModeDescription": "Analyze field recordings offline",
+  "fileAnalysisModeDescription": "Analyze pre-recorded audio files offline",
   "@fileAnalysisModeDescription": {
     "description": "Description for File Analysis mode on the main menu"
   },
@@ -1649,5 +1649,151 @@
   "helpTipGeoFilter": "Enable the species filter in settings to limit results to species expected at your location.",
   "@helpTipGeoFilter": {
     "description": "Tip about geographic filtering"
+  },
+
+  "statusIdentifying": "Identifying species…",
+  "@statusIdentifying": {
+    "description": "Status text while actively identifying species"
+  },
+  "statusPaused": "Paused",
+  "@statusPaused": {
+    "description": "Status text when identification is paused"
+  },
+  "statusLoadingModel": "Loading model…",
+  "@statusLoadingModel": {
+    "description": "Status text while the ONNX model is loading"
+  },
+  "statusError": "Error",
+  "@statusError": {
+    "description": "Status text when an error occurred"
+  },
+  "statusReady": "Ready",
+  "@statusReady": {
+    "description": "Status text when the model is loaded and ready"
+  },
+  "statusInitializing": "Initializing…",
+  "@statusInitializing": {
+    "description": "Status text during app initialization"
+  },
+  "tooltipBack": "Back",
+  "@tooltipBack": {
+    "description": "Tooltip for back navigation button"
+  },
+  "modelLoadFailed": "Model loading failed. Check assets.",
+  "@modelLoadFailed": {
+    "description": "Error message when ONNX model fails to load"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Label for retry button"
+  },
+  "settingsLogAmplitude": "Log amplitude",
+  "@settingsLogAmplitude": {
+    "description": "Setting title for logarithmic amplitude scaling"
+  },
+  "settingsLogAmplitudeDescription": "Logarithmic scaling for better visibility",
+  "@settingsLogAmplitudeDescription": {
+    "description": "Setting subtitle for logarithmic amplitude scaling"
+  },
+  "settingsIncludeAudioFiles": "Include audio files",
+  "@settingsIncludeAudioFiles": {
+    "description": "Setting to include audio files in export"
+  },
+  "settingsMicrophone": "Microphone",
+  "@settingsMicrophone": {
+    "description": "Microphone input device setting label"
+  },
+  "settingsSelectMicrophone": "Select microphone",
+  "@settingsSelectMicrophone": {
+    "description": "Title for microphone picker bottom sheet"
+  },
+  "settingsSystemDefault": "System default",
+  "@settingsSystemDefault": {
+    "description": "Label for system default microphone option"
+  },
+  "settingsRecordingFormat": "Format",
+  "@settingsRecordingFormat": {
+    "description": "Recording format setting label"
+  },
+  "settingsRecordingMode": "Mode",
+  "@settingsRecordingMode": {
+    "description": "Recording mode setting label"
+  },
+  "settingsRecordingModeOff": "Off",
+  "@settingsRecordingModeOff": {
+    "description": "Recording mode option: off"
+  },
+  "settingsRecordingModeFull": "Full",
+  "@settingsRecordingModeFull": {
+    "description": "Recording mode option: full continuous recording"
+  },
+  "settingsRecordingModeDetections": "Detections only",
+  "@settingsRecordingModeDetections": {
+    "description": "Recording mode option: record only when detections occur"
+  },
+
+  "settingsHighPassFilter": "High-pass filter (Hz)",
+  "@settingsHighPassFilter": {
+    "description": "High-pass filter setting label"
+  },
+  "settingsWindowDuration": "Window duration",
+  "@settingsWindowDuration": {
+    "description": "Inference window duration setting label"
+  },
+  "settingsConfidenceThreshold": "Confidence threshold",
+  "@settingsConfidenceThreshold": {
+    "description": "Confidence threshold setting label"
+  },
+  "settingsInferenceRate": "Inference rate",
+  "@settingsInferenceRate": {
+    "description": "Inference rate (inferences per second) setting label"
+  },
+  "settingsFftSize": "FFT size",
+  "@settingsFftSize": {
+    "description": "FFT window size setting label"
+  },
+  "settingsColorMap": "Color map",
+  "@settingsColorMap": {
+    "description": "Spectrogram color map setting label"
+  },
+  "settingsColorMapViridis": "Viridis",
+  "@settingsColorMapViridis": {
+    "description": "Viridis color map option"
+  },
+  "settingsColorMapMagma": "Magma",
+  "@settingsColorMapMagma": {
+    "description": "Magma color map option"
+  },
+  "settingsColorMapGrayscale": "Grayscale",
+  "@settingsColorMapGrayscale": {
+    "description": "Grayscale color map option"
+  },
+  "settingsSpectrogramDuration": "Duration (scroll speed)",
+  "@settingsSpectrogramDuration": {
+    "description": "Spectrogram scroll duration setting label"
+  },
+  "settingsFrequencyRange": "Frequency range",
+  "@settingsFrequencyRange": {
+    "description": "Spectrogram frequency range setting label"
+  },
+  "settingsExportFormat": "Format",
+  "@settingsExportFormat": {
+    "description": "Export format setting label"
+  },
+  "liveListening": "Listening…",
+  "@liveListening": {
+    "description": "Status text while actively listening for species"
+  },
+  "liveDetections": "Detections",
+  "@liveDetections": {
+    "description": "Title for detection list empty state"
+  },
+  "liveSpeciesWillAppear": "Species will appear here when detected",
+  "@liveSpeciesWillAppear": {
+    "description": "Subtitle when actively listening but no detections yet"
+  },
+  "liveStartSession": "Start a session to identify species",
+  "@liveStartSession": {
+    "description": "Subtitle prompting user to start a session"
   }
 }

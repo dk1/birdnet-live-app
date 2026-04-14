@@ -20,6 +20,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
@@ -216,7 +217,8 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
         ],
       ),
       body: SafeArea(
-        child: Column(
+        child: ContentWidthConstraint(
+            child: Column(
           children: [
             _StepIndicator(currentStep: _step, totalSteps: _totalSteps),
             Expanded(
@@ -281,7 +283,7 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
               ),
             ),
           ],
-        ),
+        )),
       ),
     );
   }

@@ -14,6 +14,7 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/providers/settings_providers.dart';
@@ -209,6 +210,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Center(
       child: Column(
@@ -221,15 +223,13 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            isActive ? 'Listening…' : 'Detections',
+            isActive ? l10n.liveListening : l10n.liveDetections,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: theme.colorScheme.onSurface.withAlpha(128),
             ),
           ),
           Text(
-            isActive
-                ? 'Species will appear here when detected'
-                : 'Start a session to identify species',
+            isActive ? l10n.liveSpeciesWillAppear : l10n.liveStartSession,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface.withAlpha(77),
             ),

@@ -18,6 +18,7 @@ import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
 import 'live_controller.dart';
 import 'live_providers.dart';
+import 'live_session.dart';
 import 'widgets/detection_list_widget.dart';
 
 // =============================================================================
@@ -358,64 +359,107 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         body: SafeArea(
           bottom: false,
-          child: Column(
-            children: [
-              // ── Compact Status Bar ──────────────────────────────
-              _CompactStatusBar(
-                liveState: liveState,
-                ref: ref,
-              ),
-
-              // ── Error Banner ────────────────────────────────────
-              if (liveState == LiveState.error)
-                _StatusBanner(liveState: liveState, ref: ref),
-
-              // ── Spectrogram ─────────────────────────────────────
-              Expanded(
-                flex: 2,
-                child: Container(
-                  color: theme.colorScheme.surfaceContainerLowest,
-                  child: _LiveSpectrogram(isCapturing: isCapturing),
-                ),
-              ),
-
-              // ── Session Info (always present to avoid layout shift) ──
-              _SessionInfoBar(
-                liveCount: detections.length,
-                controller: ref.read(liveControllerProvider),
-                visible: isActive || isPaused,
-              ),
-
-              // ── Detection List ──────────────────────────────────
-              Expanded(
-                flex: 3,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-                  child: ClipRRect(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: DetectionList(
-                      detections: detections,
-                      isActive: isActive || isPaused,
-                      onDetectionTap: (detection) {
-                        SpeciesInfoOverlay.show(
-                          context,
-                          ref,
-                          scientificName: detection.scientificName,
-                          commonName: detection.commonName,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-
-              // Bottom padding so the FAB doesn't overlap the last item.
-              const SizedBox(height: 72),
-            ],
+          child: _buildBody(
+            context,
+            theme: theme,
+            liveState: liveState,
+            isActive: isActive,
+            isPaused: isPaused,
+            isCapturing: isCapturing,
+            detections: detections,
           ),
         ),
       ),
+    );
+  }
+
+  /// Builds the main body, switching between portrait (vertical stack)
+  /// and landscape (side-by-side) layouts.
+  Widget _buildBody(
+    BuildContext context, {
+    required ThemeData theme,
+    required LiveState liveState,
+    required bool isActive,
+    required bool isPaused,
+    required bool isCapturing,
+    required List<DetectionRecord> detections,
+  }) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final statusBar = _CompactStatusBar(liveState: liveState, ref: ref);
+    final errorBanner = liveState == LiveState.error
+        ? _StatusBanner(liveState: liveState, ref: ref)
+        : null;
+    final spectrogram = Container(
+      color: theme.colorScheme.surfaceContainerLowest,
+      child: _LiveSpectrogram(isCapturing: isCapturing),
+    );
+    final sessionInfo = _SessionInfoBar(
+      liveCount: detections.length,
+      controller: ref.read(liveControllerProvider),
+      visible: isActive || isPaused,
+    );
+    final detectionList = Padding(
+      padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        child: DetectionList(
+          detections: detections,
+          isActive: isActive || isPaused,
+          onDetectionTap: (detection) {
+            SpeciesInfoOverlay.show(
+              context,
+              ref,
+              scientificName: detection.scientificName,
+              commonName: detection.commonName,
+            );
+          },
+        ),
+      ),
+    );
+
+    if (isLandscape) {
+      return Column(
+        children: [
+          statusBar,
+          if (errorBanner != null) errorBanner,
+          Expanded(
+            child: Row(
+              children: [
+                // Left: spectrogram + session info
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    children: [
+                      Expanded(child: spectrogram),
+                      sessionInfo,
+                    ],
+                  ),
+                ),
+                // Right: detection list
+                Expanded(
+                  flex: 1,
+                  child: detectionList,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 72),
+        ],
+      );
+    }
+
+    // Portrait: original vertical stack.
+    return Column(
+      children: [
+        statusBar,
+        if (errorBanner != null) errorBanner,
+        Expanded(flex: 2, child: spectrogram),
+        sessionInfo,
+        Expanded(flex: 3, child: detectionList),
+        const SizedBox(height: 72),
+      ],
     );
   }
 }
@@ -439,6 +483,7 @@ class _CompactStatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final isActive = liveState == LiveState.active;
     final isLoading = liveState == LiveState.loading;
 
@@ -446,22 +491,22 @@ class _CompactStatusBar extends StatelessWidget {
     Color statusColor;
 
     if (isActive) {
-      statusText = 'Identifying species…';
+      statusText = l10n.statusIdentifying;
       statusColor = theme.colorScheme.primary;
     } else if (liveState == LiveState.paused) {
-      statusText = 'Paused';
+      statusText = l10n.statusPaused;
       statusColor = theme.colorScheme.onSurface.withAlpha(180);
     } else if (isLoading) {
-      statusText = 'Loading model…';
+      statusText = l10n.statusLoadingModel;
       statusColor = theme.colorScheme.onSurface.withAlpha(153);
     } else if (liveState == LiveState.error) {
-      statusText = 'Error';
+      statusText = l10n.statusError;
       statusColor = theme.colorScheme.error;
     } else if (liveState == LiveState.ready) {
-      statusText = 'Ready';
+      statusText = l10n.statusReady;
       statusColor = theme.colorScheme.onSurface;
     } else {
-      statusText = 'Initialising…';
+      statusText = l10n.statusInitializing;
       statusColor = theme.colorScheme.onSurface.withAlpha(153);
     }
 
@@ -475,7 +520,7 @@ class _CompactStatusBar extends StatelessWidget {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             onPressed: () => Navigator.of(context).maybePop(),
-            tooltip: 'Back',
+            tooltip: l10n.tooltipBack,
           ),
 
           // Status text.
@@ -508,7 +553,7 @@ class _CompactStatusBar extends StatelessWidget {
                 ),
               );
             },
-            tooltip: 'Settings',
+            tooltip: l10n.settings,
           ),
         ],
       ),
@@ -610,7 +655,7 @@ class _StatusBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Model loading failed. Check assets.',
+              AppLocalizations.of(context)!.modelLoadFailed,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onErrorContainer,
               ),
@@ -620,7 +665,7 @@ class _StatusBanner extends StatelessWidget {
             onPressed: () {
               ref.read(liveControllerProvider).loadModel();
             },
-            child: const Text('Retry'),
+            child: Text(AppLocalizations.of(context)!.retry),
           ),
         ],
       ),

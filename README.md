@@ -8,7 +8,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/flutter-%3E%3D3.0-blue.svg" alt="Flutter">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
-  <img src="https://img.shields.io/badge/version-0.2.6-orange.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.2.7-orange.svg" alt="Version">
   <img src="https://img.shields.io/badge/species-5%2C250-brightgreen.svg" alt="Species: 5,250">
 </p>
 
@@ -28,14 +28,16 @@ The bioacoustics companion app for field researchers, conservationists, and bird
 ## Features
 
 - **Live Mode** — Real-time scrolling spectrogram with species identification
+- **Point Count Mode** — Timed survey sessions with countdown timer and station metadata
+- **Survey Mode** — Long-running transect surveys with GPS tracking, background monitoring, and detection sampling
+- **File Analysis Mode** — Analyze existing audio files (WAV, FLAC, MP3, OGG, and more)
 - **Explore** — Browse species expected at your location using the BirdNET geo-model
 - **Session Library** — Review, edit, and export past sessions with audio playback
-- **Export** — Raven Pro, CSV, JSON, and ZIP bundle formats
+- **Export** — Raven Pro, CSV, JSON, GPX, and ZIP bundle formats
 - **On-device inference** — BirdNET+ model (5,250 species), no internet required
 - **FLAC recording** — Pure Dart encoder for compressed audio (50–60% reduction)
-- **Survey Mode** — Background monitoring with GPS tracking *(planned)*
-- **Point Count Mode** — Timed surveys with recording *(planned)*
-- **File Analysis Mode** — Analyze existing audio files
+- **Landscape & tablet layouts** — Adaptive UI for phones and tablets in both orientations
+- **Localization** — Full English and German UI
 
 ## Quick Start
 
@@ -143,9 +145,11 @@ Then open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
 ```
 lib/
   core/           # Constants, theme, utilities, extensions
-  features/       # Feature modules (audio, inference, spectrogram, live, survey, ...)
+  features/       # Feature modules (live, point_count, survey, file_analysis,
+                  #   audio, inference, explore, history, settings, home, about)
   l10n/           # Localization ARB files (en, de)
-  shared/         # Providers, models, services, reusable widgets
+  shared/         # Shared models, providers, services, widgets
+                  #   (e.g. ContentWidthConstraint for tablet max-width)
 
 docs/             # MkDocs source for GitHub Pages documentation
 assets/           # App assets (models, species data, images, fonts)

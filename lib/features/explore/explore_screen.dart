@@ -19,6 +19,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/services/reverse_geocoding_service.dart';
+import '../../shared/widgets/content_width_constraint.dart';
 import 'explore_providers.dart';
 import 'widgets/species_card.dart';
 import 'widgets/species_info_overlay.dart';
@@ -48,7 +49,8 @@ class ExploreScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: speciesAsync.when(
+      body: ContentWidthConstraint(
+          child: speciesAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(),
         ),
@@ -101,7 +103,7 @@ class ExploreScreen extends ConsumerWidget {
             ],
           );
         },
-      ),
+      )),
     );
   }
 }
