@@ -337,6 +337,10 @@
   "@aboutTermsOfUse": {
     "description": "Terms of use link label"
   },
+  "aboutUserGuide": "User Guide",
+  "@aboutUserGuide": {
+    "description": "User guide link label"
+  },
   "errorPermissionRequired": "Permission required",
   "@errorPermissionRequired": {
     "description": "Error message when permission is not granted"

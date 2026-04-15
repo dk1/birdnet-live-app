@@ -15,16 +15,21 @@ No audio data is ever transmitted to external servers.
 
 ## Data Collection
 
-BirdNET Live does **not** collect, transmit, or share any personal data by default. There is no analytics, no tracking, and no telemetry.
+BirdNET Live does **not** collect, transmit, or share any personal data. There is no analytics, no tracking, and no telemetry.
 
 ### Data stored locally on your device:
 
 | Data Type | Purpose | Storage |
 |-----------|---------|---------|
-| Audio recordings | Bird identification, playback | Local files |
-| Detection results | Species, confidence, timestamp | JSON files |
-| GPS coordinates | Geotagging detections, geo-model predictions | JSON files |
+| Audio recordings | Bird identification, playback, export | Local files |
+| Detection results | Species, confidence, timestamps | SQLite database |
+| GPS coordinates | Geotagging detections, survey tracks, geo-model predictions | SQLite database |
+| Session metadata | Session history, review, export | SQLite database |
 | App settings | User preferences | SharedPreferences |
+
+### Bundled offline data
+
+Species images, descriptions, and taxonomy data are **bundled in the app** and loaded from local assets. No network requests are made for species information.
 
 ## External Resources
 
@@ -32,15 +37,29 @@ The app may access the following external resources:
 
 | Resource | Purpose | When |
 |----------|---------|------|
-| Species images & descriptions | Showing species details in Explore | When opening species info |
-| Map tiles (OpenTopoMap) | GPS visualization | First map access (consent required) |
+| Map tiles (OpenTopoMap) | GPS track visualization in surveys | When opening a map view (user consent required) |
 
-Species images and descriptions are fetched from the BirdNET taxonomy API (`birdnet.cornell.edu/taxonomy/api/`). No personally identifiable information is sent — only the scientific name of the species being viewed.
+Map tile requests are standard HTTPS GET requests to `tile.opentopomap.org`. Only tile coordinates are sent — no personally identifiable information.
 
-## Data Export & Deletion
+**No other network requests are made.** The app functions fully offline.
 
-- **Export**: Settings > Export to download all your data (CSV, JSON, Raven selection tables)
-- **Delete**: Settings > Danger Zone > Clear All Data to permanently remove all stored data
+## GPS & Location
+
+The app uses GPS location for:
+
+- **Species filtering** — predicting which species are likely at your location.
+- **Survey mode** — recording GPS tracks and geotagging detections along a transect.
+- **Point count mode** — tagging the observation location.
+
+GPS data is stored locally and included in exports only when you explicitly share or export a session. Location access requires your permission and can be revoked at any time via system settings.
+
+## Data Export
+
+You can export session data in multiple formats (Raven selection tables, CSV, JSON, GPX). Exports are generated locally and shared via the system share sheet. The app does not upload export data to any server.
+
+## Data Deletion
+
+All app data (sessions, recordings, settings) can be deleted via **Settings > Danger Zone > Clear All Data**. Uninstalling the app removes all stored data.
 
 ## Contact
 
