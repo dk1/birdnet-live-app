@@ -195,8 +195,8 @@ class AboutScreen extends ConsumerWidget {
             leading: const Icon(Icons.menu_book_outlined),
             title: Text(l10n.aboutUserGuide),
             trailing: const Icon(Icons.open_in_new),
-            onTap: () => _launchUrl(
-                '${AppConstants.docsUrl}/user/getting-started/'),
+            onTap: () =>
+                _launchUrl('${AppConstants.docsUrl}/user/getting-started/'),
           ),
 
           const SizedBox(height: 32),
