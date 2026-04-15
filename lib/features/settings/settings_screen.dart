@@ -292,22 +292,38 @@ class SettingsScreen extends ConsumerWidget {
               title: l10n.settingsRecording,
               subtitle: l10n.settingsRecordingDescription,
             ),
+            ListTile(
+              title: Text(l10n.settingsRecordingMode),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SegmentedButton<String>(
+                segments: [
+                  ButtonSegment(
+                    value: 'full',
+                    label: Text(l10n.settingsRecordingModeFull),
+                  ),
+                  ButtonSegment(
+                    value: 'detections',
+                    label: Text(l10n.settingsRecordingModeDetections),
+                  ),
+                  ButtonSegment(
+                    value: 'off',
+                    label: Text(l10n.settingsRecordingModeOff),
+                  ),
+                ],
+                selected: {ref.watch(recordingModeProvider)},
+                onSelectionChanged: (s) =>
+                    ref.read(recordingModeProvider.notifier).set(s.first),
+              ),
+            ),
+            const SizedBox(height: 16),
             _ChoiceTile<String>(
               title: l10n.settingsRecordingFormat,
               value: ref.watch(recordingFormatProvider),
               options: const {'wav': 'WAV', 'flac': 'FLAC'},
               onChanged: (v) =>
                   ref.read(recordingFormatProvider.notifier).set(v),
-            ),
-            _ChoiceTile<String>(
-              title: l10n.settingsRecordingMode,
-              value: ref.watch(recordingModeProvider),
-              options: {
-                'off': l10n.settingsRecordingModeOff,
-                'full': l10n.settingsRecordingModeFull,
-                'detections': l10n.settingsRecordingModeDetections,
-              },
-              onChanged: (v) => ref.read(recordingModeProvider.notifier).set(v),
             ),
             const Divider(),
           ],

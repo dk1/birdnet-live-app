@@ -8,7 +8,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/flutter-%3E%3D3.0-blue.svg" alt="Flutter">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
-  <img src="https://img.shields.io/badge/version-0.2.7-orange.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.3.1-orange.svg" alt="Version">
   <img src="https://img.shields.io/badge/species-5%2C250-brightgreen.svg" alt="Species: 5,250">
 </p>
 
@@ -19,6 +19,7 @@ The bioacoustics companion app for field researchers, conservationists, and bird
   <img src="docs/assets/screenshots/session-review.png" alt="Session Review" width="150">
   <img src="docs/assets/screenshots/explore.png" alt="Explore" width="150">
   <img src="docs/assets/screenshots/file-analysis.png" alt="File Analysis" width="150">
+  <img src="docs/assets/screenshots/survey.png" alt="Survey Mode" width="150">
 </p>
 
 **NOTE: This is an early developer preview. The app is not yet feature-complete or fully polished. Expect bugs, crashes, and rough edges. Please report issues and contribute if you can!**

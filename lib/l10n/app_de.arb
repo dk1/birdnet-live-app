@@ -83,6 +83,7 @@
   "aboutGitHub": "Diese App auf GitHub",
   "aboutPrivacyPolicy": "Datenschutzrichtlinie",
   "aboutTermsOfUse": "Nutzungsbedingungen",
+  "aboutUserGuide": "Benutzerhandbuch",
   "errorPermissionRequired": "Berechtigung erforderlich",
   "errorMicrophoneRequired": "Mikrofonzugriff ist für die Vogelidentifikation erforderlich. Bitte erteilen Sie die Mikrofonberechtigung in den Einstellungen.",
   "homeSubtitle": "Die KI-gestützte Bioakustik-App",

@@ -5,7 +5,73 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.1] — 2026-04-15
+
+### Changed
+- Privacy policy updated to reflect offline species data bundle and current data handling
+- Terms of use now hosted on the documentation site (was GitHub markdown)
+
+### Added
+- Terms of Use page in mkdocs documentation
+- User Guide link on the About screen
+
+## [0.3.0] — 2025-07-28
+
+### Added
+- `Begin File` column in Raven selection tables for multi-file compatibility
+- `File` column in CSV exports referencing the audio source
+- Latitude / Longitude columns in Raven and CSV exports when detections have coordinates
+- GPX file auto-included in survey ZIP bundles
+- Species common name in detection clip filenames (e.g. `_clip_001_Eurasian_Blackbird.flac`)
+- Custom session name included in export filenames
+- JSON export now includes session type, location, and per-detection coordinates
+- Export prefix `BirdNET_Live_YYYY-MM-DD_HH-MM-SS` for all exported files (display names unchanged)
+
+### Fixed
+- Detection timestamps in exports are always session-relative (no more 0-based times for clips)
+- Survey share now correctly produces ZIP bundles with individual detection clips
+- `manualGlobal` detection end time in CSV uses session duration (consistent with Raven builder)
+- Removed unused local variable in `live_controller.dart`
+
+### Changed
+- Session display names no longer use `BirdNET_Live` prefix (cleaner in-app display)
+
+## [0.2.10] — 2025-07-27
+
+### Added
+- Recording mode setting (Full / Detections only / Off) restored to settings screen as segmented button
+- Detection clip playback in session review: when only detection clips were recorded (no full recording), play buttons play individual clips
+
+### Fixed
+- Survey sessions with "detections only" recording mode now surface audio clips correctly in session review
+- Play buttons hidden in session review when no audio exists (recording mode was off)
+
+## [0.2.9] — 2025-07-27
+
+### Added
+- Share/export button now available for survey sessions (CSV, JSON, GPX, Raven — audio optional)
+
+### Fixed
+- Survey sessions now always record full audio (like live sessions) so playback and trim work in review
+- Recording mode default changed from "off" to "full" for live sessions (live controller already recorded full regardless)
+
+### Changed
+- Recording mode setting removed from general settings screen (only exposed in survey setup where it applies)
+- Observer name and track distance shown in a single row in session review header
+- Survey map in session review reduced from 25% to 18% of screen height
+
+## [0.2.8] — 2025-07-27
+
+### Added
+- Offline species data bundle: 5,241 species images (240×160 WebP) and descriptions in 7 languages bundled into the APK
+- `dev/build_species_bundle.py` — re-runnable Python build script to download, resize, and package species assets
+- `SpeciesDescriptionService` — lazy gzip JSON loader with per-locale caching and English fallback
+- Italian (`it`) and Korean (`ko`) common name columns added to `taxonomy.csv`
+
+### Changed
+- All species images now load from bundled assets instead of network (CachedNetworkImage → Image.asset)
+- Species detail overlay uses bundled descriptions instead of taxonomy API fetch
+- `TaxonomyService` is now fully offline — removed `fetchDetail()` and API cache
 
 ## [0.2.7] — 2025-07-27
 

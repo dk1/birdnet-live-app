@@ -189,8 +189,14 @@ class AboutScreen extends ConsumerWidget {
             leading: const Icon(Icons.gavel),
             title: Text(l10n.aboutTermsOfUse),
             trailing: const Icon(Icons.open_in_new),
-            onTap: () => _launchUrl(
-                '${AppConstants.githubUrl}/blob/main/TERMS_OF_USE.md'),
+            onTap: () => _launchUrl('${AppConstants.docsUrl}/terms/'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.menu_book_outlined),
+            title: Text(l10n.aboutUserGuide),
+            trailing: const Icon(Icons.open_in_new),
+            onTap: () =>
+                _launchUrl('${AppConstants.docsUrl}/user/getting-started/'),
           ),
 
           const SizedBox(height: 32),
