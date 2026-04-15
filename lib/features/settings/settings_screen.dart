@@ -292,6 +292,32 @@ class SettingsScreen extends ConsumerWidget {
               title: l10n.settingsRecording,
               subtitle: l10n.settingsRecordingDescription,
             ),
+            ListTile(
+              title: Text(l10n.settingsRecordingMode),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SegmentedButton<String>(
+                segments: [
+                  ButtonSegment(
+                    value: 'full',
+                    label: Text(l10n.settingsRecordingModeFull),
+                  ),
+                  ButtonSegment(
+                    value: 'detections',
+                    label: Text(l10n.settingsRecordingModeDetections),
+                  ),
+                  ButtonSegment(
+                    value: 'off',
+                    label: Text(l10n.settingsRecordingModeOff),
+                  ),
+                ],
+                selected: {ref.watch(recordingModeProvider)},
+                onSelectionChanged: (s) =>
+                    ref.read(recordingModeProvider.notifier).set(s.first),
+              ),
+            ),
+            const SizedBox(height: 16),
             _ChoiceTile<String>(
               title: l10n.settingsRecordingFormat,
               value: ref.watch(recordingFormatProvider),

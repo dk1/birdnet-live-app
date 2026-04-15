@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.10] — 2025-07-27
+
+### Added
+- Recording mode setting (Full / Detections only / Off) restored to settings screen as segmented button
+- Detection clip playback in session review: when only detection clips were recorded (no full recording), play buttons play individual clips
+
+### Fixed
+- Survey sessions with "detections only" recording mode now surface audio clips correctly in session review
+- Play buttons hidden in session review when no audio exists (recording mode was off)
+
 ## [0.2.9] — 2025-07-27
 
 ### Added

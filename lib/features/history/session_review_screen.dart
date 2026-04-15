@@ -98,10 +98,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   late List<_SpeciesGroup> _speciesGroups;
   final Set<String> _expandedSpecies = {};
   final AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _clipPlayer = AudioPlayer();
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
   bool _audioAvailable = false;
+  bool _hasDetectionClips = false;
   bool _isDirty = false;
   bool _trimMode = false;
   double? _trimStartSec;
@@ -247,6 +249,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _annotations = List.of(widget.session.annotations);
     _trimStartSec = widget.session.trimStartSec;
     _trimEndSec = widget.session.trimEndSec;
+    _hasDetectionClips = _detections.any(
+      (d) => d.audioClipPath != null && File(d.audioClipPath!).existsSync(),
+    );
     _speciesGroups = _buildSpeciesGroups(
       _detections,
       widget.session.settings.windowDuration,
@@ -502,6 +507,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
     _fullSpectrogramImage?.dispose();
     _player.dispose();
+    _clipPlayer.dispose();
     super.dispose();
   }
 
@@ -944,14 +950,32 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   }
 
   void _seekToCluster(_DetectionCluster cluster) {
-    if (!_audioAvailable || _duration == Duration.zero) return;
-    final offset = cluster.firstTimestamp.difference(widget.session.startTime);
-    // Subtract the clip offset so the seek is relative to the clipped range.
-    final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
-    final seekPos = offset - clipOffset;
-    if (seekPos.isNegative || seekPos > _duration) return;
-    _player.seek(seekPos);
-    if (!_isPlaying) _player.play();
+    // Full recording available — seek the main player.
+    if (_audioAvailable && _duration != Duration.zero) {
+      final offset =
+          cluster.firstTimestamp.difference(widget.session.startTime);
+      final clipOffset =
+          Duration(microseconds: (_clipOffsetSec * 1e6).round());
+      final seekPos = offset - clipOffset;
+      if (seekPos.isNegative || seekPos > _duration) return;
+      _player.seek(seekPos);
+      if (!_isPlaying) _player.play();
+      return;
+    }
+    // No full recording — try to play the first detection clip.
+    _playDetectionClip(cluster);
+  }
+
+  /// Play the first available detection clip from the given cluster.
+  Future<void> _playDetectionClip(_DetectionCluster cluster) async {
+    final clip = cluster.records
+        .where(
+            (r) => r.audioClipPath != null && File(r.audioClipPath!).existsSync())
+        .firstOrNull;
+    if (clip == null) return;
+    await _clipPlayer.stop();
+    await _clipPlayer.setFilePath(clip.audioClipPath!);
+    _clipPlayer.play();
   }
 
   void _seekToPosition(Duration position) {
@@ -1491,6 +1515,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           isExpanded: isExpanded,
           isActive: isActive,
           isSurvey: widget.session.type == SessionType.survey,
+          hasAudio: _audioAvailable || _hasDetectionClips,
           onToggleExpand: () => setState(() {
             if (isExpanded) {
               _expandedSpecies.remove(group.scientificName);

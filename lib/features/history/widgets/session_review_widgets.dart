@@ -555,6 +555,7 @@ class _SpeciesTile extends ConsumerWidget {
     required this.onDeleteCluster,
     required this.onReplaceCluster,
     this.isSurvey = false,
+    this.hasAudio = true,
     this.onShowOnMap,
   });
 
@@ -563,6 +564,7 @@ class _SpeciesTile extends ConsumerWidget {
   final bool isExpanded;
   final bool isActive;
   final bool isSurvey;
+  final bool hasAudio;
   final VoidCallback onToggleExpand;
   final VoidCallback onSpeciesInfo;
   final ValueChanged<_DetectionCluster> onSeekCluster;
@@ -611,33 +613,47 @@ class _SpeciesTile extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  // Seek to first detection.
-                  InkWell(
-                    onTap: () => onSeekCluster(group.clusters.first),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
+                  // Seek to first detection (or just show offset if no audio).
+                  if (hasAudio)
+                    InkWell(
+                      onTap: () => onSeekCluster(group.clusters.first),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.play_arrow_rounded,
+                              size: 24,
+                              color: theme.colorScheme.primary,
+                            ),
+                            Text(
+                              offsetStr,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
                       width: 48,
                       height: 48,
                       alignment: Alignment.center,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.play_arrow_rounded,
-                            size: 24,
-                            color: theme.colorScheme.primary,
-                          ),
-                          Text(
-                            offsetStr,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.primary,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        offsetStr,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withAlpha(120),
+                          fontSize: 10,
+                        ),
                       ),
                     ),
-                  ),
                   const SizedBox(width: 8),
 
                   // Species thumbnail.
@@ -762,6 +778,7 @@ class _SpeciesTile extends ConsumerWidget {
                       onDelete: () => onDeleteCluster(cluster),
                       onReplace: () => onReplaceCluster(cluster),
                       isSurvey: isSurvey,
+                      hasAudio: hasAudio,
                       onShowOnMap: onShowOnMap != null
                           ? () => onShowOnMap!(cluster.records.first)
                           : null,
@@ -807,6 +824,7 @@ class _ClusterRow extends StatelessWidget {
     required this.onDelete,
     required this.onReplace,
     this.isSurvey = false,
+    this.hasAudio = true,
     this.onShowOnMap,
   });
 
@@ -816,6 +834,7 @@ class _ClusterRow extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onReplace;
   final bool isSurvey;
+  final bool hasAudio;
   final VoidCallback? onShowOnMap;
 
   @override
@@ -834,18 +853,21 @@ class _ClusterRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: Row(
         children: [
-          InkWell(
-            onTap: onSeek,
-            borderRadius: BorderRadius.circular(24),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Icon(
-                Icons.play_arrow_rounded,
-                size: 24,
-                color: theme.colorScheme.primary,
+          if (hasAudio)
+            InkWell(
+              onTap: onSeek,
+              borderRadius: BorderRadius.circular(24),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Icon(
+                  Icons.play_arrow_rounded,
+                  size: 24,
+                  color: theme.colorScheme.primary,
+                ),
               ),
-            ),
-          ),
+            )
+          else
+            const SizedBox(width: 48),
           const SizedBox(width: 4),
           Expanded(
             child: Text(
