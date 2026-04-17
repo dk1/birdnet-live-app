@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] — 2025-07-28
+
+### Added
+- Confidence threshold slider in survey setup (Parameters step)
+- Clip context controls (pre/post buffer seconds) in survey setup when recording mode is detections
+- Clip context controls in global settings when recording mode is detections
+- Tap species marker on fullscreen survey map to play detection clip with highlight
+
+### Changed
+- File analysis step indicator now uses simple progress bars (matching point count and survey setup)
+- Smart detection sampling reworked: uses distance (>500 m) and time (>2 min) thresholds instead of fixed spatial bins; keeps only the highest-scoring detection per species at each spot
+
 ## [0.3.1] — 2026-04-15
 
 ### Changed
