@@ -78,6 +78,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   bool _finalizing = false;
   Timer? _uiUpdateTimer;
   late final TabController _tabController;
+  late final SurveyController _surveyController;
 
   @override
   void initState() {
@@ -85,9 +86,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addObserver(this);
 
-    final controller = ref.read(surveyControllerProvider);
-    controller.onStateChanged = _onControllerStateChanged;
-    controller.onAutoStop = _onAutoStop;
+    _surveyController = ref.read(surveyControllerProvider);
+    _surveyController.onStateChanged = _onControllerStateChanged;
+    _surveyController.onAutoStop = _onAutoStop;
 
     // Listen for "Stop" button pressed in the foreground notification.
     FlutterForegroundTask.addTaskDataCallback(_onNotificationData);
@@ -295,6 +296,12 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
   @override
   void dispose() {
+    if (_surveyController.onStateChanged == _onControllerStateChanged) {
+      _surveyController.onStateChanged = null;
+    }
+    if (_surveyController.onAutoStop == _onAutoStop) {
+      _surveyController.onAutoStop = null;
+    }
     WidgetsBinding.instance.removeObserver(this);
     FlutterForegroundTask.removeTaskDataCallback(_onNotificationData);
     _uiUpdateTimer?.cancel();

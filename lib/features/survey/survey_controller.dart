@@ -534,6 +534,17 @@ class SurveyController {
       _session!.distanceMeters = _gpsTracker!.distanceMeters;
     }
 
+    // Ensure the session has a representative lat/lon so the review screen
+    // can show a map even when the GPS track is empty or very short.
+    if (_session!.latitude == null || _session!.longitude == null) {
+      final track = _gpsTracker?.track ?? const <GpsPoint>[];
+      if (track.isNotEmpty) {
+        final last = track.last;
+        _session!.latitude = last.latitude;
+        _session!.longitude = last.longitude;
+      }
+    }
+
     // Stop recording.
     final recordingPath = await recordingService.stopRecording();
     if (recordingPath != null) {
@@ -843,7 +854,11 @@ class SurveyController {
 
   void _triggerAutoStop(String reason) {
     debugPrint('[SurveyController] auto-stop: $reason');
-    onAutoStop?.call(reason);
+    final autoStopHandler = onAutoStop;
+    if (autoStopHandler != null) {
+      autoStopHandler(reason);
+      return;
+    }
     stopSurvey();
   }
 

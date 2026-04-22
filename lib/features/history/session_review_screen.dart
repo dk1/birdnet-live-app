@@ -1354,7 +1354,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             : null,
       ),
       if (widget.session.type == SessionType.survey &&
-          widget.session.gpsTrack.isNotEmpty)
+          (widget.session.gpsTrack.isNotEmpty ||
+              (widget.session.latitude != null &&
+                  widget.session.longitude != null)))
         Stack(
           children: [
             SizedBox(
@@ -1364,8 +1366,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   gpsTrack: widget.session.gpsTrack,
                   detections: _detections,
                   autoFollow: false,
-                  fitAllPoints: true,
+                  fitAllPoints: widget.session.gpsTrack.length >= 2,
                   highlightedDetection: _highlightedDetection,
+                  initialCenter: widget.session.latitude != null &&
+                          widget.session.longitude != null
+                      ? LatLng(
+                          widget.session.latitude!, widget.session.longitude!)
+                      : null,
                 ),
               ),
             ),
