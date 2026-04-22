@@ -9,7 +9,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 
 /// Comprehensive help screen with mode-by-mode explanations.
@@ -100,6 +102,48 @@ class HelpScreen extends StatelessWidget {
           _TipRow(text: l10n.helpTipThreshold),
           _TipRow(text: l10n.helpTipGeoFilter),
           _TipRow(text: l10n.helpTipGuide),
+          const SizedBox(height: 12),
+          Card(
+            color: theme.colorScheme.surfaceContainerLow,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.menu_book_outlined,
+                        size: 20,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.aboutUserGuide,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.helpTipGuide,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(180),
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.tonalIcon(
+                    onPressed: () => _launchUserGuide(),
+                    icon: const Icon(Icons.open_in_new),
+                    label: Text(l10n.aboutUserGuide),
+                  ),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: 24),
         ],
       )),
@@ -202,5 +246,12 @@ class _TipRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+Future<void> _launchUserGuide() async {
+  final uri = Uri.parse('${AppConstants.docsUrl}/user/getting-started/');
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }

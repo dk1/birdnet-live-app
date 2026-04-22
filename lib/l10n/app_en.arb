@@ -1670,7 +1670,7 @@
   "@helpTipBasics": {
     "description": "Tip explaining how the app processes audio locally"
   },
-  "helpTipGuide": "For a complete explanation of all settings and features, check the User Guide via the Documentation link in the About screen.",
+  "helpTipGuide": "For a complete explanation of all settings and features, open the User Guide from the Help or About screen.",
   "@helpTipGuide": {
     "description": "Tip referencing the online user guide"
   },
@@ -1827,5 +1827,102 @@
   "liveStartSession": "Start a session to identify species",
   "@liveStartSession": {
     "description": "Subtitle prompting user to start a session"
+  },
+  "settingsGain": "Gain",
+  "@settingsGain": {
+    "description": "Audio gain slider label"
+  },
+  "fileAnalysisReadFailed": "Could not read file: {error}",
+  "@fileAnalysisReadFailed": {
+    "description": "Shown when the selected audio file cannot be inspected",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "fileAnalysisModelError": "Model error",
+  "@fileAnalysisModelError": {
+    "description": "Fallback error shown when file analysis model loading fails"
+  },
+  "speciesChartLoadFailed": "Failed to load chart",
+  "@speciesChartLoadFailed": {
+    "description": "Shown when the seasonal species chart fails to load"
+  },
+  "surveyNotificationChannelName": "BirdNET Survey",
+  "@surveyNotificationChannelName": {
+    "description": "Android notification channel name for the survey foreground service"
+  },
+  "surveyNotificationChannelDescription": "Active Survey recording",
+  "@surveyNotificationChannelDescription": {
+    "description": "Android notification channel description for the survey foreground service"
+  },
+  "surveyNotificationTitle": "Survey Recording",
+  "@surveyNotificationTitle": {
+    "description": "Foreground notification title shown while a survey is active"
+  },
+  "notificationStop": "Stop",
+  "@notificationStop": {
+    "description": "Foreground notification action label to stop the current task"
+  },
+  "notificationOpen": "Open",
+  "@notificationOpen": {
+    "description": "Foreground notification action label to open the app"
+  },
+  "monthJanShort": "Jan",
+  "@monthJanShort": {
+    "description": "Short month label for January"
+  },
+  "monthAprShort": "Apr",
+  "@monthAprShort": {
+    "description": "Short month label for April"
+  },
+  "monthJulShort": "Jul",
+  "@monthJulShort": {
+    "description": "Short month label for July"
+  },
+  "monthOctShort": "Oct",
+  "@monthOctShort": {
+    "description": "Short month label for October"
+  },
+  "monthDecShort": "Dec",
+  "@monthDecShort": {
+    "description": "Short month label for December"
+  },
+  "speciesPhotoCreditLabel": "Photo",
+  "@speciesPhotoCreditLabel": {
+    "description": "Label preceding the photo credit on the species detail sheet"
+  },
+  "speciesChartNoData": "No probability data for this location.",
+  "@speciesChartNoData": {
+    "description": "Shown when no weekly geo-model scores are available for the selected species and location"
+  },
+  "speciesExpectedFrequency": "Expected Frequency",
+  "@speciesExpectedFrequency": {
+    "description": "Title for the weekly geo-model probability chart"
+  },
+  "speciesExpectedFrequencySubtitle": "Predicted presence across 48 weeks based on your location.",
+  "@speciesExpectedFrequencySubtitle": {
+    "description": "Subtitle explaining the weekly geo-model probability chart"
+  },
+  "speciesFrequencyAbundant": "Abundant",
+  "@speciesFrequencyAbundant": {
+    "description": "Highest frequency category label for geo-model probability"
+  },
+  "speciesFrequencyCommon": "Common",
+  "@speciesFrequencyCommon": {
+    "description": "High frequency category label for geo-model probability"
+  },
+  "speciesFrequencyUncommon": "Uncommon",
+  "@speciesFrequencyUncommon": {
+    "description": "Medium frequency category label for geo-model probability"
+  },
+  "speciesFrequencyOccasional": "Occasional",
+  "@speciesFrequencyOccasional": {
+    "description": "Low frequency category label for geo-model probability"
+  },
+  "speciesFrequencyRare": "Rare",
+  "@speciesFrequencyRare": {
+    "description": "Lowest frequency category label for geo-model probability"
   }
 }

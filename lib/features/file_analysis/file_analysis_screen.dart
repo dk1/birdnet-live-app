@@ -41,6 +41,7 @@ import '../../shared/widgets/map_picker_screen.dart';
 import '../explore/explore_providers.dart';
 import '../history/session_review_screen.dart';
 import '../live/live_providers.dart';
+import '../settings/settings_screen.dart';
 import 'file_analysis_controller.dart';
 import 'file_analysis_providers.dart';
 
@@ -138,6 +139,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   // ── File Picking ──────────────────────────────────────────────────────
 
   Future<void> _pickFile() async {
+    final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: [
@@ -172,7 +174,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       if (mounted) {
         setState(() => _isInspecting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not read file: $e')),
+          SnackBar(content: Text(l10n.fileAnalysisReadFailed(e.toString()))),
         );
       }
     }
@@ -212,6 +214,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   // ── Analysis ──────────────────────────────────────────────────────────
 
   Future<void> _startAnalysis() async {
+    final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(fileAnalysisControllerProvider);
 
     // Load model if needed.
@@ -220,7 +223,11 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       if (controller.state == FileAnalysisState.error) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(controller.errorMessage ?? 'Model error')),
+            SnackBar(
+              content: Text(
+                controller.errorMessage ?? l10n.fileAnalysisModelError,
+              ),
+            ),
           );
         }
         return;
@@ -329,6 +336,21 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
                   },
                 )
               : null,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.tune_rounded, size: 20),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const SettingsScreen(
+                      settingsContext: SettingsContext.fileAnalysis,
+                    ),
+                  ),
+                );
+              },
+              tooltip: l10n.settings,
+            ),
+          ],
         ),
         body: ContentWidthConstraint(
             child: Column(

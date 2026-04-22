@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-04-22
+
+### Added
+- Direct User Guide access from the Help screen
+- A File Analysis app bar shortcut to the relevant settings panel
+
+### Changed
+- Localized remaining user-facing strings in file analysis, explore, settings, and survey notifications across all supported locales
+- Updated Help guidance to point users to the User Guide from both Help and About
+
 ## [0.3.4] - 2026-04-22
 
 ### Added

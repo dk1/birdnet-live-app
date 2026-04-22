@@ -110,6 +110,7 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
@@ -153,7 +154,7 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
                   child: Text(
-                    'Photo: ${_detail!.imageAuthor}'
+                    '${l10n.speciesPhotoCreditLabel}: ${_detail!.imageAuthor}'
                     '${_detail!.imageLicense != null ? ' (${_detail!.imageLicense})' : ''}'
                     '${_detail!.imageSource != null ? ' — ${_detail!.imageSource}' : ''}',
                     style: theme.textTheme.bodySmall?.copyWith(
@@ -347,6 +348,7 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final speciesAsync = ref.watch(exploreSpeciesProvider);
 
     return speciesAsync.when(
@@ -361,7 +363,7 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              'No probability data for this location.',
+              l10n.speciesChartNoData,
               style: theme.textTheme.bodySmall,
             ),
           );
@@ -369,7 +371,7 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
 
         final currentWeekIndex = GeoModel.dateTimeToWeek(DateTime.now()) - 1;
         final currentScore = probs[currentWeekIndex];
-        final category = probabilityCategory(currentScore);
+        final category = _localizedProbabilityCategory(l10n, currentScore);
         final categoryColor = probabilityCategoryColor(currentScore);
 
         // Normalize to 100 (= the #1 species peak from the provider).
@@ -383,7 +385,7 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
               child: Row(
                 children: [
                   Text(
-                    'Expected Frequency',
+                    l10n.speciesExpectedFrequency,
                     style: theme.textTheme.titleMedium
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
@@ -409,7 +411,7 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Predicted presence across 48 weeks based on your location.',
+                l10n.speciesExpectedFrequencySubtitle,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurface.withAlpha(180),
                 ),
@@ -466,12 +468,12 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text('Jan', style: TextStyle(fontSize: 10)),
-                  Text('Apr', style: TextStyle(fontSize: 10)),
-                  Text('Jul', style: TextStyle(fontSize: 10)),
-                  Text('Oct', style: TextStyle(fontSize: 10)),
-                  Text('Dec', style: TextStyle(fontSize: 10)),
+                children: [
+                  Text(l10n.monthJanShort, style: const TextStyle(fontSize: 10)),
+                  Text(l10n.monthAprShort, style: const TextStyle(fontSize: 10)),
+                  Text(l10n.monthJulShort, style: const TextStyle(fontSize: 10)),
+                  Text(l10n.monthOctShort, style: const TextStyle(fontSize: 10)),
+                  Text(l10n.monthDecShort, style: const TextStyle(fontSize: 10)),
                 ],
               ),
             ),
@@ -482,10 +484,18 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
         padding: EdgeInsets.all(16),
         child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
       ),
-      error: (_, __) => const Padding(
-        padding: EdgeInsets.all(16),
-        child: Center(child: Text('Failed to load chart')),
+      error: (_, __) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Center(child: Text(l10n.speciesChartLoadFailed)),
       ),
     );
   }
+}
+
+String _localizedProbabilityCategory(AppLocalizations l10n, double score) {
+  if (score >= 80) return l10n.speciesFrequencyAbundant;
+  if (score >= 60) return l10n.speciesFrequencyCommon;
+  if (score >= 40) return l10n.speciesFrequencyUncommon;
+  if (score >= 20) return l10n.speciesFrequencyOccasional;
+  return l10n.speciesFrequencyRare;
 }
