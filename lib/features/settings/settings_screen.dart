@@ -144,7 +144,7 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: l10n.settingsAudioDescription,
             ),
             _SliderTile(
-              title: 'Gain',
+              title: l10n.settingsGain,
               value: ref.watch(audioGainProvider),
               min: 0.0,
               max: 2.0,

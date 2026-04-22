@@ -19,8 +19,8 @@
 // ### Image URLs
 //
 // The API provides WebP images at two sizes:
-//   - `thumb`  — 150×100 px (4:3)
-//   - `medium` — 480×320 px (4:3)
+//   - `thumb`  — 150×100 px (3:2)
+//   - `medium` — 480×320 px (3:2)
 //
 // URL pattern: `https://birdnet.cornell.edu/taxonomy/api/image/{sci_name}?size=thumb|medium`
 // =============================================================================
@@ -98,7 +98,7 @@ class TaxonomySpecies {
   // Convenience getters
   // ---------------------------------------------------------------------------
 
-  /// Bundled asset image path (240×160 WebP).
+  /// Bundled asset image path (480x320 WebP).
   ///
   /// Falls back to the placeholder image if [birdnetId] is null
   /// (9 species with no taxonomy entry).

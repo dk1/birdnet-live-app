@@ -3,7 +3,7 @@
 // =============================================================================
 //
 // Displays a species entry with:
-//   • Bundled asset thumbnail (4:3 aspect ratio, 240×160 WebP)
+//   • Bundled asset thumbnail (3:2 aspect ratio, 480x320 WebP)
 //   • Common name + optional scientific name (controlled by setting)
 //   • Optional geo-score indicator
 //   • Center-aligned 48-week mini bar chart with month labels
@@ -19,7 +19,7 @@ import '../../inference/geo_model.dart';
 import '../../../shared/providers/settings_providers.dart';
 import '../explore_providers.dart';
 
-/// A compact species card with a 4:3 thumbnail.
+/// A compact species card with a 3:2 thumbnail.
 class SpeciesCard extends ConsumerWidget {
   const SpeciesCard({
     super.key,
@@ -67,10 +67,13 @@ class SpeciesCard extends ConsumerWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── Thumbnail (4:3) ──
+              // ── Thumbnail (3:2) ──
               SizedBox(
-                width: 100,
-                child: _SpeciesImage(scientificName: scientificName),
+                width: 96,
+                child: AspectRatio(
+                  aspectRatio: 3 / 2,
+                  child: _SpeciesImage(scientificName: scientificName),
+                ),
               ),
               // ── Names and Details ──
               Expanded(

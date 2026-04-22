@@ -1,27 +1,42 @@
 # Session Library
 
-Browse and manage your past recording sessions.
+Session Library is the archive of saved sessions and processed files.
 
-## Overview
+## How to Open It
 
-The Session Library shows all saved sessions from Live Mode, Point Count Mode, and File Analysis. Each session stores the detection list, recording audio, annotations, and session settings.
+Use the `library_music_outlined` button in the Home footer.
 
-## Session List
+## What the Library Shows
 
-Each row in the library displays:
+Each session entry summarizes a saved result set, including its type, date, duration, species count, and detection count.
 
-| Field | Description |
-|-------|-------------|
-| **Session name** | Editable name (auto-numbered: "Live Session #1", "Point Count #1", etc.) |
-| **Date** | When the session was recorded |
-| **Duration** | Total session length |
-| **Species** | Number of unique species detected |
-| **Detections** | Total detection count |
+Session types use the same icons as the Home screen:
 
-- **Tap** a session to open the Session Review screen.
-- **Search** sessions by name.
-- **Sort** by date, duration, or species count.
+- `mic_rounded` — Live session
+- `audio_file_rounded` — File Analysis session
+- `location_on_rounded` — Point Count session
+- `route_rounded` — Survey session
 
-## Session Review
+## App Bar Controls
 
-See [Session Review](session-review.md) for details on reviewing, editing, and exporting sessions.
+- `search` — search by date, session type, place name, coordinates, common name, or scientific name
+- view-mode menu — switch between **Detailed**, **Compact**, and **By Species**
+- `swap_vert` — change the sort order
+
+## View Modes
+
+### Detailed
+
+Shows full session cards with more metadata.
+
+### Compact
+
+Shows tighter rows for faster browsing.
+
+### By Species
+
+Groups sessions by species and expands to the sessions that contain that species.
+
+## What Happens Next
+
+Tap any session to open [Session Review](session-review.md).

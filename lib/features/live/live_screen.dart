@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/wakelock_service.dart';
 
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
@@ -535,6 +536,18 @@ class _CompactStatusBar extends StatelessWidget {
             ),
           ),
 
+          IconButton(
+            icon: Icon(
+              Icons.help_outline_rounded,
+              size: 20,
+              color: theme.colorScheme.onSurface.withAlpha(180),
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+            onPressed: () => _showLiveHelp(context),
+            tooltip: l10n.liveScreenHelpTitle,
+          ),
+
           // Settings gear.
           IconButton(
             icon: Icon(
@@ -559,6 +572,36 @@ class _CompactStatusBar extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showLiveHelp(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => AppHelpBottomSheet(
+      title: l10n.liveScreenHelpTitle,
+      sections: [
+        AppHelpSection(
+          icon: Icons.mic,
+          body: l10n.liveScreenHelpOverview,
+        ),
+        AppHelpSection(
+          icon: Icons.help_outline_rounded,
+          body: l10n.liveScreenHelpControls,
+        ),
+        AppHelpSection(
+          icon: Icons.info_outline,
+          body: l10n.liveScreenHelpInfoBar,
+        ),
+        AppHelpSection(
+          icon: Icons.library_music_outlined,
+          body: l10n.liveScreenHelpDetections,
+        ),
+      ],
+    ),
+  );
 }
 
 /// Circular microphone / stop button — bottom-center FAB (56×56).

@@ -21,6 +21,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../explore/explore_providers.dart';
@@ -120,6 +121,32 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
     );
   }
 
+  void _showHelp() {
+    final l10n = AppLocalizations.of(context)!;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => AppHelpBottomSheet(
+        title: l10n.pointCountSetupHelpTitle,
+        sections: [
+          AppHelpSection(
+            icon: Icons.timer_rounded,
+            body: l10n.pointCountSetupHelpSteps,
+          ),
+          AppHelpSection(
+            icon: Icons.location_on_rounded,
+            body: l10n.pointCountSetupHelpLocation,
+          ),
+          AppHelpSection(
+            icon: Icons.play_arrow_rounded,
+            body: l10n.pointCountSetupHelpStart,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -128,6 +155,11 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
       appBar: AppBar(
         title: Text(l10n.pointCountSetupTitle),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline_rounded, size: 20),
+            onPressed: _showHelp,
+            tooltip: l10n.pointCountSetupHelpTitle,
+          ),
           IconButton(
             icon: const Icon(Icons.tune_rounded, size: 20),
             onPressed: () {

@@ -25,9 +25,11 @@
 // =============================================================================
 
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // =============================================================================
 // Task handler (runs in a separate isolate — kept minimal)
@@ -84,21 +86,34 @@ class _SurveyTaskHandler extends TaskHandler {
 
 /// Manages the Android foreground service for survey background operation.
 class SurveyNotificationService {
+  static String _notificationTitle = '';
+  static String _stopButtonText = '';
+  static String _openButtonText = '';
   bool _running = false;
+
+  /// Localized title used for foreground notification updates.
+  static String get notificationTitle => _notificationTitle;
 
   /// Whether the foreground service is currently active.
   bool get isRunning => _running;
 
   /// Initialize the foreground task configuration.  Call once at app startup.
-  static void init() {
+  static Future<void> init() async {
+    final l10n = await _loadAppLocalizations();
+    final channelName = l10n.surveyNotificationChannelName;
+    final channelDescription = l10n.surveyNotificationChannelDescription;
+    _notificationTitle = l10n.surveyNotificationTitle;
+    _stopButtonText = l10n.notificationStop;
+    _openButtonText = l10n.notificationOpen;
+
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
         // New channel ID forces Android to create a fresh channel (the old
         // 'birdnet_survey' channel cached LOW importance and cannot be
         // changed programmatically).
         channelId: 'birdnet_survey_fg',
-        channelName: 'BirdNET Survey',
-        channelDescription: 'Active bird survey recording',
+        channelName: channelName,
+        channelDescription: channelDescription,
         channelImportance: NotificationChannelImportance.DEFAULT,
         priority: NotificationPriority.DEFAULT,
         playSound: false,
@@ -152,8 +167,8 @@ class SurveyNotificationService {
       notificationTitle: title,
       notificationText: text,
       notificationButtons: [
-        const NotificationButton(id: 'stop', text: 'Stop'),
-        const NotificationButton(id: 'open', text: 'Open'),
+        NotificationButton(id: 'stop', text: _stopButtonText),
+        NotificationButton(id: 'open', text: _openButtonText),
       ],
       callback: surveyTaskCallback,
     );
@@ -185,4 +200,13 @@ class SurveyNotificationService {
     _running = false;
     debugPrint('[SurveyNotification] stopped');
   }
+}
+
+Future<AppLocalizations> _loadAppLocalizations() async {
+  final deviceLocale = PlatformDispatcher.instance.locale;
+  final supportedLocale = AppLocalizations.supportedLocales.firstWhere(
+    (locale) => locale.languageCode == deviceLocale.languageCode,
+    orElse: () => const Locale('en'),
+  );
+  return AppLocalizations.delegate.load(supportedLocale);
 }

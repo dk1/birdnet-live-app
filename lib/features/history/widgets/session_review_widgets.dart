@@ -664,7 +664,7 @@ class _SpeciesTile extends ConsumerWidget {
                   // Species thumbnail.
                   SizedBox(
                     width: 48,
-                    height: 36,
+                    height: 32,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: Image.asset(
@@ -1899,93 +1899,50 @@ class _TrimSpectrogramPainter extends CustomPainter {
 
 /// Bottom sheet displaying help documentation for the session review screen.
 class _SessionHelpSheet extends StatelessWidget {
-  const _SessionHelpSheet();
+  const _SessionHelpSheet({
+    required this.showContinueSurvey,
+  });
+
+  final bool showContinueSurvey;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.7,
-      minChildSize: 0.4,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+    return AppHelpBottomSheet(
+      title: l10n.sessionHelpTitle,
+      initialChildSize: 0.72,
+      sections: [
+        AppHelpSection(
+          icon: Icons.info_outline,
+          body: l10n.sessionHelpOverview,
+        ),
+        AppHelpSection(
+          icon: Icons.close,
+          body: l10n.sessionHelpTopBar,
+        ),
+        AppHelpSection(
+          icon: Icons.add_circle_outline,
+          body: l10n.sessionHelpAddSpecies,
+        ),
+        AppHelpSection(
+          icon: Icons.undo,
+          body: l10n.sessionHelpUndoRedo,
+        ),
+        AppHelpSection(
+          icon: Icons.content_cut,
+          body: l10n.sessionHelpTrimming,
+        ),
+        AppHelpSection(
+          icon: Icons.save,
+          body: l10n.sessionHelpSaveDiscard,
+        ),
+        if (showContinueSurvey)
+          AppHelpSection(
+            icon: Icons.play_arrow_rounded,
+            body: l10n.sessionHelpContinueSurvey,
           ),
-          child: ListView(
-            controller: scrollController,
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-            children: [
-              // Drag handle.
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withAlpha(60),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Text(
-                l10n.sessionHelpTitle,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 16),
-              _helpSection(
-                theme,
-                icon: Icons.info_outline,
-                body: l10n.sessionHelpOverview,
-              ),
-              _helpSection(
-                theme,
-                icon: Icons.add_circle_outline,
-                body: l10n.sessionHelpAddSpecies,
-              ),
-              _helpSection(
-                theme,
-                icon: Icons.note_add_outlined,
-                body: l10n.sessionHelpAnnotations,
-              ),
-              _helpSection(
-                theme,
-                icon: Icons.content_cut,
-                body: l10n.sessionHelpTrimming,
-              ),
-              _helpSection(
-                theme,
-                icon: Icons.share,
-                body: l10n.sessionHelpExport,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _helpSection(ThemeData theme,
-      {required IconData icon, required String body}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 22, color: theme.colorScheme.primary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(body, style: theme.textTheme.bodyMedium),
-          ),
-        ],
-      ),
+      ],
     );
   }
 }

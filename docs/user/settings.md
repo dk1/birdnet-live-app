@@ -1,95 +1,159 @@
 # Settings
 
-BirdNET Live offers a wide range of settings to configure audio capture, AI inference, spectrogram visuals, and data recording. Access the settings from the gear icon on the live screen or the home screen.
+BirdNET Live reuses one Settings screen across multiple workflows. The `tune_rounded` button opens the sections that are relevant to the screen you came from.
 
-Understanding the *intuition* behind each setting will help you adapt the app to your specific environment and goals—whether you're maximizing detections in a quiet forest or filtering out noise in a busy urban area.
+## How Settings Scope Works
 
----
+- Opening Settings from Home shows the full screen.
+- Opening Settings from Live, Survey, Point Count, or File Analysis filters the screen to the relevant sections.
 
 ## General
 
-These settings affect the basic language and appearance of the application.
+### Theme
 
-| Setting | Default | Description | Intuition / Why Change? |
-|---------|---------|-------------|-------------------------|
-| **Theme** | System | Light, Dark, or System. | Switch to **Dark** mode to save battery life on OLED screens and preserve your night vision during early morning birding. |
-| **Language** | System | Application interface language. | If you are contributing screenshots or helping non-native speakers, you can force the app into English or another language regardless of your phone's setting. |
-| **Species Language** | System | The language used for common bird names. | You may prefer the app interface in your native language, but wish to learn or display bird names in English for international communication. |
+Choose **Dark**, **Light**, or **System**.
 
----
+### App Language
 
-## Audio Settings
+Sets the interface language.
 
-These settings control how sound enters the app before it reaches the AI or the spectrogram.
+### Species Names
 
-| Setting | Default | Description | Intuition / Why Change? |
-|---------|---------|-------------|-------------------------|
-| **Input Device** | Default | Select which microphone to use. | Phones have multiple microphones. If you attach an external parabolic microphone or USB mic, select it here to greatly improve range and quality. |
-| **Audio Gain** | 1.0 | Digital amplification applied to captured audio (0.5–4.0). | Increase gain (e.g., 2.0x) if birds are very distant and quiet. Decrease gain if you are near loud sources (like a river) that are clipping/distorting the audio. |
-| **High-Pass Filter** | 0 Hz | Cuts off low frequencies (0–500 Hz). | **Highly recommended** to set to 150-250 Hz if it's windy, or if there is heavy traffic/highway noise nearby. This removes low-frequency rumble that can confuse the AI or clutter the spectrogram, without affecting high-pitched bird calls. |
+Controls the language used for species names. **Follow app language** uses the same language as the interface when that name is available.
 
----
+### Show scientific names
 
-## Inference Settings
+Shows scientific names below common names across the app.
 
-These settings are the core of the BirdNET AI. They dictate how aggressively the app searches for birds and how it balances false positives vs. missing a call.
+## Audio
 
-| Setting | Default | Description | Intuition / Why Change? |
-|---------|---------|-------------|-------------------------|
-| **Window Duration** | 3 s | Length of the audio chunk analyzed by the AI (3, 5, or 10s). | The model is trained on 3s chunks (best balance). Use 5s or 10s if you want the app to take wider context into account, though this updates the screen less frequently. |
-| **Inference Rate** | 1.0 Hz | How often the AI analyzes the audio (0.5–4.0 Hz). | Increase this (e.g., 2.0 Hz) to analyze overlapping windows and catch very brief calls. Decrease it (e.g., 0.5 Hz) to save battery on long surveys. |
-| **Confidence Threshold** | 25% | Minimum model confidence required to display a bird (1–99%). | Lower this to ~10% if you don't mind false positives but want to ensure you miss *nothing*. Raise it to ~50% if you only want definitive, undeniable identifications. |
-| **Sensitivity** | 1.0 | Artificial bias applied to the model's logits (0.5–1.5). | If the AI is generally missing faint calls, push this slightly above 1.0. If you are getting too many confident false positives, lower it below 1.0. |
-| **Score Pooling** | LME | How the app smooths out scores over time (Off, Average, Max, LME). | **LME** (Linear Mean Exponential) is best for continuous live listening as it prevents flickering. Use **Max** if you want the absolute highest instantaneous peak confidence to be recorded. |
-| **Species Filter** | Off | Uses the GPS geo-model to filter out birds not native to your area. | **Geo Exclude** removes impossible birds (great for reducing false positives). **Geo Merge** boosts the confidence of highly likely local birds. Turn this **Off** if you are analyzing audio recorded in a completely different country or visiting a zoo. |
+These controls appear in audio-driven live workflows.
 
----
+### Gain
 
-## Spectrogram Settings
+Adjusts the input gain shown in the app. Use this only when you need to compensate for very quiet recordings or inputs.
 
-The spectrogram is your visual window into the audio. Tweaking these settings helps you "see" bird calls more clearly.
+### High-pass filter (Hz)
 
-| Setting | Default | Description | Intuition / Why Change? |
-|---------|---------|-------------|-------------------------|
-| **FFT Size** | 1024 | Frequency resolution (512–4096). | Higher values (2048) give crisper, sharper lines for bird calls, but require more CPU power and may look "smeared" in time. Lower values (512) update faster. |
-| **Color Map** | Viridis | Color palette of the spectrogram. | **Viridis** is great for general contrast. **Magma** or **Inferno** often make faint high-frequency calls pop out against a dark background. |
-| **dB Floor** | −90 dB | Minimum amplitude (quietest sound) drawn. | If the background of your spectrogram is entirely bright/noisy, raise the floor (e.g., to −70 dB) to make the background black, leaving only the loud bird calls visible. |
-| **dB Ceiling** | −10 dB | Maximum amplitude (loudest sound) drawn. | Lower this if you want moderately loud calls to appear at maximum brightness. |
-| **Duration** | 20 s | How many seconds of history fit on the screen. | Shrink to 10s on small phones so calls appear wider and easier to tap. Expand to 30s+ on tablets to see the long-term pattern of a songbird's chorus. |
-| **Max Frequency** | 12,000 Hz | The highest pitch shown on the Y-axis. | Most birds vocalize between 2,000 and 8,000 Hz. If you are looking for specific high-pitched sounds (like bats or insects), raise this. If you are looking for low-frequency owls/pigeons, lower it to visually zoom in on the bottom half. |
-| **Log Amplitude** | On | Compresses dynamic range. | Keep On to see faint sounds and loud sounds at the same time. Turn Off if you only want the absolute loudest sounds to register visually. |
+Reduces low-frequency rumble before inference.
 
----
+### Microphone
 
-## Recording Settings
+Lets you choose a specific input device or keep the **System default**.
 
-Determine how the app saves audio to your device.
+## Inference
 
-| Setting | Default | Description | Intuition / Why Change? |
-|---------|---------|-------------|-------------------------|
-| **Recording Mode** | Full | What to record: Off, Full (continuous), or Detections Only. | Use **Detections Only** to save massive amounts of storage space; it only saves the few seconds around a bird call rather than gigabytes of silence. |
-| **Recording Format** | FLAC | Audio compression format (WAV or FLAC). | **FLAC** is mathematically lossless but takes 50% less space than WAV. Use WAV only if you plan to import the files into legacy audio software that doesn't support FLAC. |
-| **Pre-Buffer** | 3 s | Seconds of audio saved *before* a detection triggers. | When using Detections Only mode, a 3s buffer ensures the very beginning of a sudden bird call isn't cut off. Increase to 5s for long, winding songs. |
-| **Post-Buffer** | 3 s | Seconds of audio saved *after* a detection ends. | Ensures the trailing echoes or answering calls of a bird aren't abruptly chopped off at the end of the file. |
+### Window duration
 
----
+Controls the length of the analysis window.
 
-## Location Settings
+### Confidence threshold
 
-These options feed coordinates to the Geo-Model for species filtering.
+Sets how conservative detections should be.
 
-| Setting | Default | Description | Intuition / Why Change? |
-|---------|---------|-------------|-------------------------|
-| **Use GPS** | On | Allows the app to request location from the device. | Turn this Off to save battery if you are stationary for exactly one location, and instead manually type the coordinates below. |
-| **Manual Latitude** | 0.0 | Manual override latitude. | Use when analyzing imported files from another country, or if you are deep in a canyon with zero GPS signal but know your coordinates. |
-| **Manual Longitude** | 0.0 | Manual override longitude. | Same as above. |
-| **Geo Threshold** | 0.03 | Minimum expected weekly occurrence rate for a species to be "allowed." | Raise this (e.g., 0.05) if you only want extremely common, everyday birds to pass the filter. Lower it (e.g., 0.01) if you don't want the filter accidentally blocking a rare migrant or vagrant. |
+### Sensitivity
 
----
+Higher values make the detector more permissive, which can recover fainter calls at the cost of more false positives.
+
+### Inference rate
+
+Controls how frequently BirdNET runs inference.
+
+### Score pooling
+
+Controls how overlapping analysis windows are combined.
+
+## Spectrogram
+
+### FFT size
+
+Controls frequency resolution in the spectrogram.
+
+### Color map
+
+Choose **Viridis**, **Magma**, or **Grayscale**.
+
+### Duration (scroll speed)
+
+Controls how much time is visible in the spectrogram window.
+
+### Frequency range
+
+Sets the upper display frequency.
+
+### Log amplitude
+
+Applies logarithmic scaling to the spectrogram for easier visual reading.
+
+## Recording
+
+### Mode
+
+- **Full** — save the whole recording
+- **Detections only** — save clips around detections
+- **Off** — no audio recording
+
+### Clip context
+
+When **Detections only** is active, the app shows **Before** and **After** controls that set how much audio is preserved around each detection.
+
+### Format
+
+Choose **WAV** or **FLAC**.
+
+## Location
+
+### Use GPS
+
+Use device GPS instead of manual coordinates.
+
+### Latitude / Longitude
+
+Manual coordinates used when GPS is disabled.
+
+### Species filter
+
+- **Off** — no geographic filtering
+- **Location filter** — exclude species that fall below the geographic threshold
+- **Location weighting** — use the geo-model as an additional weighting signal
+
+### Geo-filter threshold
+
+Appears when a location-based filter mode is active.
+
+## Export & Sync
+
+### Format
+
+Choose one export target:
+
+- Raven Selection Table
+- CSV
+- JSON
+- GPX (track + waypoints)
+
+### Include audio files
+
+Include saved audio alongside the exported tables or metadata when supported by the export workflow.
+
+## About
+
+The **About** row opens the in-app About screen.
 
 ## Danger Zone
 
-| Setting | Description | Intuition / Why Change? |
-|---------|-------------|-------------------------|
-| **Reset Onboarding** | Shows the initial setup and tutorial screens on the next launch. | Useful if you handed the app to a friend and want them to experience the tutorial, or if you skipped through permissions too fast the first time. |
-| **Clear All Data** | Deletes all saved sessions, audio recordings, and resets settings. | Use this if your phone is running out of storage space, or if you want a clean slate before starting a completely new season of surveying. Requires typing "DELETE" to confirm. |
+### Reset Onboarding
+
+Shows the onboarding sequence again the next time the app launches.
+
+### Clear All Data
+
+Opens a confirmation flow for permanently removing stored app data.
+
+## Workflow-Specific Parameters Outside Settings
+
+Some parameters are configured inside their own setup screens rather than in the shared Settings screen.
+
+- [Point Count Mode](point-count-mode.md) has its own duration and location setup.
+- [Survey Mode](survey-mode.md) has its own survey parameters screen.
+- [File Analysis](file-analysis.md) has its own analysis-parameter step.

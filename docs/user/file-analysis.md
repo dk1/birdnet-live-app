@@ -1,54 +1,68 @@
 # File Analysis
 
-Analyze existing audio recordings offline.
+File Analysis processes an existing recording through the same BirdNET pipeline used by the live workflows.
 
-## Overview
+## How to Open It
 
-File Analysis mode lets you run BirdNET+ inference on audio files stored on your device — no live microphone needed. It supports multiple audio formats and saves results as a session you can review and export.
+From Home, tap the **File Analysis** card with the `audio_file_rounded` icon.
 
-## Supported Formats
+## App Bar
 
-WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA, and AMR. Files not recorded at 32 kHz are automatically resampled.
+- `tune_rounded` — open File Analysis settings
+- `close` — cancel an active analysis run
 
-## Wizard Steps
+## Supported Inputs
 
-### Step 1: Pick File
+The current file picker accepts:
 
-Select an audio file from your device. The app displays file metadata (name, format, duration, size, sample rate, channels).
+- WAV / WAVE
+- FLAC
+- MP3
+- OGG / OGA / Opus
+- M4A / AAC / MP4
+- WMA / AMR
 
-### Step 2: Location & Date
+## Four-Step Wizard
 
-- **Location**: Choose GPS, manual coordinates, map picker, or skip. Location enables geographic species filtering via the geo-model.
-- **Date**: Optionally set the recording date. Defaults to today. Used for seasonal species filtering.
+### 1. Pick File
 
-### Step 3: Parameters
+Choose a file and review its metadata card:
 
-Configure analysis settings:
+- file name
+- format
+- duration
+- file size
+- sample rate
 
-| Parameter | Description |
-|-----------|-------------|
-| **Window duration** | Length of each analysis window (3 / 5 / 10 s) |
-| **Overlap** | Window overlap percentage |
-| **Sensitivity** | Model sensitivity bias |
-| **Confidence threshold** | Minimum score to keep a detection |
-| **Species filter** | Geographic filtering mode |
+### 2. Location and date
 
-### Step 4: Analyze
+You can:
 
-Tap **Analyze** to start. A progress bar shows the current window and running statistics:
+- use current GPS
+- enter coordinates manually
+- skip location
+- pick a point on the map
+- set an optional recording date
 
-- Windows processed
-- Detections found
-- Unique species count
+### 3. Parameters
 
-Analysis can be cancelled at any time.
+The wizard exposes:
 
-## Results
+- window duration
+- overlap
+- sensitivity
+- confidence threshold
+- species filter mode
 
-When analysis completes, the results are saved as a session and automatically opened in the Session Review screen. From there you can edit detections, add annotations, and export in any supported format.
+### 4. Analyze
 
-## Tips
+The progress screen shows:
 
-- **Long files**: Processing time scales linearly with audio duration. A 60-minute file at 1 Hz inference rate processes ~1,200 windows.
-- **Overlap**: Higher overlap catches calls that fall between window boundaries, at the cost of more processing time.
-- **Resampling**: Files at sample rates other than 32 kHz are resampled automatically. This adds a brief preprocessing step.
+- windows processed
+- detections found
+- species found
+- cancel button
+
+## Result
+
+When analysis finishes, BirdNET Live converts the output into a saved session and opens [Session Review](session-review.md).

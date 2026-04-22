@@ -62,6 +62,7 @@ import '../../core/constants/app_constants.dart';
 import '../../shared/models/gps_point.dart';
 import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../live/live_providers.dart';
@@ -866,7 +867,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => const _SessionHelpSheet(),
+      builder: (_) => _SessionHelpSheet(
+        showContinueSurvey: widget.session.type == SessionType.survey,
+      ),
     );
   }
 

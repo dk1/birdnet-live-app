@@ -33,6 +33,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/wakelock_service.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
@@ -509,6 +510,18 @@ class _CountdownStatusBar extends StatelessWidget {
             ),
           ),
 
+          IconButton(
+            icon: Icon(
+              Icons.help_outline_rounded,
+              size: 20,
+              color: theme.colorScheme.onSurface.withAlpha(180),
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+            onPressed: () => _showPointCountLiveHelp(context),
+            tooltip: l10n.pointCountLiveHelpTitle,
+          ),
+
           // Settings gear.
           IconButton(
             icon: Icon(
@@ -533,6 +546,32 @@ class _CountdownStatusBar extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showPointCountLiveHelp(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => AppHelpBottomSheet(
+      title: l10n.pointCountLiveHelpTitle,
+      sections: [
+        AppHelpSection(
+          icon: Icons.timer_rounded,
+          body: l10n.pointCountLiveHelpTimer,
+        ),
+        AppHelpSection(
+          icon: Icons.info_outline,
+          body: l10n.pointCountLiveHelpDetections,
+        ),
+        AppHelpSection(
+          icon: Icons.stop_rounded,
+          body: l10n.pointCountLiveHelpFinish,
+        ),
+      ],
+    ),
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

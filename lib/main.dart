@@ -13,7 +13,7 @@ Future<void> main() async {
 
   // Initialize foreground task communication for survey background service.
   FlutterForegroundTask.initCommunicationPort();
-  SurveyNotificationService.init();
+  await SurveyNotificationService.init();
 
   // Edge-to-edge: set once at startup so the system bars stay transparent
   // on every screen without triggering flicker on rebuilds.

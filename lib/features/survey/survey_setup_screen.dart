@@ -20,6 +20,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../audio/audio_providers.dart';
@@ -193,6 +194,32 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
     );
   }
 
+  void _showHelp() {
+    final l10n = AppLocalizations.of(context)!;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => AppHelpBottomSheet(
+        title: l10n.surveySetupHelpTitle,
+        sections: [
+          AppHelpSection(
+            icon: Icons.route_rounded,
+            body: l10n.surveySetupHelpSteps,
+          ),
+          AppHelpSection(
+            icon: Icons.location_on_rounded,
+            body: l10n.surveySetupHelpLocation,
+          ),
+          AppHelpSection(
+            icon: Icons.play_arrow_rounded,
+            body: l10n.surveySetupHelpStart,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -201,6 +228,11 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
       appBar: AppBar(
         title: Text(l10n.surveySetupTitle),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline_rounded, size: 20),
+            onPressed: _showHelp,
+            tooltip: l10n.surveySetupHelpTitle,
+          ),
           IconButton(
             icon: const Icon(Icons.tune_rounded, size: 20),
             onPressed: () {

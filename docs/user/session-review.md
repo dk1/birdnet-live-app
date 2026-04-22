@@ -1,92 +1,49 @@
 # Session Review
 
-After ending a Live Mode, Point Count, or File Analysis session, the Session Review screen lets you examine, edit, and export your bird detection data. Think of it as a research-grade tool for creating accurate species reports from audio recordings.
+Session Review is where BirdNET Live turns detections into an editable record.
 
-## Screen Layout
+## How You Reach It
 
-| Area | Description |
-|------|-------------|
-| **App bar** | Session name, help (?), add species (+), save, share, delete |
-| **Summary header** | Date, duration, species count, detection count |
-| **Spectrogram strip** | Pre-computed full-session spectrogram with playback position marker |
-| **Trim controls** | Toggle trim mode, apply/reset trim handles |
-| **Audio player** | Play/pause, seek slider, position/duration |
-| **Annotations** | Add and view session annotations (global or timestamped) |
-| **Species list** | Expandable species rows with clustered detections |
+BirdNET Live opens Session Review automatically after completing:
 
-## Adding Species Manually
+- a Live session
+- a Point Count
+- a Survey
+- a File Analysis run
 
-Tap the **+** button in the app bar to add a species that the model missed:
+You can also reopen any saved session from [Session Library](session-library.md).
 
-1. **Search** by common name or scientific name — results update as you type.
-2. **Choose an insert mode**:
-    - **Insert globally** — Adds a detection at the session start (the species was present throughout).
-    - **Insert at playback position** — Adds a detection at the current white playhead marker.
-    - **Replace detection** — Corrects a misidentified species by selecting an existing detection to replace.
-3. **Unknown / Other** — Use this for unidentifiable calls. Adds an "Unknown species" entry.
+## Main Areas
 
-Manually added detections are tagged as "Manual" and exported with `source: manual`.
+### Summary and playback
 
-## Annotations
+Session Review combines playback, spectrogram navigation, and a species list. For survey sessions it can also show mapped context.
 
-Add free-text notes describing the recording conditions, location, weather, or any observation:
+### Species list
 
-- **Global annotations** apply to the whole session.
-- **Timestamped annotations** are tied to a specific playback position.
-- Annotations are included in the exported ZIP bundle as a separate `annotations.txt` file.
+Species are grouped into expandable rows. You can inspect detections by species and move through the recording while reviewing them.
 
-To add an annotation:
+## Toolbar Icons
 
-1. Type your text in the annotation field below the species list.
-2. Toggle the clock icon to attach the current playback timestamp, or leave it as global.
-3. Tap the send button or press Enter.
+The toolbar uses the same icon meanings described in [Icons & Controls](icons-and-controls.md):
 
-## Trimming the Recording
+- `add_circle_outline` — add content
+- `undo` / `redo` — step through edits
+- `content_cut_outlined` / `content_cut` — trim mode
+- `save` — save edits
+- `share` — export or share
+- `delete_outline` — discard session
+- `play_arrow_rounded` — continue a survey when that action is available
+- `help_outline` — open the Session Review help sheet
+- `tune_rounded` — open Settings
 
-Trim unwanted audio (e.g., speech at the beginning, silence at the end):
+## Typical Review Tasks
 
-1. Tap **Trim Recording** below the spectrogram.
-2. Drag the **left handle** to set the start point and the **right handle** to set the end point. Dimmed areas are excluded.
-3. Tap **Apply Trim** to remove detections outside the trim range.
-4. Tap **Reset Trim** to restore the full recording.
+- check detections against playback and spectrogram context
+- add a species or annotation
+- trim the recording to the useful interval
+- export the reviewed result set
 
-Trimming updates the `trimStartSec` and `trimEndSec` metadata — the original audio file is not modified.
+## Export
 
-## Playback and Navigation
-
-- **Tap the spectrogram** to seek to that position.
-- **Drag the spectrogram** to pan through the recording (pauses playback).
-- **Press play** while panned to continue from the panned position.
-- **Tap the play button** on a species row to jump to that detection.
-
-The white vertical line on the spectrogram shows the current playback position.
-
-## Editing Detections
-
-- **Expand** a species row to see individual detection clusters.
-- **Delete** a cluster by tapping the × button (confirmation required).
-- All changes are tracked — save explicitly with the save button.
-- **Unsaved changes warning** appears if you try to leave without saving.
-
-## Exporting and Sharing
-
-Tap the **share** button to export the session. The export format is configured in Settings > Export:
-
-| Format | Description |
-|--------|-------------|
-| **ZIP bundle** | Recording + CSV + JSON + Raven Pro selections + annotations.txt |
-| **CSV** | Comma-separated detection list |
-| **JSON** | Full session data including annotations and trim offsets |
-| **Raven Pro** | Selection table compatible with Cornell's Raven Pro software |
-
-## Session Duration Warning
-
-After 10 minutes of continuous recording in Live Mode, a dialog asks whether you want to continue or end the session. This prevents accidentally leaving a session running.
-
-## App Lifecycle
-
-When the app goes to the background during an active session, it automatically pauses. When you return, it resumes from where it left off.
-
-## Help
-
-Tap the **?** button in the app bar for a quick reference of all session review features.
+Export behavior depends on the options selected in [Settings](settings.md). The app can package detections and, optionally, audio into the chosen export format.

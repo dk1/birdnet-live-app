@@ -1,42 +1,49 @@
 # Explore
 
-Browse bird species expected at your location.
+Explore shows species predicted for the current location and season using the BirdNET geo-model.
 
-## Overview
+## How to Open It
 
-Explore mode uses the BirdNET geo-model to predict which species are likely in your area based on your GPS coordinates and the current time of year. Each species shows a thumbnail image, common and scientific names, and a geo-probability score.
+Open **Explore** from the Home footer using the `search_rounded` button.
 
-## How It Works
+## App Bar and Header
 
-1. Navigate to **Explore** from the home screen.
-2. The app determines your location via GPS (or uses manual coordinates from Settings).
-3. The geo-model predicts species probabilities for your location and the current week.
-4. Species are listed in order of geo-probability (most likely first).
+### App bar
 
-## Screen Layout
+- `refresh` — refresh location and rebuild the predicted species list
 
-| Area | Description |
-|------|-------------|
-| **Location header** | Reverse-geocoded place name with latitude/longitude below |
-| **Help icon** | Tap for an explanation of how the geo-model works |
-| **Species list** | Scrollable cards with thumbnail, names, and geo-score indicator |
+### Location header
 
-## Species Info
+The header shows:
 
-Tap any species card to open the **Species Info Overlay**:
+- current reverse-geocoded place name when available
+- coordinates below the place name
+- `help_outline` — open the Explore help sheet
 
-- **Image** — Medium-resolution photo from the BirdNET taxonomy API
-- **Image credit** — Attribution shown below the photo
-- **Names** — Common name and scientific name
-- **Description** — Wikipedia excerpt about the species
-- **Weekly probability chart** — 48-week bar chart showing seasonal occurrence
-- **External links** — eBird, iNaturalist, and Wikipedia (opens in browser)
+## Species List
 
-## Location
+Each species card can include:
 
-Explore uses the same location settings as Live Mode:
+- bundled species image
+- common name
+- optional scientific name
+- geo-model score badge
 
-- **GPS enabled** (default): Uses your device's GPS to determine location.
-- **GPS disabled**: Uses the manual latitude/longitude from Settings > Location.
+Tap a card to open the species details overlay.
 
-The geo-model divides the year into 48 weeks (4 per month) for seasonal predictions.
+## Species Details Overlay
+
+The overlay can show:
+
+- larger image
+- image credit
+- common and scientific names
+- bundled description text when available
+- weekly expected-frequency chart
+- external links such as eBird, iNaturalist, or Wikipedia when available for that species
+
+## What Explore Is For
+
+Explore is a location-aware reference view inside the app. It helps you compare the app's current location context with the species you expect to encounter.
+
+It does **not** change saved session data by itself. Detection filtering is controlled separately through [Settings](settings.md).

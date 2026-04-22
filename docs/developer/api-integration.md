@@ -14,13 +14,17 @@ https://birdnet.cornell.edu/taxonomy/api/
 
 | Endpoint | Description |
 |----------|-------------|
-| `GET /api/image/{sci_name}?size=thumb` | 150×100 WebP thumbnail (4:3) |
-| `GET /api/image/{sci_name}?size=medium` | 480×320 WebP image (4:3) |
+| `GET /api/image/{sci_name}?size=thumb` | 150x100 WebP thumbnail (3:2) |
+| `GET /api/image/{sci_name}?size=medium` | 480x320 WebP image (3:2) |
 | `GET /api/species/{sci_name}` | Full species record (descriptions, Wikipedia, links) |
+| `GET /api/download/json` | Full taxonomy export used by the local bundle tooling |
 
 ### Usage
 
-Images are loaded via `cached_network_image` for automatic caching. Species info is fetched on-demand when the user taps a detection.
+The app's default experience is offline-first: bundled species images,
+descriptions, and taxonomy metadata are generated ahead of time from the public
+taxonomy export. The live API remains useful for refreshing metadata exports and
+for any future opt-in online enrichments.
 
 ### Error Handling
 

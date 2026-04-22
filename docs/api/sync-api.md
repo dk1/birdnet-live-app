@@ -21,7 +21,7 @@ GET /api/image/{scientific_name}?size={size}
 | `scientific_name` | string | Binomial name (e.g., `Turdus merula`) |
 | `size` | string | `thumb` (150×100) or `medium` (480×320) |
 
-**Response**: WebP image (4:3 aspect ratio)
+**Response**: WebP image (3:2 aspect ratio)
 
 ### Species Info
 
@@ -45,6 +45,23 @@ GET /api/species/{scientific_name}
   "range": "..."
 }
 ```
+
+### Taxonomy Export
+
+```http
+GET /api/download/json
+```
+
+Downloads the full BirdNET taxonomy dataset as JSON.
+
+| Detail | Value |
+|--------|-------|
+| Response type | `application/json` |
+| Delivery | Attachment download |
+| Typical filename | `birdnet_taxonomy_0.1-Mar2026.json` |
+
+This is the endpoint used by the local species bundle tooling to reproduce the
+bundled taxonomy assets.
 
 ## Sync API
 

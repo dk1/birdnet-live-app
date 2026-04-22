@@ -19,6 +19,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/services/reverse_geocoding_service.dart';
+import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import 'explore_providers.dart';
 import 'widgets/species_card.dart';
@@ -199,13 +200,14 @@ class _LocationHeaderState extends State<_LocationHeader> {
                   ),
                 ),
               ),
-              GestureDetector(
-                onTap: () => _showExploreHelp(context),
-                child: Icon(
+              IconButton(
+                onPressed: () => _showExploreHelp(context),
+                icon: Icon(
                   Icons.help_outline,
                   size: 22,
                   color: theme.colorScheme.onSurface.withAlpha(120),
                 ),
+                tooltip: l10n.exploreHelpTitle,
               ),
             ],
           ),
@@ -250,86 +252,69 @@ class _ExploreHelpSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.55,
-      minChildSize: 0.3,
-      maxChildSize: 0.9,
-      expand: false,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-          ),
-          child: ListView(
-            controller: scrollController,
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-            children: [
-              // Drag handle.
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withAlpha(60),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Text(
-                l10n.exploreHelpTitle,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.info_outline,
-                      size: 22, color: theme.colorScheme.primary),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(l10n.exploreHelpBody,
-                        style:
-                            theme.textTheme.bodyMedium?.copyWith(height: 1.5)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              InkWell(
-                onTap: () async {
-                  final uri =
-                      Uri.parse('https://birdnet-team.github.io/geomodel/');
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  }
-                },
-                child: Row(
-                  children: [
-                    Icon(Icons.open_in_new,
-                        size: 18, color: theme.colorScheme.primary),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        l10n.exploreHelpLearnMore,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.primary,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
+    return AppHelpBottomSheet(
+      title: l10n.exploreHelpTitle,
+      initialChildSize: 0.62,
+      sections: [
+        AppHelpSection(
+          icon: Icons.info_outline,
+          body: l10n.exploreHelpBody,
+        ),
+        AppHelpSection(
+          icon: Icons.refresh,
+          body: l10n.exploreHelpRefresh,
+        ),
+        AppHelpSection(
+          icon: Icons.help_outline_rounded,
+          body: l10n.exploreHelpLocation,
+        ),
+        AppHelpSection(
+          icon: Icons.search_rounded,
+          body: l10n.exploreHelpCards,
+        ),
+      ],
+      footer: _ExploreHelpLink(label: l10n.exploreHelpLearnMore),
+    );
+  }
+}
+
+class _ExploreHelpLink extends StatelessWidget {
+  const _ExploreHelpLink({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      onTap: () async {
+        final uri = Uri.parse('https://birdnet-team.github.io/geomodel/');
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
       },
+      child: Row(
+        children: [
+          Icon(
+            Icons.open_in_new,
+            size: 18,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.primary,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -389,6 +374,7 @@ class _ErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Center(
       child: Padding(
@@ -413,7 +399,7 @@ class _ErrorView extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(l10n.retry),
             ),
           ],
         ),

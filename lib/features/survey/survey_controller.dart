@@ -337,7 +337,7 @@ class SurveyController {
 
       // Start foreground service notification.
       await _notificationService.start(
-        title: 'Survey Recording',
+        title: SurveyNotificationService.notificationTitle,
         text: _buildNotificationText(),
       );
 
@@ -466,7 +466,7 @@ class SurveyController {
       );
 
       await _notificationService.start(
-        title: 'Survey Recording',
+        title: SurveyNotificationService.notificationTitle,
         text: _buildNotificationText(),
       );
 
@@ -792,7 +792,7 @@ class SurveyController {
   /// Push updated stats to the foreground notification.
   Future<void> _updateNotification() async {
     await _notificationService.update(
-      title: 'Survey Recording',
+      title: SurveyNotificationService.notificationTitle,
       text: _buildNotificationText(),
     );
   }
