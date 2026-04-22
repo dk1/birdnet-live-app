@@ -551,12 +551,6 @@ class SurveyController {
       _session!.recordingPath = recordingPath;
     }
 
-    // Enforce global cap on detections (smart mode).
-    if (_sampler != null) {
-      final evicted = _sampler!.enforceGlobalCap();
-      await DetectionSampler.deleteClips(evicted);
-    }
-
     if (kDebugMode) {
       MemoryMonitor.logOnce(tag: 'survey-end');
       MemoryMonitor.printSummary();
@@ -564,10 +558,11 @@ class SurveyController {
     }
 
     // Close any still-open detection windows so that long-running cards
-    // visible at survey end get a proper [endTimestamp].
+    // visible at survey end get a proper [endTimestamp]. Each closed
+    // record is then handed to the sampler, which may drop its clip.
     if (_activeCardSpecies.isNotEmpty) {
       final now = DateTime.now();
-      for (final existing in _activeCardSpecies.values) {
+      for (final existing in _activeCardSpecies.values.toList()) {
         final closed = DetectionRecord(
           scientificName: existing.scientificName,
           commonName: existing.commonName,
@@ -583,6 +578,7 @@ class SurveyController {
         if (sIdx != -1) _sessionDetections[sIdx] = closed;
         final lsIdx = _session!.detections.indexOf(existing);
         if (lsIdx != -1) _session!.detections[lsIdx] = closed;
+        await _sampler?.onRecordClosed(closed);
       }
     }
 
@@ -716,6 +712,9 @@ class SurveyController {
         for (final name in disappeared) {
           final existing = _activeCardSpecies.remove(name);
           if (existing == null) continue;
+          // Mutate endTimestamp in place via list-replace (endTimestamp is
+          // a final field). The new record carries the same audioClipPath
+          // reference, which the sampler may then mutate to null in place.
           final closed = DetectionRecord(
             scientificName: existing.scientificName,
             commonName: existing.commonName,
@@ -731,6 +730,11 @@ class SurveyController {
           if (sIdx != -1) _sessionDetections[sIdx] = closed;
           final lsIdx = _session!.detections.indexOf(existing);
           if (lsIdx != -1) _session!.detections[lsIdx] = closed;
+
+          // Hand the closed record to the sampler. The sampler may delete
+          // the clip file and clear `audioClipPath` on this record (or on
+          // a previously-kept record it's now evicting).
+          await _sampler?.onRecordClosed(closed);
         }
 
         // Get current GPS position for detection tagging.
@@ -758,23 +762,12 @@ class SurveyController {
               longitude: gpsPoint?.longitude,
             );
 
-            // Check detection sampling.
-            final evicted = _sampler?.shouldKeep(record);
-
-            final accepted = _sampler == null ||
-                _sampler!.mode == SamplingMode.all ||
-                _sampler!.wasAccepted(record);
-
-            if (accepted) {
-              _session!.addDetection(record);
-              _sessionDetections.insert(0, record);
-              _activeCardSpecies[name] = record;
-            }
-
-            // Delete evicted clip if any.
-            if (evicted != null && evicted != record) {
-              DetectionSampler.deleteClips([evicted]);
-            }
+            // Records are always added to the session. Audio-clip retention
+            // is decided later, when the detection closes (see disappeared
+            // branch above and finalize), via [DetectionSampler].
+            _session!.addDetection(record);
+            _sessionDetections.insert(0, record);
+            _activeCardSpecies[name] = record;
           } else if (_activeCardSpecies.containsKey(name)) {
             // Update confidence if higher — also move to end so it
             // appears at the top of the recent detections list.

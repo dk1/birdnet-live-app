@@ -108,7 +108,7 @@ enum DetectionSource {
 /// Unlike [Detection] (which holds a full [Species] object), this stores
 /// only the essential fields needed for history display and export.
 class DetectionRecord {
-  const DetectionRecord({
+  DetectionRecord({
     required this.scientificName,
     required this.commonName,
     required this.confidence,
@@ -145,7 +145,11 @@ class DetectionRecord {
   final DateTime? endTimestamp;
 
   /// Path to the saved audio clip for this detection (if available).
-  final String? audioClipPath;
+  ///
+  /// Mutable: the survey detection sampler may clear this (and delete the
+  /// underlying file) when an audio clip is dropped to enforce per-species
+  /// or spatial caps. The detection record itself is always retained.
+  String? audioClipPath;
 
   /// How this detection was created.
   final DetectionSource source;
