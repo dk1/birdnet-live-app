@@ -5,7 +5,7 @@
 // Shows the accumulated detections from the current live session.  Each
 // detection is displayed as a card with:
 //
-//   • Thumbnail image (4:3)
+//   • Thumbnail image (3:2)
 //   • Common name (full row, not truncated)
 //   • Scientific name + confidence bar
 //
@@ -93,10 +93,10 @@ class DetectionTile extends ConsumerWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // ── Thumbnail (4:3) ───────────────────────────────
+            // ── Thumbnail (3:2) ───────────────────────────────
             SizedBox(
               width: 60,
-              height: 45,
+              height: 40,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(6),
                 child: _buildSpeciesImage(taxonomyAsync),

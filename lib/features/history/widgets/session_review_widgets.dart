@@ -664,7 +664,7 @@ class _SpeciesTile extends ConsumerWidget {
                   // Species thumbnail.
                   SizedBox(
                     width: 48,
-                    height: 36,
+                    height: 32,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: Image.asset(

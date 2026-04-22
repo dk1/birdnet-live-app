@@ -54,5 +54,6 @@ See the [Developer Getting Started](getting-started.md) guide for environment se
 - [Database](database.md) — Session persistence (JSON files)
 - [Testing](testing.md) — Test strategy and running tests
 - [Code Style](code-style.md) — Conventions and standards
+- [Species Bundle](species-bundle.md) — Rebuild bundled species images and metadata
 - [Building](building.md) — Build commands and release notes
 - [Releasing](releasing.md) — Version bumping and release process

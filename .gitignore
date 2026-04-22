@@ -2,6 +2,8 @@
 dev/
 assets/species_images/
 assets/species_data/
+tools/.cache/
+tools/data/
 
 # IDE
 .idea/

@@ -20,7 +20,7 @@
 //
 // ### Data source
 //
-// Built by `dev/build_species_bundle.py` from the taxonomy JSON.
+// Built by `tools/build_species_bundle.py` from the taxonomy JSON.
 // =============================================================================
 
 import 'dart:convert';

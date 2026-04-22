@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4] - 2026-04-22
+
+### Added
+- Tracked species bundle tooling under `tools/`, including a public taxonomy JSON download helper
+- Developer documentation for reproducing bundled species images and metadata through mkdocs
+
+### Changed
+- Bundled species images now rebuild at 480x320 WebP with slightly lower quality for better full-size detail rendering
+
 ## [0.3.3] - 2026-08-05
 
 ### Added
@@ -84,7 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Offline species data bundle: 5,241 species images (240Ã—160 WebP) and descriptions in 7 languages bundled into the APK
-- `dev/build_species_bundle.py` â€” re-runnable Python build script to download, resize, and package species assets
+- `tools/build_species_bundle.py` â€” re-runnable Python build script to download, resize, and package species assets
 - `SpeciesDescriptionService` â€” lazy gzip JSON loader with per-locale caching and English fallback
 - Italian (`it`) and Korean (`ko`) common name columns added to `taxonomy.csv`
 

@@ -3,7 +3,7 @@
 // =============================================================================
 //
 // A modal bottom sheet showing detailed species information:
-//   • Medium image (480×320 WebP, 4:3)
+//   • Medium image (480x320 WebP, 3:2)
 //   • Common name + scientific name
 //   • Wikipedia excerpt (if available from API)
 //   • External links (eBird, iNaturalist)
@@ -137,7 +137,7 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
 
               // ── Image ────────────────────────────────────────
               AspectRatio(
-                aspectRatio: 4 / 3,
+                aspectRatio: 3 / 2,
                 child: Image.asset(
                   _detail?.assetImagePath ?? 'assets/images/dummy_species.png',
                   fit: BoxFit.cover,

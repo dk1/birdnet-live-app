@@ -69,6 +69,7 @@ nav:
       - Building: developer/building.md
       - Testing: developer/testing.md
       - Code Style: developer/code-style.md
+      - Species Bundle: developer/species-bundle.md
       - State Management: developer/state-management.md
       - Audio Pipeline: developer/audio-pipeline.md
       - Inference Engine: developer/inference-engine.md
