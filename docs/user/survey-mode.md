@@ -4,7 +4,7 @@ Survey Mode is the route-based workflow for long-running moving surveys.
 
 ## How to Open It
 
-From Home, tap the **Survey Mode** card with the `route_rounded` icon.
+From Home, tap the **Survey Mode** card with the :material-routes: icon.
 
 ## Setup Flow
 
@@ -41,7 +41,7 @@ This is a short pre-start checklist inside the setup flow.
 
 ### 4. Ready
 
-The ready screen summarizes the active survey configuration before you start with `play_arrow_rounded`.
+The ready screen summarizes the active survey configuration before you start with :material-play:.
 
 ## Live Survey Dashboard
 
@@ -49,15 +49,15 @@ The live Survey screen has three main tabs plus a recent detections list.
 
 ### Top bar
 
-- `stop_rounded` — end the survey
-- `timer_rounded` — elapsed time
-- `help_outline_rounded` — open the Survey help sheet
-- `tune_rounded` — open Survey settings
+- :material-stop: — end the survey
+- :material-timer: — elapsed time
+- :material-help-circle-outline: — open the Survey help sheet
+- :material-tune: — open Survey settings
 
 ### Tabs
 
-- `map_outlined` — route map and mapped detections
-- `graphic_eq` — spectrogram
+- :material-map-outline: — route map and mapped detections
+- :material-equalizer: — spectrogram
 - chart icon — summary statistics and species breakdown
 
 ### Stats and detections
