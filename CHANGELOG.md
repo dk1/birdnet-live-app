@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.3] - 2026-04-22
+
+### Changed
+- Onboarding pages use a more compact layout (smaller icons, smaller title, tighter padding) so the Terms & Privacy page — including the Privacy Policy link — fits on one screen on compact devices
+
 ## [0.5.2] - 2026-04-22
 
 ### Fixed
