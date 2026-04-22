@@ -510,6 +510,7 @@ class SurveyController {
   Future<LiveSession?> stopSurvey() async {
     if (_session == null) return null;
     _state = SurveyState.stopping;
+    _errorMessage = null;
     _notifyListeners();
 
     // Stop timers.
@@ -554,22 +555,28 @@ class SurveyController {
     _session!.end();
     final completedSession = _session!;
 
-    // Final persist.
-    await _persistSession();
+    try {
+      // Final persist.
+      await _persistSession();
 
-    // Delete recovery file.
-    await _deleteRecoveryFile();
+      // Delete recovery file.
+      await _deleteRecoveryFile();
+    } catch (e, st) {
+      debugPrint('[SurveyController] finalize persist error: $e\n$st');
+      _errorMessage = e.toString();
+    } finally {
+      // Reset state even if persistence cleanup fails so the controller
+      // cannot get stuck in the stopping state.
+      _session = null;
+      _sessionDetections.clear();
+      _currentLiveDetections = const [];
+      _activeCardSpecies.clear();
+      _gpsTracker = null;
+      _sampler = null;
 
-    // Reset state.
-    _session = null;
-    _sessionDetections.clear();
-    _currentLiveDetections = const [];
-    _activeCardSpecies.clear();
-    _gpsTracker = null;
-    _sampler = null;
-
-    _state = SurveyState.finalized;
-    _notifyListeners();
+      _state = SurveyState.finalized;
+      _notifyListeners();
+    }
 
     debugPrint('[SurveyController] survey finalized');
     return completedSession;

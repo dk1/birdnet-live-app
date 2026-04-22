@@ -240,28 +240,48 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     _finalizing = true;
     _uiUpdateTimer?.cancel();
 
-    final controller = ref.read(surveyControllerProvider);
-    final captureNotifier = ref.read(captureStateProvider.notifier);
+    try {
+      final controller = ref.read(surveyControllerProvider);
+      final captureNotifier = ref.read(captureStateProvider.notifier);
 
-    await captureNotifier.stop();
-    final session = await controller.stopSurvey();
-    _onControllerStateChanged();
+      await captureNotifier.stop();
+      final session = await controller.stopSurvey();
+      _onControllerStateChanged();
 
-    if (session != null && mounted) {
-      final repo = ref.read(sessionRepositoryProvider);
-      session.sessionNumber = await repo.nextSessionNumber(session.type);
-      await repo.save(session);
-      ref.invalidate(sessionListProvider);
+      if (session != null && mounted) {
+        final repo = ref.read(sessionRepositoryProvider);
+        session.sessionNumber = await repo.nextSessionNumber(session.type);
+        await repo.save(session);
+        ref.invalidate(sessionListProvider);
 
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute<void>(
+              builder: (_) => SessionReviewScreen(session: session),
+            ),
+          );
+        }
+      } else if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e, st) {
+      debugPrint('[SurveyLiveScreen] finalize error: $e\n$st');
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(
-            builder: (_) => SessionReviewScreen(session: session),
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${l10n.statusError}: $e'),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
-    } else {
-      if (mounted) Navigator.of(context).pop();
+    } finally {
+      _finalizing = false;
+      if (mounted) {
+        _uiUpdateTimer ??= Timer.periodic(const Duration(seconds: 1), (_) {
+          if (mounted) setState(() {});
+        });
+      }
     }
   }
 
