@@ -30,8 +30,8 @@ class OnboardingScreen extends ConsumerWidget {
             child: ClipOval(
               child: Image.asset(
                 'assets/images/app-icon.png',
-                width: 120,
-                height: 120,
+                width: 80,
+                height: 80,
                 fit: BoxFit.cover,
               ),
             ),
@@ -109,7 +109,7 @@ class OnboardingScreen extends ConsumerWidget {
     return Center(
       child: Icon(
         icon,
-        size: 120,
+        size: 80,
         color: theme.colorScheme.primary,
       ),
     );
@@ -125,7 +125,7 @@ class OnboardingScreen extends ConsumerWidget {
         color: theme.colorScheme.onSurface.withAlpha(200),
       ),
       bodyPadding: const EdgeInsets.symmetric(horizontal: 24),
-      imagePadding: const EdgeInsets.only(top: 80),
+      imagePadding: const EdgeInsets.only(top: 32),
     );
   }
 }
