@@ -16,6 +16,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../explore/explore_providers.dart';
 import '../live/live_providers.dart';
@@ -47,6 +48,36 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _showHelp() {
+    final l10n = AppLocalizations.of(context)!;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => AppHelpBottomSheet(
+        title: l10n.sessionLibraryHelpTitle,
+        sections: [
+          AppHelpSection(
+            icon: Icons.search,
+            body: l10n.sessionLibraryHelpSearch,
+          ),
+          AppHelpSection(
+            icon: _viewModeIcon(_viewMode),
+            body: l10n.sessionLibraryHelpView,
+          ),
+          AppHelpSection(
+            icon: Icons.swap_vert,
+            body: l10n.sessionLibraryHelpSort,
+          ),
+          AppHelpSection(
+            icon: Icons.library_music_outlined,
+            body: l10n.sessionLibraryHelpOpen,
+          ),
+        ],
+      ),
+    );
   }
 
   /// Returns `true` if [session] matches the current search query.
@@ -188,6 +219,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
             IconButton(
               icon: const Icon(Icons.search),
               onPressed: () => setState(() => _showSearch = true),
+            ),
+            IconButton(
+              icon: const Icon(Icons.help_outline_rounded),
+              tooltip: l10n.sessionLibraryHelpTitle,
+              onPressed: _showHelp,
             ),
             PopupMenuButton<_ViewMode>(
               icon: Icon(_viewModeIcon(_viewMode)),

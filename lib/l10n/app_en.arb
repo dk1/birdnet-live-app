@@ -1948,5 +1948,145 @@
   "speciesFrequencyRare": "Rare",
   "@speciesFrequencyRare": {
     "description": "Lowest frequency category label for geo-model probability"
+  },
+  "liveScreenHelpTitle": "Live Mode Help",
+  "@liveScreenHelpTitle": {
+    "description": "Title for the Live Mode help overlay"
+  },
+  "liveScreenHelpOverview": "Live Mode opens the microphone, updates the spectrogram continuously, and adds species detections to the list below.",
+  "@liveScreenHelpOverview": {
+    "description": "Overview text for the Live Mode help overlay"
+  },
+  "liveScreenHelpControls": "Use back to leave the screen, help to reopen this overlay, and settings for Live-specific options. The large center button changes between mic, play, and stop depending on the current state.",
+  "@liveScreenHelpControls": {
+    "description": "Explains the top controls and center action button on the Live Mode help overlay"
+  },
+  "liveScreenHelpInfoBar": "The info line under the spectrogram summarizes the current session, including visible detections, unique species, total detections, elapsed time, and recording size when audio capture is enabled.",
+  "@liveScreenHelpInfoBar": {
+    "description": "Explains the session info bar on the Live Mode help overlay"
+  },
+  "liveScreenHelpDetections": "Tap any species row to open the species details sheet. When you stop the session, BirdNET Live saves it and opens Session Review.",
+  "@liveScreenHelpDetections": {
+    "description": "Explains the detection list on the Live Mode help overlay"
+  },
+  "pointCountSetupHelpTitle": "Point Count Setup Help",
+  "@pointCountSetupHelpTitle": {
+    "description": "Title for the Point Count setup help overlay"
+  },
+  "pointCountSetupHelpSteps": "This wizard moves through duration and location, a short in-app tips page, and a ready screen before the count begins. Use the step buttons at the bottom to move forward or back.",
+  "@pointCountSetupHelpSteps": {
+    "description": "Explains the Point Count setup flow"
+  },
+  "pointCountSetupHelpLocation": "Choose whether the count uses current GPS, manual coordinates, a map-picked point, or no location. The settings button opens the Point Count settings subset without leaving the workflow.",
+  "@pointCountSetupHelpLocation": {
+    "description": "Explains the location and settings controls on the Point Count setup help overlay"
+  },
+  "pointCountSetupHelpStart": "The final step summarizes the configured duration and location. Start Count begins the timed session immediately and opens the live count screen.",
+  "@pointCountSetupHelpStart": {
+    "description": "Explains the start action on the Point Count setup help overlay"
+  },
+  "pointCountLiveHelpTitle": "Point Count Help",
+  "@pointCountLiveHelpTitle": {
+    "description": "Title for the Point Count live-screen help overlay"
+  },
+  "pointCountLiveHelpTimer": "The top bar combines stop, remaining time, help, and settings. The progress bar below shows how much of the timed count is complete.",
+  "@pointCountLiveHelpTimer": {
+    "description": "Explains the top controls on the Point Count live help overlay"
+  },
+  "pointCountLiveHelpDetections": "The spectrogram and detection list update during the count. The info bar summarizes current detections, unique species, and total detections for this session.",
+  "@pointCountLiveHelpDetections": {
+    "description": "Explains the live detection area on the Point Count help overlay"
+  },
+  "pointCountLiveHelpFinish": "Use stop to end the count early or wait for the timer to finish. Either way, the session is saved and opened in Session Review.",
+  "@pointCountLiveHelpFinish": {
+    "description": "Explains how the Point Count live screen ends"
+  },
+  "surveySetupHelpTitle": "Survey Setup Help",
+  "@surveySetupHelpTitle": {
+    "description": "Title for the Survey setup help overlay"
+  },
+  "surveySetupHelpSteps": "Survey Setup moves through details, parameters, field tips, and a ready screen. Use the bottom buttons to move between steps before starting.",
+  "@surveySetupHelpSteps": {
+    "description": "Explains the Survey setup flow"
+  },
+  "surveySetupHelpLocation": "The details step lets you use current GPS, manual coordinates, or no starting location. If background GPS is available, the setup flow also prompts for the permissions needed by the live survey.",
+  "@surveySetupHelpLocation": {
+    "description": "Explains the location behavior on the Survey setup help overlay"
+  },
+  "surveySetupHelpStart": "The ready step summarizes the survey configuration. Start Survey begins audio capture and route tracking and opens the live survey dashboard.",
+  "@surveySetupHelpStart": {
+    "description": "Explains the start action on the Survey setup help overlay"
+  },
+  "fileAnalysisHelpTitle": "File Analysis Help",
+  "@fileAnalysisHelpTitle": {
+    "description": "Title for the File Analysis help overlay"
+  },
+  "fileAnalysisHelpSteps": "File Analysis is a four-step wizard: choose a recording, set location and date, adjust analysis parameters, and run analysis.",
+  "@fileAnalysisHelpSteps": {
+    "description": "Explains the File Analysis workflow"
+  },
+  "fileAnalysisHelpLocation": "Location and date are optional but affect geographic and seasonal filtering. Use current GPS, manual coordinates, a map-picked point, or no location for the file.",
+  "@fileAnalysisHelpLocation": {
+    "description": "Explains the location and date step on the File Analysis help overlay"
+  },
+  "fileAnalysisHelpAnalyze": "The app bar help button reopens this guide, settings opens the File Analysis settings subset, and close cancels an active analysis. When analysis finishes, the result opens in Session Review.",
+  "@fileAnalysisHelpAnalyze": {
+    "description": "Explains the active controls and result behavior on the File Analysis help overlay"
+  },
+  "sessionLibraryHelpTitle": "Session Library Help",
+  "@sessionLibraryHelpTitle": {
+    "description": "Title for the Session Library help overlay"
+  },
+  "sessionLibraryHelpSearch": "Use search to filter sessions by names, dates, locations, or species.",
+  "@sessionLibraryHelpSearch": {
+    "description": "Explains the search control on the Session Library help overlay"
+  },
+  "sessionLibraryHelpView": "The view mode menu switches between Detailed, Compact, and By Species so you can browse the library in the layout that fits the task.",
+  "@sessionLibraryHelpView": {
+    "description": "Explains the view mode menu on the Session Library help overlay"
+  },
+  "sessionLibraryHelpSort": "The sort menu changes whether sessions are ordered by date or name.",
+  "@sessionLibraryHelpSort": {
+    "description": "Explains the sort menu on the Session Library help overlay"
+  },
+  "sessionLibraryHelpOpen": "Tap any session card or row to open Session Review for playback, editing, export, and mapped context.",
+  "@sessionLibraryHelpOpen": {
+    "description": "Explains opening a saved session from the Session Library help overlay"
+  },
+  "exploreHelpRefresh": "Use refresh in the app bar to reload the current location and rebuild the predicted species list.",
+  "@exploreHelpRefresh": {
+    "description": "Explains the refresh icon on the Explore help overlay"
+  },
+  "exploreHelpLocation": "The location header shows the place name and coordinates for the current prediction context. The small help button in that header reopens this overlay.",
+  "@exploreHelpLocation": {
+    "description": "Explains the location header on the Explore help overlay"
+  },
+  "exploreHelpCards": "Each species card shows the current geo-model ranking for that species. Tap a card to open images, description text, external links, and the seasonal chart.",
+  "@exploreHelpCards": {
+    "description": "Explains species cards on the Explore help overlay"
+  },
+  "surveyLiveHelpTopBar": "The top row combines stop, elapsed timer, help, and settings. Stop ends the survey and saves the session; settings opens the Survey settings subset.",
+  "@surveyLiveHelpTopBar": {
+    "description": "Explains the top bar on the Survey live help overlay"
+  },
+  "surveyLiveHelpTabs": "Use the tabs to switch between the live map, spectrogram, and summary views while the survey keeps running.",
+  "@surveyLiveHelpTabs": {
+    "description": "Explains the tab row on the Survey live help overlay"
+  },
+  "sessionHelpTopBar": "The top bar uses close to leave Session Review and settings to open the full settings screen. Your current session stays loaded while you inspect playback, detections, and notes.",
+  "@sessionHelpTopBar": {
+    "description": "Explains the top app bar on the Session Review help overlay"
+  },
+  "sessionHelpUndoRedo": "Undo and redo step backward and forward through review edits made during the current session.",
+  "@sessionHelpUndoRedo": {
+    "description": "Explains the undo and redo buttons on the Session Review help overlay"
+  },
+  "sessionHelpSaveDiscard": "Save writes your edits, share exports the session bundle, discard removes the saved session, and the help button reopens this overlay.",
+  "@sessionHelpSaveDiscard": {
+    "description": "Explains save, share, discard, and help on the Session Review help overlay"
+  },
+  "sessionHelpContinueSurvey": "For survey sessions, the play button continues recording into the same survey instead of starting a separate one.",
+  "@sessionHelpContinueSurvey": {
+    "description": "Explains the continue survey action on the Session Review help overlay"
   }
 }

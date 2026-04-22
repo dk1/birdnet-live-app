@@ -36,6 +36,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../core/services/reverse_geocoding_service.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../explore/explore_providers.dart';
@@ -81,6 +82,32 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
 
   // ── Step 4: Analysis ──────────────────────────────────────────────────
   bool _modelLoaded = false;
+
+  void _showHelp() {
+    final l10n = AppLocalizations.of(context)!;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => AppHelpBottomSheet(
+        title: l10n.fileAnalysisHelpTitle,
+        sections: [
+          AppHelpSection(
+            icon: Icons.audio_file_rounded,
+            body: l10n.fileAnalysisHelpSteps,
+          ),
+          AppHelpSection(
+            icon: Icons.location_on_rounded,
+            body: l10n.fileAnalysisHelpLocation,
+          ),
+          AppHelpSection(
+            icon: Icons.play_arrow_rounded,
+            body: l10n.fileAnalysisHelpAnalyze,
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -337,6 +364,11 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
                 )
               : null,
           actions: [
+            IconButton(
+              icon: const Icon(Icons.help_outline_rounded, size: 20),
+              onPressed: _showHelp,
+              tooltip: l10n.fileAnalysisHelpTitle,
+            ),
             IconButton(
               icon: const Icon(Icons.tune_rounded, size: 20),
               onPressed: () {

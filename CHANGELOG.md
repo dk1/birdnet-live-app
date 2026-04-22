@@ -5,25 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.1] - 2026-04-22
-
-### Added
-- Expanded the User Guide with workflow pages for Live, Explore, Session Library, Session Review, Point Count, Survey, File Analysis, icons and controls, and settings
-- Added a Common Controls section to the in-app Help screen using the same icons used throughout the app
-
-### Changed
-- Reworked Help and Explore guidance to explain app navigation and screen behavior rather than field methodology
-- Updated localized Help copy across all supported locales for consistency with the current app UI
-
 ## [0.4.0] - 2026-04-22
 
 ### Added
 - Direct User Guide access from the Help screen
 - A File Analysis app bar shortcut to the relevant settings panel
+- Expanded the User Guide with workflow pages for Live, Explore, Session Library, Session Review, Point Count, Survey, File Analysis, icons and controls, and settings
+- Added screen-level help overlays across operational workflows, including a common help-sheet layout and icon explanations that match the current UI
 
 ### Changed
 - Localized remaining user-facing strings in file analysis, explore, settings, and survey notifications across all supported locales
 - Updated Help guidance to point users to the User Guide from both Help and About
+- Reworked Help and Explore guidance to explain app navigation and screen behavior rather than field methodology
+- Localized the new help-overlay copy across all supported locales
 
 ## [0.3.4] - 2026-04-22
 
