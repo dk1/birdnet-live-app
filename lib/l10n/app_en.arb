@@ -1755,6 +1755,22 @@
   "@tooltipCancelAnalysis": {
     "description": "Tooltip for cancelling a running file analysis"
   },
+  "fileAnalysisCancelTitle": "Cancel analysis?",
+  "@fileAnalysisCancelTitle": {
+    "description": "Title of the confirmation dialog shown when the user cancels a running file analysis"
+  },
+  "fileAnalysisCancelMessage": "Detected species so far will be discarded.",
+  "@fileAnalysisCancelMessage": {
+    "description": "Body of the confirmation dialog shown when the user cancels a running file analysis"
+  },
+  "fileAnalysisCancelKeep": "Keep analyzing",
+  "@fileAnalysisCancelKeep": {
+    "description": "Button label that dismisses the cancel-analysis confirmation and resumes analysis"
+  },
+  "fileAnalysisCancelConfirm": "Stop analysis",
+  "@fileAnalysisCancelConfirm": {
+    "description": "Button label that confirms cancellation of a running file analysis"
+  },
   "tooltipSendAnnotation": "Send annotation",
   "@tooltipSendAnnotation": {
     "description": "Tooltip for the send button in the annotation composer"

@@ -38,7 +38,9 @@ import '../../core/services/reverse_geocoding_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/content_width_constraint.dart';
+import '../../shared/widgets/confirm_destructive.dart';
 import '../../shared/widgets/map_picker_screen.dart';
+import '../../shared/widgets/stat_chip.dart';
 import '../explore/explore_providers.dart';
 import '../history/session_review_screen.dart';
 import '../live/live_providers.dart';
@@ -336,6 +338,23 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     return ((dayOfYear / 7.0).ceil()).clamp(1, 48);
   }
 
+  /// Confirms with the user, then cancels the running analysis.
+  ///
+  /// Returns `true` if the analysis was cancelled, `false` otherwise.
+  Future<bool> _confirmCancel() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await confirmDestructive(
+      context,
+      title: l10n.fileAnalysisCancelTitle,
+      body: l10n.fileAnalysisCancelMessage,
+      confirmLabel: l10n.fileAnalysisCancelConfirm,
+      cancelLabel: l10n.fileAnalysisCancelKeep,
+    );
+    if (!confirmed || !mounted) return false;
+    ref.read(fileAnalysisControllerProvider).cancel();
+    return true;
+  }
+
   // ── Build ─────────────────────────────────────────────────────────────
 
   @override
@@ -359,9 +378,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
               ? IconButton(
                   icon: const Icon(Icons.close),
                   tooltip: l10n.tooltipCancelAnalysis,
-                  onPressed: () {
-                    ref.read(fileAnalysisControllerProvider).cancel();
-                  },
+                  onPressed: _confirmCancel,
                 )
               : null,
           actions: [
@@ -450,9 +467,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
                     errorMessage:
                         ref.read(fileAnalysisControllerProvider).errorMessage,
                     fileInfo: _fileInfo,
-                    onCancel: () {
-                      ref.read(fileAnalysisControllerProvider).cancel();
-                    },
+                    onCancel: _confirmCancel,
                   ),
                 ],
               ),
@@ -1209,18 +1224,20 @@ class _AnalysisStep extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: _StatCard(
+                  child: StatChip(
                     icon: Icons.bar_chart,
                     label: l10n.fileAnalysisDetections,
                     value: '${progress.detectionsFound}',
+                    variant: StatChipVariant.card,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _StatCard(
+                  child: StatChip(
                     icon: MdiIcons.feather,
                     label: l10n.fileAnalysisSpecies,
                     value: '${progress.speciesFound}',
+                    variant: StatChipVariant.card,
                   ),
                 ),
               ],
@@ -1269,47 +1286,6 @@ class _AnalysisStep extends StatelessWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(icon, color: theme.colorScheme.primary),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            Text(
-              label,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

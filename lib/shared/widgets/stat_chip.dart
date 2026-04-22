@@ -55,6 +55,7 @@ class StatChip extends StatelessWidget {
     required this.value,
     this.label,
     this.variant = StatChipVariant.chip,
+    this.style,
   });
 
   /// Leading icon. Sized 18 dp for inline variants and the default
@@ -72,6 +73,12 @@ class StatChip extends StatelessWidget {
   /// Which visual variant to render.
   final StatChipVariant variant;
 
+  /// Optional override for the value text style. When `null`, the variant
+  /// picks a sensible default (`bodyMedium` inline, `headlineSmall` for
+  /// the card variant). Useful when the surrounding row sets tabular
+  /// figures or a custom color.
+  final TextStyle? style;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -86,14 +93,16 @@ class StatChip extends StatelessWidget {
   }
 
   Widget _inline(ThemeData theme, {required bool bold}) {
-    final textStyle = theme.textTheme.bodyMedium?.copyWith(
-      color: theme.colorScheme.onSurface,
-      fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
-    );
+    final textStyle = style ??
+        theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurface,
+          fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
+        );
+    final iconSize = bold ? 16.0 : 18.0;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: theme.colorScheme.primary),
+        Icon(icon, size: iconSize, color: theme.colorScheme.primary),
         const SizedBox(width: 4),
         Text(value, style: textStyle),
       ],

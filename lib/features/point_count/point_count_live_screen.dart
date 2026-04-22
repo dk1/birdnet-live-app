@@ -34,6 +34,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/wakelock_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
+import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
@@ -182,24 +183,14 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
   /// User wants to stop early.
   Future<void> _confirmStopEarly() async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.pointCountStopEarlyTitle),
-        content: Text(l10n.pointCountStopEarlyMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.pointCountStopEarly),
-          ),
-        ],
-      ),
+    final confirmed = await confirmDestructive(
+      context,
+      title: l10n.pointCountStopEarlyTitle,
+      body: l10n.pointCountStopEarlyMessage,
+      confirmLabel: l10n.pointCountStopEarly,
+      cancelLabel: l10n.cancel,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
     await _finalizeAndReview();
   }
 

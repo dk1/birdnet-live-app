@@ -17,7 +17,12 @@ import 'package:intl/intl.dart';
 
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
+import '../../shared/widgets/confirm_destructive.dart';
 import '../../shared/widgets/content_width_constraint.dart';
+import '../../shared/widgets/empty_view.dart';
+import '../../shared/widgets/error_view.dart';
+import '../../shared/widgets/loading_view.dart';
+import '../../shared/widgets/stat_chip.dart';
 import '../explore/explore_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
@@ -257,28 +262,18 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       ),
       body: ContentWidthConstraint(
           child: sessionsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('$e')),
+        loading: () => const LoadingView(),
+        error: (e, _) => ErrorView(
+          title: l10n.statusError,
+          message: e.toString(),
+          onRetry: () => ref.invalidate(sessionListProvider),
+          retryLabel: l10n.retry,
+        ),
         data: (sessions) {
           if (sessions.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.library_music_outlined,
-                    size: 64,
-                    color: theme.colorScheme.onSurface.withAlpha(60),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.sessionLibraryEmpty,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurface.withAlpha(120),
-                    ),
-                  ),
-                ],
-              ),
+            return EmptyView(
+              icon: Icons.library_music_outlined,
+              title: l10n.sessionLibraryEmpty,
             );
           }
 
@@ -341,24 +336,14 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
 
   Future<void> _confirmDelete(LiveSession session) async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.sessionDiscardTitle),
-        content: Text(l10n.sessionDiscardMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.sessionDiscard),
-          ),
-        ],
-      ),
+    final confirmed = await confirmDestructive(
+      context,
+      title: l10n.sessionDiscardTitle,
+      body: l10n.sessionDiscardMessage,
+      confirmLabel: l10n.sessionDiscard,
+      cancelLabel: l10n.cancel,
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
     await ref.read(sessionRepositoryProvider).delete(session.id);
     ref.invalidate(sessionListProvider);
   }
@@ -513,17 +498,20 @@ class _SessionTile extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _StatBadge(
+                  StatChip(
                     icon: Icons.timer_outlined,
-                    label: _formatDuration(duration),
+                    value: _formatDuration(duration),
+                    variant: StatChipVariant.badge,
                   ),
-                  _StatBadge(
+                  StatChip(
                     icon: MdiIcons.feather,
-                    label: '$speciesCount spp.',
+                    value: '$speciesCount spp.',
+                    variant: StatChipVariant.badge,
                   ),
-                  _StatBadge(
+                  StatChip(
                     icon: Icons.music_note_outlined,
-                    label: '$detectionCount det.',
+                    value: '$detectionCount det.',
+                    variant: StatChipVariant.badge,
                   ),
                 ],
               ),
@@ -725,33 +713,6 @@ class _SpeciesGroup {
   final String scientificName;
   final String commonName;
   final Set<String> sessionIds = {};
-}
-
-/// Displays a single stat (icon + label) for the session tile.
-class _StatBadge extends StatelessWidget {
-  const _StatBadge({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16, color: theme.colorScheme.primary),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 /// Returns a localized display label for the given [SessionType].

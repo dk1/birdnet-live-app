@@ -10,6 +10,7 @@ import '../../core/services/wakelock_service.dart';
 
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
+import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
@@ -168,24 +169,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   /// Show confirmation dialog, then finalize and navigate to review.
   Future<void> _confirmStop() async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.sessionStopTitle),
-        content: Text(l10n.sessionStopMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.sessionStopConfirm),
-          ),
-        ],
-      ),
+    final confirmed = await confirmDestructive(
+      context,
+      title: l10n.sessionStopTitle,
+      body: l10n.sessionStopMessage,
+      confirmLabel: l10n.sessionStopConfirm,
+      cancelLabel: l10n.cancel,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
     await _finalizeAndReview();
   }
 

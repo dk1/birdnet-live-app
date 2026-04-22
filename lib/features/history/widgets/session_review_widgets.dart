@@ -107,19 +107,19 @@ class _SummaryHeader extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              _StatChip(
+              StatChip(
                 icon: Icons.timer_outlined,
-                label: _formatDuration(duration),
+                value: _formatDuration(duration),
               ),
               const SizedBox(width: 16),
-              _StatChip(
+              StatChip(
                 icon: MdiIcons.feather,
-                label: l10n.sessionSpeciesCount(species),
+                value: l10n.sessionSpeciesCount(species),
               ),
               const SizedBox(width: 16),
-              _StatChip(
+              StatChip(
                 icon: Icons.graphic_eq,
-                label: l10n.sessionDetectionCount(detectionCount),
+                value: l10n.sessionDetectionCount(detectionCount),
               ),
             ],
           ),
@@ -177,9 +177,9 @@ class _SummaryHeader extends StatelessWidget {
                 children: [
                   if (session.distanceMeters != null &&
                       session.distanceMeters! > 0) ...[
-                    _StatChip(
+                    StatChip(
                       icon: Icons.straighten_outlined,
-                      label: session.distanceMeters! >= 1000
+                      value: session.distanceMeters! >= 1000
                           ? '${(session.distanceMeters! / 1000).toStringAsFixed(1)} km'
                           : '${session.distanceMeters!.round()} m',
                     ),
@@ -189,9 +189,9 @@ class _SummaryHeader extends StatelessWidget {
                   ],
                   if (session.observerName != null &&
                       session.observerName!.isNotEmpty)
-                    _StatChip(
+                    StatChip(
                       icon: Icons.person_outline,
-                      label: session.observerName!,
+                      value: session.observerName!,
                     ),
                 ],
               ),
@@ -199,9 +199,9 @@ class _SummaryHeader extends StatelessWidget {
             if (session.transectId != null &&
                 session.transectId!.isNotEmpty) ...[
               const SizedBox(height: 4),
-              _StatChip(
+              StatChip(
                 icon: Icons.route_outlined,
-                label: session.transectId!,
+                value: session.transectId!,
               ),
             ],
           ],
@@ -216,25 +216,6 @@ class _SummaryHeader extends StatelessWidget {
     final seconds = d.inSeconds.remainder(60);
     if (hours > 0) return '${hours}h ${minutes}m';
     return '${minutes}m ${seconds}s';
-  }
-}
-
-class _StatChip extends StatelessWidget {
-  const _StatChip({required this.icon, required this.label});
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 18, color: theme.colorScheme.primary),
-        const SizedBox(width: 4),
-        Text(label, style: theme.textTheme.bodyMedium),
-      ],
-    );
   }
 }
 

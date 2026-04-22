@@ -20,15 +20,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
+import '../../core/theme/score_colors.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
+import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_providers.dart';
 import '../audio/ring_buffer.dart';
 import '../explore/explore_providers.dart';
@@ -216,25 +217,14 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
   Future<void> _confirmStop() async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.surveyStopTitle),
-        content: Text(l10n.surveyStopMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.surveyStopConfirm),
-          ),
-        ],
-      ),
+    final confirmed = await confirmDestructive(
+      context,
+      title: l10n.surveyStopTitle,
+      body: l10n.surveyStopMessage,
+      confirmLabel: l10n.surveyStopConfirm,
+      cancelLabel: l10n.cancel,
     );
-    if (confirmed != true || !mounted) return;
-    HapticFeedback.mediumImpact();
+    if (!confirmed || !mounted) return;
     await _finalizeAndReview();
   }
 
@@ -737,11 +727,8 @@ class _SurveySummaryTab extends StatelessWidget {
                   '${(sp.bestConfidence * 100).toStringAsFixed(0)}%',
                   style: theme.textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: sp.bestConfidence >= 0.7
-                        ? Colors.green
-                        : sp.bestConfidence >= 0.4
-                            ? Colors.amber
-                            : Colors.red,
+                    color: (theme.extension<ScoreColors>() ?? ScoreColors.light)
+                        .forScore(sp.bestConfidence),
                   ),
                 ),
               ],

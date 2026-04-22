@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/score_colors.dart';
 import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/services/taxonomy_service.dart';
 import '../../explore/explore_providers.dart';
@@ -179,11 +180,10 @@ class DetectionTile extends ConsumerWidget {
     );
   }
 
-  /// Map confidence to a color: red → amber → green.
+  /// Map confidence to a color via the [ScoreColors] theme extension.
   Color _confidenceColor(double confidence, ThemeData theme) {
-    if (confidence >= 0.7) return Colors.green;
-    if (confidence >= 0.4) return Colors.amber;
-    return Colors.red;
+    final scoreColors = theme.extension<ScoreColors>() ?? ScoreColors.light;
+    return scoreColors.forScore(confidence);
   }
 
   Widget _buildSpeciesImage(AsyncValue<TaxonomyService> taxonomyAsync) {
