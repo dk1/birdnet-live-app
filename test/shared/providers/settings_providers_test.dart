@@ -57,12 +57,8 @@ void main() {
       expect(container.read(recordingModeProvider), 'full');
     });
 
-    test('preBuffer defaults to 5', () {
-      expect(container.read(preBufferProvider), 5);
-    });
-
-    test('postBuffer defaults to 5', () {
-      expect(container.read(postBufferProvider), 5);
+    test('clipContext defaults to 1', () {
+      expect(container.read(clipContextProvider), 1);
     });
 
     test('exportFormat defaults to raven', () {

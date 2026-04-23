@@ -151,8 +151,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final samplingStr = ref.read(surveyDetectionSamplingProvider);
     final samplingMode = samplingModeFromString(samplingStr);
     final topN = ref.read(surveyTopNPerSpeciesProvider);
-    final clipPreBuffer = ref.read(surveyClipPreBufferProvider);
-    final clipPostBuffer = ref.read(surveyClipPostBufferProvider);
     final autoStopBattery = ref.read(surveyAutoStopBatteryProvider);
 
     final geoScores = await ref.read(geoScoresProvider.future);
@@ -175,8 +173,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         samplingMode: samplingMode,
         topNPerSpecies: topN,
         backgroundGps: widget.backgroundGps,
-        clipPreBuffer: clipPreBuffer,
-        clipPostBuffer: clipPostBuffer,
         autoStopBattery: autoStopBattery,
       );
     } else {
@@ -200,8 +196,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         startLatitude: widget.startLatitude,
         startLongitude: widget.startLongitude,
         backgroundGps: widget.backgroundGps,
-        clipPreBuffer: clipPreBuffer,
-        clipPostBuffer: clipPostBuffer,
         autoStopBattery: autoStopBattery,
       );
     }

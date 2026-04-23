@@ -503,7 +503,8 @@ class LiveSession {
             )
           : null,
       stopReasonValue: json['stopReasonValue'] as num?,
-      recordedDurationSeconds: (json['recordedDurationSeconds'] as num?)?.toInt(),
+      recordedDurationSeconds:
+          (json['recordedDurationSeconds'] as num?)?.toInt(),
     );
   }
 

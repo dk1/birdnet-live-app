@@ -108,11 +108,13 @@ class SurveyController {
   final Map<String, DetectionRecord> _activeCardSpecies = {};
 
   static const int _maxInMemoryDetections = 10000;
+
   /// How often we persist the session to disk and run the battery check.
   /// Cheap notification text refresh runs on its own faster cadence (see
   /// [_notificationIntervalSeconds]) so the lock-screen timer matches the
   /// recorded time without thrashing storage.
   static const int _persistIntervalSeconds = 30;
+
   /// How often the foreground notification body is refreshed.
   static const int _notificationIntervalSeconds = 1;
 
@@ -244,8 +246,6 @@ class SurveyController {
     double? startLatitude,
     double? startLongitude,
     bool backgroundGps = true,
-    int clipPreBuffer = 3,
-    int clipPostBuffer = 3,
     int autoStopBattery = 0,
   }) async {
     if (_state == SurveyState.active) return;
@@ -407,8 +407,6 @@ class SurveyController {
     required SamplingMode samplingMode,
     int topNPerSpecies = 10,
     bool backgroundGps = true,
-    int clipPreBuffer = 3,
-    int clipPostBuffer = 3,
     int autoStopBattery = 0,
   }) async {
     if (_state == SurveyState.active) return;

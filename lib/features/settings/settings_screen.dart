@@ -350,43 +350,14 @@ class SettingsScreen extends ConsumerWidget {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Text(l10n.surveyClipBefore),
-                          Slider(
-                            value: ref.watch(preBufferProvider).toDouble(),
-                            min: 0,
-                            max: 10,
-                            divisions: 10,
-                            label: '${ref.watch(preBufferProvider)}s',
-                            onChanged: (v) => ref
-                                .read(preBufferProvider.notifier)
-                                .set(v.round()),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Text(l10n.surveyClipAfter),
-                          Slider(
-                            value: ref.watch(postBufferProvider).toDouble(),
-                            min: 0,
-                            max: 10,
-                            divisions: 10,
-                            label: '${ref.watch(postBufferProvider)}s',
-                            onChanged: (v) => ref
-                                .read(postBufferProvider.notifier)
-                                .set(v.round()),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                child: Slider(
+                  value: ref.watch(clipContextProvider).toDouble(),
+                  min: 0,
+                  max: 5,
+                  divisions: 5,
+                  label: '\u00b1${ref.watch(clipContextProvider)}s',
+                  onChanged: (v) =>
+                      ref.read(clipContextProvider.notifier).set(v.round()),
                 ),
               ),
               const SizedBox(height: 16),
