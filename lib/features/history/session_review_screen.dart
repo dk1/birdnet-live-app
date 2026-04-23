@@ -75,6 +75,7 @@ import '../recording/native_audio_decoder.dart';
 import '../spectrogram/color_maps.dart';
 import 'session_export.dart';
 import 'session_map_screen.dart';
+import 'widgets/clip_player_sheet.dart';
 import '../settings/settings_screen.dart';
 import '../survey/survey_live_screen.dart';
 import '../survey/widgets/survey_map_widget.dart';
@@ -1726,38 +1727,19 @@ class _FullscreenSurveyMapScreen extends StatefulWidget {
 
 class _FullscreenSurveyMapScreenState
     extends State<_FullscreenSurveyMapScreen> {
-  final AudioPlayer _clipPlayer = AudioPlayer();
-  DetectionRecord? _playingDetection;
-
-  @override
-  void dispose() {
-    _clipPlayer.dispose();
-    super.dispose();
-  }
+  DetectionRecord? _highlight;
 
   Future<void> _onMarkerTap(DetectionRecord detection) async {
-    // Find the detection's clip (or fall back to the best one at that spot).
-    final clip = detection.audioClipPath != null &&
-            File(detection.audioClipPath!).existsSync()
-        ? detection
-        : widget.detections
-            .where((d) =>
-                d.scientificName == detection.scientificName &&
-                d.audioClipPath != null &&
-                File(d.audioClipPath!).existsSync())
-            .firstOrNull;
-    if (clip == null) return;
+    // Only play markers whose own clip is still on disk. The map widget
+    // already prefers the audio-bearing record when grouping, so a tap on
+    // a "play badge" marker reaches us here with [audioClipPath] set; a
+    // tap on a no-audio marker is a silent no-op.
+    final path = detection.audioClipPath;
+    if (path == null || !File(path).existsSync()) return;
 
-    setState(() => _playingDetection = detection);
-    await _clipPlayer.stop();
-    await _clipPlayer.setFilePath(clip.audioClipPath!);
-    _clipPlayer.play();
-    _clipPlayer.playerStateStream
-        .where((s) => s.processingState == ProcessingState.completed)
-        .first
-        .then((_) {
-      if (mounted) setState(() => _playingDetection = null);
-    });
+    setState(() => _highlight = detection);
+    await showClipPlayerSheet(context, detection: detection);
+    if (mounted) setState(() => _highlight = null);
   }
 
   @override
@@ -1770,7 +1752,7 @@ class _FullscreenSurveyMapScreenState
         detections: widget.detections,
         autoFollow: false,
         fitAllPoints: true,
-        highlightedDetection: _playingDetection,
+        highlightedDetection: _highlight,
         onMarkerTap: _onMarkerTap,
       ),
     );

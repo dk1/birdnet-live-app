@@ -197,7 +197,10 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
     final markers = <Marker>[];
 
     // Group detections by location to prevent overlapping.
-    // We show each unique species at each location once.
+    // We show each unique species at each location once. When multiple
+    // detections share a spot, prefer the one whose audio clip survived
+    // the sampler so the map's audio badge is accurate; otherwise pick
+    // the highest-confidence record.
     final detectionsByLocation = <String, DetectionRecord>{};
     for (final det in widget.detections) {
       if (det.latitude == null || det.longitude == null) continue;
@@ -205,7 +208,16 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
       final key =
           '${det.latitude!.toStringAsFixed(5)}_${det.longitude!.toStringAsFixed(5)}_${det.scientificName}';
       final existing = detectionsByLocation[key];
-      if (existing == null || det.confidence > existing.confidence) {
+      if (existing == null) {
+        detectionsByLocation[key] = det;
+        continue;
+      }
+      final existingHasAudio = existing.audioClipPath != null;
+      final candidateHasAudio = det.audioClipPath != null;
+      if (candidateHasAudio && !existingHasAudio) {
+        detectionsByLocation[key] = det;
+      } else if (candidateHasAudio == existingHasAudio &&
+          det.confidence > existing.confidence) {
         detectionsByLocation[key] = det;
       }
     }
@@ -214,6 +226,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
       final isHighlighted = widget.highlightedDetection != null &&
           det.scientificName == widget.highlightedDetection!.scientificName &&
           det.timestamp == widget.highlightedDetection!.timestamp;
+      final hasAudio = det.audioClipPath != null;
 
       markers.add(
         Marker(
@@ -228,6 +241,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
               scientificName: det.scientificName,
               confidence: det.confidence,
               isHighlighted: isHighlighted,
+              hasAudio: hasAudio,
             ),
           ),
         ),
@@ -389,11 +403,13 @@ class _SpeciesMarker extends ConsumerWidget {
     required this.scientificName,
     required this.confidence,
     this.isHighlighted = false,
+    this.hasAudio = false,
   });
 
   final String scientificName;
   final double confidence;
   final bool isHighlighted;
+  final bool hasAudio;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -409,7 +425,7 @@ class _SpeciesMarker extends ConsumerWidget {
     final path = taxonomyAsync.valueOrNull?.assetImagePath(scientificName) ??
         'assets/images/dummy_species.png';
 
-    return Container(
+    final avatar = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
@@ -438,6 +454,40 @@ class _SpeciesMarker extends ConsumerWidget {
                 Icon(Icons.music_note, size: size * 0.45, color: borderColor),
           ),
         ),
+      ),
+    );
+
+    if (!hasAudio) return avatar;
+
+    // Tiny play badge in the bottom-right corner indicates that this
+    // marker has a saved audio clip the user can play.
+    final badgeSize = (size * 0.42).clamp(10.0, 18.0);
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          avatar,
+          Positioned(
+            right: -2,
+            bottom: -2,
+            child: Container(
+              width: badgeSize,
+              height: badgeSize,
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(200),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1),
+              ),
+              child: Icon(
+                Icons.play_arrow_rounded,
+                size: badgeSize * 0.85,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
