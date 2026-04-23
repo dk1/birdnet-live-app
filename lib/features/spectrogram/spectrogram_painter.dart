@@ -178,7 +178,9 @@ class SpectrogramPainter extends CustomPainter {
 
     // Draw the spectrogram image scaled to the display area.
     // The internal image is at 1:1 pixel resolution (maxColumns × binCount).
-    // GPU bilinear filtering (FilterQuality.low) smooths the upscale.
+    // GPU bilinear filtering smooths the upscale; `medium` adds a
+    // mipmap pre-filter step that visibly reduces blocky aliasing
+    // compared to `low`, at negligible GPU cost for an image this size.
     if (_spectrogramImage != null) {
       final src = Rect.fromLTWH(
         0,
@@ -190,7 +192,7 @@ class SpectrogramPainter extends CustomPainter {
         _spectrogramImage!,
         src,
         spectrogramRect,
-        Paint()..filterQuality = FilterQuality.low,
+        Paint()..filterQuality = FilterQuality.medium,
       );
     }
 
