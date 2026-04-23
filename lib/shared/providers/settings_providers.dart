@@ -106,11 +106,11 @@ final dbCeilingProvider =
   return DoubleSettingNotifier(prefs, PrefKeys.dbCeiling, 0);
 });
 
-/// Spectrogram visible duration in seconds (5, 10, 15, 20, 30 — default 15).
+/// Spectrogram visible duration in seconds (5, 10, 15, 20, 30 — default 20).
 final spectrogramDurationProvider =
     StateNotifierProvider<IntSettingNotifier, int>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return IntSettingNotifier(prefs, PrefKeys.spectrogramDuration, 15);
+  return IntSettingNotifier(prefs, PrefKeys.spectrogramDuration, 20);
 });
 
 /// Maximum frequency displayed in the spectrogram in Hz (default 16000).

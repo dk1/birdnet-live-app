@@ -69,8 +69,8 @@ void main() {
       expect(container.read(includeAudioProvider), true);
     });
 
-    test('spectrogramDuration defaults to 15', () {
-      expect(container.read(spectrogramDurationProvider), 15);
+    test('spectrogramDuration defaults to 20', () {
+      expect(container.read(spectrogramDurationProvider), 20);
     });
 
     test('spectrogramMaxFreq defaults to 16000', () {
