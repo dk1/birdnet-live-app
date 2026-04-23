@@ -9,6 +9,8 @@
 // Privacy: Requires map tile consent (checked via SharedPreferences).
 // =============================================================================
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -199,8 +201,8 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
     // Group detections by location to prevent overlapping.
     // We show each unique species at each location once. When multiple
     // detections share a spot, prefer the one whose audio clip survived
-    // the sampler so the map's audio badge is accurate; otherwise pick
-    // the highest-confidence record.
+    // the sampler AND is still on disk so the map's audio badge is
+    // accurate; otherwise pick the highest-confidence record.
     final detectionsByLocation = <String, DetectionRecord>{};
     for (final det in widget.detections) {
       if (det.latitude == null || det.longitude == null) continue;
@@ -212,8 +214,8 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
         detectionsByLocation[key] = det;
         continue;
       }
-      final existingHasAudio = existing.audioClipPath != null;
-      final candidateHasAudio = det.audioClipPath != null;
+      final existingHasAudio = _hasPlayableClip(existing);
+      final candidateHasAudio = _hasPlayableClip(det);
       if (candidateHasAudio && !existingHasAudio) {
         detectionsByLocation[key] = det;
       } else if (candidateHasAudio == existingHasAudio &&
@@ -226,7 +228,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
       final isHighlighted = widget.highlightedDetection != null &&
           det.scientificName == widget.highlightedDetection!.scientificName &&
           det.timestamp == widget.highlightedDetection!.timestamp;
-      final hasAudio = det.audioClipPath != null;
+      final hasAudio = _hasPlayableClip(det);
 
       markers.add(
         Marker(
@@ -394,6 +396,17 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
       ),
     );
   }
+}
+
+/// Returns true when a detection has a recorded clip that is still on disk.
+/// We must check existence (not just the path) because clips may have been
+/// deleted out-of-band (sampler eviction, manual cleanup, expired temp dir),
+/// and we don't want to render a play badge for a marker whose tap would
+/// silently no-op.
+bool _hasPlayableClip(DetectionRecord det) {
+  final path = det.audioClipPath;
+  if (path == null) return false;
+  return File(path).existsSync();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
