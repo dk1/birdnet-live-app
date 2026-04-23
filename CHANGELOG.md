@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-04-23
+
+### Fixed
+
+- **Session review species search** — search now matches localized common names (German, French, Spanish, Czech, Italian, Portuguese), not only English. Results are ranked by text relevance: full-string prefix > word prefix > substring, with observation count as a tie-breaker. Geo-likely species are softly boosted but never demoted from a strong text match.
+- **Multi-token search** — typing multiple words (e.g. "barn owl") now correctly matches species containing all tokens in any order.
+
+### Changed
+
+- **Add/Replace species overlay redesign** — when invoked from "Replace this detection" on a specific cluster, the picker now shows a banner with the detection being replaced (thumbnail, common name, scientific name) and skips the redundant mode selector and dropdown — the user only chooses the new species.
+- **Add species (FAB)** — defaults to "Insert at playback position" (the more useful mode) and drops the unused "Replace" segment from this entry path.
+- **Result tiles** include a 48×48 species thumbnail.
+- **Empty / no-result states** — clear hint when the search field is empty (with "Unknown / Other" surfaced as a quick action) and a friendly "no results" message when nothing matches.
+
 ## [0.6.0] - 2026-04-23
 
 ### Added

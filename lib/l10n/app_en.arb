@@ -649,6 +649,23 @@
   "@sessionUnknownSpecies": {
     "description": "Label for the unknown or unidentified species category"
   },
+  "sessionReplacingLabel": "Replacing",
+  "@sessionReplacingLabel": {
+    "description": "Label shown above the detection being replaced in the species picker"
+  },
+  "sessionSearchHint": "Type a common or scientific name to find a species.",
+  "@sessionSearchHint": {
+    "description": "Helper text shown when the species search field is empty"
+  },
+  "sessionNoResultsFor": "No species match \"{query}\".",
+  "@sessionNoResultsFor": {
+    "description": "Empty state when species search returns nothing",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "sessionAnnotations": "Annotations",
   "@sessionAnnotations": {
     "description": "Section title for session annotations"
