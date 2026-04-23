@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-04-23
+
+### Added
+- Spectrogram render quality is now user-configurable (Low / Medium / High) under Settings → Spectrogram, with High as the default for sharp live spectrograms and Low as a fallback for older phones
+- Survey foreground notification now uses a monochrome blue jay silhouette as the status-bar small icon instead of a generic circle
+- Species info overlay opens to the user's locale Wikipedia page when bundled (interface locales: en, de, fr, es, cs, pt, it), falling back to English
+
+### Changed
+- Default visible spectrogram duration raised from 15 s to 20 s for a wider live view
+- Live and Point Count spectrograms render with the configured filter quality (was hardcoded low) for noticeably crisper detail when upscaled
+- Session review spectrogram now uses FFT 2048 + high filter quality for sharper detection-clip previews
+- Live mode keeps the recording running across pause so audio and detection timestamps remain continuous; detections are now timestamped at the start of the analyzed window for accurate review playback
+- Recording capture uses a unified clip-context setting and now captures true pre+post audio around each detection
+- Survey detection markers only show the play badge when the audio clip actually exists on disk; markers gain a stronger audio affordance (accent ring, larger badge, grey border for silent markers)
+- Tapping the active play button in session review now pauses playback (works for both Live and Survey clips)
+- Species info overlay now uses fully bundled taxonomy data — eBird link is shown only when an `ebird_code` exists (insects and other non-birds correctly hide it), iNaturalist only when an `inat_id` exists, and Wikipedia only when a bundled URL exists for the active locale
+- eBird link chip uses the Cornell Lab sapsucker silhouette as its icon
+- German UI uses "Detektion" / "Detektionen" instead of "Erkennung" / "Erkennungen" throughout for clearer detection terminology
+
+### Fixed
+- Survey detection clip player honors the pause toggle (previously kept playing when tapping the active play button)
+
+### Privacy / Hardening
+- Verified the app makes no network calls beyond OSM map tiles and OSM Nominatim reverse geocoding (both gated by a single one-time consent); no taxonomy API, no analytics, no telemetry
+- Removed the unused `cached_network_image` dependency and dead taxonomy-API URL helpers (`thumbUrl` / `mediumUrl` getters and the static API base URL) so future code cannot accidentally reintroduce taxonomy-API fetches
+
 ## [0.5.4] - 2026-04-22
 
 ### Added
