@@ -149,8 +149,7 @@ class TaxonomyService {
       final haystacks = <String>[
         species.scientificName.toLowerCase(),
         species.commonName.toLowerCase(),
-        if (species.commonNameAlt != null)
-          species.commonNameAlt!.toLowerCase(),
+        if (species.commonNameAlt != null) species.commonNameAlt!.toLowerCase(),
         if (species.commonNames != null)
           ...species.commonNames!.values.map((n) => n.toLowerCase()),
       ];

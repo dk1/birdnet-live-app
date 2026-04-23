@@ -446,6 +446,57 @@
   "@exploreInfoNote": {
     "description": "Short note explaining what the explore species list shows"
   },
+  "exploreSearchHint": "Search species…",
+  "@exploreSearchHint": {
+    "description": "Hint text for the explore screen search field"
+  },
+  "exploreFilterAll": "All",
+  "@exploreFilterAll": {
+    "description": "Taxonomic filter chip — all groups"
+  },
+  "exploreFilterBirds": "Birds",
+  "@exploreFilterBirds": {
+    "description": "Taxonomic filter chip — Aves"
+  },
+  "exploreFilterMammals": "Mammals",
+  "@exploreFilterMammals": {
+    "description": "Taxonomic filter chip — Mammalia"
+  },
+  "exploreFilterAmphibians": "Amphibians",
+  "@exploreFilterAmphibians": {
+    "description": "Taxonomic filter chip — Amphibia"
+  },
+  "exploreFilterInsects": "Insects",
+  "@exploreFilterInsects": {
+    "description": "Taxonomic filter chip — Insecta"
+  },
+  "exploreSectionAtLocation": "At your location ({count})",
+  "@exploreSectionAtLocation": {
+    "description": "Section header for search hits that occur at the user's location",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreSectionElsewhere": "Other species ({count})",
+  "@exploreSectionElsewhere": {
+    "description": "Section header for search hits that do not occur at the user's location",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreNoResultsFor": "No species match \"{query}\".",
+  "@exploreNoResultsFor": {
+    "description": "Empty state when explore search returns nothing",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "settingsLocation": "Location",
   "@settingsLocation": {
     "description": "Location settings section title"

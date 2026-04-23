@@ -1323,8 +1323,7 @@ class _AddSpeciesOverlayState extends ConsumerState<_AddSpeciesOverlay> {
                             Divider(height: 1, color: theme.dividerColor),
                         itemBuilder: (context, index) {
                           final sp = _results[index];
-                          final locName =
-                              sp.commonNameForLocale(speciesLocale);
+                          final locName = sp.commonNameForLocale(speciesLocale);
                           return _SpeciesResultTile(
                             species: sp,
                             displayName: locName,
