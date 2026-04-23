@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4] - 2026-04-22
+
+### Added
+- Survey map markers now show a small play badge on detections whose audio clip was retained, making it visually obvious which icons can be played back
+- Tapping a marker with audio opens a modal player overlay with a spectrogram preview, scrubber, and play/pause controls (replaces the old silent in-place playback)
+
+### Changed
+- Smart sampling: same-spot distance threshold reduced from 500 m to 250 m and a per-species minimum of 3 retained clips is always honored — the first three high-confidence detections of a species always survive, even when they share a spot
+- Survey foreground notification now refreshes about once per second so the lock-screen timer matches actual recording time (session disk persistence stays on its 30 s cadence)
+- Survey "elapsed" / total recorded time now excludes pause/resume gaps. `LiveSession` persists `recordedDurationSeconds`; resumed sessions accumulate active time across segments instead of measuring wall-clock from the original start
+- Detection map widget prefers audio-bearing detections when collapsing duplicates at the same location so the play badge is accurate
+- "Smart" sampling label kept untranslated across all locales (was "Intelligent" / "Inteligente" / etc.) to prevent layout overflow on narrow devices
+
 ## [0.5.3] - 2026-04-22
 
 ### Changed
