@@ -503,7 +503,7 @@ class _ReviewSpectrogramPainter extends CustomPainter {
         spectrogramImage,
         Rect.fromLTRB(srcX1, 0, srcX2, imgH),
         Rect.fromLTRB(dstX1, 0, dstX2, size.height),
-        Paint()..filterQuality = FilterQuality.medium,
+        Paint()..filterQuality = FilterQuality.high,
       );
     }
 
@@ -1947,7 +1947,7 @@ class _TrimSpectrogramPainter extends CustomPainter {
         spectrogramImage,
         Rect.fromLTRB(srcX1, 0, srcX2, imgH),
         Rect.fromLTRB(0, 0, size.width, size.height),
-        Paint()..filterQuality = FilterQuality.medium,
+        Paint()..filterQuality = FilterQuality.high,
       );
     }
 

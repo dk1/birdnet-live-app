@@ -398,8 +398,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// Uses a fixed FFT size and hop.  Each pixel column = one FFT frame.
   /// The painter scrolls through the image using pixels-per-second.
   Future<void> _buildSpectrogramImage(DecodedAudio audio) async {
-    const fftSize = 1024;
-    const hop = 512;
+    // Larger FFT (2048) gives ~12 Hz/bin resolution which renders
+    // formants and harmonic structure much more clearly than the
+    // previous 1024-point FFT (~23 Hz/bin). The hop is increased to
+    // 1024 so the per-second column count stays similar — keeping the
+    // total spectrogram-image memory comparable for long sessions while
+    // doubling the vertical (frequency) resolution.
+    const fftSize = 2048;
+    const hop = 1024;
     const maxFreqHz = 16000;
     const dbFloor = -80.0;
     const dbCeiling = 0.0;
