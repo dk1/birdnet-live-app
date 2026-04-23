@@ -450,6 +450,14 @@
   "@exploreSearchHint": {
     "description": "Hint text for the explore screen search field"
   },
+  "exploreSearchTooltip": "Search",
+  "@exploreSearchTooltip": {
+    "description": "Tooltip for the AppBar search toggle button"
+  },
+  "exploreFilterTooltip": "Filter by group",
+  "@exploreFilterTooltip": {
+    "description": "Tooltip for the AppBar taxonomic group filter toggle button"
+  },
   "exploreFilterAll": "All",
   "@exploreFilterAll": {
     "description": "Taxonomic filter chip — all groups"

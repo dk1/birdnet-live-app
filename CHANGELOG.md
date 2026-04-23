@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3] - 2026-04-23
+
+### Changed
+
+- **Explore screen header decluttered** — the search bar and group-filter chip row are now hidden by default. Tap the AppBar lens icon to slide in the search field, or the filter icon to reveal the chip row. A small dot on the filter icon indicates when a non-default group filter is active. Toggling one collapses the other so only one control is visible at a time.
+
 ## [0.6.2] - 2026-04-23
 
 ### Added

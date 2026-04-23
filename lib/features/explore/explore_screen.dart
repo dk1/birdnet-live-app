@@ -80,12 +80,21 @@ class ExploreScreen extends ConsumerStatefulWidget {
 
 class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   final _searchController = TextEditingController();
+  final _searchFocusNode = FocusNode();
   String _query = '';
   _TaxonGroup _group = _TaxonGroup.all;
+
+  /// Whether the inline search field is currently visible. Toggled by the
+  /// search icon in the AppBar; the filter chip row is shown otherwise.
+  bool _searchVisible = false;
+
+  /// Whether the taxonomic-group filter chip row is currently visible.
+  bool _filterVisible = false;
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -93,16 +102,75 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     setState(() => _query = value.trim());
   }
 
+  void _toggleSearch() {
+    setState(() {
+      if (_searchVisible) {
+        _searchVisible = false;
+        _searchController.clear();
+        _query = '';
+      } else {
+        _searchVisible = true;
+        _filterVisible = false;
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _searchFocusNode.requestFocus(),
+        );
+      }
+    });
+  }
+
+  void _toggleFilter() {
+    setState(() {
+      _filterVisible = !_filterVisible;
+      if (_filterVisible) _searchVisible = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final speciesAsync = ref.watch(exploreSpeciesProvider);
     final locationAsync = ref.watch(currentLocationProvider);
+    final theme = Theme.of(context);
+    final filterActive = _group != _TaxonGroup.all;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.exploreTitle),
         actions: [
+          // Filter toggle (badge dot when a non-"All" group is active).
+          IconButton(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(_filterVisible
+                    ? Icons.filter_list
+                    : Icons.filter_list_outlined),
+                if (filterActive)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            tooltip: l10n.exploreFilterTooltip,
+            onPressed: _toggleFilter,
+          ),
+          // Search toggle.
+          IconButton(
+            icon: Icon(_searchVisible ? Icons.close : Icons.search),
+            tooltip: _searchVisible
+                ? l10n.tooltipClearSearch
+                : l10n.exploreSearchTooltip,
+            onPressed: _toggleSearch,
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: l10n.exploreRefresh,
@@ -132,43 +200,58 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 _LocationHeader(speciesCount: localSpecies.length),
                 const Divider(height: 1),
 
-                // ── Filter chip row ─────────────────────────
-                _GroupFilterBar(
-                  selected: _group,
-                  onChanged: (g) => setState(() => _group = g),
+                // ── Collapsible filter chip row ─────────────
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeInOut,
+                  alignment: Alignment.topCenter,
+                  child: _filterVisible
+                      ? _GroupFilterBar(
+                          selected: _group,
+                          onChanged: (g) => setState(() => _group = g),
+                        )
+                      : const SizedBox(width: double.infinity, height: 0),
                 ),
 
-                // ── Search field ────────────────────────────
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: _onQueryChanged,
-                    textInputAction: TextInputAction.search,
-                    decoration: InputDecoration(
-                      hintText: l10n.exploreSearchHint,
-                      prefixIcon: const Icon(Icons.search, size: 20),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      suffixIcon: _query.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, size: 20),
-                              tooltip: l10n.tooltipClearSearch,
-                              onPressed: () {
-                                _searchController.clear();
-                                _onQueryChanged('');
-                              },
-                            )
-                          : null,
-                    ),
-                  ),
+                // ── Collapsible search field ────────────────
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeInOut,
+                  alignment: Alignment.topCenter,
+                  child: _searchVisible
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          child: TextField(
+                            controller: _searchController,
+                            focusNode: _searchFocusNode,
+                            onChanged: _onQueryChanged,
+                            textInputAction: TextInputAction.search,
+                            decoration: InputDecoration(
+                              hintText: l10n.exploreSearchHint,
+                              prefixIcon: const Icon(Icons.search, size: 20),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              suffixIcon: _query.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear, size: 20),
+                                      tooltip: l10n.tooltipClearSearch,
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        _onQueryChanged('');
+                                      },
+                                    )
+                                  : null,
+                            ),
+                          ),
+                        )
+                      : const SizedBox(width: double.infinity, height: 0),
                 ),
 
                 // ── Body: either geo list or search results ──

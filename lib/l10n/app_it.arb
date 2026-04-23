@@ -110,6 +110,8 @@
   "exploreSpeciesCount": "{count} specie",
   "exploreInfoNote": "Specie probabilmente presenti in questa posizione secondo il geomodello di BirdNET.",
   "exploreSearchHint": "Cerca specie…",
+  "exploreSearchTooltip": "Cerca",
+  "exploreFilterTooltip": "Filtra per gruppo",
   "exploreFilterAll": "Tutte",
   "exploreFilterBirds": "Uccelli",
   "exploreFilterMammals": "Mammiferi",

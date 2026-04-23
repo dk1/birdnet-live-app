@@ -110,6 +110,8 @@
   "exploreSpeciesCount": "{count} druhů",
   "exploreInfoNote": "Druhy, které podle geomodelu BirdNET mohou být přítomny na tomto místě.",
   "exploreSearchHint": "Hledat druhy…",
+  "exploreSearchTooltip": "Hledat",
+  "exploreFilterTooltip": "Filtrovat podle skupiny",
   "exploreFilterAll": "Vše",
   "exploreFilterBirds": "Ptáci",
   "exploreFilterMammals": "Savci",

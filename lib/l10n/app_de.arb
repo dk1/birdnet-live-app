@@ -110,6 +110,8 @@
   "exploreSpeciesCount": "{count} Arten",
   "exploreInfoNote": "Arten, die laut BirdNETs Geo-Modell an diesem Standort vorkommen können.",
   "exploreSearchHint": "Arten suchen…",
+  "exploreSearchTooltip": "Suchen",
+  "exploreFilterTooltip": "Nach Gruppe filtern",
   "exploreFilterAll": "Alle",
   "exploreFilterBirds": "Vögel",
   "exploreFilterMammals": "Säugetiere",
