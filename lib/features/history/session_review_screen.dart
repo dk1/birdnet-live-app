@@ -709,6 +709,17 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final includeAudio = ref.read(includeAudioProvider);
     final taxonomy = ref.read(taxonomyServiceProvider).valueOrNull;
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
+    // Legacy sessions persisted before SessionSettings.clipContextSeconds
+    // existed default to 0, which would falsely place every detection at
+    // the very start of every clip in Raven/CSV exports. When the session
+    // has clip files but no recorded context value, fall back to the
+    // device's current survey clip-context preference.
+    final sessionClipContext = widget.session.settings.clipContextSeconds;
+    final hasClips = widget.session.detections.any((d) =>
+        d.audioClipPath != null && d.audioClipPath!.isNotEmpty);
+    final clipContextOverride = (hasClips && sessionClipContext == 0)
+        ? ref.read(surveyClipContextProvider)
+        : null;
 
     final exportPath = await buildSessionExport(
       widget.session,
@@ -716,6 +727,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       includeAudio: includeAudio,
       taxonomy: taxonomy,
       speciesLocale: speciesLocale,
+      clipContextSecondsOverride: clipContextOverride,
     );
 
     if (exportPath == null) return;

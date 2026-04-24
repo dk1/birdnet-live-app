@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.8] - 2026-04-24
+
+### Fixed
+
+- **Survey selection-table exports for sessions started before 0.6.7 now report correct in-clip detection times.** Those sessions were saved without a `clipContextSeconds` value (the field didn't exist yet), so the exporter assumed 0 seconds of pre-roll and printed `Begin Time = 0.000 / End Time = 3.000` for every clip — placing the Raven selection box at the very start of each clip even when the actual call sat 1–2 seconds in. The exporter now falls back to the device's current Survey “Clip Context” setting whenever a session has clip files but no recorded context value, so legacy bundles produce the same selections as freshly recorded ones.
+
 ## [0.6.7] - 2026-04-24
 
 ### Changed

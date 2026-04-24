@@ -110,12 +110,19 @@ String buildRavenSelectionTable(
   Map<int, String>? clipFileMap,
   TaxonomyService? taxonomy,
   String speciesLocale = 'en',
+  int? clipContextSecondsOverride,
 }) {
   final buf = StringBuffer();
   final hasCoords =
       session.detections.any((d) => d.latitude != null && d.longitude != null);
   final hasClips = clipFileMap != null && clipFileMap.isNotEmpty;
-  final clipContext = session.settings.clipContextSeconds.toDouble();
+  // Prefer the per-session value, but allow callers to override (e.g. legacy
+  // sessions persisted before [SessionSettings.clipContextSeconds] existed,
+  // where the field defaults to 0 and would falsely place every detection at
+  // the very start of every clip).
+  final clipContext = (clipContextSecondsOverride ??
+          session.settings.clipContextSeconds)
+      .toDouble();
 
   // Header row — 'Begin File' is a standard Raven column for multi-file
   // selection tables. 'Survey Time (s)' is non-standard but harmless to Raven
@@ -165,8 +172,8 @@ String buildRavenSelectionTable(
       endSec = surveySec + windowSeconds;
     }
 
-    final commonName = _localizedCommon(d,
-        taxonomy: taxonomy, speciesLocale: speciesLocale);
+    final commonName =
+        _localizedCommon(d, taxonomy: taxonomy, speciesLocale: speciesLocale);
 
     final surveyTimeSuffix =
         hasClips ? '\t${surveySec.toStringAsFixed(3)}' : '';
@@ -214,13 +221,16 @@ String buildCsvExport(
   Map<int, String>? clipFileMap,
   TaxonomyService? taxonomy,
   String speciesLocale = 'en',
+  int? clipContextSecondsOverride,
 }) {
   final buf = StringBuffer();
   final hasFileRefs = audioFileName != null || clipFileMap != null;
   final hasCoords =
       session.detections.any((d) => d.latitude != null && d.longitude != null);
   final hasClips = clipFileMap != null && clipFileMap.isNotEmpty;
-  final clipContext = session.settings.clipContextSeconds.toDouble();
+  final clipContext = (clipContextSecondsOverride ??
+          session.settings.clipContextSeconds)
+      .toDouble();
 
   buf.writeln(
     'Timestamp,Begin Time (s),End Time (s),'
@@ -260,18 +270,16 @@ String buildCsvExport(
       endSec = surveySec + windowSeconds;
     }
 
-    final localizedCommon = _localizedCommon(d,
-        taxonomy: taxonomy, speciesLocale: speciesLocale);
-    final commonName = localizedCommon.contains(',')
-        ? '"$localizedCommon"'
-        : localizedCommon;
+    final localizedCommon =
+        _localizedCommon(d, taxonomy: taxonomy, speciesLocale: speciesLocale);
+    final commonName =
+        localizedCommon.contains(',') ? '"$localizedCommon"' : localizedCommon;
     final sciName = d.scientificName.contains(',')
         ? '"${d.scientificName}"'
         : d.scientificName;
 
     final fileRef = hasFileRefs ? ',${clipName ?? audioFileName ?? ''}' : '';
-    final surveyTimeRef =
-        hasClips ? ',${surveySec.toStringAsFixed(3)}' : '';
+    final surveyTimeRef = hasClips ? ',${surveySec.toStringAsFixed(3)}' : '';
     final coordRef = hasCoords
         ? ',${d.latitude?.toStringAsFixed(6) ?? ''}'
             ',${d.longitude?.toStringAsFixed(6) ?? ''}'
@@ -357,6 +365,7 @@ Future<String?> buildSessionExport(
   required bool includeAudio,
   TaxonomyService? taxonomy,
   String speciesLocale = 'en',
+  int? clipContextSecondsOverride,
 }) async {
   final prefix = _exportPrefix(session);
   final audioPath = session.recordingPath;
@@ -418,6 +427,7 @@ Future<String?> buildSessionExport(
         clipFileMap: clipFileMap,
         taxonomy: taxonomy,
         speciesLocale: speciesLocale,
+        clipContextSecondsOverride: clipContextSecondsOverride,
       );
       extension = '.csv';
       break;
@@ -437,6 +447,7 @@ Future<String?> buildSessionExport(
         clipFileMap: clipFileMap,
         taxonomy: taxonomy,
         speciesLocale: speciesLocale,
+        clipContextSecondsOverride: clipContextSecondsOverride,
       );
       extension = '.selections.txt';
       break;
