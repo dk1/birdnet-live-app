@@ -120,9 +120,9 @@ String buildRavenSelectionTable(
   // sessions persisted before [SessionSettings.clipContextSeconds] existed,
   // where the field defaults to 0 and would falsely place every detection at
   // the very start of every clip).
-  final clipContext = (clipContextSecondsOverride ??
-          session.settings.clipContextSeconds)
-      .toDouble();
+  final clipContext =
+      (clipContextSecondsOverride ?? session.settings.clipContextSeconds)
+          .toDouble();
 
   // Header row — 'Begin File' is a standard Raven column for multi-file
   // selection tables. 'Survey Time (s)' is non-standard but harmless to Raven
@@ -228,9 +228,9 @@ String buildCsvExport(
   final hasCoords =
       session.detections.any((d) => d.latitude != null && d.longitude != null);
   final hasClips = clipFileMap != null && clipFileMap.isNotEmpty;
-  final clipContext = (clipContextSecondsOverride ??
-          session.settings.clipContextSeconds)
-      .toDouble();
+  final clipContext =
+      (clipContextSecondsOverride ?? session.settings.clipContextSeconds)
+          .toDouble();
 
   buf.writeln(
     'Timestamp,Begin Time (s),End Time (s),'
@@ -523,12 +523,10 @@ Future<String?> buildSessionExport(
     // the provenance information travels with the bundle regardless of
     // which document format the user picked (Raven / CSV / GPX).
     if (metadata != null) {
-      final metaJson =
-          const JsonEncoder.withIndent('  ').convert(metadata);
+      final metaJson = const JsonEncoder.withIndent('  ').convert(metadata);
       final metaBytes = Uint8List.fromList(utf8.encode(metaJson));
       archive.addFile(
-        ArchiveFile(
-            '$prefix.metadata.json', metaBytes.length, metaBytes),
+        ArchiveFile('$prefix.metadata.json', metaBytes.length, metaBytes),
       );
     }
 
@@ -536,12 +534,10 @@ Future<String?> buildSessionExport(
     // the provenance information travels with the bundle regardless of
     // which document format the user picked (Raven / CSV / GPX).
     if (metadata != null) {
-      final metaJson =
-          const JsonEncoder.withIndent('  ').convert(metadata);
+      final metaJson = const JsonEncoder.withIndent('  ').convert(metadata);
       final metaBytes = Uint8List.fromList(utf8.encode(metaJson));
       archive.addFile(
-        ArchiveFile(
-            '$prefix.metadata.json', metaBytes.length, metaBytes),
+        ArchiveFile('$prefix.metadata.json', metaBytes.length, metaBytes),
       );
     }
 

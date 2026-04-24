@@ -718,8 +718,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // has clip files but no recorded context value, fall back to the
     // device's current survey clip-context preference.
     final sessionClipContext = widget.session.settings.clipContextSeconds;
-    final hasClips = widget.session.detections.any((d) =>
-        d.audioClipPath != null && d.audioClipPath!.isNotEmpty);
+    final hasClips = widget.session.detections
+        .any((d) => d.audioClipPath != null && d.audioClipPath!.isNotEmpty);
     final clipContextOverride = (hasClips && sessionClipContext == 0)
         ? ref.read(surveyClipContextProvider)
         : null;
@@ -762,8 +762,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     Map<String, dynamic>? audioModel;
     Map<String, dynamic>? geoModel;
     try {
-      final raw = await rootBundle
-          .loadString(AppConstants.modelConfigAssetPath);
+      final raw =
+          await rootBundle.loadString(AppConstants.modelConfigAssetPath);
       final decoded = json.decode(raw) as Map<String, dynamic>;
       final am = decoded['audioModel'];
       if (am is Map) audioModel = Map<String, dynamic>.from(am);
