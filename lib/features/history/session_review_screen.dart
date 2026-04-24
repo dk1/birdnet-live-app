@@ -991,8 +991,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
       final offset =
           cluster.firstTimestamp.difference(widget.session.startTime);
-      final seekPos = offset - clipOffset;
-      if (seekPos.isNegative || seekPos > _duration) return;
+      var seekPos = offset - clipOffset;
+      // Clamp into the playable range [0, duration] so detections that
+      // landed slightly before the recorder fully spun up (negative
+      // offset) or after the trim end still play back from a sensible
+      // position instead of silently failing.
+      if (seekPos.isNegative) seekPos = Duration.zero;
+      if (seekPos > _duration) seekPos = _duration;
 
       // Compute the cluster's end position in clip coordinates so we
       // can auto-pause once playback walks past the detection. Use the

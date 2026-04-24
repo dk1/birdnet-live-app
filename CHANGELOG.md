@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.5] - 2026-04-24
+
+### Fixed
+
+- **Detections recorded before the audio recorder fully spun up no longer have broken "00:-1" timestamps.** Session-relative offsets are now clamped to `[00:00, audio duration]` both at storage time (in `LiveSession.addDetection(s)`) and at render/seek time, so these detections display sensibly and play back from a valid position instead of silently failing.
+
 ## [0.6.4] - 2026-04-23
 
 ### Changed

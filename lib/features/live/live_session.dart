@@ -440,7 +440,7 @@ class LiveSession {
   /// Add a detection to the session.
   void addDetection(DetectionRecord record) {
     if (detections.length < _maxDetections) {
-      detections.add(record);
+      detections.add(_clampToSession(record));
     }
   }
 
@@ -448,8 +448,31 @@ class LiveSession {
   void addDetections(List<DetectionRecord> records) {
     final remaining = _maxDetections - detections.length;
     if (remaining > 0) {
-      detections.addAll(records.take(remaining));
+      detections.addAll(records.take(remaining).map(_clampToSession));
     }
+  }
+
+  /// Clamp a record's timestamp(s) to be `>= startTime` so detections
+  /// emitted slightly before the recorder fully spun up cannot produce
+  /// negative session-relative offsets (e.g. "00:-1") downstream.
+  DetectionRecord _clampToSession(DetectionRecord r) {
+    final needsTs = r.timestamp.isBefore(startTime);
+    final needsEnd =
+        r.endTimestamp != null && r.endTimestamp!.isBefore(startTime);
+    if (!needsTs && !needsEnd) return r;
+    final clampedTs = needsTs ? startTime : r.timestamp;
+    final clampedEnd = needsEnd ? startTime : r.endTimestamp;
+    return DetectionRecord(
+      scientificName: r.scientificName,
+      commonName: r.commonName,
+      confidence: r.confidence,
+      timestamp: clampedTs,
+      endTimestamp: clampedEnd,
+      audioClipPath: r.audioClipPath,
+      source: r.source,
+      latitude: r.latitude,
+      longitude: r.longitude,
+    );
   }
 
   /// End the session.

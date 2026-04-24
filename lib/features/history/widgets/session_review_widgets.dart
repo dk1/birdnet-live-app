@@ -894,6 +894,11 @@ class _SpeciesTile extends ConsumerWidget {
   }
 
   String _fmtOffset(Duration d) {
+    // Clamp negative offsets to zero so a detection emitted slightly
+    // before the session start (e.g. the first inference window arriving
+    // while the recorder is still spinning up) renders as 00:00 instead
+    // of "00:-1".
+    if (d.isNegative) d = Duration.zero;
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
     if (d.inHours > 0) return '${d.inHours}:$m:$s';
@@ -1094,6 +1099,8 @@ class _ClusterRow extends StatelessWidget {
   }
 
   String _fmtOffset(Duration d) {
+    // See note above: clamp negative offsets to zero.
+    if (d.isNegative) d = Duration.zero;
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
     if (d.inHours > 0) return '${d.inHours}:$m:$s';
