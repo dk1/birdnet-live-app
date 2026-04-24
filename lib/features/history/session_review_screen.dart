@@ -707,11 +707,15 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     final exportFormat = ref.read(exportFormatProvider);
     final includeAudio = ref.read(includeAudioProvider);
+    final taxonomy = ref.read(taxonomyServiceProvider).valueOrNull;
+    final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
 
     final exportPath = await buildSessionExport(
       widget.session,
       format: exportFormat,
       includeAudio: includeAudio,
+      taxonomy: taxonomy,
+      speciesLocale: speciesLocale,
     );
 
     if (exportPath == null) return;

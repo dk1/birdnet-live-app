@@ -26,6 +26,7 @@ class SessionSettings {
     required this.confidenceThreshold,
     required this.inferenceRate,
     required this.speciesFilterMode,
+    this.clipContextSeconds = 0,
   });
 
   /// Window duration in seconds.
@@ -40,6 +41,19 @@ class SessionSettings {
   /// Species filter mode ('off', 'geoExclude', 'geoMerge', 'customList').
   final String speciesFilterMode;
 
+  /// Seconds of audio captured before AND after each detection window when
+  /// per-detection clips are recorded (survey mode and similar). The clip
+  /// duration is therefore `windowDuration + 2 * clipContextSeconds`, with
+  /// the actual detection sitting at offsets
+  /// `[clipContextSeconds, clipContextSeconds + windowDuration]` within
+  /// the clip file.
+  ///
+  /// Stored on the session so exports can compute in-clip detection times
+  /// for selection tables, even if the user later changes the global
+  /// clip-context setting. Defaults to 0 for sessions that record one
+  /// continuous file (live, point count, file analysis).
+  final int clipContextSeconds;
+
   /// Deserialize from JSON.
   factory SessionSettings.fromJson(Map<String, dynamic> json) {
     return SessionSettings(
@@ -47,6 +61,7 @@ class SessionSettings {
       confidenceThreshold: json['confidenceThreshold'] as int? ?? 25,
       inferenceRate: (json['inferenceRate'] as num?)?.toDouble() ?? 1.0,
       speciesFilterMode: json['speciesFilterMode'] as String? ?? 'off',
+      clipContextSeconds: json['clipContextSeconds'] as int? ?? 0,
     );
   }
 
@@ -56,6 +71,7 @@ class SessionSettings {
         'confidenceThreshold': confidenceThreshold,
         'inferenceRate': inferenceRate,
         'speciesFilterMode': speciesFilterMode,
+        'clipContextSeconds': clipContextSeconds,
       };
 }
 

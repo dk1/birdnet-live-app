@@ -152,6 +152,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final samplingMode = samplingModeFromString(samplingStr);
     final topN = ref.read(surveyTopNPerSpeciesProvider);
     final autoStopBattery = ref.read(surveyAutoStopBatteryProvider);
+    final clipContext = ref.read(surveyClipContextProvider);
 
     final geoScores = await ref.read(geoScoresProvider.future);
     final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
@@ -190,6 +191,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         maxDurationHours: maxDuration,
         samplingMode: samplingMode,
         topNPerSpecies: topN,
+        clipContextSeconds: clipContext,
         transectId: widget.transectId,
         observerName: widget.observerName,
         customName: widget.customName,

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.7] - 2026-04-24
+
+### Changed
+
+- **Session exports now use localized common names everywhere they're rendered as text.** Clip filenames inside the ZIP bundle (e.g. `…_clip_001_Amsel.flac` for a German user instead of `…_clip_001_Eurasian_Blackbird.flac`), the `Common Name` column in Raven selection tables, and the `Common Name` column in CSV exports all use the user's species locale. Scientific Name columns are always emitted regardless of the "Show scientific names" UI toggle so exports remain scientifically authoritative.
+- **Survey selection tables now report in-clip detection times.** Previously, `Begin Time (s)` / `End Time (s)` were session-relative offsets even for rows referencing per-detection clip files — which made Raven Pro draw the selection box at the wrong place inside the clip (or off the end entirely). Now those columns describe the detection's offset *within the clip file* (i.e. they bracket the model's window after the pre-roll context). A new `Survey Time (s)` column carries the original session-relative offset so analysts can still cross-reference detections against the survey timeline. The CSV export gains the same `Survey Time (s)` column when clip files are present. For sessions exporting a single continuous recording, behavior is unchanged.
+
 ## [0.6.6] - 2026-04-24
 
 ### Added
