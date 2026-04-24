@@ -1603,6 +1603,107 @@
   "@surveyReadyTitle": {
     "description": "Title for the ready step"
   },
+  "surveyAlertsTitle": "Species Alerts",
+  "@surveyAlertsTitle": {
+    "description": "Title for the species alerts step in the survey wizard"
+  },
+  "surveyAlertsSubtitle": "Get a heads-up notification the moment a species is detected.",
+  "@surveyAlertsSubtitle": {
+    "description": "Subtitle / explainer for the species alerts wizard step"
+  },
+  "surveyAlertModeOff": "Off",
+  "@surveyAlertModeOff": {},
+  "surveyAlertModeFirstInSession": "First in session",
+  "@surveyAlertModeFirstInSession": {
+    "description": "Alert mode: notify the first time a species is heard during this survey"
+  },
+  "surveyAlertModeFirstEver": "First ever",
+  "@surveyAlertModeFirstEver": {
+    "description": "Alert mode: notify only the very first time the app has ever heard this species"
+  },
+  "surveyAlertModeRare": "Rare for this location",
+  "@surveyAlertModeRare": {
+    "description": "Alert mode: notify when a species is unlikely at the current location per the geo model"
+  },
+  "surveyAlertModeWatchlist": "Watchlist",
+  "@surveyAlertModeWatchlist": {
+    "description": "Alert mode: notify only species on a saved custom list"
+  },
+  "surveyAlertModeOffDescription": "No species alerts during this survey.",
+  "@surveyAlertModeOffDescription": {},
+  "surveyAlertModeFirstInSessionDescription": "Alert the first time each species is heard in this survey.",
+  "@surveyAlertModeFirstInSessionDescription": {},
+  "surveyAlertModeFirstEverDescription": "Alert only when the app encounters a species for the very first time.",
+  "@surveyAlertModeFirstEverDescription": {},
+  "surveyAlertModeRareDescription": "Alert when a species is below the geo-model probability threshold for your current location.",
+  "@surveyAlertModeRareDescription": {},
+  "surveyAlertModeWatchlistDescription": "Alert only for species on the selected saved list.",
+  "@surveyAlertModeWatchlistDescription": {},
+  "surveyAlertRareThresholdLabel": "Rarity threshold",
+  "@surveyAlertRareThresholdLabel": {},
+  "surveyAlertRareThresholdHelp": "Detected species with a geo-model probability below this value count as rare.",
+  "@surveyAlertRareThresholdHelp": {},
+  "surveyAlertWatchlistLabel": "Watchlist",
+  "@surveyAlertWatchlistLabel": {},
+  "surveyAlertWatchlistNone": "No watchlist selected",
+  "@surveyAlertWatchlistNone": {},
+  "surveyAlertWatchlistEmpty": "No saved species lists. Create one in Settings → Species → Custom Lists.",
+  "@surveyAlertWatchlistEmpty": {},
+  "surveyAlertSoundLabel": "Sound",
+  "@surveyAlertSoundLabel": {},
+  "surveyAlertVibrateLabel": "Vibration",
+  "@surveyAlertVibrateLabel": {},
+  "surveyAlertMinConfidenceLabel": "Minimum confidence",
+  "@surveyAlertMinConfidenceLabel": {},
+  "surveyAlertAdvancedTitle": "Frequency control",
+  "@surveyAlertAdvancedTitle": {},
+  "surveyAlertGraceLabel": "Startup grace (s)",
+  "@surveyAlertGraceLabel": {},
+  "surveyAlertGraceHelp": "Suppress First-in-session alerts during this many seconds at the start of the survey. Rare and Watchlist alerts always fire.",
+  "@surveyAlertGraceHelp": {},
+  "surveyAlertMinIntervalLabel": "Minimum interval (s)",
+  "@surveyAlertMinIntervalLabel": {},
+  "surveyAlertMinIntervalHelp": "Hard cooldown between any two alerts.",
+  "@surveyAlertMinIntervalHelp": {},
+  "surveyAlertMaxPerMinuteLabel": "Max per minute",
+  "@surveyAlertMaxPerMinuteLabel": {},
+  "surveyAlertMaxPerMinuteHelp": "Set to 0 for unlimited.",
+  "@surveyAlertMaxPerMinuteHelp": {},
+  "surveyAlertCoalesceLabel": "Coalesce extra alerts",
+  "@surveyAlertCoalesceLabel": {},
+  "surveyAlertCoalesceHelp": "When over the per-minute cap, queue extra alerts into a summary instead of dropping them.",
+  "@surveyAlertCoalesceHelp": {},
+  "surveyAlertChannelName": "Species alerts",
+  "@surveyAlertChannelName": {
+    "description": "Android notification channel name"
+  },
+  "surveyAlertChannelDescription": "Heads-up alerts when interesting species are detected during a survey.",
+  "@surveyAlertChannelDescription": {},
+  "surveyAlertBodyFirstInSession": "First detection in this survey",
+  "@surveyAlertBodyFirstInSession": {},
+  "surveyAlertBodyFirstEver": "First detection ever in BirdNET Live",
+  "@surveyAlertBodyFirstEver": {},
+  "surveyAlertBodyRare": "Rare here ({pct}% prior)",
+  "@surveyAlertBodyRare": {
+    "placeholders": {
+      "pct": { "type": "String" }
+    }
+  },
+  "surveyAlertBodyWatchlist": "On your watchlist",
+  "@surveyAlertBodyWatchlist": {},
+  "surveyAlertSummaryTitle": "{count} more new species",
+  "@surveyAlertSummaryTitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "surveyAlertSummaryBody": "{count} more: {names}",
+  "@surveyAlertSummaryBody": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "names": { "type": "String" }
+    }
+  },
   "surveyManualGpsReadyWarning": "Manual GPS mode — open the app periodically to capture location fixes.",
   "@surveyManualGpsReadyWarning": {
     "description": "Warning on ready screen about manual GPS"

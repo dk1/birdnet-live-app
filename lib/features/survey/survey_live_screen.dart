@@ -42,8 +42,14 @@ import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
 import 'detection_sampler.dart';
+import 'alert_throttler.dart';
+import 'species_alert_notifier.dart';
+import 'survey_alert_coordinator.dart';
+import 'survey_alert_engine.dart';
 import 'survey_controller.dart';
 import 'survey_providers.dart';
+import '../history/global_species_history.dart';
+import '../inference/custom_species_list.dart';
 import 'widgets/survey_map_widget.dart';
 import 'widgets/survey_stats_bar.dart';
 
@@ -128,6 +134,99 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     _finalizeAndReview();
   }
 
+  /// Construct and attach the [SurveyAlertCoordinator] honoring all
+  /// `surveyAlert*` user prefs. Skips entirely when alerts are off.
+  Future<void> _maybeBuildAlertCoordinator({
+    required SurveyController controller,
+  }) async {
+    final modeIdx = ref.read(surveyAlertModeProvider);
+    final mode = AlertMode.fromPrefValue(modeIdx);
+    if (mode == AlertMode.off) {
+      await controller.setAlertCoordinator(null);
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+
+    final notifier = ref.read(speciesAlertNotifierProvider);
+    final sound = ref.read(surveyAlertSoundProvider);
+    final vibrate = ref.read(surveyAlertVibrateProvider);
+    final strings = SpeciesAlertStrings(
+      channelName: l10n.surveyAlertChannelName,
+      channelDescription: l10n.surveyAlertChannelDescription,
+      firstInSessionBody: l10n.surveyAlertBodyFirstInSession,
+      firstEverBody: l10n.surveyAlertBodyFirstEver,
+      // l10n.surveyAlertBodyRare requires a String pct placeholder; the
+      // notifier substitutes `{pct}` at delivery time so we pass the raw
+      // template through.
+      rareBody: l10n.surveyAlertBodyRare('{pct}'),
+      watchlistBody: l10n.surveyAlertBodyWatchlist,
+      summaryTitle: l10n.surveyAlertSummaryTitle(0).replaceAll('0', '{count}'),
+      summaryBody: l10n.surveyAlertSummaryBody(0, '{names}')
+          .replaceAll('0', '{count}'),
+    );
+    await notifier.init(strings: strings, sound: sound, vibrate: vibrate);
+
+    final history = ref.read(globalSpeciesHistoryProvider);
+    history.load();
+    final geoScores = await ref.read(geoScoresProvider.future);
+
+    Set<String>? watchlist;
+    final wlName = ref.read(surveyAlertWatchlistNameProvider);
+    if (mode == AlertMode.watchlist && wlName.isNotEmpty) {
+      try {
+        watchlist = await CustomSpeciesList.load(wlName);
+      } catch (_) {
+        watchlist = const <String>{};
+      }
+    }
+
+    final coord = SurveyAlertCoordinator(
+      mode: mode,
+      notifier: notifier,
+      notifierStrings: strings,
+      globalHistory: history,
+      geoScores: geoScores,
+      watchlist: watchlist,
+      minConfidence: ref.read(surveyAlertMinConfidenceProvider),
+      rareThreshold: ref.read(surveyAlertRareThresholdProvider),
+      startupGraceSeconds: ref.read(surveyAlertStartupGraceSecondsProvider),
+      minIntervalSeconds: ref.read(surveyAlertMinIntervalSecondsProvider),
+      maxPerMinute: ref.read(surveyAlertMaxPerMinuteProvider),
+      coalesce: ref.read(surveyAlertCoalesceProvider),
+      inAppToast: ref.read(surveyAlertInAppToastProvider),
+      onDelivered: _onAlertDelivered,
+    );
+    await controller.setAlertCoordinator(coord);
+  }
+
+  void _onAlertDelivered(AlertCandidate? one, SummaryAlert? summary) {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    final String text;
+    if (one != null) {
+      text = one.commonName;
+    } else if (summary != null) {
+      text = summary.alerts.map((a) => a.commonName).join(', ');
+    } else {
+      return;
+    }
+    messenger.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.notifications_active_rounded,
+                color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Expanded(child: Text(text)),
+          ],
+        ),
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   Future<void> _startSurvey() async {
     if (_started) return;
     final controller = ref.read(surveyControllerProvider);
@@ -156,6 +255,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
     final geoScores = await ref.read(geoScoresProvider.future);
     final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
+
+    // Build the species-alert pipeline before starting the controller so
+    // the very first detection can fire a notification. If the user
+    // chose `off` we skip everything — no plugin init, no history load.
+    await _maybeBuildAlertCoordinator(controller: controller);
 
     if (widget.resumeSession != null) {
       await controller.resumeSurvey(
@@ -349,6 +453,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final statusBar = _SurveyStatusBar(
       elapsed: controller.elapsed,
       isActive: isActive,
+      alertMode: AlertMode.fromPrefValue(ref.watch(surveyAlertModeProvider)),
       onStop: _confirmStop,
     );
     final tabBar = TabBar(
@@ -462,11 +567,13 @@ class _SurveyStatusBar extends StatelessWidget {
   const _SurveyStatusBar({
     required this.elapsed,
     required this.isActive,
+    required this.alertMode,
     required this.onStop,
   });
 
   final Duration elapsed;
   final bool isActive;
+  final AlertMode alertMode;
   final VoidCallback onStop;
 
   @override
@@ -529,6 +636,20 @@ class _SurveyStatusBar extends StatelessWidget {
             onPressed: () => _showSurveyHelp(context),
             tooltip: l10n.surveyLiveHelpTitle,
           ),
+
+          // Alert mode indicator.
+          if (alertMode != AlertMode.off)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Tooltip(
+                message: l10n.surveyAlertsTitle,
+                child: Icon(
+                  Icons.notifications_active_rounded,
+                  size: 18,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ),
 
           // Settings gear (matches point count).
           IconButton(

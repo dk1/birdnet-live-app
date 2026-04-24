@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-04-25
+
+### Added
+
+- **Push-style species alerts during surveys.** A new step in the survey setup wizard lets you choose when to receive a heads-up notification mid-survey: *Off* (default), *First in session* (one alert the first time each species is heard), *First ever* (alert only when the app encounters a species for the very first time across all your sessions — a "lifer" alert), *Rare for this location* (alert when the geo-model probability for the current location is below a configurable threshold, so a Black-throated Sparrow showing up in Bavaria gets your attention), or *Watchlist* (alert only on species you've added to a saved custom list). Alerts respect a configurable confidence floor and fire on a separate Android notification channel so you can mute them independently of the silent ongoing survey-recording notification.
+- **Smart frequency control for alerts.** Real surveys often see a flurry of new species in the first few minutes — without throttling, the device would buzz constantly. The pipeline now applies three layered limits: a startup grace window (default 60 s) that suppresses *first-in-session* alerts at the start of a survey while still letting rare/watchlist alerts fire immediately, a hard minimum interval between any two alerts (default 15 s), and a sliding per-minute cap (default 3) with optional coalescing — over-cap alerts queue into a single summary notification ("3 more new species: ...") instead of being dropped. All limits are user-configurable from an *Advanced* section in the wizard.
+- **Lifetime species history**, persisted in app preferences, powers the *First ever* mode. On first launch after upgrading, the app backfills the history from your existing session records so the very first survey under 0.7.0 doesn't fire a "lifer" for every common species you've already recorded.
+
 ## [0.6.9] - 2026-04-24
 
 ### Added

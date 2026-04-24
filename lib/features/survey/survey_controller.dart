@@ -35,6 +35,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 
 import 'survey_notification.dart';
+import 'survey_alert_coordinator.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/services/memory_monitor.dart';
@@ -107,6 +108,10 @@ class SurveyController {
   /// Species currently shown as active detection cards.
   final Map<String, DetectionRecord> _activeCardSpecies = {};
 
+  /// Optional per-survey alert pipeline. `null` when alerts are disabled
+  /// for the current survey (mode == off, or no notifier was configured).
+  SurveyAlertCoordinator? _alertCoordinator;
+
   static const int _maxInMemoryDetections = 10000;
 
   /// How often we persist the session to disk and run the battery check.
@@ -162,6 +167,21 @@ class SurveyController {
 
   /// Called when auto-stop triggers (max duration or battery).
   void Function(String reason)? onAutoStop;
+
+  /// Attach (or detach) the per-survey alert coordinator. Call before
+  /// [startSurvey] / [resumeSurvey] so initial detections go through the
+  /// pipeline. Pass `null` to disable alerts entirely. Replacing an
+  /// existing coordinator first calls `shutdown()` on it.
+  Future<void> setAlertCoordinator(SurveyAlertCoordinator? coord) async {
+    final old = _alertCoordinator;
+    _alertCoordinator = coord;
+    if (old != null && !identical(old, coord)) {
+      await old.shutdown(flushFinal: false);
+    }
+  }
+
+  /// Currently-attached alert coordinator (read-only).
+  SurveyAlertCoordinator? get alertCoordinator => _alertCoordinator;
 
   // ── Model loading ───────────────────────────────────────────────────────
 
@@ -248,6 +268,7 @@ class SurveyController {
     double? startLongitude,
     bool backgroundGps = true,
     int autoStopBattery = 0,
+    SessionSettings? settingsSnapshot,
   }) async {
     if (_state == SurveyState.active) return;
     _state = SurveyState.starting;
@@ -266,13 +287,14 @@ class SurveyController {
         id: sessionId,
         startTime: DateTime.now(),
         type: SessionType.survey,
-        settings: SessionSettings(
-          windowDuration: windowDuration,
-          confidenceThreshold: confidenceThreshold,
-          inferenceRate: inferenceRate,
-          speciesFilterMode: speciesFilterMode,
-          clipContextSeconds: clipContextSeconds,
-        ),
+        settings: settingsSnapshot ??
+            SessionSettings(
+              windowDuration: windowDuration,
+              confidenceThreshold: confidenceThreshold,
+              inferenceRate: inferenceRate,
+              speciesFilterMode: speciesFilterMode,
+              clipContextSeconds: clipContextSeconds,
+            ),
         transectId: transectId,
         observerName: observerName,
         customName: customName,
@@ -537,6 +559,12 @@ class SurveyController {
     await _gpsTracker?.stopTracking();
     await recordingService.stopRecording();
 
+    final coord = _alertCoordinator;
+    _alertCoordinator = null;
+    if (coord != null) {
+      await coord.shutdown(flushFinal: false);
+    }
+
     _gpsTracker = null;
     _sampler = null;
     _maxEndTime = null;
@@ -633,6 +661,13 @@ class SurveyController {
     _session!.end();
     final completedSession = _session!;
 
+    // Shut down alerts: flush queued summaries, cancel timer.
+    final alertCoord = _alertCoordinator;
+    _alertCoordinator = null;
+    if (alertCoord != null) {
+      await alertCoord.shutdown();
+    }
+
     try {
       // Final persist.
       await _persistSession();
@@ -670,6 +705,11 @@ class SurveyController {
     _inferenceTimer?.cancel();
     _persistTimer?.cancel();
     _notificationTimer?.cancel();
+    final coord = _alertCoordinator;
+    _alertCoordinator = null;
+    if (coord != null) {
+      await coord.shutdown(flushFinal: false);
+    }
     await _gpsTracker?.stopTracking();
     await _isolate.stop();
     recordingService.dispose();
@@ -817,6 +857,9 @@ class SurveyController {
             _session!.addDetection(record);
             _sessionDetections.insert(0, record);
             _activeCardSpecies[name] = record;
+            // Feed the alert pipeline AFTER the record is durably tracked
+            // so a notification firing implies the detection was kept.
+            _alertCoordinator?.onDetection(record);
           } else if (_activeCardSpecies.containsKey(name)) {
             // Update confidence if higher — also move to end so it
             // appears at the top of the recent detections list.

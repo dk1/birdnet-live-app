@@ -27,6 +27,14 @@ class SessionSettings {
     required this.inferenceRate,
     required this.speciesFilterMode,
     this.clipContextSeconds = 0,
+    this.alertMode = 0,
+    this.alertRareThreshold = 0.05,
+    this.alertWatchlistName = '',
+    this.alertMinConfidence = 0.5,
+    this.alertStartupGraceSeconds = 60,
+    this.alertMinIntervalSeconds = 15,
+    this.alertMaxPerMinute = 3,
+    this.alertCoalesce = true,
   });
 
   /// Window duration in seconds.
@@ -54,6 +62,36 @@ class SessionSettings {
   /// continuous file (live, point count, file analysis).
   final int clipContextSeconds;
 
+  // ── Survey species alerts (v0.7.0+) ─────────────────────────────────
+  // All snapshot fields default to safe values so legacy sessions
+  // deserialized from disk produce a fully-populated `SessionSettings`
+  // and the export bundle's metadata.json is always self-describing.
+
+  /// Alert mode index. See `AlertMode` (0=off, 1=session, 2=ever, 3=rare,
+  /// 4=watchlist).
+  final int alertMode;
+
+  /// Geo-model probability cutoff for the "rare" mode.
+  final double alertRareThreshold;
+
+  /// Selected watchlist name (empty if none).
+  final String alertWatchlistName;
+
+  /// Confidence floor below which alerts never fire.
+  final double alertMinConfidence;
+
+  /// Startup grace window in seconds.
+  final int alertStartupGraceSeconds;
+
+  /// Hard cooldown between any two delivered alerts.
+  final int alertMinIntervalSeconds;
+
+  /// Max delivered alerts per minute (`0` = unlimited).
+  final int alertMaxPerMinute;
+
+  /// Whether over-cap alerts are queued for a summary notification.
+  final bool alertCoalesce;
+
   /// Deserialize from JSON.
   factory SessionSettings.fromJson(Map<String, dynamic> json) {
     return SessionSettings(
@@ -62,6 +100,18 @@ class SessionSettings {
       inferenceRate: (json['inferenceRate'] as num?)?.toDouble() ?? 1.0,
       speciesFilterMode: json['speciesFilterMode'] as String? ?? 'off',
       clipContextSeconds: json['clipContextSeconds'] as int? ?? 0,
+      alertMode: json['alertMode'] as int? ?? 0,
+      alertRareThreshold:
+          (json['alertRareThreshold'] as num?)?.toDouble() ?? 0.05,
+      alertWatchlistName: json['alertWatchlistName'] as String? ?? '',
+      alertMinConfidence:
+          (json['alertMinConfidence'] as num?)?.toDouble() ?? 0.5,
+      alertStartupGraceSeconds:
+          json['alertStartupGraceSeconds'] as int? ?? 60,
+      alertMinIntervalSeconds:
+          json['alertMinIntervalSeconds'] as int? ?? 15,
+      alertMaxPerMinute: json['alertMaxPerMinute'] as int? ?? 3,
+      alertCoalesce: json['alertCoalesce'] as bool? ?? true,
     );
   }
 
@@ -72,6 +122,14 @@ class SessionSettings {
         'inferenceRate': inferenceRate,
         'speciesFilterMode': speciesFilterMode,
         'clipContextSeconds': clipContextSeconds,
+        'alertMode': alertMode,
+        'alertRareThreshold': alertRareThreshold,
+        'alertWatchlistName': alertWatchlistName,
+        'alertMinConfidence': alertMinConfidence,
+        'alertStartupGraceSeconds': alertStartupGraceSeconds,
+        'alertMinIntervalSeconds': alertMinIntervalSeconds,
+        'alertMaxPerMinute': alertMaxPerMinute,
+        'alertCoalesce': alertCoalesce,
       };
 }
 
