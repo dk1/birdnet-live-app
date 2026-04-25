@@ -180,6 +180,29 @@ class AboutScreen extends ConsumerWidget {
             ),
           ),
 
+          const SizedBox(height: 12),
+
+          // Funding
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.aboutFunding,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(l10n.aboutFundingDescription),
+                ],
+              ),
+            ),
+          ),
+
           const SizedBox(height: 24),
 
           // Links
