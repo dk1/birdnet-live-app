@@ -252,39 +252,39 @@ class _ControlsBar extends StatelessWidget {
         8 + MediaQuery.of(context).viewPadding.bottom,
       ),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (var i = 0; i < total; i++)
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: i == page ? 16 : 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: i == page
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (var i = 0; i < total; i++)
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: i == page ? 16 : 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: i == page
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(4),
                   ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 46,
-              child: FilledButton(
-                onPressed: isFinalPage ? (canFinish ? onFinish : null) : onNext,
-                child: Text(
-                  isFinalPage ? l10n.getStarted : l10n.next,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 46,
+            child: FilledButton(
+              onPressed: isFinalPage ? (canFinish ? onFinish : null) : onNext,
+              child: Text(
+                isFinalPage ? l10n.getStarted : l10n.next,
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
     );
   }
 }

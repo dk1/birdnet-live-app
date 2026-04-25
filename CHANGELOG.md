@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.6] - 2026-04-26
+
+### Fixed
+
+- **Survey track map filter now localizes species names.** The species picker in the fullscreen map's filter sheet was showing the raw English common name baked into each detection record and always italicized the scientific name underneath, ignoring both the *Species names* language setting and the *Show scientific names* toggle. Names now go through the taxonomy lookup like everywhere else in the app, so they appear in your chosen species locale, and scientific names only show when you've turned them on in Settings.
+- **High-confidence filter is now an actual slider.** The previous "High confidence (≥80 %)" preset did nothing for sessions whose detection threshold was already at or above 80 %. The filter sheet now has a *Minimum confidence* slider (50 % – 99 %) that you can drag to whatever floor makes sense for the session, with a live percentage readout.
+
+### Changed
+
+- **Cleaner species picker in the map filter sheet.** The long radio-list of species has been replaced with a search field plus a tap-to-select list using check-circle icons. Typing into the search field filters the list against both the localized common name and the scientific name, and an *All species* row at the top makes clearing the species filter a single tap.
+
 ## [0.7.5] - 2026-04-26
 
 ### Added

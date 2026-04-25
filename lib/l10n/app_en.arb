@@ -1898,9 +1898,13 @@
   "@surveyMapFilterWithAudio": {
     "description": "Filter option: only detections that still have a saved audio clip"
   },
-  "surveyMapFilterHighConfidence": "High confidence (\u226580%)",
-  "@surveyMapFilterHighConfidence": {
-    "description": "Filter option: only detections at or above 80% confidence"
+  "surveyMapFilterMinConfidence": "Minimum confidence",
+  "@surveyMapFilterMinConfidence": {
+    "description": "Label for the confidence-floor slider in the survey map filter sheet"
+  },
+  "surveyMapFilterSpeciesSearchHint": "Search species",
+  "@surveyMapFilterSpeciesSearchHint": {
+    "description": "Placeholder for the species search field inside the survey map filter sheet"
   },
   "surveyMapFilterManual": "Manual additions",
   "@surveyMapFilterManual": {
