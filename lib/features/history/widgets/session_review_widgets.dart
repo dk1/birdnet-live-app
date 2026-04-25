@@ -747,20 +747,26 @@ class _SpeciesTile extends ConsumerWidget {
                     ),
                   const SizedBox(width: 8),
 
-                  // Species thumbnail.
-                  SizedBox(
-                    width: 48,
-                    height: 32,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: Image.asset(
-                        taxonomyAsync.valueOrNull
-                                ?.assetImagePath(group.scientificName) ??
-                            'assets/images/dummy_species.png',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Image.asset(
-                          'assets/images/dummy_species.png',
+                  // Species thumbnail. Tappable shortcut to the species
+                  // info overlay; uses the bundled image's 4:3 ratio so
+                  // BoxFit.cover never has to crop the photo.
+                  InkWell(
+                    onTap: onSpeciesInfo,
+                    borderRadius: BorderRadius.circular(6),
+                    child: SizedBox(
+                      width: 48,
+                      height: 36,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.asset(
+                          taxonomyAsync.valueOrNull
+                                  ?.assetImagePath(group.scientificName) ??
+                              'assets/images/dummy_species.png',
                           fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Image.asset(
+                            'assets/images/dummy_species.png',
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.7] - 2026-04-26
+
+### Added
+
+- **Tap a species thumbnail in Session Review to open its info overlay.** The 48 dp thumbnail next to each species row in Session Review is now its own tap target — long-pressing the row still works, but the photo itself is the more discoverable shortcut to the full species sheet (description, photo credit, links).
+
+### Fixed
+
+- **Species photos no longer cropped vertically in the info overlay.** The overlay was rendering bundled photos in a 3:2 frame with `BoxFit.cover`, which sliced off the top and bottom of every 320×240 thumbnail. The frame is now 4:3 and uses `BoxFit.contain`, so the full photo — the same crop the BirdNET team curated — is always visible.
+- **Inline species thumbnails now match the bundled photo aspect ratio.** Session Review (48×36) and the live detection list (60×45) used 3:2 boxes that quietly cropped a slice off every photo. Both are now 4:3, matching the 320×240 source files, so each photo is shown in full without distortion. The Explore species cards switched to the same 4:3 frame for consistency.
+
 ## [0.7.6] - 2026-04-26
 
 ### Fixed
