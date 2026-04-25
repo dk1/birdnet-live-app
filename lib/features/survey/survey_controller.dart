@@ -196,7 +196,8 @@ class SurveyController {
   /// back to the device-locale title loaded in [SurveyNotificationService]
   /// until [setNotificationStrings] supplies an app-locale title.
   String get _notificationTitle =>
-      _notificationStrings?.title ?? SurveyNotificationService.notificationTitle;
+      _notificationStrings?.title ??
+      SurveyNotificationService.notificationTitle;
 
   /// Set the species-name localizer used by the foreground notification.
   /// Pass `null` to revert to English fallbacks.

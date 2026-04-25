@@ -341,13 +341,21 @@
   "@aboutGeoModelDescription": {
     "description": "Geo-model description"
   },
-  "aboutCredits": "Credits",
+  "aboutCredits": "Developed by",
   "@aboutCredits": {
-    "description": "Credits section title"
+    "description": "Section title for the team that built BirdNET"
   },
   "aboutCreditsDescription": "BirdNET is developed by the Cornell K. Lisa Yang Center for Conservation Bioacoustics and Chemnitz University of Technology.",
   "@aboutCreditsDescription": {
     "description": "Credits description"
+  },
+  "aboutFunding": "Funding",
+  "@aboutFunding": {
+    "description": "Section title for the funding card on the About screen"
+  },
+  "aboutFundingDescription": "The development of BirdNET Live is supported by the Deutsche Bundesstiftung Umwelt through the project RangerSound (project 39263/01).",
+  "@aboutFundingDescription": {
+    "description": "Funding statement on the About screen. Keep 'Deutsche Bundesstiftung Umwelt' and the project number as-is in every locale."
   },
   "aboutWebsite": "BirdNET Website",
   "@aboutWebsite": {
@@ -1873,6 +1881,57 @@
   "surveyTrackMap": "Survey Track",
   "@surveyTrackMap": {
     "description": "Title for the fullscreen survey track map screen"
+  },
+  "surveyMapFilterTitle": "Show on map",
+  "@surveyMapFilterTitle": {
+    "description": "Title of the survey map filter sheet"
+  },
+  "surveyMapFilterTooltip": "Filter map markers",
+  "@surveyMapFilterTooltip": {
+    "description": "Tooltip for the survey map filter button"
+  },
+  "surveyMapFilterAll": "All detections",
+  "@surveyMapFilterAll": {
+    "description": "Filter option: show every detection"
+  },
+  "surveyMapFilterWithAudio": "With audio clip",
+  "@surveyMapFilterWithAudio": {
+    "description": "Filter option: only detections that still have a saved audio clip"
+  },
+  "surveyMapFilterHighConfidence": "High confidence (\u226580%)",
+  "@surveyMapFilterHighConfidence": {
+    "description": "Filter option: only detections at or above 80% confidence"
+  },
+  "surveyMapFilterManual": "Manual additions",
+  "@surveyMapFilterManual": {
+    "description": "Filter option: only manually added detections"
+  },
+  "surveyMapFilterSpecies": "Limit to species",
+  "@surveyMapFilterSpecies": {
+    "description": "Header for the species picker inside the map filter sheet"
+  },
+  "surveyMapFilterAllSpecies": "All species",
+  "@surveyMapFilterAllSpecies": {
+    "description": "Species picker entry meaning no species restriction"
+  },
+  "surveyMapFilterEmpty": "No detections match the current filter.",
+  "@surveyMapFilterEmpty": {
+    "description": "Message shown on the map when the active filter excludes every detection"
+  },
+  "clearFilters": "Reset",
+  "@clearFilters": {
+    "description": "Reset/clear button label inside filter sheets"
+  },
+  "apply": "Apply",
+  "@apply": {
+    "description": "Generic apply/confirm button label"
+  },
+  "surveyMapMatchCount": "{count, plural, =1{1 detection} other{{count} detections}}",
+  "@surveyMapMatchCount": {
+    "description": "Match count shown in the map app bar subtitle",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
   },
   "surveyFieldTips": "Field Tips",
   "@surveyFieldTips": {
