@@ -1415,9 +1415,7 @@ class _CreateWatchlistScreenState
     final svc = ref.read(taxonomyServiceProvider).valueOrNull;
     if (svc == null) return;
     setState(() {
-      _results = query.trim().isEmpty
-          ? const []
-          : svc.search(query, limit: 60);
+      _results = query.trim().isEmpty ? const [] : svc.search(query, limit: 60);
     });
   }
 

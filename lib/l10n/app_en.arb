@@ -1820,6 +1820,24 @@
       }
     }
   },
+  "surveySecondsAgo": "{count}s ago",
+  "@surveySecondsAgo": {
+    "description": "Short time label for seconds ago (used in foreground notification recent-detections list)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "surveyHoursAgo": "{count}h ago",
+  "@surveyHoursAgo": {
+    "description": "Short time label for hours ago (used in foreground notification recent-detections list)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "surveyContinue": "Continue Survey",
   "@surveyContinue": {
     "description": "Tooltip for resume/continue button on unfinished survey sessions"

@@ -480,6 +480,8 @@
   "surveyJustNow": "à l'instant",
   "surveyAutoStopped": "Relevé arrêté automatiquement : {reason}",
   "surveyMinutesAgo": "il y a {count} min",
+  "surveySecondsAgo": "il y a {count} s",
+  "surveyHoursAgo": "il y a {count} h",
   "surveyContinue": "Reprendre le relevé",
   "surveyTabMap": "Carte",
   "surveyTabSpectrogram": "Spectrogramme",

@@ -480,6 +480,8 @@
   "surveyJustNow": "právě teď",
   "surveyAutoStopped": "Survey automaticky zastaven: {reason}",
   "surveyMinutesAgo": "před {count} min",
+  "surveySecondsAgo": "před {count} s",
+  "surveyHoursAgo": "před {count} h",
   "surveyContinue": "Pokračovat v Survey",
   "surveyTabMap": "Mapa",
   "surveyTabSpectrogram": "Spektrogram",

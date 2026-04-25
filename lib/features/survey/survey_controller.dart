@@ -112,6 +112,15 @@ class SurveyController {
   /// for the current survey (mode == off, or no notifier was configured).
   SurveyAlertCoordinator? _alertCoordinator;
 
+  /// Maps a scientific name to the user's preferred localized common name.
+  /// Used by the foreground notification when listing recent detections.
+  /// `null` falls back to [DetectionRecord.commonName] (English).
+  String Function(String sciName, String fallback)? _nameLocalizer;
+
+  /// Localized strings for the foreground notification's recent-detections
+  /// list. `null` keeps the previous (stats-only) layout.
+  _NotificationStrings? _notificationStrings;
+
   static const int _maxInMemoryDetections = 10000;
 
   /// How often we persist the session to disk and run the battery check.
@@ -182,6 +191,31 @@ class SurveyController {
 
   /// Currently-attached alert coordinator (read-only).
   SurveyAlertCoordinator? get alertCoordinator => _alertCoordinator;
+
+  /// Set the species-name localizer used by the foreground notification.
+  /// Pass `null` to revert to English fallbacks.
+  void setNameLocalizer(
+    String Function(String sciName, String fallback)? localizer,
+  ) {
+    _nameLocalizer = localizer;
+  }
+
+  /// Set localized strings for the foreground-notification recent-detections
+  /// list ("just now", "Ns ago", "Nm ago", "Nh ago"). Call once during
+  /// survey setup with values pulled from [AppLocalizations].
+  void setNotificationStrings({
+    required String justNow,
+    required String Function(int seconds) secondsAgo,
+    required String Function(int minutes) minutesAgo,
+    required String Function(int hours) hoursAgo,
+  }) {
+    _notificationStrings = _NotificationStrings(
+      justNow: justNow,
+      secondsAgo: secondsAgo,
+      minutesAgo: minutesAgo,
+      hoursAgo: hoursAgo,
+    );
+  }
 
   // ── Model loading ───────────────────────────────────────────────────────
 
@@ -968,7 +1002,11 @@ class SurveyController {
 
   // ── Notification + battery ─────────────────────────────────────────────
 
-  /// Build the notification body text with current stats.
+  /// Build the notification body text with current stats and the three
+  /// most recent detections. The header line stays compact so it fits in
+  /// the collapsed notification; recent detections appear on subsequent
+  /// lines and Android shows them via [Notification.BigTextStyle] when
+  /// the notification is expanded.
   String _buildNotificationText() {
     final e = elapsed;
     final hh = e.inHours.toString().padLeft(2, '0');
@@ -978,8 +1016,37 @@ class SurveyController {
     final spp = _session?.uniqueSpeciesCount ?? 0;
     final dist = _gpsTracker?.distanceMeters ?? 0;
     final km = (dist / 1000).toStringAsFixed(1);
-    return '\u23F1 $hh:$mm:$ss   \uD83D\uDC26 $det det · $spp spp   '
+    final header = '\u23F1 $hh:$mm:$ss   \uD83D\uDC26 $det det · $spp spp   '
         '\uD83D\uDCCD $km km';
+
+    // _sessionDetections is newest-first. Take up to 3 most recent and
+    // render them with confidence percentage and a relative time stamp.
+    if (_sessionDetections.isEmpty) return header;
+    final now = DateTime.now();
+    final recent = _sessionDetections.take(3);
+    final lines = <String>[header];
+    for (final r in recent) {
+      final name = _nameLocalizer?.call(r.scientificName, r.commonName) ??
+          r.commonName;
+      final pct = (r.confidence * 100).round();
+      final ago = _formatRelativeTime(now.difference(r.timestamp));
+      lines.add('$name · $pct% · $ago');
+    }
+    return lines.join('\n');
+  }
+
+  /// Format a duration as a short, localized "N ago" string suitable for
+  /// the notification. Falls back to terse English when no localized
+  /// strings have been provided.
+  String _formatRelativeTime(Duration d) {
+    final s = _notificationStrings;
+    final secs = d.inSeconds;
+    if (secs < 5) return s?.justNow ?? 'just now';
+    if (secs < 60) return s?.secondsAgo(secs) ?? '${secs}s ago';
+    final mins = d.inMinutes;
+    if (mins < 60) return s?.minutesAgo(mins) ?? '${mins}m ago';
+    final hrs = d.inHours;
+    return s?.hoursAgo(hrs) ?? '${hrs}h ago';
   }
 
   /// Push updated stats to the foreground notification.
@@ -1030,4 +1097,20 @@ class SurveyController {
   void _notifyListeners() {
     onStateChanged?.call();
   }
+}
+
+/// Localized strings used to render the recent-detections list inside the
+/// survey foreground notification.
+class _NotificationStrings {
+  const _NotificationStrings({
+    required this.justNow,
+    required this.secondsAgo,
+    required this.minutesAgo,
+    required this.hoursAgo,
+  });
+
+  final String justNow;
+  final String Function(int seconds) secondsAgo;
+  final String Function(int minutes) minutesAgo;
+  final String Function(int hours) hoursAgo;
 }

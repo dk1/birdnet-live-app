@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.3] - 2026-04-25
+
+### Changed
+
+- **The persistent survey notification now lists the three most recent detections**, each on its own line with the localized common name, confidence percentage, and a short relative timestamp (`just now`, `42s ago`, `5m ago`, `2h ago`). On Android the lines are visible as soon as the notification is expanded thanks to the underlying BigTextStyle, so you can glance at the lock screen mid-survey and see what's been heard most recently without unlocking the phone. Species names honor the user's species locale and the *Show scientific names* toggle, identical to the in-app cards.
+
+### Added
+
+- New ARB keys `surveySecondsAgo` and `surveyHoursAgo` (paired with the existing `surveyJustNow` / `surveyMinutesAgo`) so the relative timestamps in the notification render naturally in every supported language (en/de/cs/es/fr/it/pt).
+
 ## [0.7.2] - 2026-04-25
 
 ### Changed

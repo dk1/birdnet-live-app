@@ -248,6 +248,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final controller = ref.read(surveyControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
     final deviceId = ref.read(selectedDeviceProvider);
+    // Capture localizations now — the rest of this method awaits multiple
+    // futures and we want to wire foreground-notification strings without
+    // crossing BuildContext async gaps.
+    final l10n = AppLocalizations.of(context)!;
 
     // Start audio capture.
     await captureNotifier.start(deviceId: deviceId);
@@ -276,6 +280,16 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     // the very first detection can fire a notification. If the user
     // chose `off` we skip everything — no plugin init, no history load.
     await _maybeBuildAlertCoordinator(controller: controller);
+
+    // Wire localization helpers used by the foreground notification's
+    // recent-detections list (species names + relative timestamps).
+    controller.setNameLocalizer(_buildNameLocalizer());
+    controller.setNotificationStrings(
+      justNow: l10n.surveyJustNow,
+      secondsAgo: (s) => l10n.surveySecondsAgo(s),
+      minutesAgo: (m) => l10n.surveyMinutesAgo(m),
+      hoursAgo: (h) => l10n.surveyHoursAgo(h),
+    );
 
     if (widget.resumeSession != null) {
       await controller.resumeSurvey(
