@@ -20,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/utils/session_type_visuals.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../../shared/widgets/content_width_constraint.dart';
@@ -464,12 +465,12 @@ class _SessionTile extends ConsumerWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer,
+                      color: sessionTypeIconColor(session.type).withAlpha(40),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      _sessionTypeIcon(session.type),
-                      color: theme.colorScheme.onPrimaryContainer,
+                      sessionTypeIcon(session.type),
+                      color: sessionTypeIconColor(session.type),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -629,8 +630,8 @@ class _CompactSessionTile extends ConsumerWidget {
 
     return ListTile(
       leading: Icon(
-        _sessionTypeIcon(session.type),
-        color: theme.colorScheme.primary,
+        sessionTypeIcon(session.type),
+        color: sessionTypeIconColor(session.type),
       ),
       title: Text(
         _sessionCardTitle(l10n, session),
@@ -723,8 +724,8 @@ class _SpeciesGroupedView extends ConsumerWidget {
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: SizedBox(
-              width: 40,
-              height: 30,
+              width: 42,
+              height: 28,
               child: taxon != null
                   ? Image.asset(
                       taxon.assetImagePath,
@@ -758,9 +759,9 @@ class _SpeciesGroupedView extends ConsumerWidget {
               ListTile(
                 dense: true,
                 leading: Icon(
-                  _sessionTypeIcon(session.type),
+                  sessionTypeIcon(session.type),
                   size: 20,
-                  color: theme.colorScheme.primary,
+                  color: sessionTypeIconColor(session.type),
                 ),
                 title: Text(
                   _sessionCardTitle(l10n, session),
@@ -879,20 +880,6 @@ String _sessionTypeLabel(AppLocalizations l10n, SessionType type) {
       return l10n.sessionTypePointCount;
     case SessionType.survey:
       return l10n.sessionTypeSurvey;
-  }
-}
-
-/// Returns the icon matching the session type used on the home screen.
-IconData _sessionTypeIcon(SessionType type) {
-  switch (type) {
-    case SessionType.live:
-      return Icons.mic_rounded;
-    case SessionType.fileUpload:
-      return Icons.audio_file_rounded;
-    case SessionType.pointCount:
-      return Icons.location_on_rounded;
-    case SessionType.survey:
-      return Icons.route_rounded;
   }
 }
 

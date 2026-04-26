@@ -12,7 +12,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../shared/utils/session_type_visuals.dart';
 import '../../shared/widgets/content_width_constraint.dart';
+import '../live/live_session.dart';
 
 /// Comprehensive help screen with mode-by-mode explanations.
 class HelpScreen extends StatelessWidget {
@@ -82,26 +84,26 @@ class HelpScreen extends StatelessWidget {
 
           // ── Mode sections ───────────────────────────────────
           _HelpSection(
-            icon: Icons.mic_rounded,
-            color: theme.colorScheme.primary,
+            icon: sessionTypeIcon(SessionType.live),
+            color: sessionTypeIconColor(SessionType.live),
             title: l10n.helpLiveTitle,
             body: l10n.helpLiveBody,
           ),
           _HelpSection(
-            icon: Icons.location_on_rounded,
-            color: theme.colorScheme.secondary,
+            icon: sessionTypeIcon(SessionType.pointCount),
+            color: sessionTypeIconColor(SessionType.pointCount),
             title: l10n.helpPointCountTitle,
             body: l10n.helpPointCountBody,
           ),
           _HelpSection(
-            icon: Icons.route_rounded,
-            color: theme.colorScheme.tertiary,
+            icon: sessionTypeIcon(SessionType.survey),
+            color: sessionTypeIconColor(SessionType.survey),
             title: l10n.helpSurveyTitle,
             body: l10n.helpSurveyBody,
           ),
           _HelpSection(
-            icon: Icons.audio_file_rounded,
-            color: theme.colorScheme.secondary,
+            icon: sessionTypeIcon(SessionType.fileUpload),
+            color: sessionTypeIconColor(SessionType.fileUpload),
             title: l10n.helpFileAnalysisTitle,
             body: l10n.helpFileAnalysisBody,
           ),
