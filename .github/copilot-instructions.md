@@ -72,8 +72,8 @@ This runs three steps: (1) prune to 5,250-species intersection, (2) fix audio mo
 
 Species images and descriptions come from `https://birdnet.cornell.edu/taxonomy/api/`:
 
-- `GET /api/image/{sci_name}?size=thumb` — 150×100 WebP thumbnail (4:3)
-- `GET /api/image/{sci_name}?size=medium` — 480×320 WebP image (4:3)
+- `GET /api/image/{sci_name}?size=thumb` — 150×100 WebP thumbnail (3:2)
+- `GET /api/image/{sci_name}?size=medium` — 480×320 WebP image (3:2)
 - `GET /api/species/{sci_name}` — Full species record (descriptions, Wikipedia, links)
 
 ## Coding Conventions
@@ -97,13 +97,13 @@ flutter test             # Run unit tests
 flutter gen-l10n         # Regenerate localization (auto on build)
 dart dev/sync_version.dart    # Propagate pubspec version to README badge
 flutter run              # Run on connected device
-flutter build apk --release   # Release APK (~237 MB)
+flutter build apk --release   # Release APK (~253 MB)
 flutter build appbundle       # Android App Bundle (preferred for Play Store)
 ```
 
 ### Release Build Notes
 
-- **Release APK is ~237 MB** (App Bundle ~204 MB). The audio ONNX model (~152 MB, stored uncompressed for memory-mapping) plus bundled species images (~44 MB) and description data (~3 MB) account for most of the size.
+- **Release APK is ~253 MB** (App Bundle ~221 MB). The audio ONNX model (~152 MB, stored uncompressed for memory-mapping) plus bundled species images (~60 MB, 5,241 photos at 360×240 WebP, 3:2) and description data (~3 MB) account for most of the size.
 - **ABI filter**: Only `arm64-v8a` is included (`android/app/build.gradle`). No 32-bit ARM or x86 native libs are shipped.
 - **R8 shrink + minify** is enabled for release builds. ProGuard rules in `android/app/proguard-rules.pro` keep ONNX Runtime JNI bindings.
 - **Test fixtures** (`assets/test_fixtures/`) are **not bundled** in the APK. For integration tests, push them to the device first:

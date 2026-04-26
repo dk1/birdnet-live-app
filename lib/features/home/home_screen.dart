@@ -7,9 +7,11 @@ import '../explore/explore_screen.dart';
 import '../history/session_library_screen.dart';
 import '../live/live_screen.dart';
 import '../file_analysis/file_analysis_screen.dart';
+import '../live/live_session.dart';
 import '../point_count/point_count_setup_screen.dart';
 import '../settings/settings_screen.dart';
 import '../survey/survey_setup_screen.dart';
+import '../../shared/utils/session_type_visuals.dart';
 import 'help_screen.dart';
 
 // =============================================================================
@@ -225,31 +227,31 @@ class _ModeGrid extends StatelessWidget {
         childAspectRatio: landscape ? 1.6 : 1.0,
         children: [
           _ModeCard(
-            icon: Icons.mic_rounded,
+            icon: sessionTypeIcon(SessionType.live),
             label: l10n.liveMode,
             description: l10n.liveModeDescription,
-            color: theme.colorScheme.primary,
+            color: sessionTypeIconColor(SessionType.live),
             onTap: () => _openLive(context),
           ),
           _ModeCard(
-            icon: Icons.location_on_rounded,
+            icon: sessionTypeIcon(SessionType.pointCount),
             label: l10n.pointCountMode,
             description: l10n.pointCountModeDescription,
-            color: theme.colorScheme.secondary,
+            color: sessionTypeIconColor(SessionType.pointCount),
             onTap: () => _openPointCount(context),
           ),
           _ModeCard(
-            icon: Icons.route_rounded,
+            icon: sessionTypeIcon(SessionType.survey),
             label: l10n.surveyMode,
             description: l10n.surveyModeDescription,
-            color: theme.colorScheme.tertiary,
+            color: sessionTypeIconColor(SessionType.survey),
             onTap: () => _openSurvey(context),
           ),
           _ModeCard(
-            icon: Icons.audio_file_rounded,
+            icon: sessionTypeIcon(SessionType.fileUpload),
             label: l10n.fileAnalysisMode,
             description: l10n.fileAnalysisModeDescription,
-            color: theme.colorScheme.secondary,
+            color: sessionTypeIconColor(SessionType.fileUpload),
             onTap: () => _openFileAnalysis(context),
           ),
         ],

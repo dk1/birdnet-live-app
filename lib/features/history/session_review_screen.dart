@@ -1339,6 +1339,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
           actions: [
             IconButton(
+              icon: const Icon(Icons.help_outline),
+              tooltip: l10n.sessionHelpTitle,
+              onPressed: _showHelp,
+            ),
+            IconButton(
               icon: const Icon(Icons.tune_rounded),
               tooltip: l10n.settings,
               onPressed: () => Navigator.of(context).push(
@@ -1465,11 +1470,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               tooltip: l10n.surveyContinue,
               onPressed: _continueSurvey,
             ),
-          IconButton(
-            icon: const Icon(Icons.help_outline),
-            tooltip: l10n.sessionHelpTitle,
-            onPressed: _showHelp,
-          ),
         ],
       ),
     );
@@ -1593,20 +1593,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                l10n.sessionTrimRecording,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
               TextButton(
                 onPressed: _resetTrim,
                 child: Text(l10n.sessionTrimReset),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 8),
               FilledButton(
                 onPressed: _applyTrim,
                 child: Text(l10n.sessionTrimApply),
@@ -1634,7 +1627,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                         : Icons.public,
                     size: 16,
                   ),
-                  deleteIcon: const Icon(Icons.close, size: 16),
+                  deleteIcon: const Icon(Icons.delete_outline, size: 16),
                   onDeleted: () => _deleteAnnotation(i),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: VisualDensity.compact,
@@ -1863,12 +1856,9 @@ class _FullscreenSurveyMapScreenState
       _speciesFilter != null ||
       _minConfidence > _defaultConfidenceFloor;
 
-  /// Localized common name for [sciName], honoring the *Show scientific
-  /// names* toggle. Falls back to the record's stored common name when
-  /// the taxonomy hasn't loaded yet.
+  /// Localized common name for [sciName]. Falls back to the record's stored
+  /// common name when the taxonomy hasn't loaded yet.
   String _localizedName(String sciName, String fallback) {
-    final showSci = ref.watch(showSciNamesProvider);
-    if (showSci) return sciName;
     final taxonomy = ref.watch(taxonomyServiceProvider).valueOrNull;
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     return taxonomy?.lookup(sciName)?.commonNameForLocale(speciesLocale) ??
@@ -2230,6 +2220,7 @@ class _MapFilterSheetState extends State<_MapFilterSheet> {
                   for (final e in filteredSpecies)
                     _SpeciesPickerTile(
                       label: e.displayName,
+                      scientificName: e.scientificName,
                       selected: _species == e.scientificName,
                       onTap: () => setState(
                         () => _species = e.scientificName,
@@ -2280,20 +2271,23 @@ class _MapFilterSheetState extends State<_MapFilterSheet> {
 /// Lightweight tappable row used by the species picker. Avoids the
 /// heavy radio-list look (which felt cluttered with hundreds of
 /// detections) and gives a clear selected-state pill.
-class _SpeciesPickerTile extends StatelessWidget {
+class _SpeciesPickerTile extends ConsumerWidget {
   const _SpeciesPickerTile({
     required this.label,
+    this.scientificName,
     required this.selected,
     required this.onTap,
   });
 
   final String label;
+  final String? scientificName;
   final bool selected;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final showSciNames = ref.watch(showSciNamesProvider);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -2312,11 +2306,27 @@ class _SpeciesPickerTile extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                label,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                  if (showSciNames &&
+                      scientificName != null &&
+                      scientificName != label)
+                    Text(
+                      scientificName!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontStyle: FontStyle.italic,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                ],
               ),
             ),
           ],

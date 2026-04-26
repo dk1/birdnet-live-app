@@ -16,8 +16,11 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/utils/session_type_visuals.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../../shared/widgets/content_width_constraint.dart';
@@ -50,6 +53,30 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
   bool _showSearch = false;
   _SortMode _sortMode = _SortMode.dateDesc;
   _ViewMode _viewMode = _ViewMode.detailed;
+  SessionType? _typeFilter;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadViewMode();
+  }
+
+  Future<void> _loadViewMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(PrefKeys.sessionLibraryViewMode);
+    if (stored == null || !mounted) return;
+    final mode = _ViewMode.values.firstWhere(
+      (m) => m.name == stored,
+      orElse: () => _ViewMode.detailed,
+    );
+    if (mode != _viewMode) setState(() => _viewMode = mode);
+  }
+
+  Future<void> _setViewMode(_ViewMode mode) async {
+    setState(() => _viewMode = mode);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(PrefKeys.sessionLibraryViewMode, mode.name);
+  }
 
   @override
   void dispose() {
@@ -89,10 +116,13 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
 
   /// Returns `true` if [session] matches the current search query.
   ///
-  /// Matches against: date string, session type label, location name,
+  /// Matches against: session name, date string, session type label, location name,
   /// lat/lon coordinates, and all detection species (common + scientific).
   bool _matchesQuery(LiveSession session, String query, AppLocalizations l10n) {
     final q = query.toLowerCase();
+
+    // Session display name.
+    if (session.displayName.toLowerCase().contains(q)) return true;
 
     // Date / time.
     final dateStr =
@@ -122,45 +152,102 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     return false;
   }
 
-  PopupMenuItem<_SortMode> _sortMenuItem(
-    _SortMode mode,
-    String label,
-    AppLocalizations l10n,
-  ) {
-    return PopupMenuItem<_SortMode>(
-      value: mode,
-      child: Row(
-        children: [
-          if (mode == _sortMode)
-            Icon(Icons.check,
-                size: 18, color: Theme.of(context).colorScheme.primary)
-          else
-            const SizedBox(width: 18),
-          const SizedBox(width: 8),
-          Text(label),
-        ],
+  void _showOptionsSheet() {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: StatefulBuilder(
+            builder: (ctx, setSheetState) {
+              void update(VoidCallback fn) {
+                setSheetState(fn);
+                setState(fn);
+              }
+
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _sheetSectionHeader(l10n.sessionLibrarySortTooltip),
+                      _sheetChips<_SortMode>(
+                        current: _sortMode,
+                        options: [
+                          (_SortMode.dateDesc, l10n.sessionSortDateNewest),
+                          (_SortMode.dateAsc, l10n.sessionSortDateOldest),
+                          (_SortMode.nameAsc, l10n.sessionSortNameAZ),
+                          (_SortMode.nameDesc, l10n.sessionSortNameZA),
+                        ],
+                        onSelected: (m) => update(() => _sortMode = m),
+                      ),
+                      const SizedBox(height: 16),
+                      _sheetSectionHeader(l10n.sessionViewTooltip),
+                      _sheetChips<_ViewMode>(
+                        current: _viewMode,
+                        options: [
+                          (_ViewMode.detailed, l10n.sessionViewDetailed),
+                          (_ViewMode.compact, l10n.sessionViewCompact),
+                          (_ViewMode.bySpecies, l10n.sessionViewBySpecies),
+                        ],
+                        onSelected: (m) => update(() => _setViewMode(m)),
+                      ),
+                      const SizedBox(height: 16),
+                      _sheetSectionHeader(l10n.sessionLibraryFilterTooltip),
+                      _sheetChips<SessionType?>(
+                        current: _typeFilter,
+                        options: [
+                          (null, l10n.exploreFilterAll),
+                          (SessionType.live, l10n.sessionTypeLive),
+                          (SessionType.pointCount, l10n.sessionTypePointCount),
+                          (SessionType.fileUpload, l10n.sessionTypeFileUpload),
+                          (SessionType.survey, l10n.sessionTypeSurvey),
+                        ],
+                        onSelected: (t) => update(() => _typeFilter = t),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _sheetSectionHeader(String label) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, top: 4),
+      child: Text(
+        label,
+        style: theme.textTheme.labelLarge
+            ?.copyWith(color: theme.colorScheme.primary),
       ),
     );
   }
 
-  PopupMenuItem<_ViewMode> _viewMenuItem(
-    _ViewMode mode,
-    String label,
-    AppLocalizations l10n,
-  ) {
-    return PopupMenuItem<_ViewMode>(
-      value: mode,
-      child: Row(
-        children: [
-          if (mode == _viewMode)
-            Icon(Icons.check,
-                size: 18, color: Theme.of(context).colorScheme.primary)
-          else
-            const SizedBox(width: 18),
-          const SizedBox(width: 8),
-          Text(label),
-        ],
-      ),
+  Widget _sheetChips<T>({
+    required T current,
+    required List<(T, String)> options,
+    required ValueChanged<T> onSelected,
+  }) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final (value, label) in options)
+          ChoiceChip(
+            label: Text(label),
+            selected: current == value,
+            onSelected: (_) => onSelected(value),
+          ),
+      ],
     );
   }
 
@@ -234,30 +321,10 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
               tooltip: l10n.sessionLibraryHelpTitle,
               onPressed: _showHelp,
             ),
-            PopupMenuButton<_ViewMode>(
-              icon: Icon(_viewModeIcon(_viewMode)),
-              tooltip: l10n.sessionViewTooltip,
-              onSelected: (mode) => setState(() => _viewMode = mode),
-              itemBuilder: (_) => [
-                _viewMenuItem(
-                    _ViewMode.detailed, l10n.sessionViewDetailed, l10n),
-                _viewMenuItem(_ViewMode.compact, l10n.sessionViewCompact, l10n),
-                _viewMenuItem(
-                    _ViewMode.bySpecies, l10n.sessionViewBySpecies, l10n),
-              ],
-            ),
-            PopupMenuButton<_SortMode>(
-              icon: const Icon(Icons.swap_vert),
-              tooltip: l10n.sessionLibrarySortTooltip,
-              onSelected: (mode) => setState(() => _sortMode = mode),
-              itemBuilder: (_) => [
-                _sortMenuItem(
-                    _SortMode.dateDesc, l10n.sessionSortDateNewest, l10n),
-                _sortMenuItem(
-                    _SortMode.dateAsc, l10n.sessionSortDateOldest, l10n),
-                _sortMenuItem(_SortMode.nameAsc, l10n.sessionSortNameAZ, l10n),
-                _sortMenuItem(_SortMode.nameDesc, l10n.sessionSortNameZA, l10n),
-              ],
+            IconButton(
+              icon: const Icon(Icons.filter_list_outlined),
+              tooltip: l10n.settings,
+              onPressed: _showOptionsSheet,
             ),
           ],
         ],
@@ -280,9 +347,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
           }
 
           final query = _searchController.text.trim();
-          final matched = query.isEmpty
-              ? sessions
-              : sessions.where((s) => _matchesQuery(s, query, l10n)).toList();
+          final matched = sessions.where((s) {
+            if (_typeFilter != null && s.type != _typeFilter) return false;
+            if (query.isEmpty) return true;
+            return _matchesQuery(s, query, l10n);
+          }).toList();
           final filtered = _applySorting(matched);
 
           if (filtered.isEmpty) {
@@ -396,12 +465,12 @@ class _SessionTile extends ConsumerWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer,
+                      color: sessionTypeIconColor(session.type).withAlpha(40),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      _sessionTypeIcon(session.type),
-                      color: theme.colorScheme.onPrimaryContainer,
+                      sessionTypeIcon(session.type),
+                      color: sessionTypeIconColor(session.type),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -561,8 +630,8 @@ class _CompactSessionTile extends ConsumerWidget {
 
     return ListTile(
       leading: Icon(
-        _sessionTypeIcon(session.type),
-        color: theme.colorScheme.primary,
+        sessionTypeIcon(session.type),
+        color: sessionTypeIconColor(session.type),
       ),
       title: Text(
         _sessionCardTitle(l10n, session),
@@ -655,8 +724,8 @@ class _SpeciesGroupedView extends ConsumerWidget {
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: SizedBox(
-              width: 40,
-              height: 30,
+              width: 42,
+              height: 28,
               child: taxon != null
                   ? Image.asset(
                       taxon.assetImagePath,
@@ -690,9 +759,9 @@ class _SpeciesGroupedView extends ConsumerWidget {
               ListTile(
                 dense: true,
                 leading: Icon(
-                  _sessionTypeIcon(session.type),
+                  sessionTypeIcon(session.type),
                   size: 20,
-                  color: theme.colorScheme.primary,
+                  color: sessionTypeIconColor(session.type),
                 ),
                 title: Text(
                   _sessionCardTitle(l10n, session),
@@ -811,20 +880,6 @@ String _sessionTypeLabel(AppLocalizations l10n, SessionType type) {
       return l10n.sessionTypePointCount;
     case SessionType.survey:
       return l10n.sessionTypeSurvey;
-  }
-}
-
-/// Returns the icon matching the session type used on the home screen.
-IconData _sessionTypeIcon(SessionType type) {
-  switch (type) {
-    case SessionType.live:
-      return Icons.mic_rounded;
-    case SessionType.fileUpload:
-      return Icons.audio_file_rounded;
-    case SessionType.pointCount:
-      return Icons.location_on_rounded;
-    case SessionType.survey:
-      return Icons.route_rounded;
   }
 }
 

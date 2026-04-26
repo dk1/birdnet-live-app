@@ -748,14 +748,14 @@ class _SpeciesTile extends ConsumerWidget {
                   const SizedBox(width: 8),
 
                   // Species thumbnail. Tappable shortcut to the species
-                  // info overlay; uses the bundled image's 4:3 ratio so
+                  // info overlay; uses the bundled image's 3:2 ratio so
                   // BoxFit.cover never has to crop the photo.
                   InkWell(
                     onTap: onSpeciesInfo,
                     borderRadius: BorderRadius.circular(6),
                     child: SizedBox(
                       width: 48,
-                      height: 36,
+                      height: 32,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(6),
                         child: Image.asset(
@@ -1092,7 +1092,7 @@ class _ClusterRow extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Icon(
-                  Icons.close,
+                  Icons.delete_outline,
                   size: 24,
                   color: theme.colorScheme.onSurface.withAlpha(100),
                 ),
@@ -1768,7 +1768,7 @@ class _AnnotationRow extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(4),
               child: Icon(
-                Icons.close,
+                Icons.delete_outline,
                 size: 16,
                 color: theme.colorScheme.onSurface.withAlpha(100),
               ),
