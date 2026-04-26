@@ -2353,6 +2353,4 @@ class _MapFilterChoice {
   final String? species;
 }
 
-
 enum _ReviewMenuAction { settings, help }
-
