@@ -1,4 +1,4 @@
-﻿// =====================================================================
+// =====================================================================
 // Onboarding flow
 //
 // First-run experience and Terms-of-Use gate, combined into a single
@@ -22,7 +22,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:record/record.dart';
 import 'package:url_launcher/url_launcher.dart';

@@ -30,7 +30,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:birdnet_live/l10n/app_localizations.dart';
 
 // =============================================================================
 // Task handler (runs in a separate isolate — kept minimal)
