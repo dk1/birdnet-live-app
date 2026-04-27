@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.12] - 2026-04-27
+
+### Added
+
+- **"New session" shortcut in the Session Library.** A floating action button in the lower-right of the Session Library lets you start a new session in one tap without going back to the home screen — handy right after closing a session review when you want to keep recording. The button defaults to Live mode; tap the small chevron (or long-press the button) to open a sheet listing all four modes (Live, Point Count, Survey, File analysis) with their descriptions. Picking a different mode both starts that session immediately and remembers it as the new default for next time, so frequent users converge on a single-tap workflow.
+
 ## [0.7.11] - 2026-04-27
 
 ### Added

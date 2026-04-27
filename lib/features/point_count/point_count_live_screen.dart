@@ -39,6 +39,7 @@ import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
+import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
@@ -271,7 +272,15 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       ref.invalidate(sessionListProvider);
 
       if (mounted) {
-        Navigator.of(context).pushReplacement(
+        final navigator = Navigator.of(context);
+        navigator.pushReplacement(
+          PageRouteBuilder<void>(
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+            pageBuilder: (_, __, ___) => const SessionLibraryScreen(),
+          ),
+        );
+        navigator.push(
           MaterialPageRoute<void>(
             builder: (_) => SessionReviewScreen(session: session),
           ),

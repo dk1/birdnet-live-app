@@ -34,6 +34,7 @@ import '../audio/audio_providers.dart';
 import '../audio/ring_buffer.dart';
 import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
+import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
@@ -384,7 +385,15 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         ref.invalidate(sessionListProvider);
 
         if (mounted) {
-          Navigator.of(context).pushReplacement(
+          final navigator = Navigator.of(context);
+          navigator.pushReplacement(
+            PageRouteBuilder<void>(
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+              pageBuilder: (_, __, ___) => const SessionLibraryScreen(),
+            ),
+          );
+          navigator.push(
             MaterialPageRoute<void>(
               builder: (_) => SessionReviewScreen(session: session),
             ),

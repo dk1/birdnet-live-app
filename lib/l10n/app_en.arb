@@ -2584,6 +2584,25 @@
   "@sessionLibraryHelpOpen": {
     "description": "Explains opening a saved session from the Session Library help overlay"
   },
+  "sessionLibraryNewSession": "New session",
+  "@sessionLibraryNewSession": {
+    "description": "Floating action button label on the Session Library screen for starting a new recording session in the last-used mode."
+  },
+  "sessionLibraryNewSessionTooltip": "Start a new {mode} session",
+  "@sessionLibraryNewSessionTooltip": {
+    "description": "Tooltip on the Session Library new-session FAB. {mode} is replaced with the current mode label (e.g. Live, Point Count, Survey, File Analysis).",
+    "placeholders": {
+      "mode": {"type": "String", "example": "Live"}
+    }
+  },
+  "sessionLibraryChangeNewSessionMode": "Choose mode",
+  "@sessionLibraryChangeNewSessionMode": {
+    "description": "Tooltip / label for the small chevron next to the new-session FAB in the Session Library that opens the mode-picker bottom sheet."
+  },
+  "sessionLibraryNewSessionSheetTitle": "Start a new session",
+  "@sessionLibraryNewSessionSheetTitle": {
+    "description": "Title of the bottom sheet shown when the user taps the chevron next to the new-session FAB on the Session Library screen."
+  },
   "exploreHelpRefresh": "Use refresh in the app bar to reload the current location and rebuild the predicted species list.",
   "@exploreHelpRefresh": {
     "description": "Explains the refresh icon on the Explore help overlay"
