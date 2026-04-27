@@ -689,9 +689,8 @@ class _DetectionStatsTile extends ConsumerWidget {
 
         if (totalDetections == 0) return const SizedBox.shrink();
 
-        final lastSeenText = lastSeen != null
-            ? _formatLastSeen(context, lastSeen)
-            : '—';
+        final lastSeenText =
+            lastSeen != null ? _formatLastSeen(context, lastSeen) : '—';
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -738,14 +737,12 @@ class _DetectionStatsTile extends ConsumerWidget {
   static String _formatLastSeen(BuildContext context, DateTime dt) {
     final locale = Localizations.localeOf(context).toString();
     return MaterialLocalizations.of(context)
-        .formatMediumDate(dt.toLocal())
-        .toString()
-        .isNotEmpty
+            .formatMediumDate(dt.toLocal())
+            .toString()
+            .isNotEmpty
         // Fall through to a stable yyyy-MM-dd if the platform localization
         // is unavailable for the active locale (rare on supported devices).
         ? MaterialLocalizations.of(context).formatMediumDate(dt.toLocal())
         : '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} ($locale)';
   }
 }
-
-

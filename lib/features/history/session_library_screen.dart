@@ -764,7 +764,9 @@ class _SpeciesGroupedView extends ConsumerWidget {
     // Resolve the localized display name once per species so search and
     // sort operate on the same string the user actually sees.
     String displayNameOf(_SpeciesGroup g) =>
-        taxonomy?.lookup(g.scientificName)?.commonNameForLocale(speciesLocale) ??
+        taxonomy
+            ?.lookup(g.scientificName)
+            ?.commonNameForLocale(speciesLocale) ??
         g.commonName;
 
     // Free-text species filter (matches localized common name OR sci name).
@@ -779,11 +781,13 @@ class _SpeciesGroupedView extends ConsumerWidget {
     final sorted = visible.toList();
     switch (sortMode) {
       case _SortMode.nameAsc:
-        sorted.sort((a, b) =>
-            displayNameOf(a).toLowerCase().compareTo(displayNameOf(b).toLowerCase()));
+        sorted.sort((a, b) => displayNameOf(a)
+            .toLowerCase()
+            .compareTo(displayNameOf(b).toLowerCase()));
       case _SortMode.nameDesc:
-        sorted.sort((a, b) =>
-            displayNameOf(b).toLowerCase().compareTo(displayNameOf(a).toLowerCase()));
+        sorted.sort((a, b) => displayNameOf(b)
+            .toLowerCase()
+            .compareTo(displayNameOf(a).toLowerCase()));
       case _SortMode.dateAsc:
       case _SortMode.dateDesc:
         // Species don't have a single date — keep the historical

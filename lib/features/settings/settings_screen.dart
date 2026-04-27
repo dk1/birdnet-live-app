@@ -244,9 +244,8 @@ class SettingsScreen extends ConsumerWidget {
               max: 10,
               divisions: 9,
               format: (v) => v.toInt().toString(),
-              onChanged: (v) => ref
-                  .read(scorePoolingWindowsProvider.notifier)
-                  .set(v.toInt()),
+              onChanged: (v) =>
+                  ref.read(scorePoolingWindowsProvider.notifier).set(v.toInt()),
             ),
             const Divider(),
           ],
