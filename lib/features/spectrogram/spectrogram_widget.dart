@@ -238,7 +238,7 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
   }
 
   // ---------------------------------------------------------------------------
-  // Initialisation
+  // Initialization
   // ---------------------------------------------------------------------------
 
   /// (Re)create the FFT processor and painter with current widget config.

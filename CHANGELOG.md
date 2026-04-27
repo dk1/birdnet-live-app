@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.14] - 2026-04-27
+
+### Fixed
+
+- **"Detected" checkmark badges in Explore now reflect every saved session.** The previous fix made the badge provider reactive but it was still reading from the wrong store: `GlobalSpeciesHistory` is only mutated by the Survey alert engine, so detections from Live, Point Count, and File Analysis sessions never produced a checkmark. The Explore badges (both the corner check on thumbnails and the larger badge over the species photo in the info overlay) now derive their "already detected" set directly from the saved session list, so any detection from any mode lights up the badge — and the badges refresh automatically when sessions are saved or deleted.
+
+## [0.7.13] - 2026-04-27
+
+### Fixed
+
+- **"Detected" checkmark badges in Explore now appear immediately.** The corner checkmark on species cards and the larger badge on the species photo in the info overlay used to lag behind reality — newly logged species would only show their badge after navigating away from Explore and back, sometimes requiring multiple refreshes. The underlying `GlobalSpeciesHistory` is now a `ChangeNotifier` exposed via `ChangeNotifierProvider`, so any widget watching it rebuilds the moment a species is added (or the one-time backfill seed completes on first launch of v0.7.0+).
+
+## [0.7.12] - 2026-04-27
+
+### Added
+
+- **"New session" shortcut in the Session Library.** A floating action button in the lower-right of the Session Library lets you start a new session in one tap without going back to the home screen — handy right after closing a session review when you want to keep recording. The button defaults to Live mode; tap the small chevron (or long-press the button) to open a sheet listing all four modes (Live, Point Count, Survey, File analysis) with their descriptions. Picking a different mode both starts that session immediately and remembers it as the new default for next time, so frequent users converge on a single-tap workflow.
+
+## [0.7.11] - 2026-04-27
+
+### Added
+
+- **Score-pooling window count is now configurable.** A new slider under *Settings → Inference → Score pooling* (1–10, default 5) controls how many recent inference windows the temporal pooling buffer averages over before declaring a detection. Lower values react faster to fleeting calls; higher values smooth out spurious noise spikes at the cost of a slightly delayed first-detection. The setting is plumbed all the way through to the inference isolate (`InferenceIsolate.setMaxPoolWindows`) and applied at the start of every Live, Point Count, and Survey session — including resumed Surveys.
+- **"You have detected this species" stats in the species info overlay.** Tapping a species card in Explore now shows, alongside the photo and 48-week probability chart, a personal summary aggregated from your saved sessions: how many times you've logged the species, across how many sessions, and the date of your most recent detection. The summary is hidden for species you've never recorded so the overlay stays uncluttered for unfamiliar birds.
+- **Checkmark badge on previously detected species.** Species you've detected at least once in any saved session now show a small primary-colored check badge in the corner of the photo — both on Explore cards and on the larger image inside the species info overlay. Makes it easy to skim Explore and spot which birds are new to your personal life list versus already logged.
+- **A–Z (and Z–A) sort in Session Library by-species view.** The by-species grouping now respects the *Sort* selector: choosing *Name (A–Z)* or *Name (Z–A)* alphabetizes species rows by their localized display name (with scientific-name tiebreak); the date sort modes preserve the existing "most-detected first" ordering. The species search field also now filters the by-species view, with an empty-state message when no species match the query.
+- **Help icons on Session Library filter sections.** Each labeled section (*Sort*, *View*, *Filter*) in the filter sheet now has a small help icon explaining what that section does.
+
+### Changed
+
+- **Application ID changed to `de.tu_chemnitz.mi.kahst.birdnet_live`.** The Android `applicationId` was bumped from the placeholder `com.birdnet.birdnet_live` to a stable, namespaced identifier suitable for Play Store publication. The Kotlin `namespace` is unchanged so existing builds keep compiling.
+- **Sort / view / filter selectors in the Session Library are now combinable.** Picking a sort order no longer resets the view mode or active filters, and vice versa — the three controls are independent.
+- **Session Library view-mode chip now highlights immediately.** Tapping *Compact*, *Detailed*, or *By species* updates the chip selection synchronously in the bottom sheet instead of waiting for the SharedPreferences write to complete, so the highlight follows the tap with no perceived lag.
+
+### Fixed
+
+- **Segment label overflow in Session Library filter sheet.** Long localized labels (e.g. *By species* in some locales) no longer push the segmented control out of its container.
+- **Recording format / size selector hidden when audio recording is off.** When *Save full recording* is disabled in settings, the format and size sliders are now hidden instead of grayed-out, removing dead UI from the screen.
+- **Session size estimation in the home screen.** The "estimated size" label on the live mode card now reflects the active recording format and bitrate.
+
 ## [0.7.10] - 2026-04-26
 
 ### Fixed
@@ -15,12 +55,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Inference Parameters step in the Point Count setup wizard.** Point Count now has a fourth setup step — between *Duration & Context* and *Field Tips* — that lets you tweak window duration (3 / 5 / 10 s), inference rate (0.25–4 Hz), confidence threshold (1–99 %) and species filter mode just for that one count, without touching your global defaults. Values are seeded from your global settings so the default behaviour is unchanged; tweaking them only affects the count you're about to start. Mirrors the same parameters page that File Analysis already exposes, but with an *inference rate* slider instead of *overlap* (since live inference is rate-driven, not overlap-driven).
-- **Per-mode icon colours throughout the app.** Each mode now has its own accent colour applied to its icon — red for Live (recording), blue for Point Count (a fixed pin), green for Survey (a route), and amber for File Analysis (an archived file). The colour shows up everywhere the mode icon appears: the home menu cards, the Help screen sections, and Session Library cards / list rows / species-grouped sub-rows. Tile and card backgrounds are deliberately untouched — only the glyph itself is tinted, so the surrounding layout stays calm and you can recognise a mode at a glance without the screen feeling busier. Centralised in `shared/utils/session_type_visuals.dart` so the home, help, and history surfaces can never drift apart again.
+- **Inference Parameters step in the Point Count setup wizard.** Point Count now has a fourth setup step — between *Duration & Context* and *Field Tips* — that lets you tweak window duration (3 / 5 / 10 s), inference rate (0.25–4 Hz), confidence threshold (1–99 %) and species filter mode just for that one count, without touching your global defaults. Values are seeded from your global settings so the default behavior is unchanged; tweaking them only affects the count you're about to start. Mirrors the same parameters page that File Analysis already exposes, but with an *inference rate* slider instead of *overlap* (since live inference is rate-driven, not overlap-driven).
+- **Per-mode icon colors throughout the app.** Each mode now has its own accent color applied to its icon — red for Live (recording), blue for Point Count (a fixed pin), green for Survey (a route), and amber for File Analysis (an archived file). The color shows up everywhere the mode icon appears: the home menu cards, the Help screen sections, and Session Library cards / list rows / species-grouped sub-rows. Tile and card backgrounds are deliberately untouched — only the glyph itself is tinted, so the surrounding layout stays calm and you can recognize a mode at a glance without the screen feeling busier. Centralized in `shared/utils/session_type_visuals.dart` so the home, help, and history surfaces can never drift apart again.
 
 ### Changed
 
-- **Session Library: three-dot menu replaced with a single, well-organised filter sheet.** The cluttered toolbar dropdown is gone — there's now a single :material-filter-list-outlined: button that opens a clean modal bottom sheet with three labelled sections (*Sort*, *View*, *Filter*) using chip selectors. Same options as before, but the relationship between sort order, view mode, and filter is finally visible at a glance, and the sheet opens in the natural place for a touch (bottom of the screen) instead of cascading off the right edge.
+- **Session Library: three-dot menu replaced with a single, well-organized filter sheet.** The cluttered toolbar dropdown is gone — there's now a single :material-filter-list-outlined: button that opens a clean modal bottom sheet with three labeled sections (*Sort*, *View*, *Filter*) using chip selectors. Same options as before, but the relationship between sort order, view mode, and filter is finally visible at a glance, and the sheet opens in the natural place for a touch (bottom of the screen) instead of cascading off the right edge.
 - **Session Library view mode (Compact / Detailed / By species) now persists across app restarts.** Picking *By species* once will keep the library in that view the next time you open it, instead of snapping back to *Compact* on every cold start.
 - **Bundled species photos now show the full, un-distorted bird.** Auditing the BirdNET taxonomy API turned up that *both* the `medium` (480×320) and `thumb` (150×100) responses are 3:2 — not 4:3 as we'd assumed. Our build pipeline was resizing every photo to 320×240 (4:3), which silently squashed every bird vertically. The bundle is now built at 360×240 (true 3:2) at higher WebP quality (`82` instead of `75`, with `method=6` for best compression effort), and `process_image()` letterboxes any non-3:2 source instead of stretching it. Every in-app species frame (Explore card, info overlay, Live detection list, Session Review thumbnail, Session Library species rows) was switched to a matching 3:2 box so what you see in the app is now exactly the photo the BirdNET team curated. The species-image asset bundle grows from ~44 MB to ~60 MB; the release APK gains a few MB but the photos finally look right.
 
@@ -28,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **About screen: audio model and geo-model now share a single card.** Each model still gets its own labelled section (display name only), with the species count printed once at the bottom — it's the same 5,250-species intersection for both. The narrative description under the geo-model is gone; the section header already conveys what it is.
+- **About screen: audio model and geo-model now share a single card.** Each model still gets its own labeled section (display name only), with the species count printed once at the bottom — it's the same 5,250-species intersection for both. The narrative description under the geo-model is gone; the section header already conveys what it is.
 
 ## [0.7.7] - 2026-04-26
 
@@ -61,7 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Onboarding screens use vertical space more carefully.** The icon-only top half is gone — every page now starts its body copy near the top of the safe area instead of at the vertical centre, so the Terms-Of-Use page no longer overflows on smaller phones. Hero icons are smaller (44 dp instead of 56 dp), spacings are tighter, and the bottom controls bar is more compact.
+- **Onboarding screens use vertical space more carefully.** The icon-only top half is gone — every page now starts its body copy near the top of the safe area instead of at the vertical center, so the Terms-Of-Use page no longer overflows on smaller phones. Hero icons are smaller (44 dp instead of 56 dp), spacings are tighter, and the bottom controls bar is more compact.
 - **The "Credits" card on the About screen is now titled "Developed by"** in every locale, since the card just names the BirdNET development team and never actually thanked anyone.
 
 ## [0.7.4] - 2026-04-25
@@ -200,7 +240,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Session review spectrogram now uses FFT 2048 + high filter quality for sharper detection-clip previews
 - Live mode keeps the recording running across pause so audio and detection timestamps remain continuous; detections are now timestamped at the start of the analyzed window for accurate review playback
 - Recording capture uses a unified clip-context setting and now captures true pre+post audio around each detection
-- Survey detection markers only show the play badge when the audio clip actually exists on disk; markers gain a stronger audio affordance (accent ring, larger badge, grey border for silent markers)
+- Survey detection markers only show the play badge when the audio clip actually exists on disk; markers gain a stronger audio affordance (accent ring, larger badge, gray border for silent markers)
 - Tapping the active play button in session review now pauses playback (works for both Live and Survey clips)
 - Species info overlay now uses fully bundled taxonomy data — eBird link is shown only when an `ebird_code` exists (insects and other non-birds correctly hide it), iNaturalist only when an `inat_id` exists, and Wikipedia only when a bundled URL exists for the active locale
 - eBird link chip uses the Cornell Lab sapsucker silhouette as its icon

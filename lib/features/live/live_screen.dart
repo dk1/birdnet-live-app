@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -15,6 +16,7 @@ import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
+import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
@@ -140,6 +142,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       final recordingMode = recordingModeFromString(recordingModeStr);
       final recordingFormat = ref.read(recordingFormatProvider);
       final geoThreshold = ref.read(geoThresholdProvider);
+      final poolingWindows = ref.read(scorePoolingWindowsProvider);
 
       // Fetch geo-model scores (if available) for species filtering.
       // Also fetch the full geo-model species names for model intersection.
@@ -158,6 +161,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         geoScores: geoScores,
         geoThreshold: geoThreshold,
         geoModelSpeciesNames: geoSpeciesNames,
+        poolingWindows: poolingWindows,
       );
 
       _isStarting = false;
@@ -308,9 +312,20 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       await repo.save(session);
       ref.invalidate(sessionListProvider);
 
-      // Navigate to session review (replace live screen on the stack).
+      // Replace the live screen with the session library (instantly,
+      // no transition) and then push the review screen on top with the
+      // normal page animation. The user sees `live → review`; closing
+      // review pops back to the library instead of the home screen.
       if (mounted) {
-        Navigator.of(context).pushReplacement(
+        final navigator = Navigator.of(context);
+        navigator.pushReplacement(
+          PageRouteBuilder<void>(
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+            pageBuilder: (_, __, ___) => const SessionLibraryScreen(),
+          ),
+        );
+        navigator.push(
           MaterialPageRoute<void>(
             builder: (_) => SessionReviewScreen(session: session),
           ),
@@ -767,51 +782,82 @@ class _SessionInfoBar extends ConsumerWidget {
         .toSet()
         .length;
 
-    // Estimate file size and duration
+    // Duration of the active session.
     int durationSec = 0;
     if (controller.session != null) {
       durationSec = controller.session!.duration.inSeconds;
     }
 
-    final recordingFormat = ref.read(recordingFormatProvider);
-    // Estimate: Wav is ~96 kB/s, FLAC is ~60 kB/s
-    final bytesPerSec = recordingFormat == 'flac' ? 60000 : 96000;
-    final estimatedBytes = durationSec * bytesPerSec;
-    final mb = estimatedBytes / (1024 * 1024);
-
+    final recordingMode = ref.watch(recordingModeProvider);
     final String durationStr = _formatDuration(durationSec);
-
-    final List<String> parts = [];
-    if (liveCount > 0) parts.add('$liveCount now');
-    parts.add('$totalUnique spp');
-    parts.add('$totalDetections det');
-    if (durationSec > 0) {
-      parts.add(durationStr);
-      parts.add('${mb.toStringAsFixed(1)}MB');
-    }
-
-    final label = parts.join(' • ');
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.info_outline,
-            size: 14,
-            color: theme.colorScheme.primary,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(153),
-            ),
-          ),
-        ],
+      child: FutureBuilder<int>(
+        // Read the actual on-disk size of the session's recording directory
+        // so this matches the size reported by the session library card.
+        // Falls back to 0 (omitted) when recording is off or the directory
+        // doesn't exist yet.
+        future: recordingMode == 'off'
+            ? Future.value(0)
+            : _readRecordingBytes(controller.recordingService.sessionDir),
+        builder: (context, snap) {
+          final bytes = snap.data ?? 0;
+          final List<String> parts = [];
+          if (liveCount > 0) parts.add('$liveCount now');
+          parts.add('$totalUnique spp');
+          parts.add('$totalDetections det');
+          if (durationSec > 0) {
+            parts.add(durationStr);
+            if (recordingMode != 'off' && bytes > 0) {
+              parts.add(_formatSize(bytes));
+            }
+          }
+          final label = parts.join(' • ');
+
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 14,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withAlpha(153),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  /// Sum the size of every file inside the recording session directory.
+  ///
+  /// This includes the streaming `full.flac`/`full.wav` for continuous
+  /// recording mode and any per-detection clip files for detections-only
+  /// mode. The resulting number matches what the session library card
+  /// computes after the session is closed.
+  static Future<int> _readRecordingBytes(String? sessionDir) async {
+    if (sessionDir == null) return 0;
+    var total = 0;
+    try {
+      final dir = Directory(sessionDir);
+      if (!await dir.exists()) return 0;
+      await for (final entity in dir.list(followLinks: false)) {
+        if (entity is File) {
+          try {
+            total += await entity.length();
+          } catch (_) {/* ignore */}
+        }
+      }
+    } catch (_) {/* ignore */}
+    return total;
   }
 
   String _formatDuration(int sec) {
@@ -823,6 +869,17 @@ class _SessionInfoBar extends ConsumerWidget {
       return '${h}h ${rh}m';
     }
     return '$m:${s.toString().padLeft(2, '0')}';
+  }
+
+  String _formatSize(int bytes) {
+    if (bytes < 1024) return '${bytes}B';
+    final kb = bytes / 1024.0;
+    if (kb < 1024) return '${kb.toStringAsFixed(0)}KB';
+    final mb = kb / 1024.0;
+    if (mb < 10) return '${mb.toStringAsFixed(1)}MB';
+    if (mb < 1024) return '${mb.toStringAsFixed(0)}MB';
+    final gb = mb / 1024.0;
+    return '${gb.toStringAsFixed(1)}GB';
   }
 }
 

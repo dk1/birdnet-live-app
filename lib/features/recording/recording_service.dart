@@ -215,7 +215,7 @@ class RecordingService {
     }
 
     if (_mode == RecordingMode.full && _writer != null) {
-      // Final flush (timer is cancelled, no concurrency risk).
+      // Final flush (timer is canceled, no concurrency risk).
       await _flushBuffer();
       await _writer!.close();
       final path = _writer!.filePath;

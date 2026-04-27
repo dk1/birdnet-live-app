@@ -45,6 +45,7 @@ import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/stat_chip.dart';
 import '../../shared/widgets/wizard_scaffold.dart';
 import '../explore/explore_providers.dart';
+import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
 import '../live/live_providers.dart';
 import '../settings/settings_screen.dart';
@@ -326,7 +327,15 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       controller.reset();
 
       if (mounted) {
-        Navigator.of(context).pushReplacement(
+        final navigator = Navigator.of(context);
+        navigator.pushReplacement(
+          PageRouteBuilder<void>(
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+            pageBuilder: (_, __, ___) => const SessionLibraryScreen(),
+          ),
+        );
+        navigator.push(
           MaterialPageRoute<void>(
             builder: (_) => SessionReviewScreen(session: session),
           ),
@@ -343,7 +352,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
 
   /// Confirms with the user, then cancels the running analysis.
   ///
-  /// Returns `true` if the analysis was cancelled, `false` otherwise.
+  /// Returns `true` if the analysis was canceled, `false` otherwise.
   Future<bool> _confirmCancel() async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await confirmDestructive(
