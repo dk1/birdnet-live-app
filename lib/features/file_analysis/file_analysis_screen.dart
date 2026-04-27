@@ -343,7 +343,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
 
   /// Confirms with the user, then cancels the running analysis.
   ///
-  /// Returns `true` if the analysis was cancelled, `false` otherwise.
+  /// Returns `true` if the analysis was canceled, `false` otherwise.
   Future<bool> _confirmCancel() async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await confirmDestructive(

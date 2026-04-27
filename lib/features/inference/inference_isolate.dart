@@ -79,11 +79,11 @@ class InferenceIsolate {
   /// [labelsCsv] — full content of the labels file.
   /// [config] — model configuration (tensor names, label format, defaults).
   ///
-  /// Loading from a file path instead of raw bytes avoids serialising ~259 MB
+  /// Loading from a file path instead of raw bytes avoids serializing ~259 MB
   /// through the isolate port, which would triple peak memory usage.
   ///
   /// This method waits until the worker isolate has fully initialized the
-  /// ONNX session.  If initialisation fails, the future completes with an
+  /// ONNX session.  If initialization fails, the future completes with an
   /// error.
   Future<void> start({
     required String modelFilePath,
@@ -213,7 +213,7 @@ class InferenceIsolate {
 
   /// Override the temporal-pooling window count in the worker. Pass `null`
   /// to revert to the model-config default. Safe to call before the worker
-  /// has finished initialising — the message is dropped if the send port is
+  /// has finished initializing — the message is dropped if the send port is
   /// not yet wired up.
   void setMaxPoolWindows(int? value) {
     _sendPort?.send(_WorkerSetMaxPoolWindows(value));
@@ -337,7 +337,7 @@ Future<void> _workerEntryPoint(_WorkerInit init) async {
 // Message types (internal, not exported)
 // =============================================================================
 
-/// Initialisation data sent to the worker isolate.
+/// Initialization data sent to the worker isolate.
 class _WorkerInit {
   const _WorkerInit({
     required this.sendPort,
@@ -404,7 +404,7 @@ class _WorkerSetMaxPoolWindows {
   final int? value;
 }
 
-/// Signal that the worker has finished initialising the model.
+/// Signal that the worker has finished initializing the model.
 class _WorkerReady {
   const _WorkerReady();
 }

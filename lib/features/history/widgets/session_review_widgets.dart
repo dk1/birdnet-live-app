@@ -1132,7 +1132,7 @@ enum _InsertMode {
 
 /// Full-screen overlay for searching and adding a species to the session.
 ///
-/// Returns a [_AddSpeciesResult] or null if cancelled.
+/// Returns a [_AddSpeciesResult] or null if canceled.
 class _AddSpeciesOverlay extends ConsumerStatefulWidget {
   const _AddSpeciesOverlay({
     required this.sessionStart,

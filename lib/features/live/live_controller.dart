@@ -199,7 +199,7 @@ class LiveController {
   /// launches skip this step and read directly from disk.
   ///
   /// Only the file *path* is passed to the inference isolate — this avoids
-  /// serialising ~259 MB through the isolate port, which would
+  /// serializing ~259 MB through the isolate port, which would
   /// triple peak memory usage.
   Future<void> loadModel() async {
     if (_state == LiveState.loading || _state == LiveState.ready) return;
