@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.14] - 2026-04-27
+
+### Fixed
+
+- **"Detected" checkmark badges in Explore now reflect every saved session.** The previous fix made the badge provider reactive but it was still reading from the wrong store: `GlobalSpeciesHistory` is only mutated by the Survey alert engine, so detections from Live, Point Count, and File Analysis sessions never produced a checkmark. The Explore badges (both the corner check on thumbnails and the larger badge over the species photo in the info overlay) now derive their "already detected" set directly from the saved session list, so any detection from any mode lights up the badge — and the badges refresh automatically when sessions are saved or deleted.
+
 ## [0.7.13] - 2026-04-27
 
 ### Fixed

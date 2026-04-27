@@ -86,7 +86,7 @@ class SpeciesCard extends ConsumerWidget {
                     children: [
                       _SpeciesImage(scientificName: scientificName),
                       if (ref
-                          .watch(globalSpeciesHistoryProvider)
+                          .watch(detectedSpeciesSetProvider)
                           .contains(scientificName))
                         const Positioned(
                           top: 4,

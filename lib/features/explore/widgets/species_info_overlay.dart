@@ -169,7 +169,7 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                       ),
                     ),
                     if (ref
-                        .watch(globalSpeciesHistoryProvider)
+                        .watch(detectedSpeciesSetProvider)
                         .contains(widget.scientificName))
                       const Positioned(
                         top: 12,

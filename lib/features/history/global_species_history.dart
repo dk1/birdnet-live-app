@@ -181,3 +181,31 @@ final globalSpeciesHistoryProvider =
 
   return history;
 });
+
+/// Set of every scientific name found in any saved session, derived live
+/// from [sessionListProvider].
+///
+/// Used by the Explore screen's "detected" checkmark badges (on species
+/// thumbnails and in the species info overlay). We deliberately do NOT
+/// reuse [globalSpeciesHistoryProvider] for this purpose because that
+/// store is only mutated by the Survey alert engine — detections from
+/// Live, Point Count, and File Analysis sessions never reach it. By
+/// recomputing from the on-disk session list we guarantee the badges
+/// always reflect what the user actually has saved, and they refresh
+/// automatically whenever a session is saved or deleted (which
+/// invalidates [sessionListProvider]).
+final detectedSpeciesSetProvider = Provider<Set<String>>((ref) {
+  final asyncSessions = ref.watch(sessionListProvider);
+  return asyncSessions.maybeWhen(
+    data: (sessions) {
+      final names = <String>{};
+      for (final s in sessions) {
+        for (final d in s.detections) {
+          if (d.scientificName.isNotEmpty) names.add(d.scientificName);
+        }
+      }
+      return names;
+    },
+    orElse: () => const <String>{},
+  );
+});
