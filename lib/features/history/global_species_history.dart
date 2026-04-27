@@ -28,6 +28,7 @@
 
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -43,7 +44,12 @@ import '../live/live_session.dart';
 /// truth during the session, and writes go to disk on every [add]. Failures
 /// to persist are logged but never thrown — alert behavior degrades to
 /// "treat all species as not-yet-seen" rather than crashing.
-class GlobalSpeciesHistory {
+///
+/// Extends [ChangeNotifier] so widgets that gate UI on "has the user ever
+/// detected this species?" (e.g. the Explore checkmark badges) rebuild
+/// the moment a new detection lands or the one-time backfill seed
+/// completes — without the user having to leave and re-enter the screen.
+class GlobalSpeciesHistory extends ChangeNotifier {
   GlobalSpeciesHistory(this._prefs);
 
   final SharedPreferences _prefs;
@@ -79,6 +85,7 @@ class GlobalSpeciesHistory {
   /// new entry (i.e., the species had never been seen before).
   Future<bool> add(String scientificName) async {
     if (!_seen.add(scientificName)) return false;
+    notifyListeners();
     await _persist();
     return true;
   }
@@ -90,7 +97,10 @@ class GlobalSpeciesHistory {
     for (final n in names) {
       if (_seen.add(n)) added.add(n);
     }
-    if (added.isNotEmpty) await _persist();
+    if (added.isNotEmpty) {
+      notifyListeners();
+      await _persist();
+    }
     return added;
   }
 
@@ -98,6 +108,7 @@ class GlobalSpeciesHistory {
   /// action and by tests.
   Future<void> clear() async {
     _seen = <String>{};
+    notifyListeners();
     await _prefs.remove(PrefKeys.globalSpeciesHistory);
   }
 
@@ -140,7 +151,12 @@ Future<void> seedGlobalSpeciesHistory({
 /// The instance is loaded synchronously from SharedPreferences. The seed
 /// pass is kicked off lazily the first time the provider is read so
 /// startup is not blocked on session scans.
-final globalSpeciesHistoryProvider = Provider<GlobalSpeciesHistory>((ref) {
+/// Uses [ChangeNotifierProvider] so `ref.watch(globalSpeciesHistoryProvider)`
+/// triggers a rebuild whenever species are added (post-detection) or the
+/// one-time backfill seed completes. Without this the Explore screen's
+/// "detected" checkmarks would only appear after a manual refresh.
+final globalSpeciesHistoryProvider =
+    ChangeNotifierProvider<GlobalSpeciesHistory>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
   final history = GlobalSpeciesHistory(prefs)..load();
 

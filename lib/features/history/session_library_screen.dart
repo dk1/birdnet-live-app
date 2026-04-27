@@ -491,8 +491,8 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     final route = switch (mode) {
       SessionType.live =>
         MaterialPageRoute<void>(builder: (_) => const LiveScreen()),
-      SessionType.pointCount => MaterialPageRoute<void>(
-          builder: (_) => const PointCountSetupScreen()),
+      SessionType.pointCount =>
+        MaterialPageRoute<void>(builder: (_) => const PointCountSetupScreen()),
       SessionType.survey =>
         MaterialPageRoute<void>(builder: (_) => const SurveySetupScreen()),
       SessionType.fileUpload =>

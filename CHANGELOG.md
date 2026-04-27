@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.13] - 2026-04-27
+
+### Fixed
+
+- **"Detected" checkmark badges in Explore now appear immediately.** The corner checkmark on species cards and the larger badge on the species photo in the info overlay used to lag behind reality — newly logged species would only show their badge after navigating away from Explore and back, sometimes requiring multiple refreshes. The underlying `GlobalSpeciesHistory` is now a `ChangeNotifier` exposed via `ChangeNotifierProvider`, so any widget watching it rebuilds the moment a species is added (or the one-time backfill seed completes on first launch of v0.7.0+).
+
 ## [0.7.12] - 2026-04-27
 
 ### Added
