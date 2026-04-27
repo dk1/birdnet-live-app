@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.11] - 2026-04-27
+
+### Added
+
+- **Score-pooling window count is now configurable.** A new slider under *Settings → Inference → Score pooling* (1–10, default 5) controls how many recent inference windows the temporal pooling buffer averages over before declaring a detection. Lower values react faster to fleeting calls; higher values smooth out spurious noise spikes at the cost of a slightly delayed first-detection. The setting is plumbed all the way through to the inference isolate (`InferenceIsolate.setMaxPoolWindows`) and applied at the start of every Live, Point Count, and Survey session — including resumed Surveys.
+- **"You have detected this species" stats in the species info overlay.** Tapping a species card in Explore now shows, alongside the photo and 48-week probability chart, a personal summary aggregated from your saved sessions: how many times you've logged the species, across how many sessions, and the date of your most recent detection. The summary is hidden for species you've never recorded so the overlay stays uncluttered for unfamiliar birds.
+- **Checkmark badge on previously detected species.** Species you've detected at least once in any saved session now show a small primary-coloured check badge in the corner of the photo — both on Explore cards and on the larger image inside the species info overlay. Makes it easy to skim Explore and spot which birds are new to your personal life list versus already logged.
+- **A–Z (and Z–A) sort in Session Library by-species view.** The by-species grouping now respects the *Sort* selector: choosing *Name (A–Z)* or *Name (Z–A)* alphabetises species rows by their localised display name (with scientific-name tiebreak); the date sort modes preserve the existing "most-detected first" ordering. The species search field also now filters the by-species view, with an empty-state message when no species match the query.
+- **Help icons on Session Library filter sections.** Each labelled section (*Sort*, *View*, *Filter*) in the filter sheet now has a small help icon explaining what that section does.
+
+### Changed
+
+- **Application ID changed to `de.tu_chemnitz.mi.kahst.birdnet_live`.** The Android `applicationId` was bumped from the placeholder `com.birdnet.birdnet_live` to a stable, namespaced identifier suitable for Play Store publication. The Kotlin `namespace` is unchanged so existing builds keep compiling.
+- **Sort / view / filter selectors in the Session Library are now combinable.** Picking a sort order no longer resets the view mode or active filters, and vice versa — the three controls are independent.
+- **Session Library view-mode chip now highlights immediately.** Tapping *Compact*, *Detailed*, or *By species* updates the chip selection synchronously in the bottom sheet instead of waiting for the SharedPreferences write to complete, so the highlight follows the tap with no perceived lag.
+
+### Fixed
+
+- **Segment label overflow in Session Library filter sheet.** Long localised labels (e.g. *By species* in some locales) no longer push the segmented control out of its container.
+- **Recording format / size selector hidden when audio recording is off.** When *Save full recording* is disabled in settings, the format and size sliders are now hidden instead of greyed-out, removing dead UI from the screen.
+- **Session size estimation in the home screen.** The "estimated size" label on the live mode card now reflects the active recording format and bitrate.
+
 ## [0.7.10] - 2026-04-26
 
 ### Fixed
