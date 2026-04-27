@@ -9,6 +9,7 @@
 // Accessible from the Home screen footer.
 // =============================================================================
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -53,7 +54,10 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
   bool _showSearch = false;
   _SortMode _sortMode = _SortMode.dateDesc;
   _ViewMode _viewMode = _ViewMode.detailed;
-  SessionType? _typeFilter;
+
+  /// Active session-type filters. Empty means "all types". Multiple
+  /// selections combine as a logical OR (e.g. Live + Survey shows both).
+  final Set<SessionType> _typeFilters = <SessionType>{};
 
   @override
   void initState() {
@@ -72,8 +76,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     if (mode != _viewMode) setState(() => _viewMode = mode);
   }
 
-  Future<void> _setViewMode(_ViewMode mode) async {
-    setState(() => _viewMode = mode);
+  /// Persists the view mode without touching widget state — the caller is
+  /// responsible for already having updated [_viewMode] inside a
+  /// [setState]/`StatefulBuilder` callback so the chip highlight updates
+  /// in the same frame as the tap.
+  Future<void> _persistViewMode(_ViewMode mode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(PrefKeys.sessionLibraryViewMode, mode.name);
   }
@@ -93,20 +100,26 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       builder: (_) => AppHelpBottomSheet(
         title: l10n.sessionLibraryHelpTitle,
         sections: [
+          // Icons here intentionally mirror the actual AppBar buttons so
+          // users can map each help section to a tap target on screen.
           AppHelpSection(
             icon: Icons.search,
             body: l10n.sessionLibraryHelpSearch,
           ),
           AppHelpSection(
-            icon: _viewModeIcon(_viewMode),
+            icon: Icons.filter_list_outlined,
             body: l10n.sessionLibraryHelpView,
           ),
           AppHelpSection(
-            icon: Icons.swap_vert,
+            icon: Icons.sort,
             body: l10n.sessionLibraryHelpSort,
           ),
           AppHelpSection(
-            icon: Icons.library_music_outlined,
+            icon: Icons.category_outlined,
+            body: l10n.sessionLibraryHelpFilter,
+          ),
+          AppHelpSection(
+            icon: Icons.touch_app_outlined,
             body: l10n.sessionLibraryHelpOpen,
           ),
         ],
@@ -194,20 +207,33 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                           (_ViewMode.compact, l10n.sessionViewCompact),
                           (_ViewMode.bySpecies, l10n.sessionViewBySpecies),
                         ],
-                        onSelected: (m) => update(() => _setViewMode(m)),
+                        // Update the local sheet state AND the screen state
+                        // in the same frame so the chip highlight reflects
+                        // the new selection immediately. The async prefs
+                        // write is fire-and-forget — UI must not wait for
+                        // disk I/O before redrawing the chip row.
+                        onSelected: (m) {
+                          update(() => _viewMode = m);
+                          unawaited(_persistViewMode(m));
+                        },
                       ),
                       const SizedBox(height: 16),
                       _sheetSectionHeader(l10n.sessionLibraryFilterTooltip),
-                      _sheetChips<SessionType?>(
-                        current: _typeFilter,
+                      _sheetMultiChips<SessionType>(
+                        current: _typeFilters,
                         options: [
-                          (null, l10n.exploreFilterAll),
                           (SessionType.live, l10n.sessionTypeLive),
                           (SessionType.pointCount, l10n.sessionTypePointCount),
                           (SessionType.fileUpload, l10n.sessionTypeFileUpload),
                           (SessionType.survey, l10n.sessionTypeSurvey),
                         ],
-                        onSelected: (t) => update(() => _typeFilter = t),
+                        onToggle: (t) => update(() {
+                          if (!_typeFilters.add(t)) _typeFilters.remove(t);
+                        }),
+                        onClear: _typeFilters.isEmpty
+                            ? null
+                            : () => update(_typeFilters.clear),
+                        clearLabel: l10n.exploreFilterAll,
                       ),
                     ],
                   ),
@@ -251,15 +277,32 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     );
   }
 
-  static IconData _viewModeIcon(_ViewMode mode) {
-    switch (mode) {
-      case _ViewMode.detailed:
-        return Icons.view_agenda_outlined;
-      case _ViewMode.compact:
-        return Icons.view_list_outlined;
-      case _ViewMode.bySpecies:
-        return Icons.category_outlined;
-    }
+  /// Multi-select chip row. Selections combine as a logical OR; a leading
+  /// chip clears the selection ("All").
+  Widget _sheetMultiChips<T>({
+    required Set<T> current,
+    required List<(T, String)> options,
+    required ValueChanged<T> onToggle,
+    required VoidCallback? onClear,
+    required String clearLabel,
+  }) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        ChoiceChip(
+          label: Text(clearLabel),
+          selected: current.isEmpty,
+          onSelected: (_) => onClear?.call(),
+        ),
+        for (final (value, label) in options)
+          FilterChip(
+            label: Text(label),
+            selected: current.contains(value),
+            onSelected: (_) => onToggle(value),
+          ),
+      ],
+    );
   }
 
   List<LiveSession> _applySorting(List<LiveSession> sessions) {
@@ -348,7 +391,9 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
 
           final query = _searchController.text.trim();
           final matched = sessions.where((s) {
-            if (_typeFilter != null && s.type != _typeFilter) return false;
+            if (_typeFilters.isNotEmpty && !_typeFilters.contains(s.type)) {
+              return false;
+            }
             if (query.isEmpty) return true;
             return _matchesQuery(s, query, l10n);
           }).toList();
@@ -368,6 +413,8 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
           if (_viewMode == _ViewMode.bySpecies) {
             return _SpeciesGroupedView(
               sessions: filtered,
+              speciesQuery: query,
+              sortMode: _sortMode,
               onTap: _openReview,
               onDelete: _confirmDelete,
             );
@@ -671,11 +718,23 @@ class _CompactSessionTile extends ConsumerWidget {
 class _SpeciesGroupedView extends ConsumerWidget {
   const _SpeciesGroupedView({
     required this.sessions,
+    required this.speciesQuery,
+    required this.sortMode,
     required this.onTap,
     required this.onDelete,
   });
 
   final List<LiveSession> sessions;
+
+  /// Active free-text search. When non-empty, only species whose common or
+  /// scientific name contains the query are shown.
+  final String speciesQuery;
+
+  /// Active sort mode. [_SortMode.nameAsc] / [_SortMode.nameDesc] sort the
+  /// species names alphabetically; date sorts fall back to most-detected
+  /// first (the previous default), since species don't have a single date.
+  final _SortMode sortMode;
+
   final void Function(LiveSession) onTap;
   final void Function(LiveSession) onDelete;
 
@@ -702,13 +761,53 @@ class _SpeciesGroupedView extends ConsumerWidget {
       }
     }
 
-    // Sort by number of sessions (descending), then alphabetically.
-    final sorted = speciesMap.values.toList()
-      ..sort((a, b) {
-        final cmp = b.sessionIds.length.compareTo(a.sessionIds.length);
-        if (cmp != 0) return cmp;
-        return a.commonName.compareTo(b.commonName);
-      });
+    // Resolve the localized display name once per species so search and
+    // sort operate on the same string the user actually sees.
+    String displayNameOf(_SpeciesGroup g) =>
+        taxonomy?.lookup(g.scientificName)?.commonNameForLocale(speciesLocale) ??
+        g.commonName;
+
+    // Free-text species filter (matches localized common name OR sci name).
+    Iterable<_SpeciesGroup> visible = speciesMap.values;
+    final q = speciesQuery.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      visible = visible.where((g) =>
+          displayNameOf(g).toLowerCase().contains(q) ||
+          g.scientificName.toLowerCase().contains(q));
+    }
+
+    final sorted = visible.toList();
+    switch (sortMode) {
+      case _SortMode.nameAsc:
+        sorted.sort((a, b) =>
+            displayNameOf(a).toLowerCase().compareTo(displayNameOf(b).toLowerCase()));
+      case _SortMode.nameDesc:
+        sorted.sort((a, b) =>
+            displayNameOf(b).toLowerCase().compareTo(displayNameOf(a).toLowerCase()));
+      case _SortMode.dateAsc:
+      case _SortMode.dateDesc:
+        // Species don't have a single date — keep the historical
+        // most-detected-first order, then alphabetical as a tie-break.
+        sorted.sort((a, b) {
+          final cmp = b.sessionIds.length.compareTo(a.sessionIds.length);
+          if (cmp != 0) return cmp;
+          return displayNameOf(a).compareTo(displayNameOf(b));
+        });
+    }
+
+    if (sorted.isEmpty && q.isNotEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(
+            l10n.sessionLibraryNoResults,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurface.withAlpha(120),
+            ),
+          ),
+        ),
+      );
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -719,7 +818,6 @@ class _SpeciesGroupedView extends ConsumerWidget {
         final displayName =
             taxon?.commonNameForLocale(speciesLocale) ?? group.commonName;
         final sessionCount = group.sessionIds.length;
-
         return ExpansionTile(
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(8),

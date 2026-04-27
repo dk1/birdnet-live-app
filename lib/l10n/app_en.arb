@@ -958,6 +958,10 @@
   "@settingsScorePooling": {
     "description": "Temporal score pooling setting label"
   },
+  "settingsScorePoolingWindows": "Pooling window count",
+  "@settingsScorePoolingWindows": {
+    "description": "Label for the slider that controls how many consecutive inference windows are pooled together"
+  },
   "settingsPoolingOff": "Off",
   "@settingsPoolingOff": {
     "description": "No temporal pooling"
@@ -1258,6 +1262,7 @@
   "settingsHelpSensitivity": "Logistic sigmoid steepness applied to model logits. Higher values push uncertain scores toward extremes (more high-confidence detections plus more false positives). Leave at 1.0 unless you know what you're doing.",
   "settingsHelpInferenceRate": "How often BirdNET runs inference per second. Higher rates catch brief calls but use more battery and CPU; lower rates are gentler on the device but may miss short vocalizations.",
   "settingsHelpScorePooling": "How scores from overlapping analysis windows are combined. 'Max' is most reactive; 'average' smooths flickering; 'LME' (logit-mean-exp) is a soft maximum that balances both.",
+  "settingsHelpScorePoolingWindows": "Number of consecutive inference windows that contribute to the pooled score. Larger values smooth detections over a longer time horizon — better for steady, distant calls but slower to react to brief vocalizations. Smaller values are more responsive but noisier.",
   "settingsHelpFftSize": "Resolution of the spectrogram. Larger sizes give finer frequency detail but coarser timing; smaller sizes show transient calls more sharply but blur frequencies. 1024–2048 works well for most species.",
   "settingsHelpColorMap": "Color palette used to render spectrogram intensity. Viridis and Magma are perceptually uniform; Grayscale is print-friendly and emphasizes structure over hue.",
   "settingsHelpSpectrogramDuration": "How many seconds of audio fit on screen at once. Shorter durations give more detail per call; longer durations show temporal patterns and let you compare detections.",
@@ -2456,6 +2461,21 @@
   "@speciesFrequencyRare": {
     "description": "Lowest frequency category label for geo-model probability"
   },
+  "speciesYouHaveDetected": "{detections, plural, =1{You have detected this species once} other{You have detected this species {detections} times}} across {sessions, plural, =1{1 session} other{{sessions} sessions}}",
+  "@speciesYouHaveDetected": {
+    "description": "Personal detection summary line shown in the species info overlay",
+    "placeholders": {
+      "detections": {"type": "int"},
+      "sessions": {"type": "int"}
+    }
+  },
+  "speciesLastSeen": "Last detected: {date}",
+  "@speciesLastSeen": {
+    "description": "Last detection date line in the species info overlay",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
   "liveScreenHelpTitle": "Live Mode Help",
   "@liveScreenHelpTitle": {
     "description": "Title for the Live Mode help overlay"
@@ -2555,6 +2575,10 @@
   "sessionLibraryHelpSort": "The sort menu changes whether sessions are ordered by date or name.",
   "@sessionLibraryHelpSort": {
     "description": "Explains the sort menu on the Session Library help overlay"
+  },
+  "sessionLibraryHelpFilter": "The session-type filter combines selections — pick one or more types (Live, Point Count, Survey, File Upload) to narrow the list.",
+  "@sessionLibraryHelpFilter": {
+    "description": "Explains the session-type filter on the Session Library help overlay"
   },
   "sessionLibraryHelpOpen": "Tap any session card or row to open Session Review for playback, editing, export, and mapped context.",
   "@sessionLibraryHelpOpen": {
