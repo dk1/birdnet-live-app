@@ -25,7 +25,7 @@ import 'open_street_map_tile_layer.dart';
 /// Uses OpenStreetMap tiles via [flutter_map].  Respects the map tile consent
 /// preference — if the user hasn't consented yet, a placeholder is shown first.
 ///
-/// Pop result: the selected [LatLng], or `null` if cancelled.
+/// Pop result: the selected [LatLng], or `null` if canceled.
 class MapPickerScreen extends ConsumerStatefulWidget {
   const MapPickerScreen({super.key, this.initialLat, this.initialLon});
 

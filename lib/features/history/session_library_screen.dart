@@ -9,6 +9,7 @@
 // Accessible from the Home screen footer.
 // =============================================================================
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -29,8 +30,12 @@ import '../../shared/widgets/error_view.dart';
 import '../../shared/widgets/loading_view.dart';
 import '../../shared/widgets/stat_chip.dart';
 import '../explore/explore_providers.dart';
+import '../file_analysis/file_analysis_screen.dart';
 import '../live/live_providers.dart';
+import '../live/live_screen.dart';
 import '../live/live_session.dart';
+import '../point_count/point_count_setup_screen.dart';
+import '../survey/survey_setup_screen.dart';
 import 'session_review_screen.dart';
 
 /// How sessions are ordered in the library.
@@ -53,12 +58,20 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
   bool _showSearch = false;
   _SortMode _sortMode = _SortMode.dateDesc;
   _ViewMode _viewMode = _ViewMode.detailed;
-  SessionType? _typeFilter;
+
+  /// Active session-type filters. Empty means "all types". Multiple
+  /// selections combine as a logical OR (e.g. Live + Survey shows both).
+  final Set<SessionType> _typeFilters = <SessionType>{};
+
+  /// Mode the "new session" FAB will start when tapped. Persisted across
+  /// app launches so the FAB remembers the user's last pick.
+  SessionType _newSessionMode = SessionType.live;
 
   @override
   void initState() {
     super.initState();
     _loadViewMode();
+    _loadNewSessionMode();
   }
 
   Future<void> _loadViewMode() async {
@@ -72,8 +85,27 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     if (mode != _viewMode) setState(() => _viewMode = mode);
   }
 
-  Future<void> _setViewMode(_ViewMode mode) async {
-    setState(() => _viewMode = mode);
+  Future<void> _loadNewSessionMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(PrefKeys.sessionLibraryNewMode);
+    if (stored == null || !mounted) return;
+    final mode = SessionType.values.firstWhere(
+      (m) => m.name == stored,
+      orElse: () => SessionType.live,
+    );
+    if (mode != _newSessionMode) setState(() => _newSessionMode = mode);
+  }
+
+  Future<void> _persistNewSessionMode(SessionType mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(PrefKeys.sessionLibraryNewMode, mode.name);
+  }
+
+  /// Persists the view mode without touching widget state — the caller is
+  /// responsible for already having updated [_viewMode] inside a
+  /// [setState]/`StatefulBuilder` callback so the chip highlight updates
+  /// in the same frame as the tap.
+  Future<void> _persistViewMode(_ViewMode mode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(PrefKeys.sessionLibraryViewMode, mode.name);
   }
@@ -93,20 +125,26 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       builder: (_) => AppHelpBottomSheet(
         title: l10n.sessionLibraryHelpTitle,
         sections: [
+          // Icons here intentionally mirror the actual AppBar buttons so
+          // users can map each help section to a tap target on screen.
           AppHelpSection(
             icon: Icons.search,
             body: l10n.sessionLibraryHelpSearch,
           ),
           AppHelpSection(
-            icon: _viewModeIcon(_viewMode),
+            icon: Icons.filter_list_outlined,
             body: l10n.sessionLibraryHelpView,
           ),
           AppHelpSection(
-            icon: Icons.swap_vert,
+            icon: Icons.sort,
             body: l10n.sessionLibraryHelpSort,
           ),
           AppHelpSection(
-            icon: Icons.library_music_outlined,
+            icon: Icons.category_outlined,
+            body: l10n.sessionLibraryHelpFilter,
+          ),
+          AppHelpSection(
+            icon: Icons.touch_app_outlined,
             body: l10n.sessionLibraryHelpOpen,
           ),
         ],
@@ -194,20 +232,33 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                           (_ViewMode.compact, l10n.sessionViewCompact),
                           (_ViewMode.bySpecies, l10n.sessionViewBySpecies),
                         ],
-                        onSelected: (m) => update(() => _setViewMode(m)),
+                        // Update the local sheet state AND the screen state
+                        // in the same frame so the chip highlight reflects
+                        // the new selection immediately. The async prefs
+                        // write is fire-and-forget — UI must not wait for
+                        // disk I/O before redrawing the chip row.
+                        onSelected: (m) {
+                          update(() => _viewMode = m);
+                          unawaited(_persistViewMode(m));
+                        },
                       ),
                       const SizedBox(height: 16),
                       _sheetSectionHeader(l10n.sessionLibraryFilterTooltip),
-                      _sheetChips<SessionType?>(
-                        current: _typeFilter,
+                      _sheetMultiChips<SessionType>(
+                        current: _typeFilters,
                         options: [
-                          (null, l10n.exploreFilterAll),
                           (SessionType.live, l10n.sessionTypeLive),
                           (SessionType.pointCount, l10n.sessionTypePointCount),
                           (SessionType.fileUpload, l10n.sessionTypeFileUpload),
                           (SessionType.survey, l10n.sessionTypeSurvey),
                         ],
-                        onSelected: (t) => update(() => _typeFilter = t),
+                        onToggle: (t) => update(() {
+                          if (!_typeFilters.add(t)) _typeFilters.remove(t);
+                        }),
+                        onClear: _typeFilters.isEmpty
+                            ? null
+                            : () => update(_typeFilters.clear),
+                        clearLabel: l10n.exploreFilterAll,
                       ),
                     ],
                   ),
@@ -251,15 +302,32 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     );
   }
 
-  static IconData _viewModeIcon(_ViewMode mode) {
-    switch (mode) {
-      case _ViewMode.detailed:
-        return Icons.view_agenda_outlined;
-      case _ViewMode.compact:
-        return Icons.view_list_outlined;
-      case _ViewMode.bySpecies:
-        return Icons.category_outlined;
-    }
+  /// Multi-select chip row. Selections combine as a logical OR; a leading
+  /// chip clears the selection ("All").
+  Widget _sheetMultiChips<T>({
+    required Set<T> current,
+    required List<(T, String)> options,
+    required ValueChanged<T> onToggle,
+    required VoidCallback? onClear,
+    required String clearLabel,
+  }) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        ChoiceChip(
+          label: Text(clearLabel),
+          selected: current.isEmpty,
+          onSelected: (_) => onClear?.call(),
+        ),
+        for (final (value, label) in options)
+          FilterChip(
+            label: Text(label),
+            selected: current.contains(value),
+            onSelected: (_) => onToggle(value),
+          ),
+      ],
+    );
   }
 
   List<LiveSession> _applySorting(List<LiveSession> sessions) {
@@ -348,7 +416,9 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
 
           final query = _searchController.text.trim();
           final matched = sessions.where((s) {
-            if (_typeFilter != null && s.type != _typeFilter) return false;
+            if (_typeFilters.isNotEmpty && !_typeFilters.contains(s.type)) {
+              return false;
+            }
             if (query.isEmpty) return true;
             return _matchesQuery(s, query, l10n);
           }).toList();
@@ -368,6 +438,8 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
           if (_viewMode == _ViewMode.bySpecies) {
             return _SpeciesGroupedView(
               sessions: filtered,
+              speciesQuery: query,
+              sortMode: _sortMode,
               onTap: _openReview,
               onDelete: _confirmDelete,
             );
@@ -394,6 +466,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
           );
         },
       )),
+      floatingActionButton: _NewSessionFab(
+        mode: _newSessionMode,
+        onStart: () => _startNewSession(_newSessionMode),
+        onChooseMode: _showNewSessionPicker,
+      ),
     );
   }
 
@@ -403,6 +480,101 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         builder: (_) => SessionReviewScreen(session: session),
       ),
     );
+  }
+
+  /// Replace this Session Library route with the entry screen for [mode].
+  /// Using `pushReplacement` keeps the back stack tidy: tapping back from
+  /// the new session lands on whatever was below the library (typically
+  /// the home screen) rather than this same library list.
+  void _startNewSession(SessionType mode) {
+    final navigator = Navigator.of(context);
+    final route = switch (mode) {
+      SessionType.live =>
+        MaterialPageRoute<void>(builder: (_) => const LiveScreen()),
+      SessionType.pointCount =>
+        MaterialPageRoute<void>(builder: (_) => const PointCountSetupScreen()),
+      SessionType.survey =>
+        MaterialPageRoute<void>(builder: (_) => const SurveySetupScreen()),
+      SessionType.fileUpload =>
+        MaterialPageRoute<void>(builder: (_) => const FileAnalysisScreen()),
+    };
+    navigator.pushReplacement(route);
+  }
+
+  /// Show a bottom sheet with the four session-type options. Tapping a
+  /// row both updates the FAB's default mode (persisted) and immediately
+  /// starts that mode — saves the user the second tap.
+  Future<void> _showNewSessionPicker() async {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final modes = <_ModeOption>[
+      _ModeOption(
+        type: SessionType.live,
+        label: l10n.liveMode,
+        description: l10n.liveModeDescription,
+      ),
+      _ModeOption(
+        type: SessionType.pointCount,
+        label: l10n.pointCountMode,
+        description: l10n.pointCountModeDescription,
+      ),
+      _ModeOption(
+        type: SessionType.survey,
+        label: l10n.surveyMode,
+        description: l10n.surveyModeDescription,
+      ),
+      _ModeOption(
+        type: SessionType.fileUpload,
+        label: l10n.fileAnalysisMode,
+        description: l10n.fileAnalysisModeDescription,
+      ),
+    ];
+
+    final picked = await showModalBottomSheet<SessionType>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetCtx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                child: Text(
+                  l10n.sessionLibraryNewSessionSheetTitle,
+                  style: theme.textTheme.titleMedium,
+                ),
+              ),
+              for (final m in modes)
+                ListTile(
+                  leading: Icon(
+                    sessionTypeIcon(m.type),
+                    color: sessionTypeIconColor(m.type),
+                  ),
+                  title: Text(m.label),
+                  subtitle: Text(
+                    m.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: m.type == _newSessionMode
+                      ? Icon(Icons.check_rounded,
+                          color: theme.colorScheme.primary)
+                      : null,
+                  onTap: () => Navigator.of(sheetCtx).pop(m.type),
+                ),
+              const SizedBox(height: 4),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (picked == null || !mounted) return;
+    setState(() => _newSessionMode = picked);
+    await _persistNewSessionMode(picked);
+    if (mounted) _startNewSession(picked);
   }
 
   Future<void> _confirmDelete(LiveSession session) async {
@@ -671,11 +843,23 @@ class _CompactSessionTile extends ConsumerWidget {
 class _SpeciesGroupedView extends ConsumerWidget {
   const _SpeciesGroupedView({
     required this.sessions,
+    required this.speciesQuery,
+    required this.sortMode,
     required this.onTap,
     required this.onDelete,
   });
 
   final List<LiveSession> sessions;
+
+  /// Active free-text search. When non-empty, only species whose common or
+  /// scientific name contains the query are shown.
+  final String speciesQuery;
+
+  /// Active sort mode. [_SortMode.nameAsc] / [_SortMode.nameDesc] sort the
+  /// species names alphabetically; date sorts fall back to most-detected
+  /// first (the previous default), since species don't have a single date.
+  final _SortMode sortMode;
+
   final void Function(LiveSession) onTap;
   final void Function(LiveSession) onDelete;
 
@@ -702,13 +886,57 @@ class _SpeciesGroupedView extends ConsumerWidget {
       }
     }
 
-    // Sort by number of sessions (descending), then alphabetically.
-    final sorted = speciesMap.values.toList()
-      ..sort((a, b) {
-        final cmp = b.sessionIds.length.compareTo(a.sessionIds.length);
-        if (cmp != 0) return cmp;
-        return a.commonName.compareTo(b.commonName);
-      });
+    // Resolve the localized display name once per species so search and
+    // sort operate on the same string the user actually sees.
+    String displayNameOf(_SpeciesGroup g) =>
+        taxonomy
+            ?.lookup(g.scientificName)
+            ?.commonNameForLocale(speciesLocale) ??
+        g.commonName;
+
+    // Free-text species filter (matches localized common name OR sci name).
+    Iterable<_SpeciesGroup> visible = speciesMap.values;
+    final q = speciesQuery.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      visible = visible.where((g) =>
+          displayNameOf(g).toLowerCase().contains(q) ||
+          g.scientificName.toLowerCase().contains(q));
+    }
+
+    final sorted = visible.toList();
+    switch (sortMode) {
+      case _SortMode.nameAsc:
+        sorted.sort((a, b) => displayNameOf(a)
+            .toLowerCase()
+            .compareTo(displayNameOf(b).toLowerCase()));
+      case _SortMode.nameDesc:
+        sorted.sort((a, b) => displayNameOf(b)
+            .toLowerCase()
+            .compareTo(displayNameOf(a).toLowerCase()));
+      case _SortMode.dateAsc:
+      case _SortMode.dateDesc:
+        // Species don't have a single date — keep the historical
+        // most-detected-first order, then alphabetical as a tie-break.
+        sorted.sort((a, b) {
+          final cmp = b.sessionIds.length.compareTo(a.sessionIds.length);
+          if (cmp != 0) return cmp;
+          return displayNameOf(a).compareTo(displayNameOf(b));
+        });
+    }
+
+    if (sorted.isEmpty && q.isNotEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(
+            l10n.sessionLibraryNoResults,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurface.withAlpha(120),
+            ),
+          ),
+        ),
+      );
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -719,7 +947,6 @@ class _SpeciesGroupedView extends ConsumerWidget {
         final displayName =
             taxon?.commonNameForLocale(speciesLocale) ?? group.commonName;
         final sessionCount = group.sessionIds.length;
-
         return ExpansionTile(
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(8),
@@ -789,6 +1016,139 @@ class _SpeciesGroup {
   final String scientificName;
   final String commonName;
   final Set<String> sessionIds = {};
+}
+
+/// Bottom-sheet row data for the new-session mode picker.
+class _ModeOption {
+  const _ModeOption({
+    required this.type,
+    required this.label,
+    required this.description,
+  });
+  final SessionType type;
+  final String label;
+  final String description;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// New Session FAB — split extended FAB
+//
+// Design:
+//   • Primary tappable area (icon + label) starts the currently-selected
+//     mode. The icon and label reflect that mode so the user always sees
+//     what a tap will do.
+//   • A trailing chevron (▾) opens a bottom sheet of the four available
+//     modes. Picking a mode both updates the FAB's default and starts
+//     that mode immediately.
+//   • Long-press on the primary area also opens the mode picker — a
+//     hidden shortcut for power users who learned the affordance.
+//
+// We build the split shape manually rather than wrapping
+// `FloatingActionButton.extended` because Flutter's FAB doesn't support
+// two independent tap targets. A custom Material pill with two InkWells
+// gives the same elevation, shape, and ripple semantics.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _NewSessionFab extends StatelessWidget {
+  const _NewSessionFab({
+    required this.mode,
+    required this.onStart,
+    required this.onChooseMode,
+  });
+
+  final SessionType mode;
+  final VoidCallback onStart;
+  final VoidCallback onChooseMode;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final modeLabel = _sessionTypeLabel(l10n, mode);
+    final modeColor = sessionTypeIconColor(mode);
+    // Use the surface-tinted FAB color so the white mode glyph (live red,
+    // survey green, etc.) reads cleanly without competing with the app's
+    // primary brand color. Keep elevation/shape consistent with FAB.
+    final bg = theme.colorScheme.primaryContainer;
+    final fg = theme.colorScheme.onPrimaryContainer;
+
+    return Material(
+      color: bg,
+      elevation: 6,
+      shadowColor: theme.shadowColor,
+      shape: const StadiumBorder(),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Primary action — start currently-selected mode.
+            Tooltip(
+              message: l10n.sessionLibraryNewSessionTooltip(modeLabel),
+              child: InkWell(
+                customBorder: const StadiumBorder(),
+                onTap: onStart,
+                onLongPress: onChooseMode,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 14, 12),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Mode-colored circular badge so the active mode is
+                      // unmistakable at a glance.
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: modeColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          sessionTypeIcon(mode),
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        l10n.sessionLibraryNewSession,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: fg,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Vertical divider separating primary action from chevron.
+            Container(
+              width: 1,
+              height: 28,
+              color: fg.withAlpha(40),
+            ),
+            // Secondary action — open mode picker.
+            Tooltip(
+              message: l10n.sessionLibraryChangeNewSessionMode,
+              child: InkWell(
+                customBorder: const StadiumBorder(),
+                onTap: onChooseMode,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 12, 16, 12),
+                  child: Icon(
+                    Icons.arrow_drop_up_rounded,
+                    size: 28,
+                    color: fg,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

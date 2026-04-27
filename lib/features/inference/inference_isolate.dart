@@ -79,11 +79,11 @@ class InferenceIsolate {
   /// [labelsCsv] — full content of the labels file.
   /// [config] — model configuration (tensor names, label format, defaults).
   ///
-  /// Loading from a file path instead of raw bytes avoids serialising ~259 MB
+  /// Loading from a file path instead of raw bytes avoids serializing ~259 MB
   /// through the isolate port, which would triple peak memory usage.
   ///
   /// This method waits until the worker isolate has fully initialized the
-  /// ONNX session.  If initialisation fails, the future completes with an
+  /// ONNX session.  If initialization fails, the future completes with an
   /// error.
   Future<void> start({
     required String modelFilePath,
@@ -210,6 +210,14 @@ class InferenceIsolate {
   void resetPooling() {
     _sendPort?.send(const _WorkerResetPooling());
   }
+
+  /// Override the temporal-pooling window count in the worker. Pass `null`
+  /// to revert to the model-config default. Safe to call before the worker
+  /// has finished initializing — the message is dropped if the send port is
+  /// not yet wired up.
+  void setMaxPoolWindows(int? value) {
+    _sendPort?.send(_WorkerSetMaxPoolWindows(value));
+  }
 }
 
 // =============================================================================
@@ -289,6 +297,11 @@ Future<void> _workerEntryPoint(_WorkerInit init) async {
       continue;
     }
 
+    if (message is _WorkerSetMaxPoolWindows) {
+      service.setMaxPoolWindows(message.value);
+      continue;
+    }
+
     if (message is _WorkerRequest) {
       debugPrint('[InferenceIsolate] processing request #${message.requestId} '
           '(${message.audioSamples.length} samples)');
@@ -324,7 +337,7 @@ Future<void> _workerEntryPoint(_WorkerInit init) async {
 // Message types (internal, not exported)
 // =============================================================================
 
-/// Initialisation data sent to the worker isolate.
+/// Initialization data sent to the worker isolate.
 class _WorkerInit {
   const _WorkerInit({
     required this.sendPort,
@@ -385,7 +398,13 @@ class _WorkerResetPooling {
   const _WorkerResetPooling();
 }
 
-/// Signal that the worker has finished initialising the model.
+/// Override the rolling temporal-pooling window count.
+class _WorkerSetMaxPoolWindows {
+  const _WorkerSetMaxPoolWindows(this.value);
+  final int? value;
+}
+
+/// Signal that the worker has finished initializing the model.
 class _WorkerReady {
   const _WorkerReady();
 }

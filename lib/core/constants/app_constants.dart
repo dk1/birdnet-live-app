@@ -63,6 +63,7 @@ abstract final class PrefKeys {
   static const String speciesFilterMode = 'species_filter_mode';
   static const String sensitivity = 'sensitivity';
   static const String scorePooling = 'score_pooling';
+  static const String scorePoolingWindows = 'score_pooling_windows';
 
   // Spectrogram settings
   static const String fftSize = 'fft_size';
@@ -146,4 +147,10 @@ abstract final class PrefKeys {
   /// Persisted view mode for the Session Library screen
   /// (one of `_ViewMode.name`: detailed, compact, bySpecies).
   static const String sessionLibraryViewMode = 'session_library_view_mode';
+
+  /// Persisted default mode for the Session Library "new session" FAB
+  /// (one of `SessionType.name`: live, pointCount, survey, fileUpload).
+  /// Remembers the user's last choice so a single tap re-enters the
+  /// preferred workflow.
+  static const String sessionLibraryNewMode = 'session_library_new_mode';
 }

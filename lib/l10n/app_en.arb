@@ -958,6 +958,10 @@
   "@settingsScorePooling": {
     "description": "Temporal score pooling setting label"
   },
+  "settingsScorePoolingWindows": "Pooling window count",
+  "@settingsScorePoolingWindows": {
+    "description": "Label for the slider that controls how many consecutive inference windows are pooled together"
+  },
   "settingsPoolingOff": "Off",
   "@settingsPoolingOff": {
     "description": "No temporal pooling"
@@ -1253,11 +1257,12 @@
   "settingsHelpShowSciNames": "When enabled, scientific names appear in grey under common names throughout the app. Useful when you want unambiguous identification or are working with field guides that use Latin names.",
   "settingsHelpGain": "Multiplies the microphone signal in the app. Use values above 1.0 only for very quiet recordings — high gain amplifies noise too and can cause clipping. Most built-in mics work best at 1.0.",
   "settingsHelpHighPassFilter": "Removes low-frequency content (wind, traffic, handling noise) before inference. Most species vocalize above 1 kHz, so a 100–200 Hz cut-off is usually safe and improves detection in noisy conditions.",
-  "settingsHelpWindowDuration": "How many seconds of audio BirdNET analyses at once. Shorter windows react faster and give finer time resolution; longer windows average more context per pass for steadier scores at the cost of slower reaction time.",
+  "settingsHelpWindowDuration": "How many seconds of audio BirdNET analyzes at once. Shorter windows react faster and give finer time resolution; longer windows average more context per pass for steadier scores at the cost of slower reaction time.",
   "settingsHelpConfidenceThreshold": "Detections below this score are hidden. Lower values surface more uncertain detections (good for rare species or quiet recordings); higher values reduce false positives but may miss faint or distant calls.",
   "settingsHelpSensitivity": "Logistic sigmoid steepness applied to model logits. Higher values push uncertain scores toward extremes (more high-confidence detections plus more false positives). Leave at 1.0 unless you know what you're doing.",
   "settingsHelpInferenceRate": "How often BirdNET runs inference per second. Higher rates catch brief calls but use more battery and CPU; lower rates are gentler on the device but may miss short vocalizations.",
   "settingsHelpScorePooling": "How scores from overlapping analysis windows are combined. 'Max' is most reactive; 'average' smooths flickering; 'LME' (logit-mean-exp) is a soft maximum that balances both.",
+  "settingsHelpScorePoolingWindows": "Number of consecutive inference windows that contribute to the pooled score. Larger values smooth detections over a longer time horizon — better for steady, distant calls but slower to react to brief vocalizations. Smaller values are more responsive but noisier.",
   "settingsHelpFftSize": "Resolution of the spectrogram. Larger sizes give finer frequency detail but coarser timing; smaller sizes show transient calls more sharply but blur frequencies. 1024–2048 works well for most species.",
   "settingsHelpColorMap": "Color palette used to render spectrogram intensity. Viridis and Magma are perceptually uniform; Grayscale is print-friendly and emphasizes structure over hue.",
   "settingsHelpSpectrogramDuration": "How many seconds of audio fit on screen at once. Shorter durations give more detail per call; longer durations show temporal patterns and let you compare detections.",
@@ -2456,6 +2461,21 @@
   "@speciesFrequencyRare": {
     "description": "Lowest frequency category label for geo-model probability"
   },
+  "speciesYouHaveDetected": "{detections, plural, =1{You have detected this species once} other{You have detected this species {detections} times}} across {sessions, plural, =1{1 session} other{{sessions} sessions}}",
+  "@speciesYouHaveDetected": {
+    "description": "Personal detection summary line shown in the species info overlay",
+    "placeholders": {
+      "detections": {"type": "int"},
+      "sessions": {"type": "int"}
+    }
+  },
+  "speciesLastSeen": "Last detected: {date}",
+  "@speciesLastSeen": {
+    "description": "Last detection date line in the species info overlay",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
   "liveScreenHelpTitle": "Live Mode Help",
   "@liveScreenHelpTitle": {
     "description": "Title for the Live Mode help overlay"
@@ -2556,9 +2576,32 @@
   "@sessionLibraryHelpSort": {
     "description": "Explains the sort menu on the Session Library help overlay"
   },
+  "sessionLibraryHelpFilter": "The session-type filter combines selections — pick one or more types (Live, Point Count, Survey, File Upload) to narrow the list.",
+  "@sessionLibraryHelpFilter": {
+    "description": "Explains the session-type filter on the Session Library help overlay"
+  },
   "sessionLibraryHelpOpen": "Tap any session card or row to open Session Review for playback, editing, export, and mapped context.",
   "@sessionLibraryHelpOpen": {
     "description": "Explains opening a saved session from the Session Library help overlay"
+  },
+  "sessionLibraryNewSession": "New session",
+  "@sessionLibraryNewSession": {
+    "description": "Floating action button label on the Session Library screen for starting a new recording session in the last-used mode."
+  },
+  "sessionLibraryNewSessionTooltip": "Start a new {mode} session",
+  "@sessionLibraryNewSessionTooltip": {
+    "description": "Tooltip on the Session Library new-session FAB. {mode} is replaced with the current mode label (e.g. Live, Point Count, Survey, File Analysis).",
+    "placeholders": {
+      "mode": {"type": "String", "example": "Live"}
+    }
+  },
+  "sessionLibraryChangeNewSessionMode": "Choose mode",
+  "@sessionLibraryChangeNewSessionMode": {
+    "description": "Tooltip / label for the small chevron next to the new-session FAB in the Session Library that opens the mode-picker bottom sheet."
+  },
+  "sessionLibraryNewSessionSheetTitle": "Start a new session",
+  "@sessionLibraryNewSessionSheetTitle": {
+    "description": "Title of the bottom sheet shown when the user taps the chevron next to the new-session FAB on the Session Library screen."
   },
   "exploreHelpRefresh": "Use refresh in the app bar to reload the current location and rebuild the predicted species list.",
   "@exploreHelpRefresh": {
