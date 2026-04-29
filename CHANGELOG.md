@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] - 2026-04-30
+
+### Fixed
+
+- **Explore taxonomic group filter (Birds / Mammals / Amphibians / Insects) was a silent no-op.** The chips in the combined sort & filter bottom sheet appeared to do nothing when toggled. Root cause was a closure-reuse bug in the sheet's local `update(fn)` helper, which invoked the same mutation closure twice (once on the sheet's `setState` and once on the host screen's `setState`) — for a toggle pattern like `if (!_groups.add(g)) _groups.remove(g)`, the first call added the value and the second immediately removed it, leaving the set unchanged. The toggle and clear actions now mutate the set exactly once and trigger both rebuilds via an empty `update(() {})` call.
+
+### Changed
+
+- **Onboarding screens — better screen-space distribution.** The 5-page first-run wizard now follows established onboarding-UX patterns instead of stretching content edge-to-edge:
+  - **Reading width is capped at 520 dp** on every page via `ContentWidthConstraint`, so paragraphs stay scannable on tablets and in landscape rather than spanning the full screen width.
+  - **Hero icons are larger and more prominent.** The Welcome page's app icon grew from 72 → 112 dp; "How It Works", "Features", "Permissions", and "Terms" pages now use an 88 dp hero icon container (up from 44 dp) with the icon scaled proportionally.
+  - **Type scale bumped one step.** Page titles use `headlineSmall` / `headlineMedium` (was `titleLarge` / `headlineSmall`) and body copy uses `bodyLarge` with `height: 1.5` line spacing (was `bodyMedium`), making the text noticeably easier to read on phones and tablets alike.
+  - **More generous vertical rhythm** between hero, title, body, and lists; the Welcome page is vertically centered with weighted spacers so it doesn't feel top-heavy.
+  - The bottom controls bar now uses a 50 dp primary button with slightly larger page-indicator dots and is also constrained to the same reading width, so the call-to-action doesn't stretch across the full width on tablets.
+
+## [0.8.1] - 2026-04-30
+
+### Fixed
+
+- **Consistent spacing between dark and light themes.** The light theme was missing several component-level theme overrides (`ListTileThemeData`, `DialogThemeData`, `SwitchThemeData`, `SliderThemeData`, `TextButtonThemeData`, `DividerThemeData`, `SnackBarThemeData`) that the dark theme defined, so toggling brightness caused those widgets to fall back to Material 3 defaults with different padding — most visibly on Settings, Session Library, and Session Review where ListTile rows changed height. The structural (non-color) `ListTile` theme is now factored into a shared helper applied by both themes, and the remaining missing component themes have been mirrored into the light theme with light-appropriate colors.
+
+## [0.8.0] - 2026-04-30
+
+### Added
+
+- **Combined sort & filter overlay on Explore.** The AppBar's filter button now opens a bottom sheet (matching the pattern used in the session library) that combines three independent controls: a **sort mode** (Likelihood here / A–Z / Z–A), a **detection-status filter** (All species / Already detected / Not yet detected), and the existing **multi-select taxonomic group filter** (Birds, Mammals, Amphibians, Insects). Group filtering is now multi-select rather than a single chip, and the AppBar shows a small primary-color dot whenever any non-default option is active.
+- **Help screen — narrative reorganization.** The Help screen has been restructured to follow a top-to-bottom usage narrative with three new section headers: **What you can do** (Live → Point Count → Survey → File Analysis), **Discover & revisit** (Explore, Sessions), and **Common Controls** (Settings, Help, About). The previous duplicate listing of Explore and Sessions as both control-cards and full sections has been removed.
+
+### Changed
+
+- **Explore: help and refresh icon positions swapped.** The AppBar now exposes the **help** action (where refresh used to live), since the Explore screen has the most context-specific help content of any screen in the app. The **refresh** action moved into the location header, immediately next to the location indicator — that is what it actually re-queries (the user's GPS fix and derived geo-model species list), so co-locating the two is more discoverable.
+
+### Fixed
+
+- **Audio trim no longer drops detections that span trim boundaries.** Previously, applying a trim in Session Review removed any detection whose `timestamp` fell outside the trim window — so a 3-second detection that started 1 second before the trim end would disappear entirely. The trim logic now keeps any detection whose `[start, end]` interval overlaps the trim window and clamps partial-overlap intervals to the visible range, preserving detections that span the cut points.
+- **Session library file size now reflects the active trim.** The size chip on session cards used to always report the raw audio file's on-disk bytes, which was misleading after the user trimmed a long recording down to a few seconds. The displayed size is now scaled by the trim ratio `(trimEnd − trimStart) / fullDuration` so it reflects what would actually be exported. The audio file itself is left untouched on disk so the trim remains fully reversible.
+
+### Removed
+
+- **"Developer preview" labels.** The "(Developer preview)" subtitle on the Home screen, the warning card on the About screen, and the equivalent note in the README have been removed now that the app is stable enough for general use. The note in the README now points users toward the issue tracker for any rough edges they encounter.
+
+### Internal
+
+- **Verified the Play Asset Delivery refactor is iOS / desktop safe.** `AssetPackService` short-circuits the Android-only platform-channel path on every other platform and falls through to the existing `rootBundle.load` extraction, so Xcode iOS / macOS builds and the desktop sideload paths bundle the ONNX models from `assets/models/` exactly as before. The Play Asset Delivery split only affects Android Play Store builds.
+
 ## [0.7.15] - 2026-04-29
 
 ### Changed

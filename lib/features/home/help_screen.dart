@@ -31,7 +31,9 @@ class HelpScreen extends StatelessWidget {
           child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         children: [
-          // ── Introduction ────────────────────────────────────
+          // ── 1. Introduction ─────────────────────────────────
+          // Sets context for everything that follows: what kind of app
+          // this is and how the help page is organized.
           Text(
             l10n.helpIntro,
             style: theme.textTheme.bodyMedium?.copyWith(
@@ -41,48 +43,16 @@ class HelpScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          Row(
-            children: [
-              Icon(Icons.info_outline,
-                  size: 22, color: theme.colorScheme.primary),
-              const SizedBox(width: 8),
-              Text(
-                l10n.helpControlsTitle,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          // ── 2. What you can do (the four core capture modes) ──
+          // The user's primary intent on opening the app is to record
+          // and identify something — so the four capture modes come
+          // first, in order of increasing structure / commitment:
+          //   Live  → Point Count → Survey → File Analysis
+          _SectionHeader(
+            icon: Icons.mic_none_outlined,
+            title: l10n.helpModesTitle,
           ),
           const SizedBox(height: 12),
-          _ControlCard(
-            icon: Icons.tune_rounded,
-            title: l10n.settings,
-            body: l10n.helpControlSettings,
-          ),
-          _ControlCard(
-            icon: Icons.search_rounded,
-            title: l10n.exploreMode,
-            body: l10n.helpControlExplore,
-          ),
-          _ControlCard(
-            icon: Icons.library_music_outlined,
-            title: l10n.sessionLibraryTitle,
-            body: l10n.helpControlSessions,
-          ),
-          _ControlCard(
-            icon: Icons.help_outline_rounded,
-            title: l10n.helpTitle,
-            body: l10n.helpControlHelp,
-          ),
-          _ControlCard(
-            icon: Icons.info_outline,
-            title: l10n.about,
-            body: l10n.helpControlAbout,
-          ),
-          const SizedBox(height: 20),
-
-          // ── Mode sections ───────────────────────────────────
           _HelpSection(
             icon: sessionTypeIcon(SessionType.live),
             color: sessionTypeIconColor(SessionType.live),
@@ -107,6 +77,17 @@ class HelpScreen extends StatelessWidget {
             title: l10n.helpFileAnalysisTitle,
             body: l10n.helpFileAnalysisBody,
           ),
+          const SizedBox(height: 20),
+
+          // ── 3. Discover & revisit (Explore + Session Library) ──
+          // Once the user has captured something — or wants to know
+          // *what to expect* before recording — these two screens are
+          // where they go.
+          _SectionHeader(
+            icon: Icons.travel_explore_outlined,
+            title: l10n.helpToolsTitle,
+          ),
+          const SizedBox(height: 12),
           _HelpSection(
             icon: Icons.search_rounded,
             color: theme.colorScheme.primary,
@@ -119,24 +100,41 @@ class HelpScreen extends StatelessWidget {
             title: l10n.helpSessionsTitle,
             body: l10n.helpSessionsBody,
           ),
+          const SizedBox(height: 20),
+
+          // ── 4. Common controls (settings & meta navigation) ──
+          // These are the small AppBar / footer affordances common to
+          // every screen. They follow the modes because users typically
+          // discover them only after they've started using the app.
+          _SectionHeader(
+            icon: Icons.tune_rounded,
+            title: l10n.helpControlsTitle,
+          ),
+          const SizedBox(height: 12),
+          _ControlCard(
+            icon: Icons.tune_rounded,
+            title: l10n.settings,
+            body: l10n.helpControlSettings,
+          ),
+          _ControlCard(
+            icon: Icons.help_outline_rounded,
+            title: l10n.helpTitle,
+            body: l10n.helpControlHelp,
+          ),
+          _ControlCard(
+            icon: Icons.info_outline,
+            title: l10n.about,
+            body: l10n.helpControlAbout,
+          ),
 
           const SizedBox(height: 8),
           const Divider(),
           const SizedBox(height: 8),
 
-          // ── Tips ────────────────────────────────────────────
-          Row(
-            children: [
-              Icon(Icons.info_outline,
-                  size: 22, color: theme.colorScheme.primary),
-              const SizedBox(width: 8),
-              Text(
-                l10n.helpTipsTitle,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          // ── 5. Tips for best results ─────────────────────────
+          _SectionHeader(
+            icon: Icons.lightbulb_outline,
+            title: l10n.helpTipsTitle,
           ),
           const SizedBox(height: 12),
           _TipRow(text: l10n.helpTipQuiet),
@@ -146,6 +144,8 @@ class HelpScreen extends StatelessWidget {
           _TipRow(text: l10n.helpTipGeoFilter),
           _TipRow(text: l10n.helpTipGuide),
           const SizedBox(height: 12),
+
+          // ── 6. Deeper dive — link out to the online user guide ──
           Card(
             color: theme.colorScheme.surfaceContainerLow,
             child: Padding(
@@ -190,6 +190,35 @@ class HelpScreen extends StatelessWidget {
           const SizedBox(height: 24),
         ],
       )),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section header — small icon + title row used between top-level help
+// groups. Kept inline here (rather than promoted to a shared widget)
+// because the layout is intentionally tied to this screen's rhythm.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.icon, required this.title});
+  final IconData icon;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Icon(icon, size: 22, color: theme.colorScheme.primary),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
