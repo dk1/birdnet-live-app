@@ -304,8 +304,7 @@ class _ControlsBar extends StatelessWidget {
             SizedBox(
               height: 50,
               child: FilledButton(
-                onPressed:
-                    isFinalPage ? (canFinish ? onFinish : null) : onNext,
+                onPressed: isFinalPage ? (canFinish ? onFinish : null) : onNext,
                 child: Text(
                   isFinalPage ? l10n.getStarted : l10n.next,
                   style: const TextStyle(
@@ -536,7 +535,7 @@ class _PermissionsPage extends StatelessWidget {
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                    _PermissionTile(
+                  _PermissionTile(
                     icon: Icons.mic_rounded,
                     title: l10n.permissionMicrophoneTitle,
                     description: l10n.permissionMicrophoneDescription,
