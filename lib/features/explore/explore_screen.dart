@@ -31,21 +31,25 @@ import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/empty_view.dart';
 import '../../shared/widgets/error_view.dart';
 import '../../shared/widgets/loading_view.dart';
+import '../history/global_species_history.dart';
 import 'explore_providers.dart';
 import 'widgets/species_card.dart';
 import 'widgets/species_info_overlay.dart';
 
-/// Taxonomic group filter for the explore list.
+/// Taxonomic group filter for the explore list. The `all` sentinel is no
+/// longer used as an explicit selection — "no taxon-group filter" is
+/// represented by an *empty* `Set<_TaxonGroup>` in the screen state, so
+/// the filter bottom sheet can offer multi-select like the session
+/// library does. The enum still defines a stable ordering for the chip
+/// row.
 enum _TaxonGroup {
-  all,
   aves,
   mammalia,
   amphibia,
   insecta;
 
   /// Matches the `taxon_group` column in the bundled taxonomy CSV.
-  String? get csvValue => switch (this) {
-        _TaxonGroup.all => null,
+  String get csvValue => switch (this) {
         _TaxonGroup.aves => 'Aves',
         _TaxonGroup.mammalia => 'Mammalia',
         _TaxonGroup.amphibia => 'Amphibia',
@@ -53,13 +57,19 @@ enum _TaxonGroup {
       };
 
   String label(AppLocalizations l10n) => switch (this) {
-        _TaxonGroup.all => l10n.exploreFilterAll,
         _TaxonGroup.aves => l10n.exploreFilterBirds,
         _TaxonGroup.mammalia => l10n.exploreFilterMammals,
         _TaxonGroup.amphibia => l10n.exploreFilterAmphibians,
         _TaxonGroup.insecta => l10n.exploreFilterInsects,
       };
 }
+
+/// Sort modes for the explore list.
+enum _SortMode { geo, nameAsc, nameDesc }
+
+/// Detection-state filter — narrows the list to species the user has or
+/// has not yet logged in any saved session.
+enum _DetectionFilter { all, detected, undetected }
 
 /// The Explore screen — browse species expected in your area, with optional
 /// search across the full species list.
@@ -74,14 +84,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();
   String _query = '';
-  _TaxonGroup _group = _TaxonGroup.all;
+
+  /// Selected taxon groups. Empty set means "all groups" — matching the
+  /// session library's filter sheet semantics.
+  final Set<_TaxonGroup> _groups = <_TaxonGroup>{};
+
+  /// Active sort mode; defaults to geo probability so the most likely
+  /// species in your area surface at the top.
+  _SortMode _sortMode = _SortMode.geo;
+
+  /// Active detection-state filter; defaults to no restriction.
+  _DetectionFilter _detectionFilter = _DetectionFilter.all;
 
   /// Whether the inline search field is currently visible. Toggled by the
-  /// search icon in the AppBar; the filter chip row is shown otherwise.
+  /// search icon in the AppBar.
   bool _searchVisible = false;
-
-  /// Whether the taxonomic-group filter chip row is currently visible.
-  bool _filterVisible = false;
 
   @override
   void dispose() {
@@ -102,7 +119,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         _query = '';
       } else {
         _searchVisible = true;
-        _filterVisible = false;
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => _searchFocusNode.requestFocus(),
         );
@@ -110,11 +126,97 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     });
   }
 
-  void _toggleFilter() {
-    setState(() {
-      _filterVisible = !_filterVisible;
-      if (_filterVisible) _searchVisible = false;
-    });
+  /// Whether any non-default sort/filter is active — drives the badge
+  /// dot on the AppBar filter button.
+  bool get _filterActive =>
+      _groups.isNotEmpty ||
+      _sortMode != _SortMode.geo ||
+      _detectionFilter != _DetectionFilter.all;
+
+  void _showFilterSheet() {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: StatefulBuilder(
+            builder: (ctx, setSheetState) {
+              void update(VoidCallback fn) {
+                setSheetState(fn);
+                setState(fn);
+              }
+
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _ExploreSheetHeader(label: l10n.exploreSortTooltip),
+                      _ExploreSheetChoiceChips<_SortMode>(
+                        current: _sortMode,
+                        options: [
+                          (_SortMode.geo, l10n.exploreSortGeo),
+                          (_SortMode.nameAsc, l10n.sessionSortNameAZ),
+                          (_SortMode.nameDesc, l10n.sessionSortNameZA),
+                        ],
+                        onSelected: (m) => update(() => _sortMode = m),
+                      ),
+                      const SizedBox(height: 16),
+                      _ExploreSheetHeader(
+                          label: l10n.exploreDetectionFilterTooltip),
+                      _ExploreSheetChoiceChips<_DetectionFilter>(
+                        current: _detectionFilter,
+                        options: [
+                          (_DetectionFilter.all,
+                              l10n.exploreDetectionFilterAll),
+                          (_DetectionFilter.detected,
+                              l10n.exploreDetectionFilterDetected),
+                          (_DetectionFilter.undetected,
+                              l10n.exploreDetectionFilterUndetected),
+                        ],
+                        onSelected: (m) =>
+                            update(() => _detectionFilter = m),
+                      ),
+                      const SizedBox(height: 16),
+                      _ExploreSheetHeader(label: l10n.exploreFilterTooltip),
+                      _ExploreSheetMultiChips<_TaxonGroup>(
+                        current: _groups,
+                        options: [
+                          for (final g in _TaxonGroup.values) (g, g.label(l10n)),
+                        ],
+                        onToggle: (g) => update(() {
+                          if (!_groups.add(g)) _groups.remove(g);
+                        }),
+                        onClear:
+                            _groups.isEmpty ? null : () => update(_groups.clear),
+                        clearLabel: l10n.exploreFilterAll,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _showHelp() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const _ExploreHelpSheet(),
+    );
+  }
+
+  void _refresh() {
+    ref.invalidate(currentLocationProvider);
+    ref.invalidate(exploreSpeciesProvider);
   }
 
   @override
@@ -123,21 +225,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final speciesAsync = ref.watch(exploreSpeciesProvider);
     final locationAsync = ref.watch(currentLocationProvider);
     final theme = Theme.of(context);
-    final filterActive = _group != _TaxonGroup.all;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.exploreTitle),
         actions: [
-          // Filter toggle (badge dot when a non-"All" group is active).
+          // Filter / sort overlay (badge dot when any non-default option is
+          // active).
           IconButton(
             icon: Stack(
               clipBehavior: Clip.none,
               children: [
-                Icon(_filterVisible
-                    ? Icons.filter_list
-                    : Icons.filter_list_outlined),
-                if (filterActive)
+                const Icon(Icons.filter_list_outlined),
+                if (_filterActive)
                   Positioned(
                     right: -2,
                     top: -2,
@@ -153,7 +253,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ],
             ),
             tooltip: l10n.exploreFilterTooltip,
-            onPressed: _toggleFilter,
+            onPressed: _showFilterSheet,
           ),
           // Search toggle.
           IconButton(
@@ -163,13 +263,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 : l10n.exploreSearchTooltip,
             onPressed: _toggleSearch,
           ),
+          // Help (swapped with refresh — refresh now lives in the
+          // location header next to the location indicator since that's
+          // what it actually re-queries).
           IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: l10n.exploreRefresh,
-            onPressed: () {
-              ref.invalidate(currentLocationProvider);
-              ref.invalidate(exploreSpeciesProvider);
-            },
+            icon: const Icon(Icons.help_outline_rounded),
+            tooltip: l10n.exploreHelpTitle,
+            onPressed: _showHelp,
           ),
         ],
       ),
@@ -179,31 +279,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           error: (error, _) => ErrorView(
             title: l10n.statusError,
             message: error.toString(),
-            onRetry: () {
-              ref.invalidate(currentLocationProvider);
-              ref.invalidate(exploreSpeciesProvider);
-            },
+            onRetry: _refresh,
             retryLabel: l10n.retry,
           ),
           data: (localSpecies) {
             return Column(
               children: [
                 // ── Location & count header ─────────────────
-                _LocationHeader(speciesCount: localSpecies.length),
-                const Divider(height: 1),
-
-                // ── Collapsible filter chip row ─────────────
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeInOut,
-                  alignment: Alignment.topCenter,
-                  child: _filterVisible
-                      ? _GroupFilterBar(
-                          selected: _group,
-                          onChanged: (g) => setState(() => _group = g),
-                        )
-                      : const SizedBox(width: double.infinity, height: 0),
+                _LocationHeader(
+                  speciesCount: localSpecies.length,
+                  onRefresh: _refresh,
                 ),
+                const Divider(height: 1),
 
                 // ── Collapsible search field ────────────────
                 AnimatedSize(
@@ -251,12 +338,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   child: _query.isEmpty
                       ? _GeoList(
                           species: localSpecies,
-                          group: _group,
+                          groups: _groups,
+                          sortMode: _sortMode,
+                          detectionFilter: _detectionFilter,
                           locationAvailable: locationAsync.valueOrNull != null,
                         )
                       : _SearchResults(
                           query: _query,
-                          group: _group,
+                          groups: _groups,
+                          sortMode: _sortMode,
+                          detectionFilter: _detectionFilter,
                           localSpecies: localSpecies,
                         ),
                 ),
@@ -270,37 +361,97 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 }
 
 // ---------------------------------------------------------------------------
-// Group filter chip bar
+// Filter / sort bottom-sheet helpers
 // ---------------------------------------------------------------------------
 
-class _GroupFilterBar extends StatelessWidget {
-  const _GroupFilterBar({required this.selected, required this.onChanged});
-
-  final _TaxonGroup selected;
-  final ValueChanged<_TaxonGroup> onChanged;
+class _ExploreSheetHeader extends StatelessWidget {
+  const _ExploreSheetHeader({required this.label});
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return SizedBox(
-      height: 48,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        children: [
-          for (final g in _TaxonGroup.values) ...[
-            FilterChip(
-              label: Text(g.label(l10n)),
-              selected: selected == g,
-              onSelected: (_) => onChanged(g),
-            ),
-            const SizedBox(width: 6),
-          ],
-        ],
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8, top: 4),
+      child: Text(
+        label,
+        style: theme.textTheme.labelLarge
+            ?.copyWith(color: theme.colorScheme.primary),
       ),
     );
   }
 }
+
+class _ExploreSheetChoiceChips<T> extends StatelessWidget {
+  const _ExploreSheetChoiceChips({
+    required this.current,
+    required this.options,
+    required this.onSelected,
+  });
+
+  final T current;
+  final List<(T, String)> options;
+  final ValueChanged<T> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final (value, label) in options)
+          ChoiceChip(
+            label: Text(label),
+            selected: current == value,
+            onSelected: (_) => onSelected(value),
+          ),
+      ],
+    );
+  }
+}
+
+class _ExploreSheetMultiChips<T> extends StatelessWidget {
+  const _ExploreSheetMultiChips({
+    required this.current,
+    required this.options,
+    required this.onToggle,
+    required this.onClear,
+    required this.clearLabel,
+  });
+
+  final Set<T> current;
+  final List<(T, String)> options;
+  final ValueChanged<T> onToggle;
+  final VoidCallback? onClear;
+  final String clearLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        ChoiceChip(
+          label: Text(clearLabel),
+          selected: current.isEmpty,
+          onSelected: (_) => onClear?.call(),
+        ),
+        for (final (value, label) in options)
+          FilterChip(
+            label: Text(label),
+            selected: current.contains(value),
+            onSelected: (_) => onToggle(value),
+          ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// (Old inline group filter chip bar removed — filtering now lives in the
+// AppBar filter button's bottom sheet, alongside sort and detection-state
+// options.)
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Geo list (no active search)
@@ -309,22 +460,49 @@ class _GroupFilterBar extends StatelessWidget {
 class _GeoList extends ConsumerWidget {
   const _GeoList({
     required this.species,
-    required this.group,
+    required this.groups,
+    required this.sortMode,
+    required this.detectionFilter,
     required this.locationAvailable,
   });
 
   final List<ExploreSpecies> species;
-  final _TaxonGroup group;
+  final Set<_TaxonGroup> groups;
+  final _SortMode sortMode;
+  final _DetectionFilter detectionFilter;
   final bool locationAvailable;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final filtered = group == _TaxonGroup.all
-        ? species
-        : species
-            .where((s) => s.taxonomy?.taxonGroup == group.csvValue)
-            .toList();
+    final detected = ref.watch(detectedSpeciesSetProvider);
+
+    final filtered = species.where((s) {
+      if (groups.isNotEmpty) {
+        final g = s.taxonomy?.taxonGroup;
+        if (g == null || !groups.any((tg) => tg.csvValue == g)) return false;
+      }
+      switch (detectionFilter) {
+        case _DetectionFilter.all:
+          break;
+        case _DetectionFilter.detected:
+          if (!detected.contains(s.scientificName)) return false;
+        case _DetectionFilter.undetected:
+          if (detected.contains(s.scientificName)) return false;
+      }
+      return true;
+    }).toList();
+
+    switch (sortMode) {
+      case _SortMode.geo:
+        filtered.sort((a, b) => b.geoScore.compareTo(a.geoScore));
+      case _SortMode.nameAsc:
+        filtered.sort(
+            (a, b) => a.commonName.toLowerCase().compareTo(b.commonName.toLowerCase()));
+      case _SortMode.nameDesc:
+        filtered.sort(
+            (a, b) => b.commonName.toLowerCase().compareTo(a.commonName.toLowerCase()));
+    }
 
     if (filtered.isEmpty) {
       return EmptyView(
@@ -364,12 +542,16 @@ class _GeoList extends ConsumerWidget {
 class _SearchResults extends ConsumerWidget {
   const _SearchResults({
     required this.query,
-    required this.group,
+    required this.groups,
+    required this.sortMode,
+    required this.detectionFilter,
     required this.localSpecies,
   });
 
   final String query;
-  final _TaxonGroup group;
+  final Set<_TaxonGroup> groups;
+  final _SortMode sortMode;
+  final _DetectionFilter detectionFilter;
   final List<ExploreSpecies> localSpecies;
 
   @override
@@ -378,6 +560,7 @@ class _SearchResults extends ConsumerWidget {
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
     final audioLabelsAsync = ref.watch(audioLabelsSetProvider);
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
+    final detected = ref.watch(detectedSpeciesSetProvider);
 
     final taxonomy = taxonomyAsync.valueOrNull;
     final audioLabels = audioLabelsAsync.valueOrNull;
@@ -392,13 +575,22 @@ class _SearchResults extends ConsumerWidget {
 
     // Search across the entire taxonomy, then keep only species the audio
     // model knows about (so opening them is meaningful), and apply the
-    // taxonomic-group filter.
+    // taxonomic-group + detection-state filters.
     final hits = taxonomy
         .search(query, limit: 200)
         .where((sp) => audioLabels.contains(sp.scientificName))
-        .where(
-            (sp) => group == _TaxonGroup.all || sp.taxonGroup == group.csvValue)
-        .toList();
+        .where((sp) =>
+            groups.isEmpty || groups.any((g) => g.csvValue == sp.taxonGroup))
+        .where((sp) {
+      switch (detectionFilter) {
+        case _DetectionFilter.all:
+          return true;
+        case _DetectionFilter.detected:
+          return detected.contains(sp.scientificName);
+        case _DetectionFilter.undetected:
+          return !detected.contains(sp.scientificName);
+      }
+    }).toList();
 
     if (hits.isEmpty) {
       return Center(
@@ -432,9 +624,24 @@ class _SearchResults extends ConsumerWidget {
         elsewhere.add(hit);
       }
     }
-    // Within "at your location", prefer higher geo scores.
-    atLocation.sort(
-        (a, b) => (b.local?.geoScore ?? 0).compareTo(a.local?.geoScore ?? 0));
+    // Apply the user's chosen sort to each bucket independently. Geo
+    // probability is the default for the at-location bucket; the
+    // alphabetical modes apply to both buckets symmetrically.
+    int byNameAsc(_SearchHit a, _SearchHit b) =>
+        a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
+    int byNameDesc(_SearchHit a, _SearchHit b) =>
+        b.displayName.toLowerCase().compareTo(a.displayName.toLowerCase());
+    switch (sortMode) {
+      case _SortMode.geo:
+        atLocation.sort((a, b) =>
+            (b.local?.geoScore ?? 0).compareTo(a.local?.geoScore ?? 0));
+      case _SortMode.nameAsc:
+        atLocation.sort(byNameAsc);
+        elsewhere.sort(byNameAsc);
+      case _SortMode.nameDesc:
+        atLocation.sort(byNameDesc);
+        elsewhere.sort(byNameDesc);
+    }
 
     final items = <_ListEntry>[];
     if (atLocation.isNotEmpty) {
@@ -541,9 +748,13 @@ class _SectionHeader extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _LocationHeader extends ConsumerStatefulWidget {
-  const _LocationHeader({required this.speciesCount});
+  const _LocationHeader({
+    required this.speciesCount,
+    required this.onRefresh,
+  });
 
   final int speciesCount;
+  final VoidCallback onRefresh;
 
   @override
   ConsumerState<_LocationHeader> createState() => _LocationHeaderState();
@@ -630,26 +841,18 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
                 ),
               ),
               IconButton(
-                onPressed: () => _showExploreHelp(context),
+                onPressed: widget.onRefresh,
                 icon: Icon(
-                  Icons.help_outline,
+                  Icons.refresh,
                   size: 22,
-                  color: theme.colorScheme.onSurface.withAlpha(120),
+                  color: theme.colorScheme.onSurface.withAlpha(160),
                 ),
-                tooltip: l10n.exploreHelpTitle,
+                tooltip: l10n.exploreRefresh,
               ),
             ],
           ),
         ],
       ),
-    );
-  }
-
-  void _showExploreHelp(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => const _ExploreHelpSheet(),
     );
   }
 }
