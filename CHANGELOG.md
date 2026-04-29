@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.15] - 2026-04-29
+
+### Changed
+
+- **Play Asset Delivery for ONNX models on Android.** The two large `.onnx` model files (~152 MB audio classifier + ~6 MB geo model) are now shipped via an install-time Play Asset Delivery pack (`models_pack`) instead of being bundled inside the base module. This keeps the base AAB comfortably under Google Play's 200 MB compressed download limit while still being fully offline — the pack is downloaded together with the app at install time and unpacked to disk. Sideload APK builds (GitHub releases) are unaffected: the models continue to live in `flutter_assets` and are extracted to the app documents directory on first launch exactly as before.
+- **Centralized model file resolution.** A new `AssetPackService` transparently resolves each model file from either the asset pack (Play Store builds) or `rootBundle` extraction (sideload builds). All four model-loading call sites (Live, Survey, File Analysis, Explore geo-model) now go through this single resolver, removing duplicated extraction logic.
+
 ## [0.7.14] - 2026-04-27
 
 ### Fixed
