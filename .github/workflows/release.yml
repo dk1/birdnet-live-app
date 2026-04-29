@@ -59,7 +59,7 @@ jobs:
   build_android:
     name: Build Android APK
     runs-on: ubuntu-latest
-    needs: prepare_assets
+    needs: [flutter_test, prepare_assets]
     steps:
       - uses: actions/checkout@v4
 
