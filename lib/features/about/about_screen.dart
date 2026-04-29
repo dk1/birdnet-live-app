@@ -66,32 +66,6 @@ class AboutScreen extends ConsumerWidget {
 
           const SizedBox(height: 32),
 
-          // Developer preview note
-          Card(
-            color: theme.colorScheme.errorContainer,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.warning_amber_rounded,
-                    color: theme.colorScheme.onErrorContainer,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      l10n.aboutDeveloperPreviewWarning,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onErrorContainer,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
           // Combined model info — audio model + geo-model in one card.
           // Shows the model display name for each plus the shared species
           // count once at the bottom (both ship with the same 5,250-species

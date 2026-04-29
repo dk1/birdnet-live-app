@@ -8,7 +8,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/flutter-%3E%3D3.0-blue.svg" alt="Flutter">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
-  <img src="https://img.shields.io/badge/version-0.7.15-orange.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.8.0-orange.svg" alt="Version">
   <img src="https://img.shields.io/badge/species-5%2C250-brightgreen.svg" alt="Species: 5,250">
 </p>
 
@@ -30,7 +30,7 @@ The bioacoustics companion app for field researchers, conservationists, and bird
   <a href="https://github.com/birdnet-team/birdnet-live-app/releases"><b>All Releases</b></a>
 </p>
 
-**NOTE: This is an early developer preview. The app is not yet feature-complete or fully polished. Expect bugs, crashes, and rough edges. Please report issues and contribute if you can!**
+**NOTE: BirdNET Live is under active development. Some rough edges and limitations remain — please [report issues](https://github.com/birdnet-team/birdnet-live-app/issues) you run into and contribute if you can!**
 
 ---
 
@@ -191,7 +191,7 @@ Please ensure you review and adhere to the specific license terms provided with 
 
 ## Terms of Use
 
-Please refer to the [TERMS OF USE](TERMS_OF_USE.md) file for detailed terms and conditions regarding the use of the BirdNET+ V3.0 developer preview models.
+Please refer to the [TERMS OF USE](TERMS_OF_USE.md) file for detailed terms and conditions regarding the use of the BirdNET+ V3.0 preview models.
 
 ## Funding
 

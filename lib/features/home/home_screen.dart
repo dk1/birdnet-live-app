@@ -188,13 +188,6 @@ class _LogoHeader extends ConsumerWidget {
             color: theme.colorScheme.onSurface.withAlpha(153),
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          l10n.homeDeveloperPreview,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurface.withAlpha(100),
-          ),
-        ),
       ],
     );
   }
