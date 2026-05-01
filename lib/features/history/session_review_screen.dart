@@ -1868,7 +1868,7 @@ enum _MapFilterMode {
 /// Default confidence floor for the slider. 0.5 keeps every detection a
 /// typical survey would keep, so the slider visibly reduces markers as
 /// the user drags it up.
-const double _defaultConfidenceFloor = 0.5;
+const double _defaultConfidenceFloor = 0.1;
 
 /// Fullscreen map showing the complete survey track with species markers.
 /// Tapping a species marker plays the detection's audio clip. The app bar
@@ -2145,14 +2145,18 @@ class _MapFilterSheetState extends State<_MapFilterSheet> {
                 e.scientificName.toLowerCase().contains(lowerQuery))
             .toList();
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.7,
-      minChildSize: 0.4,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (_, scrollController) {
-        return Column(
-          children: [
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.4,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (_, scrollController) {
+          return Column(
+            children: [
             // Drag handle.
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -2227,9 +2231,9 @@ class _MapFilterSheetState extends State<_MapFilterSheet> {
                   ),
                   Slider(
                     value: _minConfidence,
-                    min: 0.5,
+                    min: 0.1,
                     max: 0.99,
-                    divisions: 49,
+                    divisions: 89,
                     label: '${(_minConfidence * 100).round()}%',
                     onChanged: (v) => setState(() => _minConfidence = v),
                   ),

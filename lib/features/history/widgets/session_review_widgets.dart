@@ -171,7 +171,9 @@ class _SummaryHeader extends StatelessWidget {
             if ((session.distanceMeters != null &&
                     session.distanceMeters! > 0) ||
                 (session.observerName != null &&
-                    session.observerName!.isNotEmpty)) ...[
+                    session.observerName!.isNotEmpty) ||
+                (session.transectId != null &&
+                    session.transectId!.isNotEmpty)) ...[
               const SizedBox(height: 4),
               Row(
                 children: [
@@ -183,25 +185,24 @@ class _SummaryHeader extends StatelessWidget {
                           ? '${(session.distanceMeters! / 1000).toStringAsFixed(1)} km'
                           : '${session.distanceMeters!.round()} m',
                     ),
-                    if (session.observerName != null &&
-                        session.observerName!.isNotEmpty)
-                      const SizedBox(width: 16),
+                    const SizedBox(width: 16),
                   ],
                   if (session.observerName != null &&
-                      session.observerName!.isNotEmpty)
+                      session.observerName!.isNotEmpty) ...[
                     StatChip(
                       icon: Icons.person_outline,
                       value: session.observerName!,
                     ),
+                    const SizedBox(width: 16),
+                  ],
+                  if (session.transectId != null &&
+                      session.transectId!.isNotEmpty) ...[
+                    StatChip(
+                      icon: Icons.route_outlined,
+                      value: session.transectId!,
+                    ),
+                  ],
                 ],
-              ),
-            ],
-            if (session.transectId != null &&
-                session.transectId!.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              StatChip(
-                icon: Icons.route_outlined,
-                value: session.transectId!,
               ),
             ],
             if (session.stopReason != null &&
