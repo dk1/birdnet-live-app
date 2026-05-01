@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Audio recording freezes.** Implemented a watchdog timer to detect audio stream stalls (e.g., when an external app takes microphone focus on Android) and automatically restarts the microphone, fixing silent audio and spectrogram freezes (fixes #29).
 - **Species filter hidden by keyboard.** The fullscreen survey map filter sheet now safely pads itself from the bottom so the search bar and species suggestions are not concealed by the on-screen keyboard.
 - Various build and CI fixes including Android signing config guard for release builds, GitHub actions paths, secrets checks, and deprecated API usages.
 - Radio buttons fix and test configuration refactoring.
