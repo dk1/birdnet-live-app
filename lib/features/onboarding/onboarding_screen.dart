@@ -25,10 +25,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:record/record.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/app_providers.dart';
+import '../../shared/services/link_launcher.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 
 // ---------------------------------------------------------------------------
@@ -85,7 +85,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       final loc = await Geolocator.checkPermission();
       if (!mounted) return;
       setState(() {
-        _locGranted = loc == LocationPermission.whileInUse ||
+        _locGranted =
+            loc == LocationPermission.whileInUse ||
             loc == LocationPermission.always;
       });
     } catch (_) {
@@ -118,7 +119,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       }
       if (!mounted) return;
       setState(() {
-        _locGranted = perm == LocationPermission.whileInUse ||
+        _locGranted =
+            perm == LocationPermission.whileInUse ||
             perm == LocationPermission.always;
       });
     } catch (_) {
@@ -217,8 +219,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     l10n: l10n,
                     theme: theme,
                     agreed: _termsAgreed,
-                    onAgreedChanged: (v) =>
-                        setState(() => _termsAgreed = v ?? false),
+                    onAgreedChanged:
+                        (v) => setState(() => _termsAgreed = v ?? false),
                   ),
                 ],
               ),
@@ -292,9 +294,10 @@ class _ControlsBar extends StatelessWidget {
                     width: i == page ? 18 : 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: i == page
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.outlineVariant,
+                      color:
+                          i == page
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.outlineVariant,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -593,10 +596,7 @@ class _PermissionTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest.withAlpha(120),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: theme.colorScheme.outlineVariant,
-          width: 1,
-        ),
+        border: Border.all(color: theme.colorScheme.outlineVariant, width: 1),
       ),
       padding: const EdgeInsets.all(14),
       child: Row(
@@ -609,8 +609,11 @@ class _PermissionTile extends StatelessWidget {
               color: theme.colorScheme.primaryContainer,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon,
-                size: 22, color: theme.colorScheme.onPrimaryContainer),
+            child: Icon(
+              icon,
+              size: 22,
+              color: theme.colorScheme.onPrimaryContainer,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -619,8 +622,9 @@ class _PermissionTile extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w600),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -647,13 +651,14 @@ class _PermissionTile extends StatelessWidget {
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                 ),
-                child: busy
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(l10n.permissionRequest),
+                child:
+                    busy
+                        ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : Text(l10n.permissionRequest),
               ),
             ),
         ],
@@ -682,8 +687,7 @@ class _TermsPage extends StatelessWidget {
   Future<void> _open(BuildContext context, String path) async {
     final localeCode = Localizations.localeOf(context).languageCode;
     final basePath = localeCode == 'en' ? '' : '/$localeCode';
-    final uri = Uri.parse('${AppConstants.docsUrl}$basePath$path');
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    await openExternalUrl(context, '${AppConstants.docsUrl}$basePath$path');
   }
 
   @override
@@ -757,10 +761,7 @@ class _TermsPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Row(
                   children: [
-                    Checkbox(
-                      value: agreed,
-                      onChanged: onAgreedChanged,
-                    ),
+                    Checkbox(value: agreed, onChanged: onAgreedChanged),
                     Expanded(
                       child: Text(
                         l10n.onboardingTermsAccept,

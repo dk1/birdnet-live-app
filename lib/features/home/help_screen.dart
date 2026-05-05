@@ -9,9 +9,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../shared/services/link_launcher.dart';
 import '../../shared/utils/session_type_visuals.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../live/live_session.dart';
@@ -28,168 +28,169 @@ class HelpScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.helpTitle)),
       body: ContentWidthConstraint(
-          child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        children: [
-          // ── 1. Introduction ─────────────────────────────────
-          // Sets context for everything that follows: what kind of app
-          // this is and how the help page is organized.
-          Text(
-            l10n.helpIntro,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(200),
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // ── 2. What you can do (the four core capture modes) ──
-          // The user's primary intent on opening the app is to record
-          // and identify something — so the four capture modes come
-          // first, in order of increasing structure / commitment:
-          //   Live  → Point Count → Survey → File Analysis
-          _SectionHeader(
-            icon: Icons.mic_none_outlined,
-            title: l10n.helpModesTitle,
-          ),
-          const SizedBox(height: 12),
-          _HelpSection(
-            icon: sessionTypeIcon(SessionType.live),
-            color: sessionTypeIconColor(SessionType.live),
-            title: l10n.helpLiveTitle,
-            body: l10n.helpLiveBody,
-          ),
-          _HelpSection(
-            icon: sessionTypeIcon(SessionType.pointCount),
-            color: sessionTypeIconColor(SessionType.pointCount),
-            title: l10n.helpPointCountTitle,
-            body: l10n.helpPointCountBody,
-          ),
-          _HelpSection(
-            icon: sessionTypeIcon(SessionType.survey),
-            color: sessionTypeIconColor(SessionType.survey),
-            title: l10n.helpSurveyTitle,
-            body: l10n.helpSurveyBody,
-          ),
-          _HelpSection(
-            icon: sessionTypeIcon(SessionType.fileUpload),
-            color: sessionTypeIconColor(SessionType.fileUpload),
-            title: l10n.helpFileAnalysisTitle,
-            body: l10n.helpFileAnalysisBody,
-          ),
-          const SizedBox(height: 20),
-
-          // ── 3. Discover & revisit (Explore + Session Library) ──
-          // Once the user has captured something — or wants to know
-          // *what to expect* before recording — these two screens are
-          // where they go.
-          _SectionHeader(
-            icon: Icons.travel_explore_outlined,
-            title: l10n.helpToolsTitle,
-          ),
-          const SizedBox(height: 12),
-          _HelpSection(
-            icon: Icons.search_rounded,
-            color: theme.colorScheme.primary,
-            title: l10n.helpExploreTitle,
-            body: l10n.helpExploreBody,
-          ),
-          _HelpSection(
-            icon: Icons.library_music_outlined,
-            color: theme.colorScheme.tertiary,
-            title: l10n.helpSessionsTitle,
-            body: l10n.helpSessionsBody,
-          ),
-          const SizedBox(height: 20),
-
-          // ── 4. Common controls (settings & meta navigation) ──
-          // These are the small AppBar / footer affordances common to
-          // every screen. They follow the modes because users typically
-          // discover them only after they've started using the app.
-          _SectionHeader(
-            icon: Icons.tune_rounded,
-            title: l10n.helpControlsTitle,
-          ),
-          const SizedBox(height: 12),
-          _ControlCard(
-            icon: Icons.tune_rounded,
-            title: l10n.settings,
-            body: l10n.helpControlSettings,
-          ),
-          _ControlCard(
-            icon: Icons.help_outline_rounded,
-            title: l10n.helpTitle,
-            body: l10n.helpControlHelp,
-          ),
-          _ControlCard(
-            icon: Icons.info_outline,
-            title: l10n.about,
-            body: l10n.helpControlAbout,
-          ),
-
-          const SizedBox(height: 8),
-          const Divider(),
-          const SizedBox(height: 8),
-
-          // ── 5. Tips for best results ─────────────────────────
-          _SectionHeader(
-            icon: Icons.lightbulb_outline,
-            title: l10n.helpTipsTitle,
-          ),
-          const SizedBox(height: 12),
-          _TipRow(text: l10n.helpTipQuiet),
-          _TipRow(text: l10n.helpTipMic),
-          _TipRow(text: l10n.helpTipBasics),
-          _TipRow(text: l10n.helpTipThreshold),
-          _TipRow(text: l10n.helpTipGeoFilter),
-          _TipRow(text: l10n.helpTipGuide),
-          const SizedBox(height: 12),
-
-          // ── 6. Deeper dive — link out to the online user guide ──
-          Card(
-            color: theme.colorScheme.surfaceContainerLow,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.menu_book_outlined,
-                        size: 20,
-                        color: theme.colorScheme.primary,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.aboutUserGuide,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.helpTipGuide,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withAlpha(180),
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton.tonalIcon(
-                    onPressed: () => _launchUserGuide(context),
-                    icon: const Icon(Icons.open_in_new),
-                    label: Text(l10n.aboutUserGuide),
-                  ),
-                ],
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          children: [
+            // ── 1. Introduction ─────────────────────────────────
+            // Sets context for everything that follows: what kind of app
+            // this is and how the help page is organized.
+            Text(
+              l10n.helpIntro,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withAlpha(200),
+                height: 1.5,
               ),
             ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      )),
+            const SizedBox(height: 20),
+
+            // ── 2. What you can do (the four core capture modes) ──
+            // The user's primary intent on opening the app is to record
+            // and identify something — so the four capture modes come
+            // first, in order of increasing structure / commitment:
+            //   Live  → Point Count → Survey → File Analysis
+            _SectionHeader(
+              icon: Icons.mic_none_outlined,
+              title: l10n.helpModesTitle,
+            ),
+            const SizedBox(height: 12),
+            _HelpSection(
+              icon: sessionTypeIcon(SessionType.live),
+              color: sessionTypeIconColor(SessionType.live),
+              title: l10n.helpLiveTitle,
+              body: l10n.helpLiveBody,
+            ),
+            _HelpSection(
+              icon: sessionTypeIcon(SessionType.pointCount),
+              color: sessionTypeIconColor(SessionType.pointCount),
+              title: l10n.helpPointCountTitle,
+              body: l10n.helpPointCountBody,
+            ),
+            _HelpSection(
+              icon: sessionTypeIcon(SessionType.survey),
+              color: sessionTypeIconColor(SessionType.survey),
+              title: l10n.helpSurveyTitle,
+              body: l10n.helpSurveyBody,
+            ),
+            _HelpSection(
+              icon: sessionTypeIcon(SessionType.fileUpload),
+              color: sessionTypeIconColor(SessionType.fileUpload),
+              title: l10n.helpFileAnalysisTitle,
+              body: l10n.helpFileAnalysisBody,
+            ),
+            const SizedBox(height: 20),
+
+            // ── 3. Discover & revisit (Explore + Session Library) ──
+            // Once the user has captured something — or wants to know
+            // *what to expect* before recording — these two screens are
+            // where they go.
+            _SectionHeader(
+              icon: Icons.travel_explore_outlined,
+              title: l10n.helpToolsTitle,
+            ),
+            const SizedBox(height: 12),
+            _HelpSection(
+              icon: Icons.search_rounded,
+              color: theme.colorScheme.primary,
+              title: l10n.helpExploreTitle,
+              body: l10n.helpExploreBody,
+            ),
+            _HelpSection(
+              icon: Icons.library_music_outlined,
+              color: theme.colorScheme.tertiary,
+              title: l10n.helpSessionsTitle,
+              body: l10n.helpSessionsBody,
+            ),
+            const SizedBox(height: 20),
+
+            // ── 4. Common controls (settings & meta navigation) ──
+            // These are the small AppBar / footer affordances common to
+            // every screen. They follow the modes because users typically
+            // discover them only after they've started using the app.
+            _SectionHeader(
+              icon: Icons.tune_rounded,
+              title: l10n.helpControlsTitle,
+            ),
+            const SizedBox(height: 12),
+            _ControlCard(
+              icon: Icons.tune_rounded,
+              title: l10n.settings,
+              body: l10n.helpControlSettings,
+            ),
+            _ControlCard(
+              icon: Icons.help_outline_rounded,
+              title: l10n.helpTitle,
+              body: l10n.helpControlHelp,
+            ),
+            _ControlCard(
+              icon: Icons.info_outline,
+              title: l10n.about,
+              body: l10n.helpControlAbout,
+            ),
+
+            const SizedBox(height: 8),
+            const Divider(),
+            const SizedBox(height: 8),
+
+            // ── 5. Tips for best results ─────────────────────────
+            _SectionHeader(
+              icon: Icons.lightbulb_outline,
+              title: l10n.helpTipsTitle,
+            ),
+            const SizedBox(height: 12),
+            _TipRow(text: l10n.helpTipQuiet),
+            _TipRow(text: l10n.helpTipMic),
+            _TipRow(text: l10n.helpTipBasics),
+            _TipRow(text: l10n.helpTipThreshold),
+            _TipRow(text: l10n.helpTipGeoFilter),
+            _TipRow(text: l10n.helpTipGuide),
+            const SizedBox(height: 12),
+
+            // ── 6. Deeper dive — link out to the online user guide ──
+            Card(
+              color: theme.colorScheme.surfaceContainerLow,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.menu_book_outlined,
+                          size: 20,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.aboutUserGuide,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.helpTipGuide,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withAlpha(180),
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton.tonalIcon(
+                      onPressed: () => _launchUserGuide(context),
+                      icon: const Icon(Icons.open_in_new),
+                      label: Text(l10n.aboutUserGuide),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -386,8 +387,5 @@ class _TipRow extends StatelessWidget {
 Future<void> _launchUserGuide(BuildContext context) async {
   final localeCode = Localizations.localeOf(context).languageCode;
   final basePath = localeCode == 'en' ? '' : '/$localeCode';
-  final uri = Uri.parse('${AppConstants.docsUrl}$basePath/user/');
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
+  await openExternalUrl(context, '${AppConstants.docsUrl}$basePath/user/');
 }

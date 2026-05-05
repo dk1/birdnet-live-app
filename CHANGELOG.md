@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.6] - 2026-05-02
+
+### Changed
+
+- **Grayscale spectrogram colormap inverted: white now means quiet, black means loud.** Matches Audacity, Raven, Sonic Visualiser, matplotlib's `gray_r`, and printed sonograms in field guides. Quiet background reads as paper-white instead of a black wall, so the spectrogram is legible on light themes and exports cleanly to print (#33).
+
+## [0.9.5] - 2026-05-02
+
+### Fixed
+
+- **External link chips (eBird, iNaturalist, Wikipedia, About-screen links) now open reliably on Android 11+** (#34). Under Android 11+ package-visibility rules, `canLaunchUrl` returns `false` for an `https`/`mailto` intent unless the app's manifest declares an `<intent>` query for `ACTION_VIEW` with that scheme. The previous `if (await canLaunchUrl(uri)) launchUrl(uri)` pattern silently no-op'd on devices where Android hid the user's browser from the visibility query (reported on a Pixel 9 Pro running Android 16). The manifest now declares `ACTION_VIEW` queries for `http`, `https`, and `mailto`, and the call sites use a new `openExternalUrl` helper that drops the `canLaunchUrl` probe entirely and falls back to copying the URL to the clipboard with a SnackBar message if launching genuinely fails (no browser installed at all).
+
+## [0.9.4] - 2026-05-02
+
+### Fixed
+
+- **Wikipedia link now always appears on species cards.** Previously the Wikipedia chip in the species info overlay was hidden when the bundled `taxonomy.csv` had no entry for the user's locale, leaving non-English users without a link even though an English page almost always exists. The chip now follows a three-step fallback: locale-specific bundled URL → English bundled URL → constructed `https://en.wikipedia.org/wiki/<Genus_species>` from the scientific name. The chip is now always visible whenever species details load (part of #33).
+
 ## [0.9.3] - 2026-05-02
 
 ### Fixed

@@ -21,11 +21,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/services/reverse_geocoding_service.dart';
 import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/link_launcher.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/empty_view.dart';
@@ -50,18 +50,18 @@ enum _TaxonGroup {
 
   /// Matches the `taxon_group` column in the bundled taxonomy CSV.
   String get csvValue => switch (this) {
-        _TaxonGroup.aves => 'Aves',
-        _TaxonGroup.mammalia => 'Mammalia',
-        _TaxonGroup.amphibia => 'Amphibia',
-        _TaxonGroup.insecta => 'Insecta',
-      };
+    _TaxonGroup.aves => 'Aves',
+    _TaxonGroup.mammalia => 'Mammalia',
+    _TaxonGroup.amphibia => 'Amphibia',
+    _TaxonGroup.insecta => 'Insecta',
+  };
 
   String label(AppLocalizations l10n) => switch (this) {
-        _TaxonGroup.aves => l10n.exploreFilterBirds,
-        _TaxonGroup.mammalia => l10n.exploreFilterMammals,
-        _TaxonGroup.amphibia => l10n.exploreFilterAmphibians,
-        _TaxonGroup.insecta => l10n.exploreFilterInsects,
-      };
+    _TaxonGroup.aves => l10n.exploreFilterBirds,
+    _TaxonGroup.mammalia => l10n.exploreFilterMammals,
+    _TaxonGroup.amphibia => l10n.exploreFilterAmphibians,
+    _TaxonGroup.insecta => l10n.exploreFilterInsects,
+  };
 }
 
 /// Sort modes for the explore list.
@@ -167,21 +167,22 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       ),
                       const SizedBox(height: 16),
                       _ExploreSheetHeader(
-                          label: l10n.exploreDetectionFilterTooltip),
+                        label: l10n.exploreDetectionFilterTooltip,
+                      ),
                       _ExploreSheetChoiceChips<_DetectionFilter>(
                         current: _detectionFilter,
                         options: [
                           (
                             _DetectionFilter.all,
-                            l10n.exploreDetectionFilterAll
+                            l10n.exploreDetectionFilterAll,
                           ),
                           (
                             _DetectionFilter.detected,
-                            l10n.exploreDetectionFilterDetected
+                            l10n.exploreDetectionFilterDetected,
                           ),
                           (
                             _DetectionFilter.undetected,
-                            l10n.exploreDetectionFilterUndetected
+                            l10n.exploreDetectionFilterUndetected,
                           ),
                         ],
                         onSelected: (m) => update(() => _detectionFilter = m),
@@ -204,12 +205,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           if (!_groups.add(g)) _groups.remove(g);
                           update(() {});
                         },
-                        onClear: _groups.isEmpty
-                            ? null
-                            : () {
-                                _groups.clear();
-                                update(() {});
-                              },
+                        onClear:
+                            _groups.isEmpty
+                                ? null
+                                : () {
+                                  _groups.clear();
+                                  update(() {});
+                                },
                         clearLabel: l10n.exploreFilterAll,
                       ),
                     ],
@@ -275,9 +277,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           // Search toggle.
           IconButton(
             icon: Icon(_searchVisible ? Icons.close : Icons.search),
-            tooltip: _searchVisible
-                ? l10n.tooltipClearSearch
-                : l10n.exploreSearchTooltip,
+            tooltip:
+                _searchVisible
+                    ? l10n.tooltipClearSearch
+                    : l10n.exploreSearchTooltip,
             onPressed: _toggleSearch,
           ),
           // Help (swapped with refresh — refresh now lives in the
@@ -293,12 +296,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       body: ContentWidthConstraint(
         child: speciesAsync.when(
           loading: () => const LoadingView(),
-          error: (error, _) => ErrorView(
-            title: l10n.statusError,
-            message: error.toString(),
-            onRetry: _refresh,
-            retryLabel: l10n.retry,
-          ),
+          error:
+              (error, _) => ErrorView(
+                title: l10n.statusError,
+                message: error.toString(),
+                onRetry: _refresh,
+                retryLabel: l10n.retry,
+              ),
           data: (localSpecies) {
             return Column(
               children: [
@@ -314,59 +318,68 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   duration: const Duration(milliseconds: 180),
                   curve: Curves.easeInOut,
                   alignment: Alignment.topCenter,
-                  child: _searchVisible
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          child: TextField(
-                            controller: _searchController,
-                            focusNode: _searchFocusNode,
-                            onChanged: _onQueryChanged,
-                            textInputAction: TextInputAction.search,
-                            decoration: InputDecoration(
-                              hintText: l10n.exploreSearchHint,
-                              prefixIcon: const Icon(Icons.search, size: 20),
-                              isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 12,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              suffixIcon: _query.isNotEmpty
-                                  ? IconButton(
-                                      icon: const Icon(Icons.clear, size: 20),
-                                      tooltip: l10n.tooltipClearSearch,
-                                      onPressed: () {
-                                        _searchController.clear();
-                                        _onQueryChanged('');
-                                      },
-                                    )
-                                  : null,
+                  child:
+                      _searchVisible
+                          ? Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
                             ),
-                          ),
-                        )
-                      : const SizedBox(width: double.infinity, height: 0),
+                            child: TextField(
+                              controller: _searchController,
+                              focusNode: _searchFocusNode,
+                              onChanged: _onQueryChanged,
+                              textInputAction: TextInputAction.search,
+                              decoration: InputDecoration(
+                                hintText: l10n.exploreSearchHint,
+                                prefixIcon: const Icon(Icons.search, size: 20),
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                suffixIcon:
+                                    _query.isNotEmpty
+                                        ? IconButton(
+                                          icon: const Icon(
+                                            Icons.clear,
+                                            size: 20,
+                                          ),
+                                          tooltip: l10n.tooltipClearSearch,
+                                          onPressed: () {
+                                            _searchController.clear();
+                                            _onQueryChanged('');
+                                          },
+                                        )
+                                        : null,
+                              ),
+                            ),
+                          )
+                          : const SizedBox(width: double.infinity, height: 0),
                 ),
 
                 // ── Body: either geo list or search results ──
                 Expanded(
-                  child: _query.isEmpty
-                      ? _GeoList(
-                          species: localSpecies,
-                          groups: _groups,
-                          sortMode: _sortMode,
-                          detectionFilter: _detectionFilter,
-                          locationAvailable: locationAsync.valueOrNull != null,
-                        )
-                      : _SearchResults(
-                          query: _query,
-                          groups: _groups,
-                          sortMode: _sortMode,
-                          detectionFilter: _detectionFilter,
-                          localSpecies: localSpecies,
-                        ),
+                  child:
+                      _query.isEmpty
+                          ? _GeoList(
+                            species: localSpecies,
+                            groups: _groups,
+                            sortMode: _sortMode,
+                            detectionFilter: _detectionFilter,
+                            locationAvailable:
+                                locationAsync.valueOrNull != null,
+                          )
+                          : _SearchResults(
+                            query: _query,
+                            groups: _groups,
+                            sortMode: _sortMode,
+                            detectionFilter: _detectionFilter,
+                            localSpecies: localSpecies,
+                          ),
                 ),
               ],
             );
@@ -392,8 +405,9 @@ class _ExploreSheetHeader extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8, top: 4),
       child: Text(
         label,
-        style: theme.textTheme.labelLarge
-            ?.copyWith(color: theme.colorScheme.primary),
+        style: theme.textTheme.labelLarge?.copyWith(
+          color: theme.colorScheme.primary,
+        ),
       ),
     );
   }
@@ -494,31 +508,38 @@ class _GeoList extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final detected = ref.watch(detectedSpeciesSetProvider);
 
-    final filtered = species.where((s) {
-      if (groups.isNotEmpty) {
-        final g = s.taxonomy?.taxonGroup;
-        if (g == null || !groups.any((tg) => tg.csvValue == g)) return false;
-      }
-      switch (detectionFilter) {
-        case _DetectionFilter.all:
-          break;
-        case _DetectionFilter.detected:
-          if (!detected.contains(s.scientificName)) return false;
-        case _DetectionFilter.undetected:
-          if (detected.contains(s.scientificName)) return false;
-      }
-      return true;
-    }).toList();
+    final filtered =
+        species.where((s) {
+          if (groups.isNotEmpty) {
+            final g = s.taxonomy?.taxonGroup;
+            if (g == null || !groups.any((tg) => tg.csvValue == g)) {
+              return false;
+            }
+          }
+          switch (detectionFilter) {
+            case _DetectionFilter.all:
+              break;
+            case _DetectionFilter.detected:
+              if (!detected.contains(s.scientificName)) return false;
+            case _DetectionFilter.undetected:
+              if (detected.contains(s.scientificName)) return false;
+          }
+          return true;
+        }).toList();
 
     switch (sortMode) {
       case _SortMode.geo:
         filtered.sort((a, b) => b.geoScore.compareTo(a.geoScore));
       case _SortMode.nameAsc:
-        filtered.sort((a, b) =>
-            a.commonName.toLowerCase().compareTo(b.commonName.toLowerCase()));
+        filtered.sort(
+          (a, b) =>
+              a.commonName.toLowerCase().compareTo(b.commonName.toLowerCase()),
+        );
       case _SortMode.nameDesc:
-        filtered.sort((a, b) =>
-            b.commonName.toLowerCase().compareTo(a.commonName.toLowerCase()));
+        filtered.sort(
+          (a, b) =>
+              b.commonName.toLowerCase().compareTo(a.commonName.toLowerCase()),
+        );
     }
 
     if (filtered.isEmpty) {
@@ -540,12 +561,13 @@ class _GeoList extends ConsumerWidget {
           commonName: s.commonName,
           geoScore: s.geoScore,
           weeklyScores: s.weeklyScores,
-          onTap: () => SpeciesInfoOverlay.show(
-            context,
-            ref,
-            scientificName: s.scientificName,
-            commonName: s.commonName,
-          ),
+          onTap:
+              () => SpeciesInfoOverlay.show(
+                context,
+                ref,
+                scientificName: s.scientificName,
+                commonName: s.commonName,
+              ),
         );
       },
     );
@@ -593,21 +615,26 @@ class _SearchResults extends ConsumerWidget {
     // Search across the entire taxonomy, then keep only species the audio
     // model knows about (so opening them is meaningful), and apply the
     // taxonomic-group + detection-state filters.
-    final hits = taxonomy
-        .search(query, limit: 200)
-        .where((sp) => audioLabels.contains(sp.scientificName))
-        .where((sp) =>
-            groups.isEmpty || groups.any((g) => g.csvValue == sp.taxonGroup))
-        .where((sp) {
-      switch (detectionFilter) {
-        case _DetectionFilter.all:
-          return true;
-        case _DetectionFilter.detected:
-          return detected.contains(sp.scientificName);
-        case _DetectionFilter.undetected:
-          return !detected.contains(sp.scientificName);
-      }
-    }).toList();
+    final hits =
+        taxonomy
+            .search(query, limit: 200)
+            .where((sp) => audioLabels.contains(sp.scientificName))
+            .where(
+              (sp) =>
+                  groups.isEmpty ||
+                  groups.any((g) => g.csvValue == sp.taxonGroup),
+            )
+            .where((sp) {
+              switch (detectionFilter) {
+                case _DetectionFilter.all:
+                  return true;
+                case _DetectionFilter.detected:
+                  return detected.contains(sp.scientificName);
+                case _DetectionFilter.undetected:
+                  return !detected.contains(sp.scientificName);
+              }
+            })
+            .toList();
 
     if (hits.isEmpty) {
       return Center(
@@ -617,8 +644,8 @@ class _SearchResults extends ConsumerWidget {
             l10n.exploreNoResultsFor(query),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       );
@@ -650,8 +677,9 @@ class _SearchResults extends ConsumerWidget {
         b.displayName.toLowerCase().compareTo(a.displayName.toLowerCase());
     switch (sortMode) {
       case _SortMode.geo:
-        atLocation.sort((a, b) =>
-            (b.local?.geoScore ?? 0).compareTo(a.local?.geoScore ?? 0));
+        atLocation.sort(
+          (a, b) => (b.local?.geoScore ?? 0).compareTo(a.local?.geoScore ?? 0),
+        );
       case _SortMode.nameAsc:
         atLocation.sort(byNameAsc);
         elsewhere.sort(byNameAsc);
@@ -662,17 +690,21 @@ class _SearchResults extends ConsumerWidget {
 
     final items = <_ListEntry>[];
     if (atLocation.isNotEmpty) {
-      items.add(_ListEntry.header(
-        l10n.exploreSectionAtLocation(atLocation.length),
-        Icons.location_on,
-      ));
+      items.add(
+        _ListEntry.header(
+          l10n.exploreSectionAtLocation(atLocation.length),
+          Icons.location_on,
+        ),
+      );
       items.addAll(atLocation.map(_ListEntry.hit));
     }
     if (elsewhere.isNotEmpty) {
-      items.add(_ListEntry.header(
-        l10n.exploreSectionElsewhere(elsewhere.length),
-        Icons.public,
-      ));
+      items.add(
+        _ListEntry.header(
+          l10n.exploreSectionElsewhere(elsewhere.length),
+          Icons.public,
+        ),
+      );
       items.addAll(elsewhere.map(_ListEntry.hit));
     }
 
@@ -691,12 +723,13 @@ class _SearchResults extends ConsumerWidget {
           commonName: hit.displayName,
           geoScore: hit.local?.geoScore,
           weeklyScores: hit.local?.weeklyScores,
-          onTap: () => SpeciesInfoOverlay.show(
-            context,
-            ref,
-            scientificName: hit.species.scientificName,
-            commonName: hit.species.commonName,
-          ),
+          onTap:
+              () => SpeciesInfoOverlay.show(
+                context,
+                ref,
+                scientificName: hit.species.scientificName,
+                commonName: hit.species.commonName,
+              ),
         );
       },
     );
@@ -718,13 +751,8 @@ class _SearchHit {
 }
 
 class _ListEntry {
-  _ListEntry.header(this.label, this.icon)
-      : isHeader = true,
-        hit = null;
-  _ListEntry.hit(this.hit)
-      : isHeader = false,
-        label = null,
-        icon = null;
+  _ListEntry.header(this.label, this.icon) : isHeader = true, hit = null;
+  _ListEntry.hit(this.hit) : isHeader = false, label = null, icon = null;
 
   final bool isHeader;
   final String? label;
@@ -765,10 +793,7 @@ class _SectionHeader extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _LocationHeader extends ConsumerStatefulWidget {
-  const _LocationHeader({
-    required this.speciesCount,
-    required this.onRefresh,
-  });
+  const _LocationHeader({required this.speciesCount, required this.onRefresh});
 
   final int speciesCount;
   final VoidCallback onRefresh;
@@ -833,7 +858,8 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
                     // Prefer the reverse-geocoded place name; fall back to
                     // raw lat/lon so we don't waste a second row showing
                     // both. While geocoding is in flight, show coordinates.
-                    final label = _locationName ??
+                    final label =
+                        _locationName ??
                         '${loc.latitude.toStringAsFixed(4)}, '
                             '${loc.longitude.toStringAsFixed(4)}';
                     return Text(
@@ -843,18 +869,20 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
                       ),
                     );
                   },
-                  loading: () => Text(
-                    l10n.exploreLocating,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withAlpha(150),
-                    ),
-                  ),
-                  error: (_, __) => Text(
-                    l10n.exploreLocationError,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.error,
-                    ),
-                  ),
+                  loading:
+                      () => Text(
+                        l10n.exploreLocating,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withAlpha(150),
+                        ),
+                      ),
+                  error:
+                      (_, __) => Text(
+                        l10n.exploreLocationError,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
                 ),
               ),
               IconButton(
@@ -889,22 +917,13 @@ class _ExploreHelpSheet extends StatelessWidget {
       title: l10n.exploreHelpTitle,
       initialChildSize: 0.62,
       sections: [
-        AppHelpSection(
-          icon: Icons.info_outline,
-          body: l10n.exploreHelpBody,
-        ),
-        AppHelpSection(
-          icon: Icons.refresh,
-          body: l10n.exploreHelpRefresh,
-        ),
+        AppHelpSection(icon: Icons.info_outline, body: l10n.exploreHelpBody),
+        AppHelpSection(icon: Icons.refresh, body: l10n.exploreHelpRefresh),
         AppHelpSection(
           icon: Icons.help_outline_rounded,
           body: l10n.exploreHelpLocation,
         ),
-        AppHelpSection(
-          icon: Icons.search_rounded,
-          body: l10n.exploreHelpCards,
-        ),
+        AppHelpSection(icon: Icons.search_rounded, body: l10n.exploreHelpCards),
       ],
       footer: _ExploreHelpLink(label: l10n.exploreHelpLearnMore),
     );
@@ -921,19 +940,14 @@ class _ExploreHelpLink extends StatelessWidget {
     final theme = Theme.of(context);
 
     return InkWell(
-      onTap: () async {
-        final uri = Uri.parse('https://birdnet-team.github.io/geomodel/');
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        }
-      },
+      onTap:
+          () => openExternalUrl(
+            context,
+            'https://birdnet-team.github.io/geomodel/',
+          ),
       child: Row(
         children: [
-          Icon(
-            Icons.open_in_new,
-            size: 18,
-            color: theme.colorScheme.primary,
-          ),
+          Icon(Icons.open_in_new, size: 18, color: theme.colorScheme.primary),
           const SizedBox(width: 8),
           Flexible(
             child: Text(

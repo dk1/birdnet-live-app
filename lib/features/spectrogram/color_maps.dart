@@ -105,8 +105,12 @@ abstract final class SpectrogramColorMap {
       _GradientStop(1.00, const Color(0xFFFCFFA4)),
     ],
     'grayscale': [
-      _GradientStop(0.00, const Color(0xFF000000)),
-      _GradientStop(1.00, const Color(0xFFFFFFFF)),
+      // White = quiet, black = loud — matches Audacity, Raven, Sonic
+      // Visualiser, matplotlib's `gray_r`, and printed sonograms in field
+      // guides. Reversed from the natural black→white ramp so quiet
+      // background reads as paper-white instead of a black wall (#33).
+      _GradientStop(0.00, const Color(0xFFFFFFFF)),
+      _GradientStop(1.00, const Color(0xFF000000)),
     ],
     // Brand-themed color map: dark navy → brand blue (#0D6EFD) → white.
     'birdnet': [
@@ -142,14 +146,26 @@ abstract final class SpectrogramColorMap {
 
       // Linearly interpolate each ARGB channel.
       // Color.a/.r/.g/.b return doubles in [0.0, 1.0] — scale to [0, 255].
-      final a =
-          _lerpInt((lo.color.a * 255).round(), (hi.color.a * 255).round(), f);
-      final r =
-          _lerpInt((lo.color.r * 255).round(), (hi.color.r * 255).round(), f);
-      final g =
-          _lerpInt((lo.color.g * 255).round(), (hi.color.g * 255).round(), f);
-      final b =
-          _lerpInt((lo.color.b * 255).round(), (hi.color.b * 255).round(), f);
+      final a = _lerpInt(
+        (lo.color.a * 255).round(),
+        (hi.color.a * 255).round(),
+        f,
+      );
+      final r = _lerpInt(
+        (lo.color.r * 255).round(),
+        (hi.color.r * 255).round(),
+        f,
+      );
+      final g = _lerpInt(
+        (lo.color.g * 255).round(),
+        (hi.color.g * 255).round(),
+        f,
+      );
+      final b = _lerpInt(
+        (lo.color.b * 255).round(),
+        (hi.color.b * 255).round(),
+        f,
+      );
 
       // Pack into ARGB8888 integer.
       table[i] = (a << 24) | (r << 16) | (g << 8) | b;
