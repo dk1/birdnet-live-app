@@ -18,9 +18,7 @@ void main() {
     test('falls back to English when locale missing', () {
       final url = pickWikipediaUrl(
         scientificName: 'Parus major',
-        bundledUrls: const {
-          'en': 'https://en.wikipedia.org/wiki/Great_tit',
-        },
+        bundledUrls: const {'en': 'https://en.wikipedia.org/wiki/Great_tit'},
         locale: 'fr',
       );
       expect(url, 'https://en.wikipedia.org/wiki/Great_tit');

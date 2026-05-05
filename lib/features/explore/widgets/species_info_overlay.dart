@@ -47,10 +47,11 @@ class SpeciesInfoOverlay {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => _SpeciesInfoSheet(
-        scientificName: scientificName,
-        commonName: commonName,
-      ),
+      builder:
+          (_) => _SpeciesInfoSheet(
+            scientificName: scientificName,
+            commonName: commonName,
+          ),
     );
   }
 }
@@ -164,10 +165,11 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                       _detail?.assetImagePath ??
                           'assets/images/dummy_species.png',
                       fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Image.asset(
-                        'assets/images/dummy_species.png',
-                        fit: BoxFit.contain,
-                      ),
+                      errorBuilder:
+                          (_, __, ___) => Image.asset(
+                            'assets/images/dummy_species.png',
+                            fit: BoxFit.contain,
+                          ),
                     ),
                     if (ref
                         .watch(detectedSpeciesSetProvider)
@@ -200,7 +202,8 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
                 child: Text(
                   _detail?.commonNameForLocale(
-                          ref.watch(effectiveSpeciesLocaleProvider)) ??
+                        ref.watch(effectiveSpeciesLocaleProvider),
+                      ) ??
                       widget.commonName,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
@@ -209,15 +212,16 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ref.watch(showSciNamesProvider)
-                    ? Text(
-                        widget.scientificName,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          fontStyle: FontStyle.italic,
-                          color: theme.colorScheme.onSurface.withAlpha(170),
-                        ),
-                      )
-                    : const SizedBox.shrink(),
+                child:
+                    ref.watch(showSciNamesProvider)
+                        ? Text(
+                          widget.scientificName,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            fontStyle: FontStyle.italic,
+                            color: theme.colorScheme.onSurface.withAlpha(170),
+                          ),
+                        )
+                        : const SizedBox.shrink(),
               ),
 
               // ── Personal detection stats ─────────────────────
@@ -241,9 +245,7 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
                     child: Text(
                       _description!,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        height: 1.5,
-                      ),
+                      style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
                     ),
                   ),
                   if (_detail?.descriptionSource != null)
@@ -262,9 +264,7 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                 ],
 
                 // ── 48-Week Probability Chart ──────────────────────────────
-                _WeeklyProbabilityChart(
-                  scientificName: widget.scientificName,
-                ),
+                _WeeklyProbabilityChart(scientificName: widget.scientificName),
 
                 // ── External links ───────────────────────────────
                 if (_detail != null) ...[
@@ -483,13 +483,16 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
                 children: [
                   Text(
                     l10n.speciesExpectedFrequency,
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: categoryColor.withAlpha(30),
                       borderRadius: BorderRadius.circular(8),
@@ -538,20 +541,23 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
                           margin: const EdgeInsets.symmetric(horizontal: 0.5),
                           height: barHeight,
                           decoration: BoxDecoration(
-                            color: isCurrentWeek
-                                ? activeColor
-                                : baseColor.withAlpha(
-                                    (50 + (normalized * 150))
-                                        .toInt()
-                                        .clamp(0, 255),
-                                  ),
+                            color:
+                                isCurrentWeek
+                                    ? activeColor
+                                    : baseColor.withAlpha(
+                                      (50 + (normalized * 150)).toInt().clamp(
+                                        0,
+                                        255,
+                                      ),
+                                    ),
                             borderRadius: BorderRadius.circular(2),
-                            border: isCurrentWeek
-                                ? Border.all(
-                                    color: theme.colorScheme.onSurface,
-                                    width: 1.5,
-                                  )
-                                : null,
+                            border:
+                                isCurrentWeek
+                                    ? Border.all(
+                                      color: theme.colorScheme.onSurface,
+                                      width: 1.5,
+                                    )
+                                    : null,
                           ),
                         ),
                       ),
@@ -566,30 +572,42 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(l10n.monthJanShort,
-                      style: const TextStyle(fontSize: 10)),
-                  Text(l10n.monthAprShort,
-                      style: const TextStyle(fontSize: 10)),
-                  Text(l10n.monthJulShort,
-                      style: const TextStyle(fontSize: 10)),
-                  Text(l10n.monthOctShort,
-                      style: const TextStyle(fontSize: 10)),
-                  Text(l10n.monthDecShort,
-                      style: const TextStyle(fontSize: 10)),
+                  Text(
+                    l10n.monthJanShort,
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                  Text(
+                    l10n.monthAprShort,
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                  Text(
+                    l10n.monthJulShort,
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                  Text(
+                    l10n.monthOctShort,
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                  Text(
+                    l10n.monthDecShort,
+                    style: const TextStyle(fontSize: 10),
+                  ),
                 ],
               ),
             ),
           ],
         );
       },
-      loading: () => const Padding(
-        padding: EdgeInsets.all(16),
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-      ),
-      error: (_, __) => Padding(
-        padding: const EdgeInsets.all(16),
-        child: Center(child: Text(l10n.speciesChartLoadFailed)),
-      ),
+      loading:
+          () => const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+      error:
+          (_, __) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: Center(child: Text(l10n.speciesChartLoadFailed)),
+          ),
     );
   }
 }
@@ -625,11 +643,7 @@ class _OverlayDetectedBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(
-        Icons.check,
-        size: 18,
-        color: theme.colorScheme.onPrimary,
-      ),
+      child: Icon(Icons.check, size: 18, color: theme.colorScheme.onPrimary),
     );
   }
 }
@@ -694,8 +708,11 @@ class _DetectionStatsTile extends ConsumerWidget {
             ),
             child: Row(
               children: [
-                Icon(Icons.check_circle,
-                    size: 20, color: theme.colorScheme.primary),
+                Icon(
+                  Icons.check_circle,
+                  size: 20,
+                  color: theme.colorScheme.primary,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -704,7 +721,9 @@ class _DetectionStatsTile extends ConsumerWidget {
                     children: [
                       Text(
                         l10n.speciesYouHaveDetected(
-                            totalDetections, sessionCount),
+                          totalDetections,
+                          sessionCount,
+                        ),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -728,10 +747,9 @@ class _DetectionStatsTile extends ConsumerWidget {
 
   static String _formatLastSeen(BuildContext context, DateTime dt) {
     final locale = Localizations.localeOf(context).toString();
-    return MaterialLocalizations.of(context)
-            .formatMediumDate(dt.toLocal())
-            .toString()
-            .isNotEmpty
+    return MaterialLocalizations.of(
+          context,
+        ).formatMediumDate(dt.toLocal()).toString().isNotEmpty
         // Fall through to a stable yyyy-MM-dd if the platform localization
         // is unavailable for the active locale (rare on supported devices).
         ? MaterialLocalizations.of(context).formatMediumDate(dt.toLocal())

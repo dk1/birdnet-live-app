@@ -40,7 +40,10 @@ Future<void> openExternalUrl(BuildContext context, String url) async {
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (ok) return;
     // launchUrl returned false — fall through to the failure path.
-    throw PlatformException(code: 'launch_failed', message: 'launchUrl returned false');
+    throw PlatformException(
+      code: 'launch_failed',
+      message: 'launchUrl returned false',
+    );
   } catch (_) {
     // Clipboard access doesn't need a BuildContext; do that first so we still
     // hand the user a working URL even if the widget tree was torn down

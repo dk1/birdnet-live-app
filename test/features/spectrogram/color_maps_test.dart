@@ -37,8 +37,11 @@ void main() {
           final table = SpectrogramColorMap.lut(name);
           for (var i = 0; i < 256; i++) {
             final alpha = (table[i] >> 24) & 0xFF;
-            expect(alpha, 255,
-                reason: '$name LUT[$i] should have alpha=255, got $alpha');
+            expect(
+              alpha,
+              255,
+              reason: '$name LUT[$i] should have alpha=255, got $alpha',
+            );
           }
         });
       }
@@ -92,9 +95,12 @@ void main() {
             final dg = (((curr >> 8) & 0xFF) - ((prev >> 8) & 0xFF)).abs();
             final db = ((curr & 0xFF) - (prev & 0xFF)).abs();
             final maxDelta = [dr, dg, db].reduce((a, b) => a > b ? a : b);
-            expect(maxDelta, lessThan(30),
-                reason:
-                    '$name LUT[$i] has a $maxDelta-step jump from LUT[${i - 1}]');
+            expect(
+              maxDelta,
+              lessThan(30),
+              reason:
+                  '$name LUT[$i] has a $maxDelta-step jump from LUT[${i - 1}]',
+            );
           }
         });
       }
