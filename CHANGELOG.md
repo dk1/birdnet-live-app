@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.7] - 2026-05-02
+
+### Changed
+
+- **Score & confidence color ramp redesigned for color-vision-deficient viewers.** Replaced the Material red/orange/amber/green palette (whose buckets all sat at similar lightness) with a CVD-safe ramp where lightness changes monotonically across buckets — light → dark on light theme, dim → bright on dark theme. The ramp now stays unambiguous when simulated for protan/deutan/tritan vision because the lightness gradient survives even when hue collapses (#33, thanks @LimitlessGreen).
+- **Survey map markers now scale outline weight with confidence** (1.5 px for very-low up to 3.5 px for very-high), so the strength of a detection is readable from the marker geometry alone in monochrome or in CVD simulation.
+- **Eliminated the duplicate Explore color ramp.** `probabilityCategoryColor` now routes through the unified `ScoreColors` theme extension, so every confidence/likelihood badge across Live, Survey, Explore, and File Analysis shares the same palette and any future tweak lands in one place.
+
 ## [0.9.6] - 2026-05-02
 
 ### Changed

@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/score_colors.dart';
 import '../../../shared/models/gps_point.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/open_street_map_tile_layer.dart';
@@ -103,10 +104,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
         widget.highlightedDetection != oldWidget.highlightedDetection) {
       final d = widget.highlightedDetection!;
       if (d.latitude != null && d.longitude != null) {
-        _mapController.move(
-          LatLng(d.latitude!, d.longitude!),
-          18,
-        );
+        _mapController.move(LatLng(d.latitude!, d.longitude!), 18);
       }
       return;
     }
@@ -136,20 +134,21 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
     final l10n = AppLocalizations.of(context)!;
     final agreed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.mapTileConsentTitle),
-        content: Text(l10n.mapTileConsentBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.mapTileConsentCancel),
+      builder:
+          (context) => AlertDialog(
+            title: Text(l10n.mapTileConsentTitle),
+            content: Text(l10n.mapTileConsentBody),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(l10n.mapTileConsentCancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(l10n.mapTileConsentAllow),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.mapTileConsentAllow),
-          ),
-        ],
-      ),
     );
     if (agreed == true) {
       final prefs = ref.read(sharedPreferencesProvider);
@@ -225,7 +224,8 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
     }
 
     for (final det in detectionsByLocation.values) {
-      final isHighlighted = widget.highlightedDetection != null &&
+      final isHighlighted =
+          widget.highlightedDetection != null &&
           det.scientificName == widget.highlightedDetection!.scientificName &&
           det.timestamp == widget.highlightedDetection!.timestamp;
       final hasAudio = _hasPlayableClip(det);
@@ -238,9 +238,10 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           width: isHighlighted ? (hasAudio ? 56 : 44) : (hasAudio ? 44 : 32),
           height: isHighlighted ? (hasAudio ? 56 : 44) : (hasAudio ? 44 : 32),
           child: GestureDetector(
-            onTap: widget.onMarkerTap != null
-                ? () => widget.onMarkerTap!(det)
-                : null,
+            onTap:
+                widget.onMarkerTap != null
+                    ? () => widget.onMarkerTap!(det)
+                    : null,
             child: _SpeciesMarker(
               scientificName: det.scientificName,
               confidence: det.confidence,
@@ -260,8 +261,11 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           point: trackPoints.first,
           width: 28,
           height: 28,
-          child:
-              Icon(Icons.flag_rounded, color: Colors.green.shade700, size: 28),
+          child: Icon(
+            Icons.flag_rounded,
+            color: Colors.green.shade700,
+            size: 28,
+          ),
         ),
       );
     }
@@ -278,8 +282,11 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
             point: currentPosition,
             width: 28,
             height: 28,
-            child: Icon(Icons.person_pin_circle_rounded,
-                color: theme.colorScheme.primary, size: 28),
+            child: Icon(
+              Icons.person_pin_circle_rounded,
+              color: theme.colorScheme.primary,
+              size: 28,
+            ),
           ),
         );
       }
@@ -290,9 +297,10 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
     double zoom;
     if (widget.fitAllPoints) {
       // Will be adjusted via fitBounds after first frame.
-      center = trackPoints.isNotEmpty
-          ? trackPoints.first
-          : const LatLng(52.52, 13.405);
+      center =
+          trackPoints.isNotEmpty
+              ? trackPoints.first
+              : const LatLng(52.52, 13.405);
       zoom = 14;
     } else if (trackPoints.isNotEmpty) {
       center = trackPoints.last;
@@ -375,8 +383,11 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.map_outlined,
-                size: 48, color: theme.colorScheme.onSurface.withAlpha(100)),
+            Icon(
+              Icons.map_outlined,
+              size: 48,
+              color: theme.colorScheme.onSurface.withAlpha(100),
+            ),
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: _requestConsent,
@@ -428,20 +439,24 @@ class _SpeciesMarker extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Audio markers use the standard confidence color for the avatar border;
+    // Audio markers use the unified [ScoreColors] ramp for the avatar border;
     // silent markers fall back to a neutral grey so audio-bearing detections
-    // visually stand out at a glance.
-    final confidenceColor = confidence >= 0.8
-        ? Colors.green
-        : confidence >= 0.5
-            ? Colors.amber.shade700
-            : Colors.red;
+    // visually stand out at a glance. The border *width* is also scaled by the
+    // confidence bucket (1.5 px for very-low up to 3.5 px for very-high) so
+    // the strength of a detection survives complete loss of color vision —
+    // a heavier ring still reads as "stronger" in monochrome.
+    final scoreColors = ScoreColors.of(context);
+    final confidenceColor = scoreColors.forScore(confidence);
     final borderColor = hasAudio ? confidenceColor : Colors.grey.shade500;
+    final bucket = ScoreColors.bucketIndexForScore(confidence);
+    // 0 → 1.5, 1 → 2.0, 2 → 2.5, 3 → 3.0, 4 → 3.5
+    final scoreBorderWidth = 1.5 + bucket * 0.5;
 
     final size = isHighlighted ? 40.0 : 28.0;
 
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
-    final path = taxonomyAsync.valueOrNull?.assetImagePath(scientificName) ??
+    final path =
+        taxonomyAsync.valueOrNull?.assetImagePath(scientificName) ??
         'assets/images/dummy_species.png';
 
     final avatar = Container(
@@ -451,13 +466,14 @@ class _SpeciesMarker extends ConsumerWidget {
         shape: BoxShape.circle,
         border: Border.all(
           color: isHighlighted ? Colors.blue : borderColor,
-          width: isHighlighted ? 3 : 2,
+          width: isHighlighted ? 3 : (hasAudio ? scoreBorderWidth : 2),
         ),
         boxShadow: [
           BoxShadow(
-            color: isHighlighted
-                ? Colors.blue.withAlpha(100)
-                : Colors.black.withAlpha(50),
+            color:
+                isHighlighted
+                    ? Colors.blue.withAlpha(100)
+                    : Colors.black.withAlpha(50),
             blurRadius: isHighlighted ? 8 : 3,
             offset: const Offset(0, 1),
           ),
@@ -467,11 +483,15 @@ class _SpeciesMarker extends ConsumerWidget {
         child: Image.asset(
           path,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(
-            color: borderColor.withAlpha(60),
-            child:
-                Icon(Icons.music_note, size: size * 0.45, color: borderColor),
-          ),
+          errorBuilder:
+              (_, __, ___) => Container(
+                color: borderColor.withAlpha(60),
+                child: Icon(
+                  Icons.music_note,
+                  size: size * 0.45,
+                  color: borderColor,
+                ),
+              ),
         ),
       ),
     );
