@@ -162,8 +162,6 @@
   "sessionRemove": "Rimuovi",
   "detectionConfirmTooltip": "Contrassegna come confermata",
   "detectionUnconfirmTooltip": "Rimuovi conferma",
-  "sessionFilterConfirmedOnly": "Mostra solo confermate",
-  "sessionFilterShowAll": "Mostra tutte le rilevazioni",
   "sessionSave": "Salva",
   "sessionSaved": "Sessione salvata",
   "sessionUnsavedChanges": "Ci sono modifiche non salvate. Salvare o eliminare?",

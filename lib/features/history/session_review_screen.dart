@@ -171,12 +171,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// Detection highlighted on the map (set by tapping a species/cluster).
   DetectionRecord? _highlightedDetection;
 
-  /// When `true`, the species list shows only species that have at least
-  /// one confirmed detection. Toggled from the AppBar action; not
-  /// persisted across screen lifetimes — every fresh review starts with
-  /// the full list visible.
-  bool _confirmedOnly = false;
-
   /// Current visible map bounds (updated by camera move callback).
   /// When non-null, the species list is filtered to only show detections
   /// within these bounds.
@@ -1098,12 +1092,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         widget.session.settings.windowDuration,
       );
     }
-    if (_confirmedOnly) {
-      groups =
-          groups
-              .where((g) => g.allRecords.any((r) => r.isConfirmed))
-              .toList();
-    }
     return groups;
   }
 
@@ -1464,23 +1452,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
           actions: [
             IconButton(
-              icon: Icon(
-                _confirmedOnly
-                    ? Icons.check_circle
-                    : Icons.check_circle_outline,
-                color:
-                    _confirmedOnly
-                        ? Colors.green.shade600
-                        : null,
-              ),
-              tooltip:
-                  _confirmedOnly
-                      ? l10n.sessionFilterShowAll
-                      : l10n.sessionFilterConfirmedOnly,
-              onPressed:
-                  () => setState(() => _confirmedOnly = !_confirmedOnly),
-            ),
-            IconButton(
               icon: const Icon(Icons.help_outline),
               tooltip: l10n.sessionHelpTitle,
               onPressed: _showHelp,
@@ -1526,7 +1497,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               children: [
                 // Left: scrollable media column.
                 Expanded(
-                  flex: 1,
+                  flex: 2,
                   child: SingleChildScrollView(
                     child: Column(
                       children: _buildMediaWidgets(context, theme, l10n),
@@ -1534,8 +1505,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   ),
                 ),
                 const VerticalDivider(width: 1),
-                // Right: species list.
-                Expanded(flex: 1, child: speciesList),
+                // Right: species list. Slightly wider than the media column
+                // because each detection row carries a play affordance plus
+                // four trailing action buttons; cramming those into a 50/50
+                // split makes the row text overflow on phone-sized landscape.
+                Expanded(flex: 3, child: speciesList),
               ],
             ),
           ),

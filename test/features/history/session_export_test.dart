@@ -965,45 +965,47 @@ void main() {
       expect(d1.containsKey('confirmedAt'), isFalse);
     });
 
-    test('GPX adds <sym>confirmed</sym> + <cmt> only for confirmed waypoints',
-        () {
-      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
-      final stamp = DateTime.utc(2025, 6, 15, 9, 30);
-      final session = _makeSession(
-        type: SessionType.survey,
-        detections: [
-          makeConfirmed(
-            'Turdus merula',
-            'Eurasian Blackbird',
-            0.91,
-            const Duration(seconds: 5),
-            start,
-            confirmedAt: stamp,
-            lat: 52.52,
-            lon: 13.40,
-          ),
-          makeConfirmed(
-            'Erithacus rubecula',
-            'European Robin',
-            0.80,
-            const Duration(seconds: 10),
-            start,
-            lat: 52.53,
-            lon: 13.41,
-          ),
-        ],
-      );
+    test(
+      'GPX adds <sym>confirmed</sym> + <cmt> only for confirmed waypoints',
+      () {
+        final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+        final stamp = DateTime.utc(2025, 6, 15, 9, 30);
+        final session = _makeSession(
+          type: SessionType.survey,
+          detections: [
+            makeConfirmed(
+              'Turdus merula',
+              'Eurasian Blackbird',
+              0.91,
+              const Duration(seconds: 5),
+              start,
+              confirmedAt: stamp,
+              lat: 52.52,
+              lon: 13.40,
+            ),
+            makeConfirmed(
+              'Erithacus rubecula',
+              'European Robin',
+              0.80,
+              const Duration(seconds: 10),
+              start,
+              lat: 52.53,
+              lon: 13.41,
+            ),
+          ],
+        );
 
-      final gpx = buildGpxExport(session);
-      // Confirmed waypoint carries the badge + audit comment.
-      expect(gpx, contains('<sym>confirmed</sym>'));
-      expect(
-        gpx,
-        contains('<cmt>Confirmed at 2025-06-15T09:30:00.000Z</cmt>'),
-      );
-      // Exactly one of each — the unconfirmed waypoint must not emit them.
-      expect('<sym>confirmed</sym>'.allMatches(gpx).length, 1);
-      expect('<cmt>'.allMatches(gpx).length, 1);
-    });
+        final gpx = buildGpxExport(session);
+        // Confirmed waypoint carries the badge + audit comment.
+        expect(gpx, contains('<sym>confirmed</sym>'));
+        expect(
+          gpx,
+          contains('<cmt>Confirmed at 2025-06-15T09:30:00.000Z</cmt>'),
+        );
+        // Exactly one of each — the unconfirmed waypoint must not emit them.
+        expect('<sym>confirmed</sym>'.allMatches(gpx).length, 1);
+        expect('<cmt>'.allMatches(gpx).length, 1);
+      },
+    );
   });
 }
