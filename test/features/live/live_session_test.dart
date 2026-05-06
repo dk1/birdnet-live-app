@@ -148,6 +148,48 @@ void main() {
       expect(json.containsKey('audioClipPath'), isFalse);
     });
 
+    test('confirmedAt defaults to null and isConfirmed is false', () {
+      final record = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.85,
+        timestamp: DateTime.now(),
+      );
+      expect(record.confirmedAt, isNull);
+      expect(record.isConfirmed, isFalse);
+      expect(record.toJson().containsKey('confirmedAt'), isFalse);
+    });
+
+    test('confirmedAt round-trips as UTC ISO string', () {
+      final confirmed = DateTime.utc(2026, 5, 6, 12, 30, 45);
+      final record = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.85,
+        timestamp: DateTime(2026, 5, 6, 12, 0, 0),
+        confirmedAt: confirmed,
+      );
+
+      final json = record.toJson();
+      expect(json['confirmedAt'], endsWith('Z'));
+
+      final roundTripped = DetectionRecord.fromJson(json);
+      expect(roundTripped.isConfirmed, isTrue);
+      expect(roundTripped.confirmedAt!.isAtSameMomentAs(confirmed), isTrue);
+    });
+
+    test('legacy JSON without confirmedAt deserializes with null', () {
+      final json = {
+        'scientificName': 'Turdus merula',
+        'commonName': 'Eurasian Blackbird',
+        'confidence': 0.85,
+        'timestamp': '2026-05-06T12:00:00.000Z',
+      };
+      final record = DetectionRecord.fromJson(json);
+      expect(record.confirmedAt, isNull);
+      expect(record.isConfirmed, isFalse);
+    });
+
     test('equality compares key fields', () {
       final ts = DateTime(2026, 2, 28, 14, 30, 0);
       final a = DetectionRecord(

@@ -190,6 +190,7 @@ class DetectionRecord {
     this.source = DetectionSource.auto,
     this.latitude,
     this.longitude,
+    this.confirmedAt,
   });
 
   /// Scientific name of the detected species.
@@ -231,6 +232,18 @@ class DetectionRecord {
 
   /// GPS longitude at the time of detection (null if unavailable).
   final double? longitude;
+
+  /// UTC wall-clock time when a reviewer marked this detection as visually
+  /// or acoustically confirmed. `null` means the detection has not been
+  /// confirmed (the default state — confirmation is opt-in).
+  ///
+  /// Mutable: toggled from the session-review UI. Persisted in JSON
+  /// sessions and propagated to all export formats so external pipelines
+  /// can filter on confirmed-only detections.
+  DateTime? confirmedAt;
+
+  /// Convenience: whether this detection has been marked confirmed.
+  bool get isConfirmed => confirmedAt != null;
 
   /// Scientific name placeholder for unknown / unidentifiable species.
   static const String unknownSpeciesName = 'Unknown species';
@@ -274,6 +287,10 @@ class DetectionRecord {
       },
       latitude: (json['detLat'] as num?)?.toDouble(),
       longitude: (json['detLon'] as num?)?.toDouble(),
+      confirmedAt:
+          json['confirmedAt'] != null
+              ? DateTime.parse(json['confirmedAt'] as String)
+              : null,
     );
   }
 
@@ -289,6 +306,8 @@ class DetectionRecord {
     if (source != DetectionSource.auto) 'source': source.name,
     if (latitude != null) 'detLat': latitude,
     if (longitude != null) 'detLon': longitude,
+    if (confirmedAt != null)
+      'confirmedAt': confirmedAt!.toUtc().toIso8601String(),
   };
 
   /// Confidence expressed as a percentage string, e.g. "87.3 %".
