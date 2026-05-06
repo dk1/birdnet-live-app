@@ -1063,6 +1063,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               gpsTrack: widget.session.gpsTrack,
               detections: _detections,
               initialHighlight: _highlightedDetection,
+              onConfirmChanged: () {
+                // Detections were mutated in place from the in-sheet
+                // checkmark; mark dirty so save/discard prompts trigger
+                // and rebuild so species rows + badges refresh.
+                if (mounted) setState(() => _isDirty = true);
+              },
             ),
       ),
     );
@@ -1078,17 +1084,37 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   /// Filter species groups to only include detections visible on the map.
   List<_SpeciesGroup> get _filteredSpeciesGroups {
-    if (widget.session.type != SessionType.survey ||
-        _visibleMapBounds == null) {
-      return _speciesGroups;
+    var groups = _speciesGroups;
+    if (widget.session.type == SessionType.survey &&
+        _visibleMapBounds != null) {
+      final bounds = _visibleMapBounds!;
+      final visible =
+          _detections.where((d) {
+            if (d.latitude == null || d.longitude == null) return true;
+            return bounds.contains(LatLng(d.latitude!, d.longitude!));
+          }).toList();
+      groups = _buildSpeciesGroups(
+        visible,
+        widget.session.settings.windowDuration,
+      );
     }
-    final bounds = _visibleMapBounds!;
-    final visible =
-        _detections.where((d) {
-          if (d.latitude == null || d.longitude == null) return true;
-          return bounds.contains(LatLng(d.latitude!, d.longitude!));
-        }).toList();
-    return _buildSpeciesGroups(visible, widget.session.settings.windowDuration);
+    return groups;
+  }
+
+  /// Toggle the confirmed flag on every record in [cluster]. The new
+  /// state is determined by the cluster as a whole: if any record is
+  /// already confirmed, the action clears confirmation across the
+  /// cluster; otherwise it stamps every record with the same confirmation
+  /// timestamp so they group cleanly in exports.
+  void _toggleClusterConfirmation(_DetectionCluster cluster) {
+    final anyConfirmed = cluster.records.any((r) => r.isConfirmed);
+    final stamp = anyConfirmed ? null : DateTime.now().toUtc();
+    setState(() {
+      for (final r in cluster.records) {
+        r.confirmedAt = stamp;
+      }
+      _isDirty = true;
+    });
   }
 
   Future<void> _confirmDeleteDetection(
@@ -1477,7 +1503,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               children: [
                 // Left: scrollable media column.
                 Expanded(
-                  flex: 1,
+                  flex: 2,
                   child: SingleChildScrollView(
                     child: Column(
                       children: _buildMediaWidgets(context, theme, l10n),
@@ -1485,8 +1511,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   ),
                 ),
                 const VerticalDivider(width: 1),
-                // Right: species list.
-                Expanded(flex: 1, child: speciesList),
+                // Right: species list. Slightly wider than the media column
+                // because each detection row carries a play affordance plus
+                // four trailing action buttons; cramming those into a 50/50
+                // split makes the row text overflow on phone-sized landscape.
+                Expanded(flex: 3, child: speciesList),
               ],
             ),
           ),
@@ -1802,6 +1831,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           onPause: _pausePlayer,
           onDeleteCluster: (cluster) => _confirmDeleteDetection(group, cluster),
           onReplaceCluster: _replaceDetection,
+          onToggleConfirmCluster: _toggleClusterConfirmation,
           onShowOnMap: _showDetectionOnMap,
         );
       },
@@ -1951,10 +1981,16 @@ class _FullscreenSurveyMapScreen extends ConsumerStatefulWidget {
     required this.gpsTrack,
     required this.detections,
     this.initialHighlight,
+    this.onConfirmChanged,
   });
 
   final List<GpsPoint> gpsTrack;
   final List<DetectionRecord> detections;
+
+  /// Invoked after the in-sheet confirm checkmark mutates a detection's
+  /// [DetectionRecord.confirmedAt]. The host uses this hook to mark the
+  /// session dirty and refresh derived UI (species rows, marker badges).
+  final VoidCallback? onConfirmChanged;
 
   /// Detection that the inline review map was currently focused on. When
   /// non-null the fullscreen map opens centered and zoomed in on this
@@ -2055,7 +2091,17 @@ class _FullscreenSurveyMapScreenState
     if (path == null || !File(path).existsSync()) return;
 
     setState(() => _highlight = detection);
-    await showClipPlayerSheet(context, detection: detection);
+    await showClipPlayerSheet(
+      context,
+      detection: detection,
+      onConfirmChanged: () {
+        // Rebuild this screen so the marker's confirmed badge updates
+        // immediately, then forward to the host so the session is marked
+        // dirty and the inline review screen refreshes on pop.
+        if (mounted) setState(() {});
+        widget.onConfirmChanged?.call();
+      },
+    );
     if (mounted) setState(() => _highlight = null);
   }
 

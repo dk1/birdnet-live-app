@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2026-05-06
+
+### Changed
+
+- **Session review polish.** The map overlay player now shows a confirm checkmark in the upper-right corner so reviewers can validate detections while listening, and its transport row was tightened so the play button sits inline with the scrubber, leaving only the close button at the bottom. Detection rows in the species list extend further to the left for more readable text. The persistent map filter chip was relabeled "All detections" to better reflect what's shown when no species filter is active, and its translation was added to the remaining locales (cs/es/fr/it/pt) (#33).
+
+### Added
+
+- **Confirmed-detection flag.** Reviewers can now mark detections as visually or acoustically confirmed during session review. Each detection row in the species list has a tap-to-toggle check button; confirmed clusters get a small green check next to the species name and confirmed map markers gain a green check badge in the upper-left corner so they stand out at a glance. The confirmed state persists with the session and travels with every export format (#33).
+  - **Raven `.selections.txt`** and **CSV** add `Confirmed` (true/false) and `Confirmed At (UTC)` columns.
+  - **JSON** detections always emit `confirmed`; `confirmedAt` is included only when set.
+  - **GPX** waypoints for confirmed detections gain `<sym>confirmed</sym>` and a `<cmt>` note carrying the confirmation timestamp, making the flag survive trips through QGIS, GPSBabel, and Garmin tooling.
+
 ## [0.10.0] - 2026-05-06
 
 ### Added

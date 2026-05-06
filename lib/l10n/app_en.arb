@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "en",
   "appTitle": "BirdNET Live",
   "@appTitle": {
@@ -674,6 +674,14 @@
   "sessionRemove": "Remove",
   "@sessionRemove": {
     "description": "Remove button label"
+  },
+  "detectionConfirmTooltip": "Mark as confirmed",
+  "@detectionConfirmTooltip": {
+    "description": "Tooltip on the per-detection confirm icon when the detection is not yet confirmed"
+  },
+  "detectionUnconfirmTooltip": "Remove confirmation",
+  "@detectionUnconfirmTooltip": {
+    "description": "Tooltip on the per-detection confirm icon when the detection is already confirmed"
   },
   "sessionSave": "Save",
   "@sessionSave": {
@@ -1941,7 +1949,7 @@
   "@surveyMapFilterTooltip": {
     "description": "Tooltip for the survey map filter button"
   },
-  "surveyMapFilterChipAll": "All species",
+  "surveyMapFilterChipAll": "All detections",
   "@surveyMapFilterChipAll": {
     "description": "Persistent map filter chip label when no filter is active"
   },

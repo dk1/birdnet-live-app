@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "es",
   "appTitle": "BirdNET Live",
   "liveMode": "Live",
@@ -160,6 +160,8 @@
   "sessionDeleteDetectionTitle": "¿Eliminar detección?",
   "sessionDeleteDetectionMessage": "¿Eliminar esta detección de la sesión? Guarde para aplicar.",
   "sessionRemove": "Eliminar",
+  "detectionConfirmTooltip": "Marcar como confirmada",
+  "detectionUnconfirmTooltip": "Quitar confirmación",
   "sessionSave": "Guardar",
   "sessionSaved": "Sesión guardada",
   "sessionUnsavedChanges": "Hay cambios sin guardar. ¿Guardar o descartar?",
@@ -510,6 +512,7 @@
   "surveyTrackMap": "Recorrido del Survey",
   "surveyMapFilterTitle": "Mostrar en el mapa",
   "surveyMapFilterTooltip": "Filtrar marcadores",
+  "surveyMapFilterChipAll": "Todas las detecciones",
   "surveyMapFilterAll": "Todas las detecciones",
   "surveyMapFilterWithAudio": "Con clip de audio",
   "surveyMapFilterMinConfidence": "Confianza mínima",

@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "cs",
   "appTitle": "BirdNET Live",
   "liveMode": "Live",
@@ -160,6 +160,8 @@
   "sessionDeleteDetectionTitle": "Odstranit detekci?",
   "sessionDeleteDetectionMessage": "Odstranit tuto detekci z relace? Uložte pro potvrzení.",
   "sessionRemove": "Odstranit",
+  "detectionConfirmTooltip": "Označit jako potvrzené",
+  "detectionUnconfirmTooltip": "Odebrat potvrzení",
   "sessionSave": "Uložit",
   "sessionSaved": "Relace uložena",
   "sessionUnsavedChanges": "Existují neuložené změny. Uložit nebo zahodit?",
@@ -510,6 +512,7 @@
   "surveyTrackMap": "Trasa Survey",
   "surveyMapFilterTitle": "Zobrazit na mapě",
   "surveyMapFilterTooltip": "Filtrovat značky",
+  "surveyMapFilterChipAll": "Všechny detekce",
   "surveyMapFilterAll": "Všechny detekce",
   "surveyMapFilterWithAudio": "S audiozaznamem",
   "surveyMapFilterMinConfidence": "Minimální spolehlivost",
