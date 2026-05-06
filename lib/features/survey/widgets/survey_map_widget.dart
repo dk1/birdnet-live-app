@@ -263,10 +263,12 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
       speciesMarkers.add(
         Marker(
           point: LatLng(det.latitude!, det.longitude!),
-          // Audio markers are rendered with an outer accent ring + corner
-          // play badge, so they need a larger bounding box than silent ones.
-          width: isHighlighted ? (hasAudio ? 56 : 44) : (hasAudio ? 44 : 32),
-          height: isHighlighted ? (hasAudio ? 56 : 44) : (hasAudio ? 44 : 32),
+          // Uniform bounding box so audio and silent markers visually match —
+          // the corner play badge needs a few extra pixels of padding either
+          // way. Slightly larger than the pre-#33 sizes so silhouettes stay
+          // legible when zoomed in.
+          width: isHighlighted ? 56 : 44,
+          height: isHighlighted ? 56 : 44,
           child: GestureDetector(
             onTap:
                 widget.onMarkerTap != null
@@ -562,7 +564,7 @@ class _SpeciesMarker extends ConsumerWidget {
       );
     }
 
-    final size = isHighlighted ? 40.0 : 28.0;
+    final size = isHighlighted ? 48.0 : 36.0;
 
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
     final path =

@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Zoom-aware species markers.** Below zoom 14.5 the silhouette image collapses to a few unreadable pixels — markers now switch to a solid colored dot whose size and outline weight encode the confidence bucket. Zooming in past the threshold restores the full silhouette + audio play badge form.
 - **Persistent map filter chip.** Added a chip overlay anchored top-right of the fullscreen survey map that shows the active filter ("All species", "≥ 50%", a species name) and opens the existing filter sheet on tap. Solves the discoverability problem in #33 where users were missing the AppBar filter icon entirely. The redundant AppBar filter icon was removed in favor of the chip.
 - **Removed the blue accent ring around audio-bearing map markers.** The ring sat on top of the avatar's confidence-colored border and masked the CVD-safe ramp, so two equally-confident detections looked identical when one had audio. Audio is now signaled solely by the corner play badge, leaving the confidence color fully visible.
+- **Uniform, slightly larger species markers on the map.** Audio and silent markers used to render at different bounding-box sizes (44 vs 32 px), making the map look uneven. Both now share the same box and the silhouette form is bumped 28 → 36 px (40 → 48 px when highlighted) so species photos stay legible when zoomed in.
 
 ## [0.9.7] - 2026-05-02
 
