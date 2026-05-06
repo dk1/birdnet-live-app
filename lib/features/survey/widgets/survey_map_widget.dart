@@ -564,12 +564,64 @@ class _SpeciesMarker extends ConsumerWidget {
       );
     }
 
-    final size = isHighlighted ? 48.0 : 36.0;
+    // Silent (no-audio) markers render a touch smaller than audio ones so
+    // the play-badge overhang on audio markers doesn't make audio markers
+    // look visually larger inside the same bounding box. Both forms use
+    // the same highlighted size so the focused detection always pops.
+    final size = isHighlighted ? 48.0 : (hasAudio ? 36.0 : 30.0);
 
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
     final path =
         taxonomyAsync.valueOrNull?.assetImagePath(scientificName) ??
         'assets/images/dummy_species.png';
+
+    // Silent markers are desaturated to grayscale so the user can tell at
+    // a glance which detections have audio without having to spot the
+    // small corner play badge. The confidence-colored border is preserved
+    // (silent markers use a neutral grey there too) but the photo itself
+    // reads as monochrome until a clip is attached.
+    final ColorFilter? silentFilter =
+        hasAudio
+            ? null
+            : const ColorFilter.matrix(<double>[
+              0.2126,
+              0.7152,
+              0.0722,
+              0,
+              0,
+              0.2126,
+              0.7152,
+              0.0722,
+              0,
+              0,
+              0.2126,
+              0.7152,
+              0.0722,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0,
+            ]);
+
+    Widget image = Image.asset(
+      path,
+      fit: BoxFit.cover,
+      errorBuilder:
+          (_, __, ___) => Container(
+            color: borderColor.withAlpha(60),
+            child: Icon(
+              Icons.music_note,
+              size: size * 0.45,
+              color: borderColor,
+            ),
+          ),
+    );
+    if (silentFilter != null) {
+      image = ColorFiltered(colorFilter: silentFilter, child: image);
+    }
 
     final avatar = Container(
       width: size,
@@ -591,21 +643,7 @@ class _SpeciesMarker extends ConsumerWidget {
           ),
         ],
       ),
-      child: ClipOval(
-        child: Image.asset(
-          path,
-          fit: BoxFit.cover,
-          errorBuilder:
-              (_, __, ___) => Container(
-                color: borderColor.withAlpha(60),
-                child: Icon(
-                  Icons.music_note,
-                  size: size * 0.45,
-                  color: borderColor,
-                ),
-              ),
-        ),
-      ),
+      child: ClipOval(child: image),
     );
 
     if (!hasAudio) return avatar;

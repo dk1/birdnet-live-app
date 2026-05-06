@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Persistent map filter chip.** Added a chip overlay anchored top-right of the fullscreen survey map that shows the active filter ("All species", "≥ 50%", a species name) and opens the existing filter sheet on tap. Solves the discoverability problem in #33 where users were missing the AppBar filter icon entirely. The redundant AppBar filter icon was removed in favor of the chip.
 - **Removed the blue accent ring around audio-bearing map markers.** The ring sat on top of the avatar's confidence-colored border and masked the CVD-safe ramp, so two equally-confident detections looked identical when one had audio. Audio is now signaled solely by the corner play badge, leaving the confidence color fully visible.
 - **Uniform, slightly larger species markers on the map.** Audio and silent markers used to render at different bounding-box sizes (44 vs 32 px), making the map look uneven. Both now share the same box and the silhouette form is bumped 28 → 36 px (40 → 48 px when highlighted) so species photos stay legible when zoomed in.
+- **Silent (no-audio) markers are now grayscale and slightly smaller (30 px vs 36 px).** Desaturating the photo lets the user tell at a glance which detections have audio without hunting for the small corner play badge, and the size offset compensates for the play-badge overhang on audio markers so audio detections no longer look visually larger inside the same bounding box.
 
 ## [0.9.7] - 2026-05-02
 
