@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.8] - 2026-05-02
+
+### Changed
+
+- **Survey map now clusters overlapping detections.** Dense surveys used to render as an unreadable pile of pins on top of each other; species markers are now grouped into count bubbles below zoom 15, with a polygon overlay on tap so the cluster's footprint is visible. Start-flag and current-position markers stay outside the cluster layer so they're never folded into a count (#33).
+- **Zoom-aware species markers.** Below zoom 14.5 the silhouette image collapses to a few unreadable pixels — markers now switch to a solid colored dot whose size and outline weight encode the confidence bucket. Zooming in past the threshold restores the full silhouette + audio play badge form.
+- **Persistent map filter chip.** Added a chip overlay anchored top-right of the fullscreen survey map that shows the active filter ("All species", "≥ 50%", a species name) and opens the existing filter sheet on tap. Solves the discoverability problem in #33 where users were missing the AppBar filter icon entirely.
+
 ## [0.9.7] - 2026-05-02
 
 ### Changed
