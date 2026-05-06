@@ -224,8 +224,9 @@ void main() {
       expect(header, contains('Longitude'));
 
       final cols = table.split('\n')[1].split('\t');
-      expect(cols[11], '52.520008');
-      expect(cols[12], '13.404954');
+      // Survey Time is now always emitted (col 11), so coords sit at 12/13.
+      expect(cols[12], '52.520008');
+      expect(cols[13], '13.404954');
     });
 
     test('omits Latitude/Longitude when no detections have coordinates', () {
@@ -240,6 +241,45 @@ void main() {
       final table = buildRavenSelectionTable(session);
       final header = table.split('\n').first;
       expect(header, isNot(contains('Latitude')));
+    });
+
+    test('Survey Time column is always present (single-file mode)', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        detections: [
+          _det('Turdus merula', 'Eurasian Blackbird', 0.95,
+              const Duration(seconds: 10), start),
+        ],
+      );
+
+      final table = buildRavenSelectionTable(
+        session,
+        audioFileName: '$_prefix.wav',
+      );
+      expect(table.split('\n').first, contains('Survey Time (s)'));
+      final cols = table.split('\n')[1].split('\t');
+      expect(cols[11], '10.000');
+    });
+
+    test('useAbsoluteSurveyTime renames column and emits ISO UTC value', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        detections: [
+          _det('Turdus merula', 'Eurasian Blackbird', 0.95,
+              const Duration(seconds: 10), start),
+        ],
+      );
+
+      final table = buildRavenSelectionTable(
+        session,
+        audioFileName: '$_prefix.wav',
+        useAbsoluteSurveyTime: true,
+      );
+      final header = table.split('\n').first;
+      expect(header, contains('Survey Time (UTC)'));
+      expect(header, isNot(contains('Survey Time (s)')));
+      final cols = table.split('\n')[1].split('\t');
+      expect(cols[11], '2025-06-15T08:00:10.000Z');
     });
   });
 
@@ -257,10 +297,11 @@ void main() {
 
       final csv = buildCsvExport(session, audioFileName: '$_prefix.flac');
       final header = csv.split('\n').first;
-      expect(header, endsWith(',File'));
+      // File column appears before the always-present Survey Time column.
+      expect(header, contains(',File,'));
 
       final row = csv.split('\n')[1];
-      expect(row, endsWith(',$_prefix.flac'));
+      expect(row, contains(',$_prefix.flac,'));
     });
 
     test('omits File column when no audio references', () {
@@ -268,6 +309,37 @@ void main() {
       final csv = buildCsvExport(session);
       final header = csv.split('\n').first;
       expect(header, isNot(contains('File')));
+    });
+
+    test('Survey Time column is always present', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        detections: [
+          _det('Turdus merula', 'Eurasian Blackbird', 0.91,
+              const Duration(seconds: 5), start),
+        ],
+      );
+      final csv = buildCsvExport(session);
+      expect(csv.split('\n').first, contains('Survey Time (s)'));
+      // Last column on the row is the survey time value.
+      final cols = csv.split('\n')[1].split(',');
+      expect(cols.last, '5.000');
+    });
+
+    test('useAbsoluteSurveyTime renames CSV column and emits ISO UTC', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        detections: [
+          _det('Turdus merula', 'Eurasian Blackbird', 0.91,
+              const Duration(seconds: 5), start),
+        ],
+      );
+      final csv = buildCsvExport(session, useAbsoluteSurveyTime: true);
+      final header = csv.split('\n').first;
+      expect(header, contains('Survey Time (UTC)'));
+      expect(header, isNot(contains('Survey Time (s)')));
+      final cols = csv.split('\n')[1].split(',');
+      expect(cols.last, '2025-06-15T08:00:05.000Z');
     });
   });
 

@@ -740,6 +740,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       speciesLocale: speciesLocale,
       clipContextSecondsOverride: clipContextOverride,
       metadata: await _buildExportMetadata(speciesLocale: speciesLocale),
+      useAbsoluteSurveyTime:
+          ref.read(timestampDisplayModeProvider) == 'absolute',
     );
 
     if (exportPath == null) return;
@@ -801,6 +803,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       geoModel: geoModel,
       prefs: prefsMap,
       speciesLocale: speciesLocale,
+      session: widget.session,
     );
   }
 

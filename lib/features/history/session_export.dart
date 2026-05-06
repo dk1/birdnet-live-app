@@ -95,9 +95,13 @@ String _localizedCommon(
 ///     `[clipContext, clipContext + windowDuration]`.
 ///   • For rows referencing the **full recording** (or no audio), `Begin/End
 ///     Time` are session-relative offsets.
-///   • When ANY row references a clip, an extra `Survey Time (s)` column is
-///     appended for every row with the session-relative offset, so survey
-///     analysts can recover the timeline of detections across clips.
+///   • A `Survey Time` column is always appended so analysts can recover the
+///     timeline of every detection regardless of file layout. By default this
+///     is `Survey Time (s)` (seconds since session start). When
+///     [useAbsoluteSurveyTime] is true the column becomes `Survey Time (UTC)`
+///     and carries the detection's wall-clock timestamp as an ISO-8601 UTC
+///     string — useful when correlating across surveys, devices, or external
+///     data sources that work in absolute time.
 ///
 /// Common Name is rendered in the user's species locale when [taxonomy] is
 /// supplied; Scientific Name is always emitted regardless of any UI toggle
@@ -112,12 +116,12 @@ String buildRavenSelectionTable(
   TaxonomyService? taxonomy,
   String speciesLocale = 'en',
   int? clipContextSecondsOverride,
+  bool useAbsoluteSurveyTime = false,
 }) {
   final buf = StringBuffer();
   final hasCoords = session.detections.any(
     (d) => d.latitude != null && d.longitude != null,
   );
-  final hasClips = clipFileMap != null && clipFileMap.isNotEmpty;
   // Prefer the per-session value, but allow callers to override (e.g. legacy
   // sessions persisted before [SessionSettings.clipContextSeconds] existed,
   // where the field defaults to 0 and would falsely place every detection at
@@ -127,15 +131,19 @@ String buildRavenSelectionTable(
           .toDouble();
 
   // Header row — 'Begin File' is a standard Raven column for multi-file
-  // selection tables. 'Survey Time (s)' is non-standard but harmless to Raven
+  // selection tables. 'Survey Time' is non-standard but harmless to Raven
   // (extra columns are ignored on import) and lets analysts cross-reference
-  // detections back to the survey timeline.
+  // detections back to the survey timeline. We always emit it: when no clips
+  // are involved it duplicates Begin Time, but having a stable column name
+  // makes downstream tooling simpler than conditionally including it.
+  final surveyTimeHeader =
+      useAbsoluteSurveyTime ? 'Survey Time (UTC)' : 'Survey Time (s)';
   buf.writeln(
     'Selection\tView\tChannel\tBegin File\t'
     'Begin Time (s)\tEnd Time (s)\t'
     'Low Freq (Hz)\tHigh Freq (Hz)\t'
     'Common Name\tScientific Name\tConfidence'
-    '${hasClips ? '\tSurvey Time (s)' : ''}'
+    '\t$surveyTimeHeader'
     '${hasCoords ? '\tLatitude\tLongitude' : ''}',
   );
 
@@ -183,8 +191,10 @@ String buildRavenSelectionTable(
       speciesLocale: speciesLocale,
     );
 
-    final surveyTimeSuffix =
-        hasClips ? '\t${surveySec.toStringAsFixed(3)}' : '';
+    final surveyTimeValue = useAbsoluteSurveyTime
+        ? d.timestamp.toUtc().toIso8601String()
+        : surveySec.toStringAsFixed(3);
+    final surveyTimeSuffix = '\t$surveyTimeValue';
     final coordSuffix =
         hasCoords
             ? '\t${d.latitude?.toStringAsFixed(6) ?? ''}'
@@ -231,22 +241,27 @@ String buildCsvExport(
   TaxonomyService? taxonomy,
   String speciesLocale = 'en',
   int? clipContextSecondsOverride,
+  bool useAbsoluteSurveyTime = false,
 }) {
   final buf = StringBuffer();
   final hasFileRefs = audioFileName != null || clipFileMap != null;
   final hasCoords = session.detections.any(
     (d) => d.latitude != null && d.longitude != null,
   );
-  final hasClips = clipFileMap != null && clipFileMap.isNotEmpty;
   final clipContext =
       (clipContextSecondsOverride ?? session.settings.clipContextSeconds)
           .toDouble();
 
+  // Survey Time is always included (see [buildRavenSelectionTable] for the
+  // rationale). When [useAbsoluteSurveyTime] is true the column becomes
+  // 'Survey Time (UTC)' and carries an ISO-8601 wall-clock timestamp.
+  final surveyTimeHeader =
+      useAbsoluteSurveyTime ? 'Survey Time (UTC)' : 'Survey Time (s)';
   buf.writeln(
     'Timestamp (UTC),Begin Time (s),End Time (s),'
     'Common Name,Scientific Name,Confidence'
     '${hasFileRefs ? ',File' : ''}'
-    '${hasClips ? ',Survey Time (s)' : ''}'
+    ',$surveyTimeHeader'
     '${hasCoords ? ',Latitude,Longitude' : ''}',
   );
 
@@ -296,7 +311,10 @@ String buildCsvExport(
             : d.scientificName;
 
     final fileRef = hasFileRefs ? ',${clipName ?? audioFileName ?? ''}' : '';
-    final surveyTimeRef = hasClips ? ',${surveySec.toStringAsFixed(3)}' : '';
+    final surveyTimeValue = useAbsoluteSurveyTime
+        ? d.timestamp.toUtc().toIso8601String()
+        : surveySec.toStringAsFixed(3);
+    final surveyTimeRef = ',$surveyTimeValue';
     final coordRef =
         hasCoords
             ? ',${d.latitude?.toStringAsFixed(6) ?? ''}'
@@ -338,6 +356,7 @@ Map<String, dynamic> buildExportMetadata({
   Map<String, dynamic>? geoModel,
   Map<String, dynamic>? prefs,
   String? speciesLocale,
+  LiveSession? session,
 }) {
   return {
     'exportedAt': DateTime.now().toUtc().toIso8601String(),
@@ -347,6 +366,23 @@ Map<String, dynamic> buildExportMetadata({
       if (appBuildNumber != null) 'buildNumber': appBuildNumber,
       if (appPackageName != null) 'packageName': appPackageName,
     },
+    if (session != null)
+      'session': {
+        'id': session.id,
+        'type': session.type.name,
+        'startTime': session.startTime.toUtc().toIso8601String(),
+        if (session.endTime != null)
+          'endTime': session.endTime!.toUtc().toIso8601String(),
+        if (session.customName != null && session.customName!.isNotEmpty)
+          'customName': session.customName,
+        if (session.sessionNumber != null)
+          'sessionNumber': session.sessionNumber,
+        if (session.observerName != null && session.observerName!.isNotEmpty)
+          'observerName': session.observerName,
+        if (session.transectId != null && session.transectId!.isNotEmpty)
+          'transectId': session.transectId,
+        'detectionCount': session.detections.length,
+      },
     if (audioModel != null) 'audioModel': audioModel,
     if (geoModel != null) 'geoModel': geoModel,
     if (speciesLocale != null) 'speciesLocale': speciesLocale,
@@ -424,6 +460,7 @@ Future<String?> buildSessionExport(
   String speciesLocale = 'en',
   int? clipContextSecondsOverride,
   Map<String, dynamic>? metadata,
+  bool useAbsoluteSurveyTime = false,
 }) async {
   final prefix = _exportPrefix(session);
   final audioPath = session.recordingPath;
@@ -487,6 +524,7 @@ Future<String?> buildSessionExport(
         taxonomy: taxonomy,
         speciesLocale: speciesLocale,
         clipContextSecondsOverride: clipContextSecondsOverride,
+        useAbsoluteSurveyTime: useAbsoluteSurveyTime,
       );
       extension = '.csv';
       break;
@@ -507,6 +545,7 @@ Future<String?> buildSessionExport(
         taxonomy: taxonomy,
         speciesLocale: speciesLocale,
         clipContextSecondsOverride: clipContextSecondsOverride,
+        useAbsoluteSurveyTime: useAbsoluteSurveyTime,
       );
       extension = '.selections.txt';
       break;
@@ -531,17 +570,6 @@ Future<String?> buildSessionExport(
     }
 
     archive.addFile(ArchiveFile('$prefix$extension', bytes.length, bytes));
-
-    // Always drop a metadata side-file when the caller provided one, so
-    // the provenance information travels with the bundle regardless of
-    // which document format the user picked (Raven / CSV / GPX).
-    if (metadata != null) {
-      final metaJson = const JsonEncoder.withIndent('  ').convert(metadata);
-      final metaBytes = Uint8List.fromList(utf8.encode(metaJson));
-      archive.addFile(
-        ArchiveFile('$prefix.metadata.json', metaBytes.length, metaBytes),
-      );
-    }
 
     // Always drop a metadata side-file when the caller provided one, so
     // the provenance information travels with the bundle regardless of
