@@ -34,6 +34,7 @@ import '../../live/live_session.dart';
 import '../../recording/audio_decoder.dart';
 import '../../recording/native_audio_decoder.dart';
 import '../../spectrogram/color_maps.dart';
+import '../services/detection_sharing_service.dart';
 
 /// Show the modal player for a [detection]'s audio clip.
 ///
@@ -358,6 +359,13 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                     confirmed: det.isConfirmed,
                     onToggle: _toggleConfirm,
                   ),
+                // Share icon — always available alongside confirm so
+                // reviewers (and live-survey users via the same sheet) can
+                // ping a colleague with a single notable detection without
+                // exporting the whole session.
+                _ShareButton(
+                  onShare: () => shareDetection(widget.detection),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -526,6 +534,36 @@ class _ConfirmToggle extends StatelessWidget {
                 confirmed
                     ? Colors.green.shade600
                     : theme.colorScheme.onSurface.withAlpha(120),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tap-to-share button shown in the player sheet header. Funnels into the
+/// shared [shareDetection] helper so the long-press context menu on the
+/// cluster row and any future entry points emit the same payload.
+class _ShareButton extends StatelessWidget {
+  const _ShareButton({required this.onShare});
+
+  final VoidCallback onShare;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    return Tooltip(
+      message: l10n.detectionShareTooltip,
+      child: InkWell(
+        onTap: onShare,
+        borderRadius: BorderRadius.circular(24),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Icon(
+            Icons.ios_share,
+            size: 26,
+            color: theme.colorScheme.onSurface.withAlpha(140),
           ),
         ),
       ),

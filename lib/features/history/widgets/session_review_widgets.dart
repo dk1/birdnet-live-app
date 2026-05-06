@@ -614,6 +614,7 @@ class _SpeciesTile extends ConsumerWidget {
     required this.onDeleteCluster,
     required this.onReplaceCluster,
     required this.onToggleConfirmCluster,
+    required this.onShareCluster,
     this.activePositionSec,
     this.activeCluster,
     this.onPause,
@@ -658,6 +659,11 @@ class _SpeciesTile extends ConsumerWidget {
 
   /// Toggle the confirmed state of every record in a cluster.
   final ValueChanged<_DetectionCluster> onToggleConfirmCluster;
+
+  /// Share the first record of a cluster via the platform share sheet.
+  /// Wired up from the cluster row's long-press context menu (and any
+  /// future per-detection share entry points).
+  final ValueChanged<_DetectionCluster> onShareCluster;
   final ValueChanged<DetectionRecord>? onShowOnMap;
 
   /// Called when the user taps the play affordance on a row that is
@@ -920,6 +926,7 @@ class _SpeciesTile extends ConsumerWidget {
                       onDelete: () => onDeleteCluster(cluster),
                       onReplace: () => onReplaceCluster(cluster),
                       onToggleConfirm: () => onToggleConfirmCluster(cluster),
+                      onShare: () => onShareCluster(cluster),
                       isSurvey: isSurvey,
                       audioAvailable: audioAvailable,
                       onShowOnMap:
@@ -986,6 +993,7 @@ class _ClusterRow extends ConsumerWidget {
     required this.onDelete,
     required this.onReplace,
     required this.onToggleConfirm,
+    required this.onShare,
     this.onPause,
     this.clipOffsetSec = 0.0,
     this.windowSec = 3,
@@ -1005,6 +1013,11 @@ class _ClusterRow extends ConsumerWidget {
   /// host screen owns the actual mutation and persistence; the row only
   /// reports user intent so it stays a pure presentational widget.
   final VoidCallback onToggleConfirm;
+
+  /// Shares this cluster's representative detection via the platform
+  /// share sheet. Surfaced through a long-press context menu on the row
+  /// so we don't add yet another inline icon to the trailing strip.
+  final VoidCallback onShare;
 
   /// Pause callback used when this row is currently being played. When
   /// `null`, an active row continues to behave like a re-seek.
@@ -1051,25 +1064,32 @@ class _ClusterRow extends ConsumerWidget {
     );
     final timeStr = startStr == endStr ? startStr : '$startStr \u2013 $endStr';
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      decoration: BoxDecoration(
-        color:
-            isActive
-                ? theme.colorScheme.primary.withAlpha(28)
-                : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 4),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-        child: Row(
-          children: [
-            if (audioAvailable || cluster.hasAudioClip)
-              InkWell(
-                onTap: isActive && onPause != null ? onPause : onSeek,
-                borderRadius: BorderRadius.circular(24),
+    return GestureDetector(
+      // Long-press anywhere on the row pops a context menu with Share
+      // (and any future low-frequency per-detection actions). Adds zero
+      // visible chrome but gives power users a one-gesture path to share
+      // a single notable detection without opening the clip player sheet.
+      behavior: HitTestBehavior.opaque,
+      onLongPressStart: (details) => _showContextMenu(context, details),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          color:
+              isActive
+                  ? theme.colorScheme.primary.withAlpha(28)
+                  : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 4),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          child: Row(
+            children: [
+              if (audioAvailable || cluster.hasAudioClip)
+                InkWell(
+                  onTap: isActive && onPause != null ? onPause : onSeek,
+                  borderRadius: BorderRadius.circular(24),
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Icon(
@@ -1185,7 +1205,44 @@ class _ClusterRow extends ConsumerWidget {
           ],
         ),
       ),
+      ),
     );
+  }
+
+  /// Show the per-detection context menu at the long-press location. The
+  /// menu currently houses just `Share` (with room to grow into copy /
+  /// inspect actions later); the row's existing inline icons keep the
+  /// other actions one-tap. Closes itself when the user taps an item or
+  /// dismisses by tapping outside.
+  Future<void> _showContextMenu(
+    BuildContext context,
+    LongPressStartDetails details,
+  ) async {
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (overlay == null) return;
+    final l10n = AppLocalizations.of(context)!;
+    final position = RelativeRect.fromRect(
+      details.globalPosition & const Size(40, 40),
+      Offset.zero & overlay.size,
+    );
+    final selected = await showMenu<String>(
+      context: context,
+      position: position,
+      items: [
+        PopupMenuItem<String>(
+          value: 'share',
+          child: Row(
+            children: [
+              const Icon(Icons.ios_share, size: 20),
+              const SizedBox(width: 12),
+              Text(l10n.detectionShareTooltip),
+            ],
+          ),
+        ),
+      ],
+    );
+    if (selected == 'share') onShare();
   }
 }
 

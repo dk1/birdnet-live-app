@@ -683,6 +683,10 @@
   "@detectionUnconfirmTooltip": {
     "description": "Tooltip on the per-detection confirm icon when the detection is already confirmed"
   },
+  "detectionShareTooltip": "Share detection",
+  "@detectionShareTooltip": {
+    "description": "Tooltip on the per-detection share icon and label of the share entry in the cluster row's long-press context menu"
+  },
   "sessionSave": "Save",
   "@sessionSave": {
     "description": "Save session button label"

@@ -162,6 +162,7 @@
   "sessionRemove": "Supprimer",
   "detectionConfirmTooltip": "Marquer comme confirmée",
   "detectionUnconfirmTooltip": "Retirer la confirmation",
+  "detectionShareTooltip": "Partager la détection",
   "sessionSave": "Enregistrer",
   "sessionSaved": "Session enregistrée",
   "sessionUnsavedChanges": "Des modifications non enregistrées existent. Enregistrer ou abandonner ?",

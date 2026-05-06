@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Share individual detections.** Reviewers (and field users mid-survey) can now share a single notable detection without exporting the whole session. The clip player sheet header gains a small share icon next to the confirm checkmark, and a long-press anywhere on a detection row in the species list pops a context menu with the same Share action. Both paths emit a terse, field-tool-friendly payload — common + scientific name, confidence, ISO 8601 UTC timestamp, and a `geo:` URI when the detection has GPS — and attach the audio clip via the platform share sheet whenever one is on disk (#33).
 - **Confirmed-detection flag.** Reviewers can now mark detections as visually or acoustically confirmed during session review. Each detection row in the species list has a tap-to-toggle check button; confirmed clusters get a small green check next to the species name and confirmed map markers gain a green check badge in the upper-left corner so they stand out at a glance. The confirmed state persists with the session and travels with every export format (#33).
   - **Raven `.selections.txt`** and **CSV** add `Confirmed` (true/false) and `Confirmed At (UTC)` columns.
   - **JSON** detections always emit `confirmed`; `confirmedAt` is included only when set.

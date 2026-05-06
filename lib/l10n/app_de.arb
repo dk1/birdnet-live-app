@@ -162,6 +162,7 @@
   "sessionRemove": "Entfernen",
   "detectionConfirmTooltip": "Als bestätigt markieren",
   "detectionUnconfirmTooltip": "Bestätigung entfernen",
+  "detectionShareTooltip": "Erkennung teilen",
   "sessionSave": "Speichern",
   "sessionSaved": "Session gespeichert",
   "sessionUnsavedChanges": "Es gibt ungespeicherte Änderungen. Speichern oder verwerfen?",

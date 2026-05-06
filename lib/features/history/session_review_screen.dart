@@ -85,6 +85,7 @@ import '../settings/settings_screen.dart';
 import '../survey/survey_live_screen.dart';
 import '../survey/widgets/survey_map_widget.dart';
 import '../../core/services/reverse_geocoding_service.dart';
+import 'services/detection_sharing_service.dart';
 
 part 'widgets/session_review_widgets.dart';
 
@@ -1832,6 +1833,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           onDeleteCluster: (cluster) => _confirmDeleteDetection(group, cluster),
           onReplaceCluster: _replaceDetection,
           onToggleConfirmCluster: _toggleClusterConfirmation,
+          onShareCluster:
+              (cluster) => shareDetection(cluster.records.first),
           onShowOnMap: _showDetectionOnMap,
         );
       },

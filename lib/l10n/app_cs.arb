@@ -162,6 +162,7 @@
   "sessionRemove": "Odstranit",
   "detectionConfirmTooltip": "Označit jako potvrzené",
   "detectionUnconfirmTooltip": "Odebrat potvrzení",
+  "detectionShareTooltip": "Sdílet detekci",
   "sessionSave": "Uložit",
   "sessionSaved": "Relace uložena",
   "sessionUnsavedChanges": "Existují neuložené změny. Uložit nebo zahodit?",
