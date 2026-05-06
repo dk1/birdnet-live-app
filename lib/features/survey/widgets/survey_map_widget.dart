@@ -253,7 +253,29 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
       }
     }
 
-    for (final det in detectionsByLocation.values) {
+    // Sort the marker draw order so that, when two markers overlap on the
+    // map, the more important one wins the top spot. Highest priority is the
+    // currently highlighted detection, then audio over silent, then high
+    // confidence over low. flutter_map paints markers in list order, so the
+    // last one added wins — sort ascending by importance.
+    final sortedDetections =
+        detectionsByLocation.values.toList()..sort((a, b) {
+          final aHighlight =
+              widget.highlightedDetection != null &&
+              a.scientificName == widget.highlightedDetection!.scientificName &&
+              a.timestamp == widget.highlightedDetection!.timestamp;
+          final bHighlight =
+              widget.highlightedDetection != null &&
+              b.scientificName == widget.highlightedDetection!.scientificName &&
+              b.timestamp == widget.highlightedDetection!.timestamp;
+          if (aHighlight != bHighlight) return aHighlight ? 1 : -1;
+          final aAudio = _hasPlayableClip(a);
+          final bAudio = _hasPlayableClip(b);
+          if (aAudio != bAudio) return aAudio ? 1 : -1;
+          return a.confidence.compareTo(b.confidence);
+        });
+
+    for (final det in sortedDetections) {
       final isHighlighted =
           widget.highlightedDetection != null &&
           det.scientificName == widget.highlightedDetection!.scientificName &&

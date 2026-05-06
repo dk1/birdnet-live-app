@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.9] - 2026-05-06
+
+### Changed
+
+- **Survey map now z-orders overlapping markers by importance.** When two detections share a spot, the more important one is now drawn on top: the highlighted detection wins outright, then audio-bearing markers cover silent ones, then higher-confidence covers lower. Previously the draw order was effectively the iteration order of the location-keyed map, so a low-confidence silent marker could obscure a high-confidence audio detection at the same position (#33).
+
 ## [0.9.8] - 2026-05-02
 
 ### Changed
