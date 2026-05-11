@@ -63,12 +63,46 @@ class DetectionList extends StatelessWidget {
       itemCount: detections.length,
       itemBuilder: (context, index) {
         final det = detections[index];
-        return DetectionTile(
+        final actions = actionsBuilder?.call(det);
+        final tile = DetectionTile(
           detection: det,
           onTap: onDetectionTap != null ? () => onDetectionTap!(det) : null,
-          actions: actionsBuilder?.call(det),
+          actions: actions,
+        );
+        // When the host wires a delete action, also expose it as a
+        // horizontal swipe shortcut. The host's undo SnackBar covers
+        // misfires, so no modal confirm is needed. Keyed by the
+        // detection's identity (sci-name + microsecond timestamp) so
+        // dismiss/rebuild stays stable as new detections stream in.
+        final onDelete = actions?.onDelete;
+        if (onDelete == null) return tile;
+        return Dismissible(
+          key: ValueKey(
+            '${det.scientificName}-${det.timestamp.microsecondsSinceEpoch}',
+          ),
+          direction: DismissDirection.horizontal,
+          background: _swipeDeleteBackground(context, alignLeft: true),
+          secondaryBackground: _swipeDeleteBackground(
+            context,
+            alignLeft: false,
+          ),
+          onDismissed: (_) => onDelete(),
+          child: tile,
         );
       },
+    );
+  }
+
+  Widget _swipeDeleteBackground(
+    BuildContext context, {
+    required bool alignLeft,
+  }) {
+    final theme = Theme.of(context);
+    return Container(
+      alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      color: theme.colorScheme.error.withAlpha(40),
+      child: Icon(Icons.delete_outline, color: theme.colorScheme.error),
     );
   }
 }
@@ -140,6 +174,29 @@ class DetectionTile extends ConsumerWidget {
                   // Scientific name + confidence on one row
                   Row(
                     children: [
+                      // Manual-entry badge (small icon + label) takes the
+                      // place of the scientific-name field for manual
+                      // detections, since manuals carry confidence 1.0 and
+                      // the user explicitly chose the species — the
+                      // scientific name is less important than making it
+                      // obvious this didn't come from inference.
+                      if (detection.source == DetectionSource.manual ||
+                          detection.source == DetectionSource.manualGlobal) ...[
+                        Icon(
+                          Icons.edit_note,
+                          size: 14,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          AppLocalizations.of(context)!.detectionSourceManual,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
                       if (showSciNames)
                         Expanded(
                           child: Text(
