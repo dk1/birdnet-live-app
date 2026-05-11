@@ -99,7 +99,8 @@ class DetectionTile extends ConsumerWidget {
     final showSciNames = ref.watch(showSciNamesProvider);
 
     // Resolve localized common name, falling back to English inference name.
-    final displayName = taxonomyAsync.valueOrNull
+    final displayName =
+        taxonomyAsync.valueOrNull
             ?.lookup(detection.scientificName)
             ?.commonNameForLocale(speciesLocale) ??
         detection.commonName;
@@ -154,9 +155,11 @@ class DetectionTile extends ConsumerWidget {
                       if (!showSciNames) const Spacer(),
                       const SizedBox(width: 8),
                       Semantics(
-                        label: AppLocalizations.of(context)!
-                            .a11yConfidencePercent(
-                                (detection.confidence * 100).round()),
+                        label: AppLocalizations.of(
+                          context,
+                        )!.a11yConfidencePercent(
+                          (detection.confidence * 100).round(),
+                        ),
                         excludeSemantics: true,
                         child: Text(
                           detection.confidencePercent,
@@ -196,7 +199,8 @@ class DetectionTile extends ConsumerWidget {
             // navigational chevron with inline confirm + overflow so the
             // tile matches the cluster row in session review. Otherwise
             // keep the lightweight chevron to signal tap-for-info.
-            if (actions != null) ..._trailingActions(context, theme, actions!)
+            if (actions != null)
+              ..._trailingActions(context, theme, actions!)
             else
               Icon(
                 Icons.chevron_right,
@@ -257,14 +261,13 @@ class DetectionTile extends ConsumerWidget {
   Widget _buildSpeciesImage(AsyncValue<TaxonomyService> taxonomyAsync) {
     final path =
         taxonomyAsync.valueOrNull?.assetImagePath(detection.scientificName) ??
-            'assets/images/dummy_species.png';
+        'assets/images/dummy_species.png';
     return Image.asset(
       path,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => Image.asset(
-        'assets/images/dummy_species.png',
-        fit: BoxFit.cover,
-      ),
+      errorBuilder:
+          (_, __, ___) =>
+              Image.asset('assets/images/dummy_species.png', fit: BoxFit.cover),
     );
   }
 }

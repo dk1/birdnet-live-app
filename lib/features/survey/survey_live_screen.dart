@@ -642,17 +642,18 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
           // and delete in the overflow. Replace stays a review-only
           // action because picking an alternative species needs the
           // full search overlay.
-          actionsBuilder: (detection) => DetectionActions(
-            isConfirmed: detection.isConfirmed,
-            onToggleConfirm: () {
-              setState(() {
-                detection.confirmedAt =
-                    detection.isConfirmed ? null : DateTime.now().toUtc();
-              });
-            },
-            onShare: () => shareDetection(detection),
-            onDelete: () => _deleteLiveDetectionWithUndo(detection),
-          ),
+          actionsBuilder:
+              (detection) => DetectionActions(
+                isConfirmed: detection.isConfirmed,
+                onToggleConfirm: () {
+                  setState(() {
+                    detection.confirmedAt =
+                        detection.isConfirmed ? null : DateTime.now().toUtc();
+                  });
+                },
+                onShare: () => shareDetection(detection),
+                onDelete: () => _deleteLiveDetectionWithUndo(detection),
+              ),
         ),
       ),
     );
