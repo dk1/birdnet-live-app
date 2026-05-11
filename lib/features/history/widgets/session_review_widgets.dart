@@ -490,18 +490,16 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
     const zoomDamping = 0.6;
     final dampedScale = math.pow(details.scale, zoomDamping).toDouble();
     final maxView = math.max(durationSec, _minViewSeconds);
-    final newView = (startView / dampedScale).clamp(
-      _minViewSeconds,
-      maxView,
-    );
+    final newView = (startView / dampedScale).clamp(_minViewSeconds, maxView);
 
     // `focalPointDelta` is per-frame in pixels, so we *do* integrate it
     // into the running center. Convert through the current view width so
     // panning speed feels right at any zoom level.
     final secPerPixel = newView / box.size.width;
-    final newCenter = (startCenter - details.focalPointDelta.dx * secPerPixel)
-        .clamp(0.0, durationSec)
-        .toDouble();
+    final newCenter =
+        (startCenter - details.focalPointDelta.dx * secPerPixel)
+            .clamp(0.0, durationSec)
+            .toDouble();
 
     setState(() {
       _viewSeconds = newView;

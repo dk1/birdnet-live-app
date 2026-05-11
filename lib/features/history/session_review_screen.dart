@@ -2425,7 +2425,12 @@ class _FullscreenSurveyMapScreenState
           ),
         );
 
-    final result = await showModalBottomSheet<_MapFilterChoice>(
+    // Live-apply changes as the user interacts (#33). Each chip /
+    // slider / species tap fires `onChanged` and we update map state
+    // immediately so the user can see markers appear/disappear without
+    // hunting for an Apply button. Slider drags are debounced inside
+    // the sheet so we don't rebuild the map on every pixel.
+    await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -2436,17 +2441,17 @@ class _FullscreenSurveyMapScreenState
           initialSpecies: _speciesFilter,
           speciesEntries: speciesEntries,
           l10n: l10n,
+          onChanged: (choice) {
+            if (!mounted) return;
+            setState(() {
+              _mode = choice.mode;
+              _minConfidence = choice.minConfidence;
+              _speciesFilter = choice.species;
+            });
+          },
         );
       },
     );
-
-    if (result != null && mounted) {
-      setState(() {
-        _mode = result.mode;
-        _minConfidence = result.minConfidence;
-        _speciesFilter = result.species;
-      });
-    }
   }
 
   @override
@@ -2551,6 +2556,7 @@ class _MapFilterSheet extends StatefulWidget {
     required this.initialSpecies,
     required this.speciesEntries,
     required this.l10n,
+    required this.onChanged,
   });
 
   final _MapFilterMode initialMode;
@@ -2558,6 +2564,11 @@ class _MapFilterSheet extends StatefulWidget {
   final String? initialSpecies;
   final List<_SpeciesPickerEntry> speciesEntries;
   final AppLocalizations l10n;
+
+  /// Fired whenever the user changes mode / confidence / species so the
+  /// host can apply the new filter immediately (#33). Slider drags are
+  /// debounced inside the sheet to avoid rebuilding the map per pixel.
+  final ValueChanged<_MapFilterChoice> onChanged;
 
   @override
   State<_MapFilterSheet> createState() => _MapFilterSheetState();
@@ -2568,6 +2579,32 @@ class _MapFilterSheetState extends State<_MapFilterSheet> {
   late double _minConfidence = widget.initialMinConfidence;
   late String? _species = widget.initialSpecies;
   String _query = '';
+
+  // Coalesces rapid slider drags so the map doesn't rebuild on every
+  // pixel. ~200 ms feels responsive but prunes 90%+ of intermediate
+  // events on a typical drag.
+  Timer? _sliderDebounce;
+
+  @override
+  void dispose() {
+    _sliderDebounce?.cancel();
+    super.dispose();
+  }
+
+  void _emitNow() {
+    widget.onChanged(
+      _MapFilterChoice(
+        mode: _mode,
+        minConfidence: _minConfidence,
+        species: _species,
+      ),
+    );
+  }
+
+  void _emitDebounced() {
+    _sliderDebounce?.cancel();
+    _sliderDebounce = Timer(const Duration(milliseconds: 200), _emitNow);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2635,23 +2672,26 @@ class _MapFilterSheetState extends State<_MapFilterSheet> {
                         ChoiceChip(
                           label: Text(l10n.surveyMapFilterAll),
                           selected: _mode == _MapFilterMode.all,
-                          onSelected:
-                              (_) => setState(() => _mode = _MapFilterMode.all),
+                          onSelected: (_) {
+                            setState(() => _mode = _MapFilterMode.all);
+                            _emitNow();
+                          },
                         ),
                         ChoiceChip(
                           label: Text(l10n.surveyMapFilterWithAudio),
                           selected: _mode == _MapFilterMode.withAudio,
-                          onSelected:
-                              (_) => setState(
-                                () => _mode = _MapFilterMode.withAudio,
-                              ),
+                          onSelected: (_) {
+                            setState(() => _mode = _MapFilterMode.withAudio);
+                            _emitNow();
+                          },
                         ),
                         ChoiceChip(
                           label: Text(l10n.surveyMapFilterManual),
                           selected: _mode == _MapFilterMode.manual,
-                          onSelected:
-                              (_) =>
-                                  setState(() => _mode = _MapFilterMode.manual),
+                          onSelected: (_) {
+                            setState(() => _mode = _MapFilterMode.manual);
+                            _emitNow();
+                          },
                         ),
                       ],
                     ),
@@ -2681,7 +2721,17 @@ class _MapFilterSheetState extends State<_MapFilterSheet> {
                       max: 0.99,
                       divisions: 89,
                       label: '${(_minConfidence * 100).round()}%',
-                      onChanged: (v) => setState(() => _minConfidence = v),
+                      onChanged: (v) {
+                        setState(() => _minConfidence = v);
+                        _emitDebounced();
+                      },
+                      onChangeEnd: (_) {
+                        // Flush the final value immediately when the
+                        // user lifts their finger so the map doesn't lag
+                        // behind by the debounce interval.
+                        _sliderDebounce?.cancel();
+                        _emitNow();
+                      },
                     ),
                     const SizedBox(height: 8),
                     // Species picker header + search.
@@ -2712,20 +2762,28 @@ class _MapFilterSheetState extends State<_MapFilterSheet> {
                     _SpeciesPickerTile(
                       label: l10n.surveyMapFilterAllSpecies,
                       selected: _species == null,
-                      onTap: () => setState(() => _species = null),
+                      onTap: () {
+                        setState(() => _species = null);
+                        _emitNow();
+                      },
                     ),
                     for (final e in filteredSpecies)
                       _SpeciesPickerTile(
                         label: e.displayName,
                         scientificName: e.scientificName,
                         selected: _species == e.scientificName,
-                        onTap:
-                            () => setState(() => _species = e.scientificName),
+                        onTap: () {
+                          setState(() => _species = e.scientificName);
+                          _emitNow();
+                        },
                       ),
                   ],
                 ),
               ),
-              // Bottom action bar.
+              // Bottom action bar. Filter changes apply live (#33) so we
+              // no longer need an Apply button — Done just dismisses.
+              // Reset wipes filters in-place (still live) so the user can
+              // see the full map come back without closing the sheet.
               SafeArea(
                 top: false,
                 child: Padding(
@@ -2733,27 +2791,21 @@ class _MapFilterSheetState extends State<_MapFilterSheet> {
                   child: Row(
                     children: [
                       TextButton(
-                        onPressed:
-                            () => Navigator.of(context).pop(
-                              const _MapFilterChoice(
-                                mode: _MapFilterMode.all,
-                                minConfidence: _defaultConfidenceFloor,
-                                species: null,
-                              ),
-                            ),
+                        onPressed: () {
+                          setState(() {
+                            _mode = _MapFilterMode.all;
+                            _minConfidence = _defaultConfidenceFloor;
+                            _species = null;
+                          });
+                          _sliderDebounce?.cancel();
+                          _emitNow();
+                        },
                         child: Text(l10n.clearFilters),
                       ),
                       const Spacer(),
                       FilledButton(
-                        onPressed:
-                            () => Navigator.of(context).pop(
-                              _MapFilterChoice(
-                                mode: _mode,
-                                minConfidence: _minConfidence,
-                                species: _species,
-                              ),
-                            ),
-                        child: Text(l10n.apply),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(l10n.done),
                       ),
                     ],
                   ),

@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Compact view rows expand in place.** In the compact Session Library view, the trailing trash icon has been replaced by an expand affordance. Tapping it expands the row in-place to the full detailed-view card body — top species, duration, species count, detection count, size — without leaving the list or losing scroll position. The same overflow menu and swipe-to-delete gesture are available on the expanded card. (#33)
 - **Pinch-to-zoom on the Session Review spectrogram.** The playback spectrogram strip now responds to pinch gestures: spread to zoom in for fine timing inspection, pinch to zoom back out to the 10-second overview. Single-finger pan still scrubs the timeline, tap-to-seek still works, and the time-axis labels automatically retighten as you zoom so they stay legible. (#33)
+- **Survey map filter applies live.** The fullscreen survey map's filter sheet now updates the map immediately when you tap a mode chip, drag the confidence slider, or pick a species — no more hunting for an Apply button. Slider drags are debounced so the map stays smooth, the **Reset** button still wipes filters in one tap, and the new **Done** button just dismisses the sheet (you can also swipe it down). (#33)
+- **Tap species in map clip player to open Species Info.** Tapping the species avatar or the species name in the map's clip-player sheet now opens the same Species Info overlay used elsewhere in the app, so reviewers can jump from a marker callout straight to the full species page (Wikipedia excerpt, eBird / iNaturalist links, image credit) without backing out of the player. (#33)
 
 ### Fixed
 
