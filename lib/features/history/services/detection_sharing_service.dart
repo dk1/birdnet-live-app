@@ -41,11 +41,7 @@ Future<ShareResult> shareDetection(DetectionRecord detection) async {
 
   final clipPath = detection.audioClipPath;
   if (clipPath != null && File(clipPath).existsSync()) {
-    return Share.shareXFiles(
-      [XFile(clipPath)],
-      text: body,
-      subject: subject,
-    );
+    return Share.shareXFiles([XFile(clipPath)], text: body, subject: subject);
   }
   return Share.share(body, subject: subject);
 }

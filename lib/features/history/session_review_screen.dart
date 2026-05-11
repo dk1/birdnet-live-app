@@ -1833,8 +1833,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           onDeleteCluster: (cluster) => _confirmDeleteDetection(group, cluster),
           onReplaceCluster: _replaceDetection,
           onToggleConfirmCluster: _toggleClusterConfirmation,
-          onShareCluster:
-              (cluster) => shareDetection(cluster.records.first),
+          onShareCluster: (cluster) => shareDetection(cluster.records.first),
           onShowOnMap: _showDetectionOnMap,
         );
       },

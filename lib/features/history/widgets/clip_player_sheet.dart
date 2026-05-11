@@ -363,9 +363,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                 // reviewers (and live-survey users via the same sheet) can
                 // ping a colleague with a single notable detection without
                 // exporting the whole session.
-                _ShareButton(
-                  onShare: () => shareDetection(widget.detection),
-                ),
+                _ShareButton(onShare: () => shareDetection(widget.detection)),
               ],
             ),
             const SizedBox(height: 12),

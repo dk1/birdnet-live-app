@@ -1090,121 +1090,121 @@ class _ClusterRow extends ConsumerWidget {
                 InkWell(
                   onTap: isActive && onPause != null ? onPause : onSeek,
                   borderRadius: BorderRadius.circular(24),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Icon(
-                    isActive
-                        ? (onPause != null
-                            ? Icons.pause_rounded
-                            : Icons.graphic_eq)
-                        : Icons.play_arrow_rounded,
-                    size: 24,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              )
-            else
-              const SizedBox(width: 48),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Text(
-                timeStr,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color:
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
                       isActive
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurface.withAlpha(180),
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                ),
-              ),
-            ),
-            if (cluster.count > 1)
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
+                          ? (onPause != null
+                              ? Icons.pause_rounded
+                              : Icons.graphic_eq)
+                          : Icons.play_arrow_rounded,
+                      size: 24,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                )
+              else
+                const SizedBox(width: 48),
+              const SizedBox(width: 4),
+              Expanded(
                 child: Text(
-                  '×${cluster.count}',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withAlpha(120),
+                  timeStr,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color:
+                        isActive
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.onSurface.withAlpha(180),
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ),
-            Text(
-              cluster.bestConfidencePercent,
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w500,
-                color: theme.colorScheme.onSurface.withAlpha(180),
+              if (cluster.count > 1)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Text(
+                    '×${cluster.count}',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(120),
+                    ),
+                  ),
+                ),
+              Text(
+                cluster.bestConfidencePercent,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.onSurface.withAlpha(180),
+                ),
               ),
-            ),
-            const SizedBox(width: 4),
-            if (isSurvey && onShowOnMap != null)
+              const SizedBox(width: 4),
+              if (isSurvey && onShowOnMap != null)
+                InkWell(
+                  onTap: onShowOnMap,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
+                      Icons.location_on_outlined,
+                      size: 24,
+                      color: theme.colorScheme.onSurface.withAlpha(100),
+                    ),
+                  ),
+                ),
+              Builder(
+                builder: (context) {
+                  final l10n = AppLocalizations.of(context)!;
+                  final confirmed = cluster.records.any((r) => r.isConfirmed);
+                  return Tooltip(
+                    message:
+                        confirmed
+                            ? l10n.detectionUnconfirmTooltip
+                            : l10n.detectionConfirmTooltip,
+                    child: InkWell(
+                      onTap: onToggleConfirm,
+                      borderRadius: BorderRadius.circular(24),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Icon(
+                          confirmed
+                              ? Icons.check_circle
+                              : Icons.check_circle_outline,
+                          size: 24,
+                          color:
+                              confirmed
+                                  ? Colors.green.shade600
+                                  : theme.colorScheme.onSurface.withAlpha(100),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
               InkWell(
-                onTap: onShowOnMap,
+                onTap: onReplace,
                 borderRadius: BorderRadius.circular(24),
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Icon(
-                    Icons.location_on_outlined,
+                    Icons.swap_horiz,
                     size: 24,
                     color: theme.colorScheme.onSurface.withAlpha(100),
                   ),
                 ),
               ),
-            Builder(
-              builder: (context) {
-                final l10n = AppLocalizations.of(context)!;
-                final confirmed = cluster.records.any((r) => r.isConfirmed);
-                return Tooltip(
-                  message:
-                      confirmed
-                          ? l10n.detectionUnconfirmTooltip
-                          : l10n.detectionConfirmTooltip,
-                  child: InkWell(
-                    onTap: onToggleConfirm,
-                    borderRadius: BorderRadius.circular(24),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Icon(
-                        confirmed
-                            ? Icons.check_circle
-                            : Icons.check_circle_outline,
-                        size: 24,
-                        color:
-                            confirmed
-                                ? Colors.green.shade600
-                                : theme.colorScheme.onSurface.withAlpha(100),
-                      ),
-                    ),
+              InkWell(
+                onTap: onDelete,
+                borderRadius: BorderRadius.circular(24),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    Icons.delete_outline,
+                    size: 24,
+                    color: theme.colorScheme.onSurface.withAlpha(100),
                   ),
-                );
-              },
-            ),
-            InkWell(
-              onTap: onReplace,
-              borderRadius: BorderRadius.circular(24),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Icon(
-                  Icons.swap_horiz,
-                  size: 24,
-                  color: theme.colorScheme.onSurface.withAlpha(100),
                 ),
               ),
-            ),
-            InkWell(
-              onTap: onDelete,
-              borderRadius: BorderRadius.circular(24),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Icon(
-                  Icons.delete_outline,
-                  size: 24,
-                  color: theme.colorScheme.onSurface.withAlpha(100),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
