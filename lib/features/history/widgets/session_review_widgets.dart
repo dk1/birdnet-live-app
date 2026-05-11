@@ -722,204 +722,218 @@ class _SpeciesTile extends ConsumerWidget {
       child: Column(
         children: [
           // ── Main species row ───────────────────────────────
-          InkWell(
-            onTap: onToggleExpand,
-            onLongPress: onSpeciesInfo,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                children: [
-                  // Seek to first detection (or just show offset if no audio).
-                  // When the species tile is currently being played and a
-                  // pause callback is wired up, the same button doubles as a
-                  // pause control so users can cancel playback.
-                  if (audioAvailable || group.clusters.first.hasAudioClip)
-                    InkWell(
-                      onTap:
-                          () =>
-                              isActive && onPause != null
-                                  ? onPause!()
-                                  : onSeekCluster(group.clusters.first),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
+          Dismissible(
+            key: ValueKey('species-${group.scientificName}'),
+            direction: DismissDirection.horizontal,
+            background: _swipeSpeciesBackground(theme, alignLeft: true),
+            secondaryBackground: _swipeSpeciesBackground(
+              theme,
+              alignLeft: false,
+            ),
+            onDismissed: (_) => onDeleteSpecies(),
+            child: InkWell(
+              onTap: onToggleExpand,
+              onLongPress: onSpeciesInfo,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    // Seek to first detection (or just show offset if no audio).
+                    // When the species tile is currently being played and a
+                    // pause callback is wired up, the same button doubles as a
+                    // pause control so users can cancel playback.
+                    if (audioAvailable || group.clusters.first.hasAudioClip)
+                      InkWell(
+                        onTap:
+                            () =>
+                                isActive && onPause != null
+                                    ? onPause!()
+                                    : onSeekCluster(group.clusters.first),
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          alignment: Alignment.center,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isActive && onPause != null
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded,
+                                size: 24,
+                                color: theme.colorScheme.primary,
+                              ),
+                              Text(
+                                offsetStr,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
                         width: 48,
                         height: 48,
                         alignment: Alignment.center,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              isActive && onPause != null
-                                  ? Icons.pause_rounded
-                                  : Icons.play_arrow_rounded,
-                              size: 24,
-                              color: theme.colorScheme.primary,
-                            ),
-                            Text(
-                              offsetStr,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: theme.colorScheme.primary,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          offsetStr,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withAlpha(120),
+                            fontSize: 10,
+                          ),
                         ),
                       ),
-                    )
-                  else
-                    Container(
-                      width: 48,
-                      height: 48,
-                      alignment: Alignment.center,
-                      child: Text(
-                        offsetStr,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withAlpha(120),
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                  const SizedBox(width: 8),
+                    const SizedBox(width: 8),
 
-                  // Species thumbnail. Tappable shortcut to the species
-                  // info overlay; uses the bundled image's 3:2 ratio so
-                  // BoxFit.cover never has to crop the photo.
-                  InkWell(
-                    onTap: onSpeciesInfo,
-                    borderRadius: BorderRadius.circular(6),
-                    child: SizedBox(
-                      width: 48,
-                      height: 32,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Image.asset(
-                          taxonomyAsync.valueOrNull?.assetImagePath(
-                                group.scientificName,
-                              ) ??
-                              'assets/images/dummy_species.png',
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (_, __, ___) => Image.asset(
+                    // Species thumbnail. Tappable shortcut to the species
+                    // info overlay; uses the bundled image's 3:2 ratio so
+                    // BoxFit.cover never has to crop the photo.
+                    InkWell(
+                      onTap: onSpeciesInfo,
+                      borderRadius: BorderRadius.circular(6),
+                      child: SizedBox(
+                        width: 48,
+                        height: 32,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.asset(
+                            taxonomyAsync.valueOrNull?.assetImagePath(
+                                  group.scientificName,
+                                ) ??
                                 'assets/images/dummy_species.png',
-                                fit: BoxFit.cover,
-                              ),
+                            fit: BoxFit.cover,
+                            errorBuilder:
+                                (_, __, ___) => Image.asset(
+                                  'assets/images/dummy_species.png',
+                                  fit: BoxFit.cover,
+                                ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
+                    const SizedBox(width: 8),
 
-                  // Species info.
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                displayName,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (group.allRecords.any((r) => r.isConfirmed))
-                              Padding(
-                                padding: const EdgeInsets.only(left: 4),
-                                child: Icon(
-                                  Icons.check_circle,
-                                  size: 14,
-                                  color: Colors.green.shade600,
-                                ),
-                              ),
-                            if (group.allRecords.any(
-                              (r) =>
-                                  r.source == DetectionSource.manual ||
-                                  r.source == DetectionSource.manualGlobal,
-                            ))
-                              Padding(
-                                padding: const EdgeInsets.only(left: 4),
-                                child: Tooltip(
-                                  message:
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.detectionSourceManual,
-                                  child: Icon(
-                                    Icons.edit_note,
-                                    size: 16,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                            if (group.totalCount > 1)
-                              Container(
-                                margin: const EdgeInsets.only(left: 6),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 1,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  '×${group.totalCount}',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.onPrimaryContainer,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            if (showSciNames)
+                    // Species info.
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
                               Expanded(
                                 child: Text(
-                                  group.scientificName,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    fontStyle: FontStyle.italic,
-                                    color: theme.colorScheme.onSurface
-                                        .withAlpha(153),
+                                  displayName,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                            if (!showSciNames) const Spacer(),
-                            const SizedBox(width: 8),
-                            Text(
-                              group.bestConfidencePercent,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: _confidenceColor(
-                                  group.bestConfidence,
-                                  theme,
+                              if (group.allRecords.any((r) => r.isConfirmed))
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: Icon(
+                                    Icons.check_circle,
+                                    size: 14,
+                                    color: Colors.green.shade600,
+                                  ),
+                                ),
+                              if (group.allRecords.any(
+                                (r) =>
+                                    r.source == DetectionSource.manual ||
+                                    r.source == DetectionSource.manualGlobal,
+                              ))
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: Tooltip(
+                                    message:
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.detectionSourceManual,
+                                    child: Icon(
+                                      Icons.edit_note,
+                                      size: 16,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                              if (group.totalCount > 1)
+                                Container(
+                                  margin: const EdgeInsets.only(left: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 1,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primaryContainer,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    '×${group.totalCount}',
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color:
+                                          theme.colorScheme.onPrimaryContainer,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              if (showSciNames)
+                                Expanded(
+                                  child: Text(
+                                    group.scientificName,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      fontStyle: FontStyle.italic,
+                                      color: theme.colorScheme.onSurface
+                                          .withAlpha(153),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              if (!showSciNames) const Spacer(),
+                              const SizedBox(width: 8),
+                              Text(
+                                group.bestConfidencePercent,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: _confidenceColor(
+                                    group.bestConfidence,
+                                    theme,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  // Expand chevron.
-                  AnimatedRotation(
-                    turns: isExpanded ? 0.5 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      Icons.expand_more,
-                      size: 24,
-                      color: theme.colorScheme.onSurface.withAlpha(120),
+                    // Expand chevron.
+                    AnimatedRotation(
+                      turns: isExpanded ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        Icons.expand_more,
+                        size: 24,
+                        color: theme.colorScheme.onSurface.withAlpha(120),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -1000,6 +1014,20 @@ class _SpeciesTile extends ConsumerWidget {
   Color _confidenceColor(double confidence, ThemeData theme) {
     final colors = theme.extension<ScoreColors>() ?? ScoreColors.light;
     return colors.forScore(confidence);
+  }
+
+  /// Background reveal for swipe-to-delete on the species header. Uses
+  /// the sweep icon to mirror the `Delete species` overflow entry and
+  /// distinguish a species-wide swipe from the per-detection delete on
+  /// cluster rows below it.
+  Widget _swipeSpeciesBackground(ThemeData theme, {required bool alignLeft}) {
+    final color = theme.colorScheme.error;
+    return Container(
+      alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(color: color.withAlpha(40)),
+      child: Icon(Icons.delete_sweep_outlined, color: color),
+    );
   }
 }
 
@@ -1089,6 +1117,15 @@ class _ClusterRow extends ConsumerWidget {
     final timeStr = startStr == endStr ? startStr : '$startStr \u2013 $endStr';
     final l10n = AppLocalizations.of(context)!;
     final confirmed = cluster.records.any((r) => r.isConfirmed);
+    // A cluster is "manual" when every record was added by hand. We
+    // surface that by replacing the play button with the same edit-note
+    // glyph already shown on species headers, so reviewers can tell at
+    // a glance which rows came from a tap rather than the model.
+    final isManual = cluster.records.every(
+      (r) =>
+          r.source == DetectionSource.manual ||
+          r.source == DetectionSource.manualGlobal,
+    );
 
     final row = AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -1105,7 +1142,19 @@ class _ClusterRow extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         child: Row(
           children: [
-            if (audioAvailable || cluster.hasAudioClip)
+            if (isManual)
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Tooltip(
+                  message: l10n.detectionSourceManual,
+                  child: Icon(
+                    Icons.edit_note,
+                    size: 24,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              )
+            else if (audioAvailable || cluster.hasAudioClip)
               InkWell(
                 onTap: isActive && onPause != null ? onPause : onSeek,
                 borderRadius: BorderRadius.circular(24),
