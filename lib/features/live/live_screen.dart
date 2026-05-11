@@ -76,6 +76,16 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) controller.loadModel();
       });
+    } else {
+      // Model was already loaded on a previous visit, so the controller is
+      // sitting in [LiveState.ready] (or paused/active from a backgrounded
+      // session). The state-change callback won't fire on its own because
+      // nothing actually changes — but we still need to evaluate the
+      // auto-start path for the second/third/Nth Live screen visit. Defer
+      // to post-frame so provider updates don't fire during build.
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _onControllerStateChanged();
+      });
     }
   }
 
