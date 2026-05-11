@@ -25,6 +25,9 @@
 
 import 'dart:io';
 
+import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../live/live_session.dart';
@@ -41,9 +44,62 @@ Future<ShareResult> shareDetection(DetectionRecord detection) async {
 
   final clipPath = detection.audioClipPath;
   if (clipPath != null && File(clipPath).existsSync()) {
-    return Share.shareXFiles([XFile(clipPath)], text: body, subject: subject);
+    // Stage a copy under a human-readable name that matches the
+    // `BirdNET_Live_<timestamp>_<species>.<ext>` scheme used by ZIP
+    // exports. The on-disk clip is named `clip_<ms>.<ext>`, which is
+    // unhelpful in a chat thread or files app; we copy into the
+    // platform temp dir so share_plus exposes the friendlier name to
+    // receivers without mutating the session storage.
+    final staged = await _stageClipForShare(File(clipPath), detection);
+    return Share.shareXFiles(
+      [XFile(staged.path)],
+      text: body,
+      subject: subject,
+    );
   }
   return Share.share(body, subject: subject);
+}
+
+/// Copies [clip] into the temp dir under the export-style filename so the
+/// share sheet exposes a friendly name. Reuses an existing staged file when
+/// the names already match to avoid extra IO on repeat shares.
+Future<File> _stageClipForShare(File clip, DetectionRecord d) async {
+  final ext = p.extension(clip.path);
+  final name = _exportClipName(d, ext);
+  final tmp = await getTemporaryDirectory();
+  final shareDir = Directory(p.join(tmp.path, 'shared_clips'));
+  if (!shareDir.existsSync()) shareDir.createSync(recursive: true);
+  final target = File(p.join(shareDir.path, name));
+  // Always overwrite: the source clip may have been re-encoded since
+  // the previous share and the cost is a single small file copy.
+  await clip.copy(target.path);
+  return target;
+}
+
+/// Builds the share filename for a single detection clip.
+///
+/// Mirrors the ZIP export scheme (`BirdNET_Live_<dt>_clip_NNN_<species>.<ext>`)
+/// but drops the per-session sequence number since a single share has no
+/// containing collection. The detection's own timestamp anchors the name.
+String _exportClipName(DetectionRecord d, String ext) {
+  final dt = DateFormat(
+    'yyyy-MM-dd_HH-mm-ss',
+  ).format(d.timestamp.toLocal());
+  final species = _sanitizeFilename(
+    d.commonName.trim().isNotEmpty ? d.commonName : d.scientificName,
+  );
+  return 'BirdNET_Live_${dt}_$species$ext';
+}
+
+/// Replaces filesystem-illegal characters with underscores and collapses
+/// runs of whitespace/underscores. Kept in sync with the equivalent helper
+/// in `session_export.dart` so shared clips and exported clips match.
+String _sanitizeFilename(String input) {
+  return input
+      .replaceAll(RegExp(r'[<>:"/\\|?*]'), '_')
+      .replaceAll(RegExp(r'\s+'), '_')
+      .replaceAll(RegExp(r'_+'), '_')
+      .replaceAll(RegExp(r'^_|_$'), '');
 }
 
 String _buildSubject(DetectionRecord d) {
