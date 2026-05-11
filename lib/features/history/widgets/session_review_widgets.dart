@@ -612,8 +612,10 @@ class _SpeciesTile extends ConsumerWidget {
     required this.onSpeciesInfo,
     required this.onSeekCluster,
     required this.onDeleteCluster,
+    required this.onDeleteSpecies,
     required this.onReplaceCluster,
     required this.onToggleConfirmCluster,
+    required this.onShareCluster,
     this.activePositionSec,
     this.activeCluster,
     this.onPause,
@@ -654,10 +656,16 @@ class _SpeciesTile extends ConsumerWidget {
   final VoidCallback onSpeciesInfo;
   final ValueChanged<_DetectionCluster> onSeekCluster;
   final ValueChanged<_DetectionCluster> onDeleteCluster;
+  final VoidCallback onDeleteSpecies;
   final ValueChanged<_DetectionCluster> onReplaceCluster;
 
   /// Toggle the confirmed state of every record in a cluster.
   final ValueChanged<_DetectionCluster> onToggleConfirmCluster;
+
+  /// Share the first record of a cluster via the platform share sheet.
+  /// Wired up from the cluster row's long-press context menu (and any
+  /// future per-detection share entry points).
+  final ValueChanged<_DetectionCluster> onShareCluster;
   final ValueChanged<DetectionRecord>? onShowOnMap;
 
   /// Called when the user taps the play affordance on a row that is
@@ -901,11 +909,11 @@ class _SpeciesTile extends ConsumerWidget {
           AnimatedCrossFade(
             firstChild: const SizedBox.shrink(),
             secondChild: Padding(
-              // No left indent — detection rows extend to the parent's
-              // left edge for maximum horizontal room. The play button
-              // is no longer aligned under the species image above; we
-              // trade that visual column for a wider, more readable row.
-              padding: const EdgeInsets.only(bottom: 4),
+              // Indent the detection rows so the hierarchical relationship
+              // to the species card above is visually emphasized. The
+              // inset roughly aligns the play column with the right edge
+              // of the species thumbnail in the parent card.
+              padding: const EdgeInsets.only(left: 16, bottom: 4),
               child: Column(
                 children: [
                   for (final cluster in group.clusters)
@@ -918,8 +926,10 @@ class _SpeciesTile extends ConsumerWidget {
                       onSeek: () => onSeekCluster(cluster),
                       onPause: onPause,
                       onDelete: () => onDeleteCluster(cluster),
+                      onDeleteSpecies: onDeleteSpecies,
                       onReplace: () => onReplaceCluster(cluster),
                       onToggleConfirm: () => onToggleConfirmCluster(cluster),
+                      onShare: () => onShareCluster(cluster),
                       isSurvey: isSurvey,
                       audioAvailable: audioAvailable,
                       onShowOnMap:
@@ -984,8 +994,10 @@ class _ClusterRow extends ConsumerWidget {
     required this.sessionStart,
     required this.onSeek,
     required this.onDelete,
+    required this.onDeleteSpecies,
     required this.onReplace,
     required this.onToggleConfirm,
+    required this.onShare,
     this.onPause,
     this.clipOffsetSec = 0.0,
     this.windowSec = 3,
@@ -999,12 +1011,18 @@ class _ClusterRow extends ConsumerWidget {
   final DateTime sessionStart;
   final VoidCallback onSeek;
   final VoidCallback onDelete;
+  final VoidCallback onDeleteSpecies;
   final VoidCallback onReplace;
 
   /// Toggles the confirmed state of every record in this cluster. The
   /// host screen owns the actual mutation and persistence; the row only
   /// reports user intent so it stays a pure presentational widget.
   final VoidCallback onToggleConfirm;
+
+  /// Shares this cluster's representative detection via the platform
+  /// share sheet. Surfaced through a long-press context menu on the row
+  /// so we don't add yet another inline icon to the trailing strip.
+  final VoidCallback onShare;
 
   /// Pause callback used when this row is currently being played. When
   /// `null`, an active row continues to behave like a re-seek.
@@ -1050,8 +1068,10 @@ class _ClusterRow extends ConsumerWidget {
       showSeconds: tsShowSeconds,
     );
     final timeStr = startStr == endStr ? startStr : '$startStr \u2013 $endStr';
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = cluster.records.any((r) => r.isConfirmed);
 
-    return AnimatedContainer(
+    final row = AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
@@ -1129,62 +1149,94 @@ class _ClusterRow extends ConsumerWidget {
                   ),
                 ),
               ),
-            Builder(
-              builder: (context) {
-                final l10n = AppLocalizations.of(context)!;
-                final confirmed = cluster.records.any((r) => r.isConfirmed);
-                return Tooltip(
-                  message:
-                      confirmed
-                          ? l10n.detectionUnconfirmTooltip
-                          : l10n.detectionConfirmTooltip,
-                  child: InkWell(
-                    onTap: onToggleConfirm,
-                    borderRadius: BorderRadius.circular(24),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Icon(
+            Tooltip(
+              message:
+                  confirmed
+                      ? l10n.detectionUnconfirmTooltip
+                      : l10n.detectionConfirmTooltip,
+              child: InkWell(
+                onTap: onToggleConfirm,
+                borderRadius: BorderRadius.circular(24),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    confirmed ? Icons.check_circle : Icons.check_circle_outline,
+                    size: 24,
+                    color:
                         confirmed
-                            ? Icons.check_circle
-                            : Icons.check_circle_outline,
-                        size: 24,
-                        color:
-                            confirmed
-                                ? Colors.green.shade600
-                                : theme.colorScheme.onSurface.withAlpha(100),
-                      ),
-                    ),
+                            ? Colors.green.shade600
+                            : theme.colorScheme.onSurface.withAlpha(100),
                   ),
-                );
-              },
-            ),
-            InkWell(
-              onTap: onReplace,
-              borderRadius: BorderRadius.circular(24),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Icon(
-                  Icons.swap_horiz,
-                  size: 24,
-                  color: theme.colorScheme.onSurface.withAlpha(100),
                 ),
               ),
             ),
-            InkWell(
-              onTap: onDelete,
-              borderRadius: BorderRadius.circular(24),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Icon(
-                  Icons.delete_outline,
-                  size: 24,
-                  color: theme.colorScheme.onSurface.withAlpha(100),
-                ),
+            DetectionActionsOverflow(
+              actions: DetectionActions(
+                onShare: onShare,
+                onDelete: onDelete,
+                onDeleteSpecies: onDeleteSpecies,
+                onReplace: onReplace,
               ),
+              iconColor: theme.colorScheme.onSurface.withAlpha(100),
             ),
           ],
         ),
       ),
+    );
+
+    // Wrap in Dismissible so horizontal swipes are shortcuts for the
+    // two destructive/structural actions: swipe right (start→end)
+    // deletes the cluster, swipe left (end→start) opens the replace
+    // overlay. The undo SnackBar shown by the host covers misfires for
+    // delete, so we omit the modal confirm dialog entirely. Replace
+    // uses confirmDismiss to keep the row in place while the overlay
+    // opens.
+    final firstRecord = cluster.records.first;
+    final dismissKey = ValueKey(
+      '${firstRecord.scientificName}-${cluster.firstTimestamp.microsecondsSinceEpoch}',
+    );
+    return Dismissible(
+      key: dismissKey,
+      direction: DismissDirection.horizontal,
+      background: _swipeBackground(
+        theme,
+        alignLeft: true,
+        icon: Icons.delete_outline,
+        color: theme.colorScheme.error,
+      ),
+      secondaryBackground: _swipeBackground(
+        theme,
+        alignLeft: false,
+        icon: Icons.swap_horiz,
+        color: theme.colorScheme.primary,
+      ),
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.endToStart) {
+          onReplace();
+          return false;
+        }
+        return true;
+      },
+      onDismissed: (_) => onDelete(),
+      child: row,
+    );
+  }
+
+  Widget _swipeBackground(
+    ThemeData theme, {
+    required bool alignLeft,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 4),
+      decoration: BoxDecoration(
+        color: color.withAlpha(40),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(icon, color: color),
     );
   }
 }

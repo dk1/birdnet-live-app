@@ -36,6 +36,9 @@ import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
+import '../history/services/detection_sharing_service.dart';
+import '../history/widgets/clip_player_sheet.dart';
+import '../history/widgets/detection_actions.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../live/widgets/detection_list_widget.dart';
@@ -134,6 +137,38 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     ref.read(surveyDetectionsProvider.notifier).state =
         controller.currentLiveDetections;
     ref.read(surveySessionProvider.notifier).state = controller.session;
+  }
+
+  /// Delete [detection] from the live session and surface a SnackBar
+  /// with an UNDO action. Live deletes mutate `controller.session`
+  /// directly so derived stats (count/species) and map markers refresh
+  /// on the next rebuild. The undo restores the record at its original
+  /// list position so chronological order is preserved.
+  void _deleteLiveDetectionWithUndo(DetectionRecord detection) {
+    final controller = ref.read(surveyControllerProvider);
+    final session = controller.session;
+    if (session == null) return;
+    final index = session.detections.indexOf(detection);
+    if (index < 0) return;
+    setState(() => session.detections.removeAt(index));
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.sessionDetectionRemoved),
+        action: SnackBarAction(
+          label: l10n.sessionUndo,
+          onPressed: () {
+            if (!mounted) return;
+            setState(() {
+              final clamped = index.clamp(0, session.detections.length);
+              session.detections.insert(clamped, detection);
+            });
+          },
+        ),
+      ),
+    );
   }
 
   void _onAutoStop(String reason) {
@@ -562,6 +597,20 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
               widget.startLatitude != null && widget.startLongitude != null
                   ? LatLng(widget.startLatitude!, widget.startLongitude!)
                   : null,
+          // Tapping a marker that has a kept clip opens the same
+          // player sheet as the post-session map - so the live and
+          // review surfaces feel like one continuous experience.
+          onMarkerTap: (detection) {
+            showClipPlayerSheet(
+              context,
+              detection: detection,
+              session: session,
+              onConfirmChanged: () {
+                if (mounted) setState(() {});
+              },
+              onDelete: () => _deleteLiveDetectionWithUndo(detection),
+            );
+          },
         ),
         _SurveySpectrogram(ringBuffer: ringBuffer, isActive: isActive),
         _SurveySummaryTab(session: session),
@@ -589,6 +638,23 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
               commonName: detection.commonName,
             );
           },
+          // Per-detection actions during a live survey: inline confirm
+          // (so reviewers can validate calls as they hear them), share
+          // and delete in the overflow. Replace stays a review-only
+          // action because picking an alternative species needs the
+          // full search overlay.
+          actionsBuilder:
+              (detection) => DetectionActions(
+                isConfirmed: detection.isConfirmed,
+                onToggleConfirm: () {
+                  setState(() {
+                    detection.confirmedAt =
+                        detection.isConfirmed ? null : DateTime.now().toUtc();
+                  });
+                },
+                onShare: () => shareDetection(detection, session: session),
+                onDelete: () => _deleteLiveDetectionWithUndo(detection),
+              ),
         ),
       ),
     );

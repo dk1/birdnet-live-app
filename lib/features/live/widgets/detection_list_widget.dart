@@ -20,6 +20,7 @@ import '../../../core/theme/score_colors.dart';
 import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/services/taxonomy_service.dart';
 import '../../explore/explore_providers.dart';
+import '../../history/widgets/detection_actions.dart';
 import '../live_session.dart';
 
 /// Displays a scrollable list of species detections.
@@ -31,6 +32,7 @@ class DetectionList extends StatelessWidget {
     required this.detections,
     required this.isActive,
     this.onDetectionTap,
+    this.actionsBuilder,
   });
 
   /// Detections to display (newest first).
@@ -42,6 +44,14 @@ class DetectionList extends StatelessWidget {
   /// Called when a detection tile is tapped.
   final void Function(DetectionRecord detection)? onDetectionTap;
 
+  /// Optional per-detection action contract. When non-null and
+  /// non-empty, each tile gets an inline confirm checkmark (if
+  /// [DetectionActions.onToggleConfirm] is set) and a more_vert overflow
+  /// for the remaining actions (share / delete / replace). Live screens
+  /// pass null to keep the streaming view chrome-free; the survey live
+  /// screen wires confirm + share so reviewers can validate as they go.
+  final DetectionActions? Function(DetectionRecord detection)? actionsBuilder;
+
   @override
   Widget build(BuildContext context) {
     if (detections.isEmpty) {
@@ -52,11 +62,11 @@ class DetectionList extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       itemCount: detections.length,
       itemBuilder: (context, index) {
+        final det = detections[index];
         return DetectionTile(
-          detection: detections[index],
-          onTap: onDetectionTap != null
-              ? () => onDetectionTap!(detections[index])
-              : null,
+          detection: det,
+          onTap: onDetectionTap != null ? () => onDetectionTap!(det) : null,
+          actions: actionsBuilder?.call(det),
         );
       },
     );
@@ -69,10 +79,17 @@ class DetectionTile extends ConsumerWidget {
     super.key,
     required this.detection,
     this.onTap,
+    this.actions,
   });
 
   final DetectionRecord detection;
   final VoidCallback? onTap;
+
+  /// Per-detection action contract. When provided, the tile renders an
+  /// inline confirm icon (if [DetectionActions.onToggleConfirm] is set)
+  /// followed by a [DetectionActionsOverflow] for the remaining actions,
+  /// in place of the chevron.
+  final DetectionActions? actions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -82,7 +99,8 @@ class DetectionTile extends ConsumerWidget {
     final showSciNames = ref.watch(showSciNamesProvider);
 
     // Resolve localized common name, falling back to English inference name.
-    final displayName = taxonomyAsync.valueOrNull
+    final displayName =
+        taxonomyAsync.valueOrNull
             ?.lookup(detection.scientificName)
             ?.commonNameForLocale(speciesLocale) ??
         detection.commonName;
@@ -137,9 +155,11 @@ class DetectionTile extends ConsumerWidget {
                       if (!showSciNames) const Spacer(),
                       const SizedBox(width: 8),
                       Semantics(
-                        label: AppLocalizations.of(context)!
-                            .a11yConfidencePercent(
-                                (detection.confidence * 100).round()),
+                        label: AppLocalizations.of(
+                          context,
+                        )!.a11yConfidencePercent(
+                          (detection.confidence * 100).round(),
+                        ),
                         excludeSemantics: true,
                         child: Text(
                           detection.confidencePercent,
@@ -174,16 +194,62 @@ class DetectionTile extends ConsumerWidget {
 
             const SizedBox(width: 8),
 
-            // ── Chevron ───────────────────────────────────────
-            Icon(
-              Icons.chevron_right,
-              size: 20,
-              color: theme.colorScheme.onSurface.withAlpha(80),
-            ),
+            // ── Trailing chrome ────────────────────────────────
+            // When per-detection actions are wired, replace the
+            // navigational chevron with inline confirm + overflow so the
+            // tile matches the cluster row in session review. Otherwise
+            // keep the lightweight chevron to signal tap-for-info.
+            if (actions != null)
+              ..._trailingActions(context, theme, actions!)
+            else
+              Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: theme.colorScheme.onSurface.withAlpha(80),
+              ),
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> _trailingActions(
+    BuildContext context,
+    ThemeData theme,
+    DetectionActions actions,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      if (actions.onToggleConfirm != null)
+        Tooltip(
+          message:
+              actions.isConfirmed
+                  ? l10n.detectionUnconfirmTooltip
+                  : l10n.detectionConfirmTooltip,
+          child: InkWell(
+            onTap: actions.onToggleConfirm,
+            borderRadius: BorderRadius.circular(24),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Icon(
+                actions.isConfirmed
+                    ? Icons.check_circle
+                    : Icons.check_circle_outline,
+                size: 24,
+                color:
+                    actions.isConfirmed
+                        ? Colors.green.shade600
+                        : theme.colorScheme.onSurface.withAlpha(120),
+              ),
+            ),
+          ),
+        ),
+      if (actions.hasOverflow)
+        DetectionActionsOverflow(
+          actions: actions,
+          iconColor: theme.colorScheme.onSurface.withAlpha(120),
+        ),
+    ];
   }
 
   /// Map confidence to a color via the [ScoreColors] theme extension.
@@ -195,14 +261,13 @@ class DetectionTile extends ConsumerWidget {
   Widget _buildSpeciesImage(AsyncValue<TaxonomyService> taxonomyAsync) {
     final path =
         taxonomyAsync.valueOrNull?.assetImagePath(detection.scientificName) ??
-            'assets/images/dummy_species.png';
+        'assets/images/dummy_species.png';
     return Image.asset(
       path,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => Image.asset(
-        'assets/images/dummy_species.png',
-        fit: BoxFit.cover,
-      ),
+      errorBuilder:
+          (_, __, ___) =>
+              Image.asset('assets/images/dummy_species.png', fit: BoxFit.cover),
     );
   }
 }

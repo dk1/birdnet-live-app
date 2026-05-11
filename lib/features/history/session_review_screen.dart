@@ -81,10 +81,12 @@ import '../spectrogram/color_maps.dart';
 import 'session_export.dart';
 import 'session_map_screen.dart';
 import 'widgets/clip_player_sheet.dart';
+import 'widgets/detection_actions.dart';
 import '../settings/settings_screen.dart';
 import '../survey/survey_live_screen.dart';
 import '../survey/widgets/survey_map_widget.dart';
 import '../../core/services/reverse_geocoding_service.dart';
+import 'services/detection_sharing_service.dart';
 
 part 'widgets/session_review_widgets.dart';
 
@@ -1060,6 +1062,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       MaterialPageRoute<void>(
         builder:
             (_) => _FullscreenSurveyMapScreen(
+              session: widget.session,
               gpsTrack: widget.session.gpsTrack,
               detections: _detections,
               initialHighlight: _highlightedDetection,
@@ -1068,6 +1071,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 // checkmark; mark dirty so save/discard prompts trigger
                 // and rebuild so species rows + badges refresh.
                 if (mounted) setState(() => _isDirty = true);
+              },
+              onDeleteDetection: (record) {
+                _deleteDetectionWithUndo(_DetectionCluster([record]));
               },
             ),
       ),
@@ -1117,32 +1123,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     });
   }
 
-  Future<void> _confirmDeleteDetection(
-    _SpeciesGroup group,
-    _DetectionCluster cluster,
-  ) async {
+  /// Remove every record in [cluster] and surface a SnackBar with an
+  /// UNDO action. The modal confirm dialog used previously is gone now
+  /// that swipe-to-dismiss + the overflow menu's delete entry both call
+  /// here — the undo affordance covers misfires and a confirm tap on
+  /// every delete became an annoying speed bump for reviewers cleaning
+  /// up dozens of false positives in one pass.
+  void _deleteDetectionWithUndo(_DetectionCluster cluster) {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(l10n.sessionDeleteDetectionTitle),
-            content: Text(l10n.sessionDeleteDetectionMessage),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: Text(l10n.sessionRemove),
-              ),
-            ],
-          ),
-    );
-    if (confirmed != true || !mounted) return;
-
     _pushUndo();
     setState(() {
       for (final r in cluster.records) {
@@ -1154,6 +1142,50 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       );
       _isDirty = true;
     });
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.sessionDetectionRemoved),
+        action: SnackBarAction(
+          label: l10n.sessionUndo,
+          onPressed: () {
+            if (mounted) _undo();
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Removes every detection of [scientificName] from the session in
+  /// one shot. Mirrors [_deleteDetectionWithUndo] but scoped to a whole
+  /// species — the SnackBar undo restores the full pre-delete state via
+  /// the same undo stack, so a misfire is fully recoverable.
+  void _deleteSpeciesWithUndo(String scientificName) {
+    final l10n = AppLocalizations.of(context)!;
+    _pushUndo();
+    setState(() {
+      _detections.removeWhere((r) => r.scientificName == scientificName);
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
+      _expandedSpecies.remove(scientificName);
+      _isDirty = true;
+    });
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.sessionSpeciesRemoved),
+        action: SnackBarAction(
+          label: l10n.sessionUndo,
+          onPressed: () {
+            if (mounted) _undo();
+          },
+        ),
+      ),
+    );
   }
 
   void _seekToCluster(_DetectionCluster cluster) {
@@ -1829,9 +1861,15 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               ),
           onSeekCluster: _seekToCluster,
           onPause: _pausePlayer,
-          onDeleteCluster: (cluster) => _confirmDeleteDetection(group, cluster),
+          onDeleteCluster: _deleteDetectionWithUndo,
+          onDeleteSpecies: () => _deleteSpeciesWithUndo(group.scientificName),
           onReplaceCluster: _replaceDetection,
           onToggleConfirmCluster: _toggleClusterConfirmation,
+          onShareCluster:
+              (cluster) => shareDetection(
+                cluster.records.first,
+                session: widget.session,
+              ),
           onShowOnMap: _showDetectionOnMap,
         );
       },
@@ -1978,11 +2016,18 @@ const double _defaultConfidenceFloor = 0.1;
 /// confidence, single species).
 class _FullscreenSurveyMapScreen extends ConsumerStatefulWidget {
   const _FullscreenSurveyMapScreen({
+    required this.session,
     required this.gpsTrack,
     required this.detections,
     this.initialHighlight,
     this.onConfirmChanged,
+    this.onDeleteDetection,
   });
+
+  /// Host session — forwarded to the clip player sheet so its share
+  /// button can fall back to slicing the full recording when a marker
+  /// has no per-detection clip of its own.
+  final LiveSession session;
 
   final List<GpsPoint> gpsTrack;
   final List<DetectionRecord> detections;
@@ -1991,6 +2036,12 @@ class _FullscreenSurveyMapScreen extends ConsumerStatefulWidget {
   /// [DetectionRecord.confirmedAt]. The host uses this hook to mark the
   /// session dirty and refresh derived UI (species rows, marker badges).
   final VoidCallback? onConfirmChanged;
+
+  /// Invoked when the user picks `Delete detection` from the clip
+  /// player sheet's overflow menu. The host removes the record from
+  /// the session and surfaces the undo SnackBar; this screen rebuilds
+  /// so the corresponding marker disappears immediately.
+  final ValueChanged<DetectionRecord>? onDeleteDetection;
 
   /// Detection that the inline review map was currently focused on. When
   /// non-null the fullscreen map opens centered and zoomed in on this
@@ -2094,6 +2145,7 @@ class _FullscreenSurveyMapScreenState
     await showClipPlayerSheet(
       context,
       detection: detection,
+      session: widget.session,
       onConfirmChanged: () {
         // Rebuild this screen so the marker's confirmed badge updates
         // immediately, then forward to the host so the session is marked
@@ -2101,6 +2153,13 @@ class _FullscreenSurveyMapScreenState
         if (mounted) setState(() {});
         widget.onConfirmChanged?.call();
       },
+      onDelete:
+          widget.onDeleteDetection == null
+              ? null
+              : () {
+                widget.onDeleteDetection!(detection);
+                if (mounted) setState(() => _highlight = null);
+              },
     );
     if (mounted) setState(() => _highlight = null);
   }

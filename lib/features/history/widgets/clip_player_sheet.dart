@@ -34,6 +34,8 @@ import '../../live/live_session.dart';
 import '../../recording/audio_decoder.dart';
 import '../../recording/native_audio_decoder.dart';
 import '../../spectrogram/color_maps.dart';
+import '../services/detection_sharing_service.dart';
+import 'detection_actions.dart';
 
 /// Show the modal player for a [detection]'s audio clip.
 ///
@@ -44,10 +46,18 @@ import '../../spectrogram/color_maps.dart';
 /// detections while they listen. The callback is invoked after each toggle
 /// (the [DetectionRecord.confirmedAt] field is already mutated by the time
 /// it fires) so the host can mark the session dirty / trigger a rebuild.
+///
+/// When [onDelete] is provided, the sheet header's overflow menu adds a
+/// `Delete detection` entry. The callback is responsible for removing the
+/// detection from the host model and showing any undo affordance; this
+/// sheet just dismisses itself before invoking the callback so the user
+/// isn't left staring at a clip that no longer belongs to anything.
 Future<void> showClipPlayerSheet(
   BuildContext context, {
   required DetectionRecord detection,
   VoidCallback? onConfirmChanged,
+  VoidCallback? onDelete,
+  LiveSession? session,
 }) {
   final path = detection.audioClipPath;
   if (path == null || !File(path).existsSync()) {
@@ -63,6 +73,8 @@ Future<void> showClipPlayerSheet(
           detection: detection,
           clipPath: path,
           onConfirmChanged: onConfirmChanged,
+          onDelete: onDelete,
+          session: session,
         ),
   );
 }
@@ -72,11 +84,15 @@ class _ClipPlayerSheet extends ConsumerStatefulWidget {
     required this.detection,
     required this.clipPath,
     this.onConfirmChanged,
+    this.onDelete,
+    this.session,
   });
 
   final DetectionRecord detection;
   final String clipPath;
   final VoidCallback? onConfirmChanged;
+  final VoidCallback? onDelete;
+  final LiveSession? session;
 
   @override
   ConsumerState<_ClipPlayerSheet> createState() => _ClipPlayerSheetState();
@@ -358,6 +374,26 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                     confirmed: det.isConfirmed,
                     onToggle: _toggleConfirm,
                   ),
+                // Per-detection overflow (share, delete) — same widget as
+                // the session review row so users see one menu shape
+                // regardless of where they opened the detection.
+                DetectionActionsOverflow(
+                  actions: DetectionActions(
+                    onShare:
+                        () => shareDetection(
+                          widget.detection,
+                          session: widget.session,
+                        ),
+                    onDelete:
+                        widget.onDelete == null
+                            ? null
+                            : () {
+                              Navigator.of(context).pop();
+                              widget.onDelete!();
+                            },
+                  ),
+                  iconColor: theme.colorScheme.onSurface.withAlpha(140),
+                ),
               ],
             ),
             const SizedBox(height: 12),
