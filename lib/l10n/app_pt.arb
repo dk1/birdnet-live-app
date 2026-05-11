@@ -165,6 +165,7 @@
   "detectionShareTooltip": "Compartilhar detecção",
   "detectionActionsTooltip": "Mais ações",
   "detectionDeleteTooltip": "Excluir detecção",
+  "sessionDetectionRemoved": "Detecção removida",
   "sessionSave": "Salvar",
   "sessionSaved": "Sessão salva",
   "sessionUnsavedChanges": "Existem alterações não salvas. Salvar ou descartar?",

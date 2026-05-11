@@ -130,7 +130,7 @@ class DetectionActionsOverflow extends StatelessWidget {
             PopupMenuItem<_OverflowAction>(
               value: _OverflowAction.share,
               child: _OverflowRow(
-                icon: Icons.ios_share,
+                icon: Icons.share,
                 label: l10n.detectionShareTooltip,
               ),
             ),

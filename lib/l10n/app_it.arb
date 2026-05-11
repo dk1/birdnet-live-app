@@ -165,6 +165,7 @@
   "detectionShareTooltip": "Condividi rilevazione",
   "detectionActionsTooltip": "Altre azioni",
   "detectionDeleteTooltip": "Elimina rilevazione",
+  "sessionDetectionRemoved": "Rilevazione rimossa",
   "sessionSave": "Salva",
   "sessionSaved": "Sessione salvata",
   "sessionUnsavedChanges": "Ci sono modifiche non salvate. Salvare o eliminare?",

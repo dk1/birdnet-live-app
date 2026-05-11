@@ -81,6 +81,7 @@ import '../spectrogram/color_maps.dart';
 import 'session_export.dart';
 import 'session_map_screen.dart';
 import 'widgets/clip_player_sheet.dart';
+import 'widgets/detection_actions.dart';
 import '../settings/settings_screen.dart';
 import '../survey/survey_live_screen.dart';
 import '../survey/widgets/survey_map_widget.dart';
@@ -1118,32 +1119,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     });
   }
 
-  Future<void> _confirmDeleteDetection(
-    _SpeciesGroup group,
-    _DetectionCluster cluster,
-  ) async {
+  /// Remove every record in [cluster] and surface a SnackBar with an
+  /// UNDO action. The modal confirm dialog used previously is gone now
+  /// that swipe-to-dismiss + the overflow menu's delete entry both call
+  /// here — the undo affordance covers misfires and a confirm tap on
+  /// every delete became an annoying speed bump for reviewers cleaning
+  /// up dozens of false positives in one pass.
+  void _deleteDetectionWithUndo(_DetectionCluster cluster) {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(l10n.sessionDeleteDetectionTitle),
-            content: Text(l10n.sessionDeleteDetectionMessage),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: Text(l10n.sessionRemove),
-              ),
-            ],
-          ),
-    );
-    if (confirmed != true || !mounted) return;
-
     _pushUndo();
     setState(() {
       for (final r in cluster.records) {
@@ -1155,6 +1138,19 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       );
       _isDirty = true;
     });
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.sessionDetectionRemoved),
+        action: SnackBarAction(
+          label: l10n.sessionUndo,
+          onPressed: () {
+            if (mounted) _undo();
+          },
+        ),
+      ),
+    );
   }
 
   void _seekToCluster(_DetectionCluster cluster) {
@@ -1830,7 +1826,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               ),
           onSeekCluster: _seekToCluster,
           onPause: _pausePlayer,
-          onDeleteCluster: (cluster) => _confirmDeleteDetection(group, cluster),
+          onDeleteCluster: _deleteDetectionWithUndo,
           onReplaceCluster: _replaceDetection,
           onToggleConfirmCluster: _toggleClusterConfirmation,
           onShareCluster: (cluster) => shareDetection(cluster.records.first),

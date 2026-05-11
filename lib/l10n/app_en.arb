@@ -695,6 +695,10 @@
   "@detectionDeleteTooltip": {
     "description": "Label of the delete entry in the per-detection overflow menu"
   },
+  "sessionDetectionRemoved": "Detection removed",
+  "@sessionDetectionRemoved": {
+    "description": "Snackbar text after a detection cluster is dismissed via swipe or the overflow menu's delete entry"
+  },
   "sessionSave": "Save",
   "@sessionSave": {
     "description": "Save session button label"

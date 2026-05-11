@@ -165,6 +165,7 @@
   "detectionShareTooltip": "Sdílet detekci",
   "detectionActionsTooltip": "Další akce",
   "detectionDeleteTooltip": "Smazat detekci",
+  "sessionDetectionRemoved": "Detekce odebrána",
   "sessionSave": "Uložit",
   "sessionSaved": "Relace uložena",
   "sessionUnsavedChanges": "Existují neuložené změny. Uložit nebo zahodit?",

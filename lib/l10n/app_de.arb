@@ -165,6 +165,7 @@
   "detectionShareTooltip": "Erkennung teilen",
   "detectionActionsTooltip": "Weitere Aktionen",
   "detectionDeleteTooltip": "Detektion löschen",
+  "sessionDetectionRemoved": "Detektion entfernt",
   "sessionSave": "Speichern",
   "sessionSaved": "Session gespeichert",
   "sessionUnsavedChanges": "Es gibt ungespeicherte Änderungen. Speichern oder verwerfen?",

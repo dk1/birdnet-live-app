@@ -559,7 +559,7 @@ class _ShareButton extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Icon(
-            Icons.ios_share,
+            Icons.share,
             size: 26,
             color: theme.colorScheme.onSurface.withAlpha(140),
           ),

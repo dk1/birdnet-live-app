@@ -1063,186 +1063,154 @@ class _ClusterRow extends ConsumerWidget {
       showSeconds: tsShowSeconds,
     );
     final timeStr = startStr == endStr ? startStr : '$startStr \u2013 $endStr';
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = cluster.records.any((r) => r.isConfirmed);
 
-    return GestureDetector(
-      // Long-press anywhere on the row pops a context menu with Share
-      // (and any future low-frequency per-detection actions). Adds zero
-      // visible chrome but gives power users a one-gesture path to share
-      // a single notable detection without opening the clip player sheet.
-      behavior: HitTestBehavior.opaque,
-      onLongPressStart: (details) => _showContextMenu(context, details),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        decoration: BoxDecoration(
-          color:
-              isActive
-                  ? theme.colorScheme.primary.withAlpha(28)
-                  : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 4),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-          child: Row(
-            children: [
-              if (audioAvailable || cluster.hasAudioClip)
-                InkWell(
-                  onTap: isActive && onPause != null ? onPause : onSeek,
-                  borderRadius: BorderRadius.circular(24),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Icon(
-                      isActive
-                          ? (onPause != null
-                              ? Icons.pause_rounded
-                              : Icons.graphic_eq)
-                          : Icons.play_arrow_rounded,
-                      size: 24,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                )
-              else
-                const SizedBox(width: 48),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  timeStr,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color:
-                        isActive
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurface.withAlpha(180),
-                    fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+    final row = AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        color:
+            isActive
+                ? theme.colorScheme.primary.withAlpha(28)
+                : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        child: Row(
+          children: [
+            if (audioAvailable || cluster.hasAudioClip)
+              InkWell(
+                onTap: isActive && onPause != null ? onPause : onSeek,
+                borderRadius: BorderRadius.circular(24),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    isActive
+                        ? (onPause != null
+                            ? Icons.pause_rounded
+                            : Icons.graphic_eq)
+                        : Icons.play_arrow_rounded,
+                    size: 24,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
-              ),
-              if (cluster.count > 1)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Text(
-                    '×${cluster.count}',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withAlpha(120),
-                    ),
-                  ),
-                ),
-              Text(
-                cluster.bestConfidencePercent,
+              )
+            else
+              const SizedBox(width: 48),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                timeStr,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: theme.colorScheme.onSurface.withAlpha(180),
+                  color:
+                      isActive
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurface.withAlpha(180),
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
-              const SizedBox(width: 4),
-              if (isSurvey && onShowOnMap != null)
-                InkWell(
-                  onTap: onShowOnMap,
-                  borderRadius: BorderRadius.circular(24),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Icon(
-                      Icons.location_on_outlined,
-                      size: 24,
-                      color: theme.colorScheme.onSurface.withAlpha(100),
-                    ),
+            ),
+            if (cluster.count > 1)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Text(
+                  '×${cluster.count}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withAlpha(120),
                   ),
                 ),
-              Builder(
-                builder: (context) {
-                  final l10n = AppLocalizations.of(context)!;
-                  final confirmed = cluster.records.any((r) => r.isConfirmed);
-                  return Tooltip(
-                    message:
+              ),
+            Text(
+              cluster.bestConfidencePercent,
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: theme.colorScheme.onSurface.withAlpha(180),
+              ),
+            ),
+            const SizedBox(width: 4),
+            if (isSurvey && onShowOnMap != null)
+              InkWell(
+                onTap: onShowOnMap,
+                borderRadius: BorderRadius.circular(24),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    Icons.location_on_outlined,
+                    size: 24,
+                    color: theme.colorScheme.onSurface.withAlpha(100),
+                  ),
+                ),
+              ),
+            Tooltip(
+              message:
+                  confirmed
+                      ? l10n.detectionUnconfirmTooltip
+                      : l10n.detectionConfirmTooltip,
+              child: InkWell(
+                onTap: onToggleConfirm,
+                borderRadius: BorderRadius.circular(24),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    confirmed
+                        ? Icons.check_circle
+                        : Icons.check_circle_outline,
+                    size: 24,
+                    color:
                         confirmed
-                            ? l10n.detectionUnconfirmTooltip
-                            : l10n.detectionConfirmTooltip,
-                    child: InkWell(
-                      onTap: onToggleConfirm,
-                      borderRadius: BorderRadius.circular(24),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Icon(
-                          confirmed
-                              ? Icons.check_circle
-                              : Icons.check_circle_outline,
-                          size: 24,
-                          color:
-                              confirmed
-                                  ? Colors.green.shade600
-                                  : theme.colorScheme.onSurface.withAlpha(100),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              InkWell(
-                onTap: onReplace,
-                borderRadius: BorderRadius.circular(24),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Icon(
-                    Icons.swap_horiz,
-                    size: 24,
-                    color: theme.colorScheme.onSurface.withAlpha(100),
+                            ? Colors.green.shade600
+                            : theme.colorScheme.onSurface.withAlpha(100),
                   ),
                 ),
               ),
-              InkWell(
-                onTap: onDelete,
-                borderRadius: BorderRadius.circular(24),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Icon(
-                    Icons.delete_outline,
-                    size: 24,
-                    color: theme.colorScheme.onSurface.withAlpha(100),
-                  ),
-                ),
+            ),
+            DetectionActionsOverflow(
+              actions: DetectionActions(
+                onShare: onShare,
+                onDelete: onDelete,
+                onReplace: onReplace,
               ),
-            ],
-          ),
+              iconColor: theme.colorScheme.onSurface.withAlpha(100),
+            ),
+          ],
         ),
       ),
     );
+
+    // Wrap in Dismissible so a horizontal swipe shortcuts to delete.
+    // The undo SnackBar shown by the host covers misfires, so we omit
+    // the modal confirm dialog entirely - swipe is meant to be fast.
+    final firstRecord = cluster.records.first;
+    final dismissKey = ValueKey(
+      '${firstRecord.scientificName}-${cluster.firstTimestamp.microsecondsSinceEpoch}',
+    );
+    return Dismissible(
+      key: dismissKey,
+      direction: DismissDirection.horizontal,
+      background: _swipeBackground(theme, alignLeft: true),
+      secondaryBackground: _swipeBackground(theme, alignLeft: false),
+      onDismissed: (_) => onDelete(),
+      child: row,
+    );
   }
 
-  /// Show the per-detection context menu at the long-press location. The
-  /// menu currently houses just `Share` (with room to grow into copy /
-  /// inspect actions later); the row's existing inline icons keep the
-  /// other actions one-tap. Closes itself when the user taps an item or
-  /// dismisses by tapping outside.
-  Future<void> _showContextMenu(
-    BuildContext context,
-    LongPressStartDetails details,
-  ) async {
-    final overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox?;
-    if (overlay == null) return;
-    final l10n = AppLocalizations.of(context)!;
-    final position = RelativeRect.fromRect(
-      details.globalPosition & const Size(40, 40),
-      Offset.zero & overlay.size,
+  Widget _swipeBackground(ThemeData theme, {required bool alignLeft}) {
+    return Container(
+      alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 4),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.error.withAlpha(40),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(
+        Icons.delete_outline,
+        color: theme.colorScheme.error,
+      ),
     );
-    final selected = await showMenu<String>(
-      context: context,
-      position: position,
-      items: [
-        PopupMenuItem<String>(
-          value: 'share',
-          child: Row(
-            children: [
-              const Icon(Icons.ios_share, size: 20),
-              const SizedBox(width: 12),
-              Text(l10n.detectionShareTooltip),
-            ],
-          ),
-        ),
-      ],
-    );
-    if (selected == 'share') onShare();
   }
 }
 
