@@ -162,10 +162,35 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
       // Fetch geo-model scores (if available) for species filtering.
       // Also fetch the full geo-model species names for model intersection.
+      // Invalidating the location provider forces a fresh GPS fix instead
+      // of reusing whatever stale value the FutureProvider cached on a
+      // previous build — important when the user has moved between
+      // sessions (e.g. setting up a survey at one stop and then another).
+      // [LocationService] internally falls back to the OS-cached last
+      // position on a 10s timeout, so we still get something usable
+      // indoors / under poor signal — we just warn the user via SnackBar.
+      final useGps = ref.read(useGpsProvider);
+      if (useGps) {
+        ref.invalidate(currentLocationProvider);
+      }
       final geoScores = await ref.read(geoScoresProvider.future);
       final geoSpeciesNames = await ref.read(
         geoModelSpeciesNamesProvider.future,
       );
+      if (useGps && mounted) {
+        final svc = ref.read(locationServiceProvider);
+        if (svc.lastFetchUsedCachedFallback) {
+          final l10n = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(l10n.gpsStaleWarning),
+                duration: const Duration(seconds: 4),
+              ),
+            );
+        }
+      }
 
       // Start inference session.
       await controller.startSession(
