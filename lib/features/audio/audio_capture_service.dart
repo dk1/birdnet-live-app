@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:record/record.dart';
@@ -109,6 +110,97 @@ class AudioCaptureService {
   DateTime _lastDataTime = DateTime.now();
 
   bool _isRestarting = false;
+
+  // ── Live-tunable DSP ────────────────────────────────────────
+  //
+  // Both apply to the float32 stream just before it lands in the
+  // ring buffer, so inference, recording, and the live spectrogram
+  // all see the same processed signal.
+
+  /// User-set gain multiplier applied to incoming samples. `1.0` is a
+  /// pass-through; values >1 boost quiet recordings at the cost of
+  /// clipping loud peaks (we saturate to [-1, 1] in float).
+  double _gain = 1.0;
+
+  /// High-pass cutoff in Hz. `0` (or any value <=0) disables the
+  /// filter. Typical values: 100–300 Hz to remove wind / handling
+  /// rumble while preserving most bird vocalizations.
+  double _hpfCutoffHz = 0.0;
+
+  // 4th-order Butterworth HPF = two cascaded biquads with the same
+  // cutoff but different Q values (0.5412 and 1.3066). Together they
+  // give -3 dB at the design cutoff and a sharp 24 dB/octave roll-off,
+  // which makes the cutoff visually obvious on the spectrogram.
+  double _s1B0 = 1.0, _s1B1 = 0.0, _s1B2 = 0.0, _s1A1 = 0.0, _s1A2 = 0.0;
+  double _s2B0 = 1.0, _s2B1 = 0.0, _s2B2 = 0.0, _s2A1 = 0.0, _s2A2 = 0.0;
+
+  // Direct-Form II Transposed state for each stage; persists across
+  // audio chunks so the filter doesn't "click" at chunk boundaries.
+  double _s1Z1 = 0.0, _s1Z2 = 0.0;
+  double _s2Z1 = 0.0, _s2Z2 = 0.0;
+
+  bool get _hpfEnabled => _hpfCutoffHz > 0.0;
+
+  /// Update the linear gain (`1.0` = unity). Takes effect on the next
+  /// captured chunk.
+  void setGain(double value) {
+    _gain = value;
+  }
+
+  /// Update the high-pass cutoff in Hz. Pass `0` to bypass. Takes
+  /// effect on the next captured chunk; filter state is reset so the
+  /// new response settles cleanly.
+  void setHighPassCutoff(double cutoffHz) {
+    final next = cutoffHz <= 0 ? 0.0 : cutoffHz;
+    if (next == _hpfCutoffHz) return;
+    _hpfCutoffHz = next;
+    if (next > 0) {
+      _designHighPass(next, AppConstants.sampleRate);
+    }
+    _s1Z1 = 0.0;
+    _s1Z2 = 0.0;
+    _s2Z1 = 0.0;
+    _s2Z2 = 0.0;
+  }
+
+  /// 4th-order Butterworth HPF = two cascaded RBJ biquads. The pole
+  /// pairs of a 4th-order Butterworth lie on the unit circle at
+  /// angles ±22.5° and ±67.5° from the imaginary axis, giving section
+  /// Q values of 1/(2·cos 22.5°) ≈ 0.5412 and 1/(2·cos 67.5°) ≈ 1.3066.
+  void _designHighPass(double cutoffHz, int sampleRate) {
+    final w0 = 2 * math.pi * cutoffHz / sampleRate;
+    final cosW0 = math.cos(w0);
+    final sinW0 = math.sin(w0);
+
+    void section(
+      double q,
+      void Function(double, double, double, double, double) write,
+    ) {
+      final alpha = sinW0 / (2 * q);
+      final b0 = (1 + cosW0) / 2;
+      final b1 = -(1 + cosW0);
+      final b2 = (1 + cosW0) / 2;
+      final a0 = 1 + alpha;
+      final a1 = -2 * cosW0;
+      final a2 = 1 - alpha;
+      write(b0 / a0, b1 / a0, b2 / a0, a1 / a0, a2 / a0);
+    }
+
+    section(0.54119610014619701, (b0, b1, b2, a1, a2) {
+      _s1B0 = b0;
+      _s1B1 = b1;
+      _s1B2 = b2;
+      _s1A1 = a1;
+      _s1A2 = a2;
+    });
+    section(1.3065629648763766, (b0, b1, b2, a1, a2) {
+      _s2B0 = b0;
+      _s2B1 = b1;
+      _s2B2 = b2;
+      _s2A1 = a1;
+      _s2A2 = a2;
+    });
+  }
 
   // ── Microphone-contention detection ────────────────────────────────────
   //
@@ -320,6 +412,7 @@ class AudioCaptureService {
 
     // Convert signed 16-bit PCM (little-endian) → float32 [-1.0, 1.0].
     final samples = _pcm16ToFloat32(bytes);
+    _applyDsp(samples);
     _ringBuffer.write(samples);
     _dataController.add(samples.length);
 
@@ -364,5 +457,56 @@ class AudioCaptureService {
     }
 
     return result;
+  }
+
+  /// Apply the user-tunable DSP chain (gain → high-pass) in place.
+  ///
+  /// Both stages bypass cheaply when the user hasn't moved the slider
+  /// off the default. Gain is clipped to [-1, 1] so downstream
+  /// quantization to PCM16 doesn't wrap. The biquad uses Direct-Form
+  /// II Transposed with state persisted on the service instance so
+  /// chunk boundaries don't introduce clicks.
+  void _applyDsp(Float32List samples) {
+    final gain = _gain;
+    final useGain = gain != 1.0;
+    final useHpf = _hpfEnabled;
+    if (!useGain && !useHpf) return;
+
+    final s1B0 = _s1B0, s1B1 = _s1B1, s1B2 = _s1B2, s1A1 = _s1A1, s1A2 = _s1A2;
+    final s2B0 = _s2B0, s2B1 = _s2B1, s2B2 = _s2B2, s2A1 = _s2A1, s2A2 = _s2A2;
+    var s1Z1 = _s1Z1, s1Z2 = _s1Z2;
+    var s2Z1 = _s2Z1, s2Z2 = _s2Z2;
+
+    for (var i = 0; i < samples.length; i++) {
+      var x = samples[i].toDouble();
+      if (useGain) {
+        x *= gain;
+        if (x > 1.0) {
+          x = 1.0;
+        } else if (x < -1.0) {
+          x = -1.0;
+        }
+      }
+      if (useHpf) {
+        // Stage 1.
+        var y = s1B0 * x + s1Z1;
+        s1Z1 = s1B1 * x - s1A1 * y + s1Z2;
+        s1Z2 = s1B2 * x - s1A2 * y;
+        // Stage 2 (input = stage-1 output).
+        final x2 = y;
+        y = s2B0 * x2 + s2Z1;
+        s2Z1 = s2B1 * x2 - s2A1 * y + s2Z2;
+        s2Z2 = s2B2 * x2 - s2A2 * y;
+        x = y;
+      }
+      samples[i] = x;
+    }
+
+    if (useHpf) {
+      _s1Z1 = s1Z1;
+      _s1Z2 = s1Z2;
+      _s2Z1 = s2Z1;
+      _s2Z2 = s2Z2;
+    }
   }
 }

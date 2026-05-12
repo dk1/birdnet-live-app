@@ -139,4 +139,10 @@ class InferenceIsolate {
   void setMaxPoolWindows(int? value) {
     _service?.setMaxPoolWindows(value);
   }
+
+  /// Override the pooling mode (`'off' | 'average' | 'max' | 'lme'`).
+  /// Safe to call before [start] — silently dropped if not ready.
+  void setPoolingMode(String? mode) {
+    _service?.setPoolingMode(mode);
+  }
 }

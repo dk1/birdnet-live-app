@@ -156,6 +156,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       // Keep screen on during live recording.
       await WakelockService.enable();
 
+      // Apply user-tunable DSP (gain + high-pass) before starting
+      // capture so the very first chunk is already processed.
+      final captureService = ref.read(audioCaptureServiceProvider);
+      captureService.setGain(ref.read(audioGainProvider));
+      captureService.setHighPassCutoff(ref.read(highPassFilterProvider));
+
       // Start audio capture.
       await captureNotifier.start(deviceId: deviceId);
 
@@ -169,6 +175,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       final recordingFormat = ref.read(recordingFormatProvider);
       final geoThreshold = ref.read(geoThresholdProvider);
       final poolingWindows = ref.read(scorePoolingWindowsProvider);
+      final sensitivity = ref.read(sensitivityProvider);
 
       // Fetch geo-model scores (if available) for species filtering.
       // Also fetch the full geo-model species names for model intersection.
@@ -214,6 +221,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         geoThreshold: geoThreshold,
         geoModelSpeciesNames: geoSpeciesNames,
         poolingWindows: poolingWindows,
+        poolingMode: ref.read(scorePoolingProvider),
+        sensitivity: sensitivity,
       );
 
       _isStarting = false;
@@ -409,6 +418,18 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     });
     ref.listen<int>(scorePoolingWindowsProvider, (_, next) {
       ref.read(liveControllerProvider).setPoolingWindows(next);
+    });
+    ref.listen<String>(scorePoolingProvider, (_, next) {
+      ref.read(liveControllerProvider).setPoolingMode(next);
+    });
+    ref.listen<double>(sensitivityProvider, (_, next) {
+      ref.read(liveControllerProvider).setSensitivity(next);
+    });
+    ref.listen<double>(audioGainProvider, (_, next) {
+      ref.read(audioCaptureServiceProvider).setGain(next);
+    });
+    ref.listen<double>(highPassFilterProvider, (_, next) {
+      ref.read(audioCaptureServiceProvider).setHighPassCutoff(next);
     });
 
     return PopScope(

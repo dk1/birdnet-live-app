@@ -109,6 +109,12 @@ class SurveyController {
   /// picked up on the next cycle.
   int _confidenceThreshold = 50;
 
+  /// Live-tunable sensitivity (typically 0.5–1.5). Same semantics as
+  /// in [LiveController]: shifts the sigmoid horizontally in logit
+  /// space without changing slope. Updated mid-survey by
+  /// [setSensitivity].
+  double _sensitivity = 1.0;
+
   /// Species currently shown as active detection cards.
   final Map<String, DetectionRecord> _activeCardSpecies = {};
 
@@ -330,6 +336,8 @@ class SurveyController {
     int autoStopBattery = 0,
     SessionSettings? settingsSnapshot,
     int? poolingWindows,
+    String poolingMode = 'lme',
+    double sensitivity = 1.0,
   }) async {
     if (_state == SurveyState.active) return;
     _state = SurveyState.starting;
@@ -371,7 +379,9 @@ class SurveyController {
       _currentLiveDetections = const [];
       _activeCardSpecies.clear();
       _confidenceThreshold = confidenceThreshold;
+      _sensitivity = sensitivity;
       _isolate.setMaxPoolWindows(poolingWindows);
+      _isolate.setPoolingMode(poolingMode);
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
       ringBuffer.clear();
@@ -491,6 +501,8 @@ class SurveyController {
     bool backgroundGps = true,
     int autoStopBattery = 0,
     int? poolingWindows,
+    String poolingMode = 'lme',
+    double sensitivity = 1.0,
   }) async {
     if (_state == SurveyState.active) return;
     _state = SurveyState.starting;
@@ -511,7 +523,9 @@ class SurveyController {
       _currentLiveDetections = const [];
       _activeCardSpecies.clear();
       _confidenceThreshold = confidenceThreshold;
+      _sensitivity = sensitivity;
       _isolate.setMaxPoolWindows(poolingWindows);
+      _isolate.setPoolingMode(poolingMode);
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
       ringBuffer.clear();
@@ -798,6 +812,24 @@ class SurveyController {
     return record;
   }
 
+  /// Append a session-level [SessionAnnotation] to the active survey.
+  ///
+  /// Mirrors [addManualDetection]: the annotation is stored on the live
+  /// session, persisted immediately so a crash before the next periodic
+  /// flush doesn't lose it, and listeners are notified so any in-tree
+  /// chip rows can repaint. Voice memos are intentionally not allowed
+  /// here — recording one would conflict with the active capture mic;
+  /// memos are added in Session Review after the survey ends.
+  ///
+  /// Returns the appended annotation, or null if no session is active.
+  Future<SessionAnnotation?> addAnnotation(SessionAnnotation annotation) async {
+    if (_session == null) return null;
+    _session!.annotations.add(annotation);
+    await _persistSession();
+    _notifyListeners();
+    return annotation;
+  }
+
   // ── Live setting hot-apply ────────────────────────────────────────────
 
   /// Update the confidence threshold (0–100 scale) used by the inference
@@ -811,10 +843,22 @@ class SurveyController {
     _confidenceThreshold = value;
   }
 
+  /// Update the sigmoid-shift sensitivity used by inference. Takes
+  /// effect on the next cycle.
+  void setSensitivity(double value) {
+    _sensitivity = value;
+  }
+
   /// Update the score-pooling window count and forward to the inference
   /// isolate. Pass `null` to use the model-config default.
   void setPoolingWindows(int? value) {
     _isolate.setMaxPoolWindows(value);
+  }
+
+  /// Update the score-pooling mode and forward to the inference isolate.
+  /// Recognized values: `'off' | 'average' | 'max' | 'lme'`.
+  void setPoolingMode(String value) {
+    _isolate.setPoolingMode(value);
   }
 
   /// Dispose of all resources.
@@ -866,6 +910,7 @@ class SurveyController {
     // Snapshot the live-tunable threshold for this cycle so a mid-cycle
     // setter call can't half-apply.
     final confidenceThreshold = _confidenceThreshold;
+    final sensitivity = _sensitivity;
 
     try {
       final sampleRate = _config?.audio.sampleRate ?? AppConstants.sampleRate;
@@ -879,6 +924,7 @@ class SurveyController {
       final detections = await _isolate.infer(
         audioSamples,
         windowSeconds: windowDuration,
+        sensitivity: sensitivity,
         confidenceThreshold: confidenceThreshold / 100.0,
       );
 
