@@ -336,6 +336,7 @@ class SurveyController {
     int autoStopBattery = 0,
     SessionSettings? settingsSnapshot,
     int? poolingWindows,
+    String poolingMode = 'lme',
     double sensitivity = 1.0,
   }) async {
     if (_state == SurveyState.active) return;
@@ -380,6 +381,7 @@ class SurveyController {
       _confidenceThreshold = confidenceThreshold;
       _sensitivity = sensitivity;
       _isolate.setMaxPoolWindows(poolingWindows);
+      _isolate.setPoolingMode(poolingMode);
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
       ringBuffer.clear();
@@ -499,6 +501,7 @@ class SurveyController {
     bool backgroundGps = true,
     int autoStopBattery = 0,
     int? poolingWindows,
+    String poolingMode = 'lme',
     double sensitivity = 1.0,
   }) async {
     if (_state == SurveyState.active) return;
@@ -522,6 +525,7 @@ class SurveyController {
       _confidenceThreshold = confidenceThreshold;
       _sensitivity = sensitivity;
       _isolate.setMaxPoolWindows(poolingWindows);
+      _isolate.setPoolingMode(poolingMode);
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
       ringBuffer.clear();
@@ -831,6 +835,12 @@ class SurveyController {
   /// isolate. Pass `null` to use the model-config default.
   void setPoolingWindows(int? value) {
     _isolate.setMaxPoolWindows(value);
+  }
+
+  /// Update the score-pooling mode and forward to the inference isolate.
+  /// Recognized values: `'off' | 'average' | 'max' | 'lme'`.
+  void setPoolingMode(String value) {
+    _isolate.setPoolingMode(value);
   }
 
   /// Dispose of all resources.

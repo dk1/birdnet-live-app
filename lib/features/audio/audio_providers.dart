@@ -67,9 +67,9 @@ final audioCaptureServiceProvider = Provider<AudioCaptureService>((ref) {
 /// UI widgets watch this to show start/stop controls and error states.
 final captureStateProvider =
     StateNotifierProvider<CaptureStateNotifier, CaptureState>((ref) {
-  final service = ref.watch(audioCaptureServiceProvider);
-  return CaptureStateNotifier(service);
-});
+      final service = ref.watch(audioCaptureServiceProvider);
+      return CaptureStateNotifier(service);
+    });
 
 /// Notifier that mirrors [AudioCaptureService.state] and exposes
 /// start / stop actions.
@@ -148,8 +148,7 @@ final selectedDeviceProvider =
     });
 
 class _SelectedDeviceNotifier extends StateNotifier<String?> {
-  _SelectedDeviceNotifier(this._prefs)
-    : super(_read(_prefs));
+  _SelectedDeviceNotifier(this._prefs) : super(_read(_prefs));
 
   final SharedPreferences _prefs;
 

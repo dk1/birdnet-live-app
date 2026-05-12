@@ -200,6 +200,46 @@ abstract final class PostProcessor {
 
     return pooled;
   }
+
+  /// Per-class arithmetic mean across [windowScores].
+  ///
+  /// Smooths flickering detections: noisy single-window peaks get pulled
+  /// down by surrounding low-score windows, so only sustained calls stay
+  /// above threshold.
+  static List<double> average(List<List<double>> windowScores) {
+    if (windowScores.isEmpty) return [];
+    if (windowScores.length == 1) return List.of(windowScores.first);
+    final numClasses = windowScores.first.length;
+    final pooled = List<double>.filled(numClasses, 0.0);
+    for (final window in windowScores) {
+      for (var c = 0; c < numClasses; c++) {
+        pooled[c] += window[c];
+      }
+    }
+    final n = windowScores.length;
+    for (var c = 0; c < numClasses; c++) {
+      pooled[c] /= n;
+    }
+    return pooled;
+  }
+
+  /// Per-class maximum across [windowScores].
+  ///
+  /// Most reactive pooling: any single window above threshold wins.
+  /// Good for very brief calls but lets transient noise through.
+  static List<double> max(List<List<double>> windowScores) {
+    if (windowScores.isEmpty) return [];
+    if (windowScores.length == 1) return List.of(windowScores.first);
+    final numClasses = windowScores.first.length;
+    final pooled = List<double>.from(windowScores.first);
+    for (var w = 1; w < windowScores.length; w++) {
+      final window = windowScores[w];
+      for (var c = 0; c < numClasses; c++) {
+        if (window[c] > pooled[c]) pooled[c] = window[c];
+      }
+    }
+    return pooled;
+  }
 }
 
 /// Internal helper for sorting indices by score.

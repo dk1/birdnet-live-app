@@ -108,6 +108,24 @@ class InferenceService {
   /// Log-Mean-Exp alpha from the active config.
   double get poolingAlpha => _config?.inference.temporalPooling.alpha ?? 5.0;
 
+  /// Score-pooling mode driven by the user setting. Recognized values:
+  /// `'off'` (no pooling — single-window scores), `'average'`,
+  /// `'max'`, and `'lme'` (log-mean-exp, default and historical
+  /// behavior). Unknown values fall back to `'lme'`.
+  String _poolingMode = 'lme';
+  String get poolingMode => _poolingMode;
+
+  /// Override the pooling mode at runtime from a user setting. Pass
+  /// `null` or an empty string to revert to `'lme'`. The rolling
+  /// score buffer is cleared so a switch (e.g. lme → max) doesn't
+  /// cross-contaminate the new mode with stale logits.
+  void setPoolingMode(String? mode) {
+    final next = (mode == null || mode.isEmpty) ? 'lme' : mode;
+    if (next == _poolingMode) return;
+    _poolingMode = next;
+    _recentScores.clear();
+  }
+
   // ---------------------------------------------------------------------------
   // Lifecycle
   // ---------------------------------------------------------------------------
@@ -200,18 +218,35 @@ class InferenceService {
     final probs = output.predictions;
 
     // Temporal pooling (optional).
+    //
+    // The user-selected [poolingMode] picks the algorithm; the legacy
+    // [useTemporalPooling] flag still acts as a hard override (set to
+    // `false` by callers that want raw single-window probs).
     List<double> finalScores;
-    if (useTemporalPooling) {
+    if (!useTemporalPooling || _poolingMode == 'off') {
+      // Don't grow the rolling buffer when pooling is off — it would
+      // re-pollute results if the user switches back to a pooled mode
+      // mid-session.
+      finalScores = probs;
+    } else {
       _recentScores.add(probs);
       if (_recentScores.length > maxPoolWindows) {
         _recentScores.removeAt(0);
       }
-      finalScores = PostProcessor.logMeanExp(
-        _recentScores,
-        alpha: poolingAlpha,
-      );
-    } else {
-      finalScores = probs;
+      switch (_poolingMode) {
+        case 'average':
+          finalScores = PostProcessor.average(_recentScores);
+          break;
+        case 'max':
+          finalScores = PostProcessor.max(_recentScores);
+          break;
+        case 'lme':
+        default:
+          finalScores = PostProcessor.logMeanExp(
+            _recentScores,
+            alpha: poolingAlpha,
+          );
+      }
     }
 
     // Sensitivity + top-K + threshold.

@@ -221,6 +221,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         geoThreshold: geoThreshold,
         geoModelSpeciesNames: geoSpeciesNames,
         poolingWindows: poolingWindows,
+        poolingMode: ref.read(scorePoolingProvider),
         sensitivity: sensitivity,
       );
 
@@ -417,6 +418,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     });
     ref.listen<int>(scorePoolingWindowsProvider, (_, next) {
       ref.read(liveControllerProvider).setPoolingWindows(next);
+    });
+    ref.listen<String>(scorePoolingProvider, (_, next) {
+      ref.read(liveControllerProvider).setPoolingMode(next);
     });
     ref.listen<double>(sensitivityProvider, (_, next) {
       ref.read(liveControllerProvider).setSensitivity(next);
