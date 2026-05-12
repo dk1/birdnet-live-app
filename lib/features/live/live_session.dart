@@ -277,8 +277,7 @@ class DetectionRecord {
   String? voiceMemoPath;
 
   /// Convenience: whether this detection has a voice memo attached.
-  bool get hasVoiceMemo =>
-      voiceMemoPath != null && voiceMemoPath!.isNotEmpty;
+  bool get hasVoiceMemo => voiceMemoPath != null && voiceMemoPath!.isNotEmpty;
 
   /// Scientific name placeholder for unknown / unidentifiable species.
   static const String unknownSpeciesName = 'Unknown species';

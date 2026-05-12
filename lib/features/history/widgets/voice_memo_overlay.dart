@@ -71,10 +71,11 @@ Future<VoiceMemoResult?> showVoiceMemoDialog({
 }) {
   return showDialog<VoiceMemoResult>(
     context: context,
-    builder: (ctx) => _VoiceMemoDialog(
-      sessionId: sessionId,
-      existingMemoPath: existingMemoPath,
-    ),
+    builder:
+        (ctx) => _VoiceMemoDialog(
+          sessionId: sessionId,
+          existingMemoPath: existingMemoPath,
+        ),
   );
 }
 
@@ -147,8 +148,9 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog> {
       if (!hasPerm) {
         setState(() {
           _errorMessage =
-              AppLocalizations.of(context)!
-                  .detectionVoiceMemoMicPermissionDenied;
+              AppLocalizations.of(
+                context,
+              )!.detectionVoiceMemoMicPermissionDenied;
         });
         return;
       }
@@ -250,8 +252,7 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final hasExisting =
-        _committedExistingPath != null && _pendingPath == null;
+    final hasExisting = _committedExistingPath != null && _pendingPath == null;
     final hasPending = _pendingPath != null;
     final canPlay = (hasExisting || hasPending) && !_isRecording;
 
@@ -268,16 +269,18 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog> {
               height: 96,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _isRecording
-                    ? theme.colorScheme.error
-                    : theme.colorScheme.primaryContainer,
+                color:
+                    _isRecording
+                        ? theme.colorScheme.error
+                        : theme.colorScheme.primaryContainer,
               ),
               child: Icon(
                 _isRecording ? Icons.stop : Icons.mic,
                 size: 48,
-                color: _isRecording
-                    ? theme.colorScheme.onError
-                    : theme.colorScheme.onPrimaryContainer,
+                color:
+                    _isRecording
+                        ? theme.colorScheme.onError
+                        : theme.colorScheme.onPrimaryContainer,
               ),
             ),
           ),
@@ -286,8 +289,8 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog> {
             _isRecording
                 ? '${l10n.detectionVoiceMemoRecording} ${_fmtDuration(_elapsed)}'
                 : (hasPending || hasExisting)
-                    ? _fmtDuration(_elapsed)
-                    : l10n.detectionVoiceMemoHint,
+                ? _fmtDuration(_elapsed)
+                : l10n.detectionVoiceMemoHint,
             style: theme.textTheme.bodyMedium,
             textAlign: TextAlign.center,
           ),

@@ -895,9 +895,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               commonName: result.commonName,
               confidence: 1.0,
               timestamp: widget.session.startTime,
-              source: result.userSpecified
-                  ? DetectionSource.userSpecified
-                  : DetectionSource.manualGlobal,
+              source:
+                  result.userSpecified
+                      ? DetectionSource.userSpecified
+                      : DetectionSource.manualGlobal,
             ),
           );
           break;
@@ -911,9 +912,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               commonName: result.commonName,
               confidence: 1.0,
               timestamp: ts,
-              source: result.userSpecified
-                  ? DetectionSource.userSpecified
-                  : DetectionSource.manual,
+              source:
+                  result.userSpecified
+                      ? DetectionSource.userSpecified
+                      : DetectionSource.manual,
             ),
           );
           break;
@@ -928,9 +930,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 confidence: result.replaceRecord!.confidence,
                 timestamp: result.replaceRecord!.timestamp,
                 audioClipPath: result.replaceRecord!.audioClipPath,
-                source: result.userSpecified
-                    ? DetectionSource.userSpecified
-                    : DetectionSource.manual,
+                source:
+                    result.userSpecified
+                        ? DetectionSource.userSpecified
+                        : DetectionSource.manual,
                 confirmedAt: result.replaceRecord!.confirmedAt,
                 note: result.replaceRecord!.note,
                 voiceMemoPath: result.replaceRecord!.voiceMemoPath,
@@ -1601,9 +1604,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             confidence: result.replaceRecord!.confidence,
             timestamp: result.replaceRecord!.timestamp,
             audioClipPath: result.replaceRecord!.audioClipPath,
-            source: result.userSpecified
-                ? DetectionSource.userSpecified
-                : DetectionSource.manual,
+            source:
+                result.userSpecified
+                    ? DetectionSource.userSpecified
+                    : DetectionSource.manual,
             confirmedAt: result.replaceRecord!.confirmedAt,
             note: result.replaceRecord!.note,
             voiceMemoPath: result.replaceRecord!.voiceMemoPath,

@@ -536,10 +536,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                               Navigator.of(context).pop();
                               widget.onDelete!();
                             },
-                    onEditNote:
-                        widget.onNoteChanged == null
-                            ? null
-                            : _editNote,
+                    onEditNote: widget.onNoteChanged == null ? null : _editNote,
                     hasNote: widget.detection.hasNote,
                     onEditVoiceMemo:
                         widget.onVoiceMemoChanged == null ||

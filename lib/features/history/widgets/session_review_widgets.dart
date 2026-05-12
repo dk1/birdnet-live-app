@@ -1350,7 +1350,8 @@ class _ClusterRow extends ConsumerWidget {
             ),
             if (cluster.records.first.hasNote)
               Tooltip(
-                message: cluster.records.first.note ?? l10n.detectionNoteTooltip,
+                message:
+                    cluster.records.first.note ?? l10n.detectionNoteTooltip,
                 child: InkWell(
                   onTap: onEditNote,
                   borderRadius: BorderRadius.circular(24),

@@ -215,9 +215,10 @@ class DetectionActionsOverflow extends StatelessWidget {
               value: _OverflowAction.editNote,
               child: _OverflowRow(
                 icon: Icons.sticky_note_2_outlined,
-                label: actions.hasNote
-                    ? l10n.detectionEditNote
-                    : l10n.detectionAddNote,
+                label:
+                    actions.hasNote
+                        ? l10n.detectionEditNote
+                        : l10n.detectionAddNote,
               ),
             ),
           );
@@ -228,9 +229,10 @@ class DetectionActionsOverflow extends StatelessWidget {
               value: _OverflowAction.editVoiceMemo,
               child: _OverflowRow(
                 icon: Icons.mic,
-                label: actions.hasVoiceMemo
-                    ? l10n.detectionReplaceVoiceMemo
-                    : l10n.detectionRecordVoiceMemo,
+                label:
+                    actions.hasVoiceMemo
+                        ? l10n.detectionReplaceVoiceMemo
+                        : l10n.detectionRecordVoiceMemo,
               ),
             ),
           );

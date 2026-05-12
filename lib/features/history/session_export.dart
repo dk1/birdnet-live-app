@@ -70,7 +70,8 @@ String _sanitizeFilename(String input) {
 /// Internal double quotes are doubled per RFC 4180.
 String _csvField(String value) {
   if (value.isEmpty) return '';
-  final needsQuoting = value.contains(',') ||
+  final needsQuoting =
+      value.contains(',') ||
       value.contains('"') ||
       value.contains('\n') ||
       value.contains('\r');
@@ -226,9 +227,10 @@ String buildRavenSelectionTable(
     // tabs/newlines from a free-form note to spaces to keep one row per
     // detection. Notes longer than ~200 chars are not truncated; Raven
     // tolerates wide cells.
-    final noteSuffix = hasNotes
-        ? '\t${(d.note ?? '').replaceAll(RegExp(r"[\t\r\n]+"), ' ').trim()}'
-        : '';
+    final noteSuffix =
+        hasNotes
+            ? '\t${(d.note ?? '').replaceAll(RegExp(r"[\t\r\n]+"), ' ').trim()}'
+            : '';
 
     buf.writeln(
       '${i + 1}\t'
@@ -364,9 +366,10 @@ String buildCsvExport(
                 ',${d.longitude?.toStringAsFixed(6) ?? ''}'
             : '';
     final noteRef = hasNotes ? ',${_csvField(d.note ?? '')}' : '';
-    final memoRef = hasMemos
-        ? ',${d.hasVoiceMemo ? 'memos/${p.basename(d.voiceMemoPath!)}' : ''}'
-        : '';
+    final memoRef =
+        hasMemos
+            ? ',${d.hasVoiceMemo ? 'memos/${p.basename(d.voiceMemoPath!)}' : ''}'
+            : '';
 
     buf.writeln(
       '${d.timestamp.toUtc().toIso8601String()},'

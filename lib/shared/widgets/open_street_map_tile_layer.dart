@@ -53,13 +53,13 @@ class _OsmTileCacheManager extends CacheManager {
   factory _OsmTileCacheManager() => _instance;
 
   _OsmTileCacheManager._()
-      : super(
-          Config(
-            _key,
-            stalePeriod: const Duration(days: 90),
-            maxNrOfCacheObjects: 4000,
-          ),
-        );
+    : super(
+        Config(
+          _key,
+          stalePeriod: const Duration(days: 90),
+          maxNrOfCacheObjects: 4000,
+        ),
+      );
 }
 
 // ---------------------------------------------------------------------------
