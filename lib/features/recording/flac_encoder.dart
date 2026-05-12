@@ -107,9 +107,10 @@ int _crc8(List<int> data) {
 final List<int> _crc16Table = List<int>.generate(256, (i) {
   int crc = i << 8;
   for (int j = 0; j < 8; j++) {
-    crc = (crc & 0x8000) != 0
-        ? ((crc << 1) ^ 0x8005) & 0xFFFF
-        : (crc << 1) & 0xFFFF;
+    crc =
+        (crc & 0x8000) != 0
+            ? ((crc << 1) ^ 0x8005) & 0xFFFF
+            : (crc << 1) & 0xFFFF;
   }
   return crc;
 });
@@ -178,11 +179,7 @@ List<int> _utf8Encode(int v) {
     return [0xC0 | (v >> 6), 0x80 | (v & 0x3F)];
   }
   if (v < 0x10000) {
-    return [
-      0xE0 | (v >> 12),
-      0x80 | ((v >> 6) & 0x3F),
-      0x80 | (v & 0x3F),
-    ];
+    return [0xE0 | (v >> 12), 0x80 | ((v >> 6) & 0x3F), 0x80 | (v & 0x3F)];
   }
   if (v < 0x200000) {
     return [
@@ -275,14 +272,16 @@ Int32List _computeResiduals(Int16List samples, int order) {
       }
     case 3:
       for (int i = order; i < n; i++) {
-        r[i - order] = samples[i] -
+        r[i - order] =
+            samples[i] -
             3 * samples[i - 1] +
             3 * samples[i - 2] -
             samples[i - 3];
       }
     case 4:
       for (int i = order; i < n; i++) {
-        r[i - order] = samples[i] -
+        r[i - order] =
+            samples[i] -
             4 * samples[i - 1] +
             6 * samples[i - 2] -
             4 * samples[i - 3] +
@@ -389,7 +388,11 @@ _SubframeChoice _bestSubframe(Int16List samples, int bps) {
 
   if (bestFixedBits < verbatimBits) {
     return _SubframeChoice(
-        _SubframeType.fixed, bestOrder, bestK, bestFixedBits);
+      _SubframeType.fixed,
+      bestOrder,
+      bestK,
+      bestFixedBits,
+    );
   }
   return _SubframeChoice(_SubframeType.verbatim, 0, 0, verbatimBits);
 }
@@ -399,7 +402,11 @@ _SubframeChoice _bestSubframe(Int16List samples, int bps) {
 // =============================================================================
 
 void _writeSubframe(
-    _BitWriter w, Int16List samples, int bps, _SubframeChoice choice) {
+  _BitWriter w,
+  Int16List samples,
+  int bps,
+  _SubframeChoice choice,
+) {
   w.writeBits(0, 1); // zero padding bit
 
   switch (choice.type) {
@@ -443,7 +450,11 @@ void _writeSubframe(
 
 /// Encode one FLAC frame containing [samples] for the given [frameNumber].
 Uint8List _encodeFrame(
-    Int16List samples, int frameNumber, int sampleRate, int bps) {
+  Int16List samples,
+  int frameNumber,
+  int sampleRate,
+  int bps,
+) {
   final bsc = _blockSizeCode(samples.length);
 
   // ── Frame header ──────────────────────────────────────────────────────
@@ -525,12 +536,15 @@ Uint8List _buildStreamInfo({
   d.setUint8(14, (sampleRate >> 12) & 0xFF);
   d.setUint8(15, (sampleRate >> 4) & 0xFF);
   d.setUint8(
-      16,
-      ((sampleRate & 0xF) << 4) |
-          (((channels - 1) & 0x7) << 1) |
-          (((bitsPerSample - 1) >> 4) & 0x1));
+    16,
+    ((sampleRate & 0xF) << 4) |
+        (((channels - 1) & 0x7) << 1) |
+        (((bitsPerSample - 1) >> 4) & 0x1),
+  );
   d.setUint8(
-      17, (((bitsPerSample - 1) & 0xF) << 4) | ((totalSamples >> 32) & 0xF));
+    17,
+    (((bitsPerSample - 1) & 0xF) << 4) | ((totalSamples >> 32) & 0xF),
+  );
   d.setUint32(18, totalSamples & 0xFFFFFFFF);
 
   // Bytes 22–37: MD5 signature of the unencoded audio. Strict decoders
@@ -633,16 +647,18 @@ class FlacEncoder implements AudioFileWriter {
     await _file!.writeFrom([0x66, 0x4C, 0x61, 0x43]);
 
     // Placeholder STREAMINFO (rewritten on close with final values).
-    await _file!.writeFrom(_buildStreamInfo(
-      minBlockSize: blockSize,
-      maxBlockSize: blockSize,
-      minFrameSize: 0,
-      maxFrameSize: 0,
-      sampleRate: sampleRate,
-      channels: channels,
-      bitsPerSample: bitsPerSample,
-      totalSamples: 0,
-    ));
+    await _file!.writeFrom(
+      _buildStreamInfo(
+        minBlockSize: blockSize,
+        maxBlockSize: blockSize,
+        minFrameSize: 0,
+        maxFrameSize: 0,
+        sampleRate: sampleRate,
+        channels: channels,
+        bitsPerSample: bitsPerSample,
+        totalSamples: 0,
+      ),
+    );
   }
 
   @override
@@ -706,17 +722,19 @@ class FlacEncoder implements AudioFileWriter {
     final reportedMin = _minBlockSize < 16 ? 16 : _minBlockSize;
 
     await _file!.setPosition(4); // after "fLaC"
-    await _file!.writeFrom(_buildStreamInfo(
-      minBlockSize: reportedMin,
-      maxBlockSize: _maxBlockSize,
-      minFrameSize: _minFrameSize == 0x7FFFFFFF ? 0 : _minFrameSize,
-      maxFrameSize: _maxFrameSize,
-      sampleRate: sampleRate,
-      channels: channels,
-      bitsPerSample: bitsPerSample,
-      totalSamples: _totalSamples,
-      md5Signature: digest,
-    ));
+    await _file!.writeFrom(
+      _buildStreamInfo(
+        minBlockSize: reportedMin,
+        maxBlockSize: _maxBlockSize,
+        minFrameSize: _minFrameSize == 0x7FFFFFFF ? 0 : _minFrameSize,
+        maxFrameSize: _maxFrameSize,
+        sampleRate: sampleRate,
+        channels: channels,
+        bitsPerSample: bitsPerSample,
+        totalSamples: _totalSamples,
+        md5Signature: digest,
+      ),
+    );
 
     await _file!.close();
     _file = null;
@@ -739,16 +757,21 @@ class FlacEncoder implements AudioFileWriter {
   // ── Internal ────────────────────────────────────────────────────────────
 
   Future<void> _emitFrame(Int16List samples) async {
-    final bytes =
-        _encodeFrame(samples, _frameNumber, sampleRate, bitsPerSample);
+    final bytes = _encodeFrame(
+      samples,
+      _frameNumber,
+      sampleRate,
+      bitsPerSample,
+    );
     await _file!.writeFrom(bytes);
 
     // Feed the unencoded PCM into the rolling MD5 in little-endian order.
     // The byte view of [samples] is host-endian; on every supported target
     // (Android arm64 / x86_64, iOS arm64, Windows x64) that is little-endian,
     // matching the FLAC spec.
-    _md5Input?.add(samples.buffer
-        .asUint8List(samples.offsetInBytes, samples.lengthInBytes));
+    _md5Input?.add(
+      samples.buffer.asUint8List(samples.offsetInBytes, samples.lengthInBytes),
+    );
 
     _totalSamples += samples.length;
     _frameNumber++;
