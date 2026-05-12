@@ -230,6 +230,8 @@
   "sessionManualDetection": "Ruční",
   "sessionAddContent": "Přidat do relace",
   "sessionAddAnnotationOption": "Přidat poznámku",
+  "sessionAddVoiceMemoOption": "Přidat hlasovou poznámku",
+  "sessionAnnotationVoiceMemoLabel": "Hlasová poznámka",
   "sessionTypeLive": "Live relace",
   "sessionTypeFileUpload": "Nahraný soubor",
   "sessionTypePointCount": "Point Count",

@@ -368,18 +368,23 @@ class DetectionRecord {
   int get hashCode => Object.hash(scientificName, confidence, timestamp);
 }
 
-/// A user-created text annotation associated with a session.
+/// A user-created annotation associated with a session.
 ///
 /// Annotations can describe environmental conditions, location context,
-/// or any observation the user wants to record alongside the audio.
+/// or any observation the user wants to record alongside the audio. They
+/// may carry free-form text, a recorded voice memo (`.m4a`), or both —
+/// memo-only annotations have an empty [text] and a non-null
+/// [voiceMemoPath].
 class SessionAnnotation {
   const SessionAnnotation({
     required this.text,
     required this.createdAt,
     this.offsetInRecording,
+    this.voiceMemoPath,
   });
 
-  /// Free-form annotation text.
+  /// Free-form annotation text. May be empty when the annotation is a
+  /// memo-only entry (in that case [voiceMemoPath] is non-null).
   final String text;
 
   /// When the annotation was created.
@@ -389,11 +394,20 @@ class SessionAnnotation {
   /// When null, the annotation is considered session-global.
   final double? offsetInRecording;
 
+  /// Absolute path to a recorded voice-memo file (`.m4a`) attached to
+  /// this annotation, or `null` when the annotation is text-only.
+  final String? voiceMemoPath;
+
+  /// Whether this annotation has an attached voice memo.
+  bool get hasVoiceMemo =>
+      voiceMemoPath != null && voiceMemoPath!.trim().isNotEmpty;
+
   factory SessionAnnotation.fromJson(Map<String, dynamic> json) {
     return SessionAnnotation(
       text: json['text'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       offsetInRecording: (json['offsetInRecording'] as num?)?.toDouble(),
+      voiceMemoPath: json['voiceMemoPath'] as String?,
     );
   }
 
@@ -401,6 +415,7 @@ class SessionAnnotation {
     'text': text,
     'createdAt': createdAt.toUtc().toIso8601String(),
     if (offsetInRecording != null) 'offsetInRecording': offsetInRecording,
+    if (voiceMemoPath != null) 'voiceMemoPath': voiceMemoPath,
   };
 }
 

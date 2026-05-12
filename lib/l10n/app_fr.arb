@@ -230,6 +230,8 @@
   "sessionManualDetection": "Manuelle",
   "sessionAddContent": "Ajouter à la session",
   "sessionAddAnnotationOption": "Ajouter une annotation",
+  "sessionAddVoiceMemoOption": "Ajouter un mémo vocal",
+  "sessionAnnotationVoiceMemoLabel": "Mémo vocal",
   "sessionTypeLive": "Session en direct",
   "sessionTypeFileUpload": "Fichier importé",
   "sessionTypePointCount": "Point d'écoute",

@@ -230,6 +230,8 @@
   "sessionManualDetection": "Manual",
   "sessionAddContent": "Adicionar à sessão",
   "sessionAddAnnotationOption": "Adicionar anotação",
+  "sessionAddVoiceMemoOption": "Adicionar memorando de voz",
+  "sessionAnnotationVoiceMemoLabel": "Memorando de voz",
   "sessionTypeLive": "Sessão Live",
   "sessionTypeFileUpload": "Arquivo enviado",
   "sessionTypePointCount": "Point Count",

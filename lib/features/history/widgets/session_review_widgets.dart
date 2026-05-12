@@ -2162,16 +2162,64 @@ class _AnnotationsSectionState extends State<_AnnotationsSection> {
   }
 }
 
-class _AnnotationRow extends StatelessWidget {
+class _AnnotationRow extends StatefulWidget {
   const _AnnotationRow({required this.annotation, required this.onDelete});
 
   final SessionAnnotation annotation;
   final VoidCallback onDelete;
 
   @override
+  State<_AnnotationRow> createState() => _AnnotationRowState();
+}
+
+class _AnnotationRowState extends State<_AnnotationRow> {
+  AudioPlayer? _player;
+  StreamSubscription<PlayerState>? _stateSub;
+  bool _isPlaying = false;
+
+  @override
+  void dispose() {
+    _stateSub?.cancel();
+    _player?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _toggleMemo() async {
+    final path = widget.annotation.voiceMemoPath;
+    if (path == null) return;
+    var player = _player;
+    if (player == null) {
+      player = AudioPlayer();
+      _player = player;
+      try {
+        await player.setFilePath(path);
+      } catch (_) {
+        return;
+      }
+      _stateSub = player.playerStateStream.listen((s) {
+        if (!mounted) return;
+        final playing =
+            s.playing && s.processingState != ProcessingState.completed;
+        if (playing != _isPlaying) setState(() => _isPlaying = playing);
+        if (s.processingState == ProcessingState.completed) {
+          player!.seek(Duration.zero);
+          player.pause();
+        }
+      });
+    }
+    if (player.playing) {
+      await player.pause();
+    } else {
+      await player.seek(Duration.zero);
+      await player.play();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final annotation = widget.annotation;
 
     String offsetLabel;
     if (annotation.offsetInRecording != null) {
@@ -2182,6 +2230,17 @@ class _AnnotationRow extends StatelessWidget {
     } else {
       offsetLabel = l10n.sessionAnnotationGlobal;
     }
+
+    final hasText = annotation.text.trim().isNotEmpty;
+    final displayText =
+        hasText ? annotation.text : l10n.sessionAnnotationVoiceMemoLabel;
+    final textStyle =
+        hasText
+            ? theme.textTheme.bodySmall
+            : theme.textTheme.bodySmall?.copyWith(
+              fontStyle: FontStyle.italic,
+              color: theme.colorScheme.onSurface.withAlpha(160),
+            );
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -2203,11 +2262,22 @@ class _AnnotationRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(annotation.text, style: theme.textTheme.bodySmall),
-          ),
+          if (annotation.hasVoiceMemo)
+            InkWell(
+              onTap: _toggleMemo,
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(
+                  _isPlaying ? Icons.stop_circle : Icons.play_circle_outline,
+                  size: 18,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ),
+          Expanded(child: Text(displayText, style: textStyle)),
           InkWell(
-            onTap: onDelete,
+            onTap: widget.onDelete,
             borderRadius: BorderRadius.circular(12),
             child: Padding(
               padding: const EdgeInsets.all(4),

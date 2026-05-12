@@ -963,10 +963,25 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   void _deleteAnnotation(int index) {
     _pushUndo();
+    final removed = _annotations[index];
     setState(() {
       _annotations.removeAt(index);
       _isDirty = true;
     });
+    // Best-effort cleanup of the underlying memo file when the
+    // annotation owned one — keeps the session folder from
+    // accumulating orphaned `.m4a` blobs after edits.
+    final memoPath = removed.voiceMemoPath;
+    if (memoPath != null) {
+      Future<void>(() async {
+        try {
+          final f = File(memoPath);
+          if (await f.exists()) await f.delete();
+        } catch (_) {
+          // Ignore — the file may already be gone or locked by a player.
+        }
+      });
+    }
   }
 
   // ── Trim ──────────────────────────────────────────────────────────
@@ -1371,6 +1386,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   title: Text(l10n.sessionAddAnnotationOption),
                   onTap: () => Navigator.of(ctx).pop('annotation'),
                 ),
+                ListTile(
+                  leading: const Icon(Icons.mic_none),
+                  title: Text(l10n.sessionAddVoiceMemoOption),
+                  onTap: () => Navigator.of(ctx).pop('voice_memo'),
+                ),
               ],
             ),
           ),
@@ -1380,7 +1400,71 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _addSpecies();
     } else if (value == 'annotation') {
       _showAnnotationInput();
+    } else if (value == 'voice_memo') {
+      _showVoiceMemoInput();
     }
+  }
+
+  Future<void> _showVoiceMemoInput() async {
+    final l10n = AppLocalizations.of(context)!;
+    final result = await showVoiceMemoDialog(
+      context: context,
+      sessionId: widget.session.id,
+    );
+    if (!mounted || result == null || result.savedPath == null) return;
+
+    // Default scope mirrors text annotations: at-current-position when
+    // playback has progressed past the start, otherwise session-global.
+    final positionSec = _position.inMicroseconds / 1000000.0;
+    var atTimestamp = positionSec > 0.5;
+    final scopeChoice = await showDialog<bool>(
+      context: context,
+      builder:
+          (ctx) => StatefulBuilder(
+            builder:
+                (ctx, setDialogState) => AlertDialog(
+                  title: Text(l10n.sessionAddVoiceMemoOption),
+                  content: Wrap(
+                    spacing: 8,
+                    children: [
+                      ChoiceChip(
+                        avatar: const Icon(Icons.public, size: 18),
+                        label: Text(l10n.sessionAnnotationGlobal),
+                        selected: !atTimestamp,
+                        onSelected:
+                            (_) => setDialogState(() => atTimestamp = false),
+                      ),
+                      ChoiceChip(
+                        avatar: const Icon(Icons.schedule, size: 18),
+                        label: Text(l10n.sessionInsertAtTimestamp),
+                        selected: atTimestamp,
+                        onSelected:
+                            (_) => setDialogState(() => atTimestamp = true),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: Text(l10n.cancel),
+                    ),
+                    FilledButton(
+                      onPressed: () => Navigator.of(ctx).pop(atTimestamp),
+                      child: Text(l10n.sessionSave),
+                    ),
+                  ],
+                ),
+          ),
+    );
+    if (!mounted || scopeChoice == null) return;
+    _addAnnotation(
+      SessionAnnotation(
+        text: '',
+        createdAt: DateTime.now(),
+        offsetInRecording: scopeChoice ? positionSec : null,
+        voiceMemoPath: result.savedPath,
+      ),
+    );
   }
 
   void _showAnnotationInput() {

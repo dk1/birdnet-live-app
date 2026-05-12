@@ -965,6 +965,14 @@
   "@sessionAddAnnotationOption": {
     "description": "Option to add an annotation from the + menu"
   },
+  "sessionAddVoiceMemoOption": "Add Voice Memo",
+  "@sessionAddVoiceMemoOption": {
+    "description": "Option to add a session-level voice memo from the + menu"
+  },
+  "sessionAnnotationVoiceMemoLabel": "Voice memo",
+  "@sessionAnnotationVoiceMemoLabel": {
+    "description": "Placeholder text shown for memo-only annotations that have no text"
+  },
   "sessionTypeLive": "Live Session",
   "@sessionTypeLive": {
     "description": "Title for a live recording session"

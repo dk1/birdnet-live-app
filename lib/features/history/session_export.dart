@@ -645,6 +645,22 @@ Future<String?> buildSessionExport(
       );
     }
 
+    // Same treatment for session-level annotation memos.
+    for (final a in session.annotations) {
+      final memoPath = a.voiceMemoPath;
+      if (memoPath == null) continue;
+      final memoFile = File(memoPath);
+      if (!await memoFile.exists()) continue;
+      final memoBytes = await memoFile.readAsBytes();
+      archive.addFile(
+        ArchiveFile(
+          'memos/${p.basename(memoPath)}',
+          memoBytes.length,
+          memoBytes,
+        ),
+      );
+    }
+
     // Always drop a metadata side-file when the caller provided one, so
     // the provenance information travels with the bundle regardless of
     // which document format the user picked (Raven / CSV / GPX).
@@ -715,7 +731,17 @@ String _buildAnnotationsText(LiveSession session) {
     } else {
       buf.write('[Global] ');
     }
-    buf.writeln(a.text);
+    if (a.text.trim().isNotEmpty) {
+      buf.write(a.text);
+      if (a.hasVoiceMemo) {
+        buf.write(' (voice memo: memos/${p.basename(a.voiceMemoPath!)})');
+      }
+      buf.writeln();
+    } else if (a.hasVoiceMemo) {
+      buf.writeln('(voice memo: memos/${p.basename(a.voiceMemoPath!)})');
+    } else {
+      buf.writeln();
+    }
   }
 
   return buf.toString();
