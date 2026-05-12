@@ -44,15 +44,15 @@ These controls appear in audio-driven live workflows.
 
 ### Gain
 
-Adjusts the input gain shown in the app. Use this only when you need to compensate for very quiet recordings or inputs.
+Linear amplifier applied to incoming audio before it reaches the spectrogram and the classifier. Leave at **1.0×** unless your input is consistently too quiet — for example a high-impedance lavalier mic on a phone, or a USB interface whose preamp is set too low. Pushing gain above 1.0 will not magically reveal calls that the mic never captured; it just rescales whatever the mic delivered, so loud nearby sounds may clip. Below 1.0 is useful in the rare case where a hot input is saturating the spectrogram.
 
 ### High-pass filter (Hz)
 
-Reduces low-frequency rumble before inference.
+Cuts low-frequency content before inference using a 24 dB/octave Butterworth filter — the slider value is the −3 dB cutoff. **0 Hz disables it.** A 100–200 Hz cutoff strips wind, traffic rumble, and handling noise without touching most species; pushing toward 500–1000 Hz starts removing low whoots, owls, grouse, and bittern booms, so only go that high if you are deliberately ignoring those species in exchange for a much cleaner spectrogram in a noisy urban environment. The cutoff you pick should be visible as a sharp horizontal line on the live spectrogram.
 
 ### Microphone
 
-Lets you choose a specific input device or keep the **System default**.
+Lets you choose a specific input device or keep the **System default**. Your selection is remembered across app launches, so if you regularly use a USB or Bluetooth mic in the field you only need to pick it once. The same picker appears on the Survey setup screen.
 
 ## Inference
 
@@ -66,7 +66,7 @@ Sets how conservative detections should be.
 
 ### Sensitivity
 
-Higher values make the detector more permissive, which can recover fainter calls at the cost of more false positives.
+Sigmoid steepness applied to the raw classifier output before the confidence threshold is checked. Higher values make the detector more permissive — fainter or more ambiguous calls cross the threshold, at the cost of more false positives. Lower values are stricter and only let confident detections through. The default of **1.0** matches the BirdNET reference. Try **1.25** if you suspect the model is missing distant calls; drop to **0.75** if you are flooded with low-quality detections of common species. Sensitivity is hot-applied: changing it mid-session takes effect on the next inference window.
 
 ### Inference rate
 
@@ -74,7 +74,7 @@ Controls how frequently BirdNET runs inference.
 
 ### Score pooling
 
-Controls how overlapping analysis windows are combined.
+Combines scores across recent inference windows so a single noisy window doesn't dominate the result. **Off** uses each window's raw probability — most reactive, noisiest. **Average** arithmetic-means the recent windows for the smoothest output. **Max** keeps the loudest peak per species, which is the most reactive smoothing mode and good for brief, sharp calls. **LME** (log-mean-exp, the default) is BirdNET's reference soft-maximum: it behaves like *max* when one window dominates and like *average* when several windows agree, which is usually what you want. Switching modes mid-session clears the rolling buffer so old logits don't leak into the new mode.
 
 ### Pooling window count
 

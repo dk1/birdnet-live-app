@@ -172,7 +172,10 @@ class AudioCaptureService {
     final cosW0 = math.cos(w0);
     final sinW0 = math.sin(w0);
 
-    void section(double q, void Function(double, double, double, double, double) write) {
+    void section(
+      double q,
+      void Function(double, double, double, double, double) write,
+    ) {
       final alpha = sinW0 / (2 * q);
       final b0 = (1 + cosW0) / 2;
       final b1 = -(1 + cosW0);
@@ -184,10 +187,18 @@ class AudioCaptureService {
     }
 
     section(0.54119610014619701, (b0, b1, b2, a1, a2) {
-      _s1B0 = b0; _s1B1 = b1; _s1B2 = b2; _s1A1 = a1; _s1A2 = a2;
+      _s1B0 = b0;
+      _s1B1 = b1;
+      _s1B2 = b2;
+      _s1A1 = a1;
+      _s1A2 = a2;
     });
     section(1.3065629648763766, (b0, b1, b2, a1, a2) {
-      _s2B0 = b0; _s2B1 = b1; _s2B2 = b2; _s2A1 = a1; _s2A2 = a2;
+      _s2B0 = b0;
+      _s2B1 = b1;
+      _s2B2 = b2;
+      _s2A1 = a1;
+      _s2A2 = a2;
     });
   }
 
