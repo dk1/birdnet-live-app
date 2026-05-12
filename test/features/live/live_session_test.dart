@@ -190,6 +190,55 @@ void main() {
       expect(record.isConfirmed, isFalse);
     });
 
+    test('note defaults to null and hasNote is false', () {
+      final record = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.85,
+        timestamp: DateTime.now(),
+      );
+      expect(record.note, isNull);
+      expect(record.hasNote, isFalse);
+      expect(record.toJson().containsKey('note'), isFalse);
+    });
+
+    test('note round-trips and whitespace-only is treated as empty', () {
+      final record = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.85,
+        timestamp: DateTime(2026, 5, 6, 12, 0, 0),
+        note: 'juvenile, distant call',
+      );
+      final json = record.toJson();
+      expect(json['note'], 'juvenile, distant call');
+      final roundTripped = DetectionRecord.fromJson(json);
+      expect(roundTripped.note, 'juvenile, distant call');
+      expect(roundTripped.hasNote, isTrue);
+
+      final blank = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.85,
+        timestamp: DateTime(2026, 5, 6, 12, 0, 0),
+        note: '   ',
+      );
+      expect(blank.hasNote, isFalse);
+      expect(blank.toJson().containsKey('note'), isFalse);
+    });
+
+    test('legacy JSON without note deserializes with null', () {
+      final json = {
+        'scientificName': 'Turdus merula',
+        'commonName': 'Eurasian Blackbird',
+        'confidence': 0.85,
+        'timestamp': '2026-05-06T12:00:00.000Z',
+      };
+      final record = DetectionRecord.fromJson(json);
+      expect(record.note, isNull);
+      expect(record.hasNote, isFalse);
+    });
+
     test('equality compares key fields', () {
       final ts = DateTime(2026, 2, 28, 14, 30, 0);
       final a = DetectionRecord(

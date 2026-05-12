@@ -191,6 +191,7 @@ class DetectionRecord {
     this.latitude,
     this.longitude,
     this.confirmedAt,
+    this.note,
   });
 
   /// Scientific name of the detected species.
@@ -245,6 +246,18 @@ class DetectionRecord {
   /// Convenience: whether this detection has been marked confirmed.
   bool get isConfirmed => confirmedAt != null;
 
+  /// Free-form text note attached to this detection by the reviewer.
+  ///
+  /// Mutable: edited from the session-review UI. Persisted in JSON sessions
+  /// and surfaced in CSV / Raven exports so external tools can carry the
+  /// reviewer's commentary alongside the detection. `null` (rather than an
+  /// empty string) when no note has ever been set, so legacy sessions
+  /// round-trip cleanly.
+  String? note;
+
+  /// Convenience: whether this detection has a non-empty note.
+  bool get hasNote => note != null && note!.trim().isNotEmpty;
+
   /// Scientific name placeholder for unknown / unidentifiable species.
   static const String unknownSpeciesName = 'Unknown species';
 
@@ -291,6 +304,7 @@ class DetectionRecord {
           json['confirmedAt'] != null
               ? DateTime.parse(json['confirmedAt'] as String)
               : null,
+      note: json['note'] as String?,
     );
   }
 
@@ -308,6 +322,7 @@ class DetectionRecord {
     if (longitude != null) 'detLon': longitude,
     if (confirmedAt != null)
       'confirmedAt': confirmedAt!.toUtc().toIso8601String(),
+    if (hasNote) 'note': note,
   };
 
   /// Confidence expressed as a percentage string, e.g. "87.3 %".

@@ -731,6 +731,34 @@
   "@detectionDeleteSpecies": {
     "description": "Label of the overflow-menu entry that removes every detection of this species from the session"
   },
+  "detectionAddNote": "Add note",
+  "@detectionAddNote": {
+    "description": "Overflow-menu entry that opens the note editor when no note exists yet"
+  },
+  "detectionEditNote": "Edit note",
+  "@detectionEditNote": {
+    "description": "Overflow-menu entry that opens the note editor when a note already exists"
+  },
+  "detectionNoteDialogTitle": "Detection note",
+  "@detectionNoteDialogTitle": {
+    "description": "Title of the dialog used to edit a per-detection text note"
+  },
+  "detectionNoteHint": "e.g. juvenile, distant, behind tree …",
+  "@detectionNoteHint": {
+    "description": "Placeholder text in the note text field"
+  },
+  "detectionNoteSaved": "Note saved",
+  "@detectionNoteSaved": {
+    "description": "Snackbar shown after a detection note is added or updated"
+  },
+  "detectionNoteCleared": "Note removed",
+  "@detectionNoteCleared": {
+    "description": "Snackbar shown after a detection note is cleared"
+  },
+  "detectionNoteTooltip": "Has note",
+  "@detectionNoteTooltip": {
+    "description": "Tooltip on the note glyph shown next to a detection that has a note"
+  },
   "sessionDetectionRemoved": "Detection removed",
   "@sessionDetectionRemoved": {
     "description": "Snackbar text after a detection cluster is dismissed via swipe or the overflow menu's delete entry"

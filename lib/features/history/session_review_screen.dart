@@ -1125,6 +1125,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 // and rebuild so species rows + badges refresh.
                 if (mounted) setState(() => _isDirty = true);
               },
+              onNoteChanged: () {
+                if (mounted) setState(() => _isDirty = true);
+              },
               onDeleteDetection: (record) {
                 _deleteDetectionWithUndo(_DetectionCluster([record]));
               },
@@ -1444,6 +1447,54 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   ],
                 ),
           ),
+    );
+  }
+
+  Future<void> _editClusterNote(_DetectionCluster cluster) async {
+    final l10n = AppLocalizations.of(context)!;
+    final target = cluster.records.first;
+    final controller = TextEditingController(text: target.note ?? '');
+    final result = await showDialog<String>(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(l10n.detectionNoteDialogTitle),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              maxLines: 4,
+              minLines: 2,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(hintText: l10n.detectionNoteHint),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(controller.text),
+                child: Text(l10n.sessionSave),
+              ),
+            ],
+          ),
+    );
+    if (result == null || !mounted) return;
+    final trimmed = result.trim();
+    final wasEmpty = !target.hasNote;
+    final isNowEmpty = trimmed.isEmpty;
+    if (wasEmpty && isNowEmpty) return;
+    setState(() {
+      target.note = isNowEmpty ? null : trimmed;
+      _isDirty = true;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isNowEmpty ? l10n.detectionNoteCleared : l10n.detectionNoteSaved,
+        ),
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 
@@ -2016,6 +2067,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   cluster.records.first,
                   session: widget.session,
                 ),
+            onEditNoteCluster: _editClusterNote,
             onShowOnMap: _showDetectionOnMap,
           );
         },
@@ -2254,6 +2306,7 @@ class _FullscreenSurveyMapScreen extends ConsumerStatefulWidget {
     required this.detections,
     this.initialHighlight,
     this.onConfirmChanged,
+    this.onNoteChanged,
     this.onDeleteDetection,
   });
 
@@ -2269,6 +2322,7 @@ class _FullscreenSurveyMapScreen extends ConsumerStatefulWidget {
   /// [DetectionRecord.confirmedAt]. The host uses this hook to mark the
   /// session dirty and refresh derived UI (species rows, marker badges).
   final VoidCallback? onConfirmChanged;
+  final VoidCallback? onNoteChanged;
 
   /// Invoked when the user picks `Delete detection` from the clip
   /// player sheet's overflow menu. The host removes the record from
@@ -2385,6 +2439,10 @@ class _FullscreenSurveyMapScreenState
         // dirty and the inline review screen refreshes on pop.
         if (mounted) setState(() {});
         widget.onConfirmChanged?.call();
+      },
+      onNoteChanged: () {
+        if (mounted) setState(() {});
+        widget.onNoteChanged?.call();
       },
       onDelete:
           widget.onDeleteDetection == null

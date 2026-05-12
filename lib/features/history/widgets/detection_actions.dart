@@ -45,6 +45,8 @@ class DetectionActions {
     this.onDelete,
     this.onDeleteSpecies,
     this.onReplace,
+    this.onEditNote,
+    this.hasNote = false,
   });
 
   /// Toggles the confirmed state of the detection (or every record in
@@ -77,17 +79,29 @@ class DetectionActions {
   /// surfaces only — live capture has nothing to replace yet.
   final VoidCallback? onReplace;
 
+  /// Opens an editor for the detection's free-form text note. Hosts
+  /// own the dialog/sheet and persistence; this widget only reports
+  /// user intent. The menu label switches between "Add note" and
+  /// "Edit note" based on [hasNote].
+  final VoidCallback? onEditNote;
+
+  /// Current note state, used by the overflow menu to label the entry
+  /// "Edit note" (true) vs "Add note" (false) and to decorate the
+  /// trailing chrome with a small note glyph at row level.
+  final bool hasNote;
+
   /// True when at least one overflow entry would be rendered. Hosts
   /// can use this to skip drawing the overflow button entirely when
-  /// none of share / delete / replace is wired up.
+  /// none of share / delete / replace / note is wired up.
   bool get hasOverflow =>
       onShare != null ||
       onDelete != null ||
       onDeleteSpecies != null ||
-      onReplace != null;
+      onReplace != null ||
+      onEditNote != null;
 }
 
-enum _OverflowAction { share, replace, delete, deleteSpecies }
+enum _OverflowAction { share, replace, editNote, delete, deleteSpecies }
 
 /// `more_vert` popup menu that lists the non-null entries of a
 /// [DetectionActions]. Renders nothing when `actions.hasOverflow` is
@@ -130,6 +144,8 @@ class DetectionActionsOverflow extends StatelessWidget {
             actions.onShare?.call();
           case _OverflowAction.replace:
             actions.onReplace?.call();
+          case _OverflowAction.editNote:
+            actions.onEditNote?.call();
           case _OverflowAction.delete:
             actions.onDelete?.call();
           case _OverflowAction.deleteSpecies:
@@ -156,6 +172,19 @@ class DetectionActionsOverflow extends StatelessWidget {
               child: _OverflowRow(
                 icon: Icons.swap_horiz,
                 label: l10n.sessionReplaceDetection,
+              ),
+            ),
+          );
+        }
+        if (actions.onEditNote != null) {
+          items.add(
+            PopupMenuItem<_OverflowAction>(
+              value: _OverflowAction.editNote,
+              child: _OverflowRow(
+                icon: Icons.sticky_note_2_outlined,
+                label: actions.hasNote
+                    ? l10n.detectionEditNote
+                    : l10n.detectionAddNote,
               ),
             ),
           );

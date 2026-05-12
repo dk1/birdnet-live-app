@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Per-detection text notes.** Every detection in Session Review now has an "Add note" / "Edit note" entry in the overflow menu (also surfaced in the clip-player sheet). Notes accept short free-form text — e.g. "juvenile, distant, behind tree" — and a small note glyph appears inline on the detection row when one is set, with the note text as a long-press tooltip. Notes round-trip through JSON sessions so they survive export/re-import.
+
 ### Changed
 
 ### Fixed

@@ -682,6 +682,7 @@ class _SpeciesTile extends ConsumerWidget {
     required this.onReplaceCluster,
     required this.onToggleConfirmCluster,
     required this.onShareCluster,
+    required this.onEditNoteCluster,
     this.activePositionSec,
     this.activeCluster,
     this.onPause,
@@ -732,6 +733,11 @@ class _SpeciesTile extends ConsumerWidget {
   /// Wired up from the cluster row's long-press context menu (and any
   /// future per-detection share entry points).
   final ValueChanged<_DetectionCluster> onShareCluster;
+
+  /// Open the note editor for a cluster (edits the cluster's first
+  /// record, since a cluster represents one continuous detection of
+  /// the same species and the user typically wants one note per row).
+  final ValueChanged<_DetectionCluster> onEditNoteCluster;
   final ValueChanged<DetectionRecord>? onShowOnMap;
 
   /// Called when the user taps the play affordance on a row that is
@@ -1040,6 +1046,7 @@ class _SpeciesTile extends ConsumerWidget {
                       onReplace: () => onReplaceCluster(cluster),
                       onToggleConfirm: () => onToggleConfirmCluster(cluster),
                       onShare: () => onShareCluster(cluster),
+                      onEditNote: () => onEditNoteCluster(cluster),
                       isSurvey: isSurvey,
                       audioAvailable: audioAvailable,
                       onShowOnMap:
@@ -1122,6 +1129,7 @@ class _ClusterRow extends ConsumerWidget {
     required this.onReplace,
     required this.onToggleConfirm,
     required this.onShare,
+    required this.onEditNote,
     this.onPause,
     this.clipOffsetSec = 0.0,
     this.windowSec = 3,
@@ -1147,6 +1155,9 @@ class _ClusterRow extends ConsumerWidget {
   /// share sheet. Surfaced through a long-press context menu on the row
   /// so we don't add yet another inline icon to the trailing strip.
   final VoidCallback onShare;
+
+  /// Opens the note editor for this cluster's first record.
+  final VoidCallback onEditNote;
 
   /// Pause callback used when this row is currently being played. When
   /// `null`, an active row continues to behave like a re-seek.
@@ -1315,12 +1326,30 @@ class _ClusterRow extends ConsumerWidget {
                 ),
               ),
             ),
+            if (cluster.records.first.hasNote)
+              Tooltip(
+                message: cluster.records.first.note ?? l10n.detectionNoteTooltip,
+                child: InkWell(
+                  onTap: onEditNote,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
+                      Icons.sticky_note_2_outlined,
+                      size: 22,
+                      color: theme.colorScheme.primary.withAlpha(180),
+                    ),
+                  ),
+                ),
+              ),
             DetectionActionsOverflow(
               actions: DetectionActions(
                 onShare: onShare,
                 onDelete: onDelete,
                 onDeleteSpecies: onDeleteSpecies,
                 onReplace: onReplace,
+                onEditNote: onEditNote,
+                hasNote: cluster.records.first.hasNote,
               ),
               iconColor: theme.colorScheme.onSurface.withAlpha(100),
             ),
