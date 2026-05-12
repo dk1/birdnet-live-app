@@ -1170,29 +1170,9 @@
   "@settingsSensitivityDescription": {
     "description": "Subtitle for sensitivity slider"
   },
-  "settingsScorePooling": "Score pooling",
-  "@settingsScorePooling": {
-    "description": "Temporal score pooling setting label"
-  },
   "settingsScorePoolingWindows": "Pooling window count",
   "@settingsScorePoolingWindows": {
     "description": "Label for the slider that controls how many consecutive inference windows are pooled together"
-  },
-  "settingsPoolingOff": "Off",
-  "@settingsPoolingOff": {
-    "description": "No temporal pooling"
-  },
-  "settingsPoolingAverage": "Average",
-  "@settingsPoolingAverage": {
-    "description": "Average temporal pooling"
-  },
-  "settingsPoolingMax": "Max",
-  "@settingsPoolingMax": {
-    "description": "Max temporal pooling"
-  },
-  "settingsPoolingLME": "LME",
-  "@settingsPoolingLME": {
-    "description": "Log-mean-exp temporal pooling"
   },
   "settingsDangerZone": "Danger Zone",
   "@settingsDangerZone": {
@@ -1479,7 +1459,6 @@
   "settingsHelpConfidenceThreshold": "Detections below this score are hidden. Lower values surface more uncertain detections (good for rare species or quiet recordings); higher values reduce false positives but may miss faint or distant calls.",
   "settingsHelpSensitivity": "Logistic sigmoid steepness applied to model logits. Higher values push uncertain scores toward extremes (more high-confidence detections plus more false positives). Leave at 1.0 unless you know what you're doing.",
   "settingsHelpInferenceRate": "How often BirdNET runs inference per second. Higher rates catch brief calls but use more battery and CPU; lower rates are gentler on the device but may miss short vocalizations.",
-  "settingsHelpScorePooling": "How scores from overlapping analysis windows are combined. 'Max' is most reactive; 'average' smooths flickering; 'LME' (logit-mean-exp) is a soft maximum that balances both.",
   "settingsHelpScorePoolingWindows": "Number of consecutive inference windows that contribute to the pooled score. Larger values smooth detections over a longer time horizon — better for steady, distant calls but slower to react to brief vocalizations. Smaller values are more responsive but noisier.",
   "settingsHelpFftSize": "Resolution of the spectrogram. Larger sizes give finer frequency detail but coarser timing; smaller sizes show transient calls more sharply but blur frequencies. 1024–2048 works well for most species.",
   "settingsHelpColorMap": "Color palette used to render spectrogram intensity. Viridis and Magma are perceptually uniform; Grayscale is print-friendly and emphasizes structure over hue.",

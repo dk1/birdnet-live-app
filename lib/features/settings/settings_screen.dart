@@ -274,23 +274,6 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged:
                     (v) => ref.read(inferenceRateProvider.notifier).set(v),
               ),
-              _ChoiceTile<String>(
-                title: l10n.settingsScorePooling,
-                helpBody: l10n.settingsHelpScorePooling,
-                value: ref.watch(scorePoolingProvider),
-                options: {
-                  'off': l10n.settingsPoolingOff,
-                  'average': l10n.settingsPoolingAverage,
-                  'max': l10n.settingsPoolingMax,
-                  'lme': l10n.settingsPoolingLME,
-                },
-                onChanged:
-                    (v) => ref.read(scorePoolingProvider.notifier).set(v),
-              ),
-              // The pooling-windows slider only matters when pooling is on. We
-              // still leave it visible (greyed out at the bottom of the section
-              // would be more discoverable than hiding it entirely) so users can
-              // dial it in before re-enabling pooling.
               _SliderTile(
                 title: l10n.settingsScorePoolingWindows,
                 helpBody: l10n.settingsHelpScorePoolingWindows,

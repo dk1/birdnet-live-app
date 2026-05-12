@@ -62,7 +62,6 @@ abstract final class PrefKeys {
   static const String inferenceRate = 'inference_rate';
   static const String speciesFilterMode = 'species_filter_mode';
   static const String sensitivity = 'sensitivity';
-  static const String scorePooling = 'score_pooling';
   static const String scorePoolingWindows = 'score_pooling_windows';
 
   // Spectrogram settings
