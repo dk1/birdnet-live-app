@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Map tiles now cache to disk.** OpenStreetMap tiles used by the survey map, session map, and location pickers are persisted in a dedicated on-disk cache (90-day retention, 4000-tile cap) instead of being re-downloaded from scratch on every cold start. Repeated panning, zooming, and revisits to previously viewed areas are now instant, and maps remain usable when signal drops mid-survey.
+
 ## [0.11.1] - 2026-05-12
 
 ### Added
