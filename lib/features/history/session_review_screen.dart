@@ -2279,7 +2279,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       avatar: Icon(
         a.hasVoiceMemo
             ? Icons.mic
-            : (a.offsetInRecording != null ? Icons.schedule : Icons.public),
+            : (a.offsetInRecording != null ? Icons.schedule : Icons.short_text),
         size: 16,
       ),
       onPressed: () => _editAnnotation(i),
