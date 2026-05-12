@@ -180,6 +180,7 @@
   "detectionNoteHint": "z. B. Jungvogel, weit entfernt, hinter Baum …",
   "detectionNoteSaved": "Notiz gespeichert",
   "detectionNoteCleared": "Notiz entfernt",
+  "detectionDeleteNote": "Löschen",
   "detectionNoteTooltip": "Notiz vorhanden",
   "detectionRecordVoiceMemo": "Sprachnotiz aufnehmen",
   "detectionReplaceVoiceMemo": "Sprachnotiz ersetzen",

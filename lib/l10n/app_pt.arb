@@ -180,6 +180,7 @@
   "detectionNoteHint": "ex.: juvenil, distante, atrás de árvore …",
   "detectionNoteSaved": "Nota salva",
   "detectionNoteCleared": "Nota removida",
+  "detectionDeleteNote": "Excluir",
   "detectionNoteTooltip": "Contém nota",
   "detectionRecordVoiceMemo": "Gravar memo de voz",
   "detectionReplaceVoiceMemo": "Substituir memo de voz",

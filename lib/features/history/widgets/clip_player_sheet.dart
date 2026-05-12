@@ -273,6 +273,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
   Future<void> _editNote() async {
     final l10n = AppLocalizations.of(context)!;
     final det = widget.detection;
+    final hadNote = det.hasNote;
     final controller = TextEditingController(text: det.note ?? '');
     final result = await showDialog<String>(
       context: context,
@@ -288,6 +289,14 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
               decoration: InputDecoration(hintText: l10n.detectionNoteHint),
             ),
             actions: [
+              if (hadNote)
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(''),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(ctx).colorScheme.error,
+                  ),
+                  child: Text(l10n.detectionDeleteNote),
+                ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
                 child: Text(l10n.cancel),

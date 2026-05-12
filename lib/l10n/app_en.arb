@@ -755,6 +755,10 @@
   "@detectionNoteCleared": {
     "description": "Snackbar shown after a detection note is cleared"
   },
+  "detectionDeleteNote": "Delete",
+  "@detectionDeleteNote": {
+    "description": "Button label in the note editor dialog that removes the existing note"
+  },
   "detectionNoteTooltip": "Has note",
   "@detectionNoteTooltip": {
     "description": "Tooltip on the note glyph shown next to a detection that has a note"

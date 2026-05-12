@@ -1731,6 +1731,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   Future<void> _editClusterNote(_DetectionCluster cluster) async {
     final l10n = AppLocalizations.of(context)!;
     final target = cluster.records.first;
+    final hadNote = target.hasNote;
     final controller = TextEditingController(text: target.note ?? '');
     final result = await showDialog<String>(
       context: context,
@@ -1746,6 +1747,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               decoration: InputDecoration(hintText: l10n.detectionNoteHint),
             ),
             actions: [
+              if (hadNote)
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(''),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(ctx).colorScheme.error,
+                  ),
+                  child: Text(l10n.detectionDeleteNote),
+                ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
                 child: Text(l10n.cancel),

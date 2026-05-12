@@ -180,6 +180,7 @@
   "detectionNoteHint": "např. mladý jedinec, vzdálený, za stromem …",
   "detectionNoteSaved": "Poznámka uložena",
   "detectionNoteCleared": "Poznámka odstraněna",
+  "detectionDeleteNote": "Smazat",
   "detectionNoteTooltip": "Obsahuje poznámku",
   "detectionRecordVoiceMemo": "Nahrát hlasovou poznámku",
   "detectionReplaceVoiceMemo": "Nahradit hlasovou poznámku",
