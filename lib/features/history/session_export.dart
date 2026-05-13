@@ -35,6 +35,7 @@ import 'package:path/path.dart' as p;
 
 import '../../shared/services/taxonomy_service.dart';
 import '../live/live_session.dart';
+import 'html_report.dart';
 
 /// Upper frequency bound for Raven annotations (Nyquist of 32 kHz).
 const int _highFreqHz = 16000;
@@ -514,6 +515,7 @@ Future<String?> buildSessionExport(
   int? clipContextSecondsOverride,
   Map<String, dynamic>? metadata,
   bool useAbsoluteSurveyTime = false,
+  bool includeHtmlReport = false,
 }) async {
   final prefix = _exportPrefix(session);
   final audioPath = session.recordingPath;
@@ -686,6 +688,26 @@ Future<String?> buildSessionExport(
       final gpxContent = buildGpxExport(session);
       final gpxBytes = Uint8List.fromList(utf8.encode(gpxContent));
       archive.addFile(ArchiveFile('$prefix.gpx', gpxBytes.length, gpxBytes));
+    }
+
+    // Pragmatic, single-file HTML report at the ZIP root. Lives next to
+    // the audio so its relative `<audio src="...">` references resolve
+    // once the user unzips. Species images come from the BirdNET
+    // taxonomy API at view time — keeps the report tiny but means the
+    // thumbnails need internet (graceful fallback to a placeholder when
+    // offline).
+    if (includeHtmlReport) {
+      final reportHtml = buildHtmlReport(
+        session,
+        clipFileMap: clipFileMap,
+        audioFileName: hasFullRecording ? audioFileName : null,
+        taxonomy: taxonomy,
+        speciesLocale: speciesLocale,
+      );
+      final reportBytes = Uint8List.fromList(utf8.encode(reportHtml));
+      archive.addFile(
+        ArchiveFile('report.html', reportBytes.length, reportBytes),
+      );
     }
 
     final zipBytes = ZipEncoder().encode(archive);
