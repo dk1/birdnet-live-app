@@ -95,7 +95,7 @@ String buildHtmlReport(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>$title — BirdNET Live Report</title>
-${hasMap ? '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">\n<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">\n<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">' : ''}
+${hasMap ? '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">' : ''}
 <style>
 :root {
   --bg: #f7f7f9;
@@ -300,12 +300,66 @@ section.card h2 {
   height: 32px;
   margin-top: 6px;
 }
-.detection a.taxonomy-link {
-  color: var(--primary);
-  text-decoration: none;
+.detection .stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
   font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
 }
-.detection a.taxonomy-link:hover { text-decoration: underline; }
+.detection .count-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--text);
+}
+.occurrences {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+.occurrence {
+  display: grid;
+  grid-template-columns: 64px 50px 1fr;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.occurrence .occ-time { font-variant-numeric: tabular-nums; }
+.occurrence audio {
+  width: 100%;
+  height: 28px;
+}
+.occurrence .occ-note {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  padding: 4px 8px;
+  background: var(--surface-2);
+  border-left: 3px solid var(--primary);
+  border-radius: 0 4px 4px 0;
+  font-size: 12px;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+.occurrence .occ-confirmed {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--primary-dim);
+  color: var(--primary);
+  margin-left: 4px;
+}
 .detection .links {
   display: flex;
   gap: 10px;
@@ -395,7 +449,7 @@ ${hasMap ? '''<section class="card">
 
 ${audioFileName != null ? '''<section class="card">
   <h2>Full recording</h2>
-  <audio controls preload="none" src="${_esc(audioFileName)}"></audio>
+  <audio controls preload="none" src="${_esc(Uri.encodeComponent(audioFileName))}"></audio>
 </section>''' : ''}
 
 <section class="card">
@@ -422,7 +476,6 @@ ${settingsRows.isEmpty ? '' : '''<section class="card">
 window.SESSION_DATA = $dataJson;
 </script>
 ${hasMap ? '''<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
 <script defer>
 window.addEventListener('load', function () {
   if (typeof L === 'undefined') {
@@ -444,50 +497,26 @@ window.addEventListener('load', function () {
     bounds.extend(poly.getBounds());
   }
   if (data.detections) {
-    // Cluster markers by species so a busy hotspot collapses cleanly.
-    // MarkerCluster falls back to plain markers if the plugin failed
-    // to load (e.g. offline second visit) so the map stays usable.
-    var hasCluster = (typeof L.markerClusterGroup === 'function');
-    var clusterGroup = hasCluster ? L.markerClusterGroup({
-      showCoverageOnHover: false,
-      spiderfyOnMaxZoom: true,
-      maxClusterRadius: 50
-    }) : null;
     data.detections.forEach(function (d) {
       if (d.lat == null || d.lon == null) return;
-      var icon;
-      if (d.img) {
-        icon = L.divIcon({
-          className: '',
-          html: '<div class="species-pin" style="background-image:url(\\'' + d.img + '\\')"></div>',
-          iconSize: [36, 36],
-          iconAnchor: [18, 18],
-          popupAnchor: [0, -18]
-        });
-      } else {
-        icon = L.divIcon({
-          className: '',
-          html: '<div class="species-pin fallback"></div>',
-          iconSize: [36, 36],
-          iconAnchor: [18, 18],
-          popupAnchor: [0, -18]
-        });
-      }
-      var m = L.marker([d.lat, d.lon], { icon: icon });
+      var icon = L.divIcon({
+        className: '',
+        html: d.img
+          ? '<div class="species-pin" style="background-image:url(\\'' + d.img + '\\')"></div>'
+          : '<div class="species-pin fallback"></div>',
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -18]
+      });
+      var m = L.marker([d.lat, d.lon], { icon: icon }).addTo(map);
       var popup = '<div class="popup-card">'
         + (d.img ? '<img src="' + d.img + '" alt="">' : '')
         + '<div class="pop-body"><b>' + escapeHtml(d.common) + '</b>'
         + '<i>' + escapeHtml(d.sci) + '</i>'
         + Math.round(d.conf * 100) + '%</div></div>';
       m.bindPopup(popup);
-      if (clusterGroup) {
-        clusterGroup.addLayer(m);
-      } else {
-        m.addTo(map);
-      }
       bounds.extend(m.getLatLng());
     });
-    if (clusterGroup) clusterGroup.addTo(map);
   }
   if (bounds.isValid()) {
     map.fitBounds(bounds, { padding: [24, 24] });
@@ -518,13 +547,16 @@ String _buildDataPayload(
   for (var i = 0; i < session.detections.length; i++) {
     final d = session.detections[i];
     final encodedSci = Uri.encodeComponent(d.scientificName);
+    final clipName = clipFileMap?[i];
     detections.add({
       'common': _localizedCommon(d, taxonomy, speciesLocale),
       'sci': d.scientificName,
       'conf': d.confidence,
       'lat': d.latitude,
       'lon': d.longitude,
-      'clip': clipFileMap?[i],
+      // Encode the clip filename so '#' / spaces in user folder paths
+      // don't get parsed as URL fragments by the browser.
+      'clip': clipName != null ? Uri.encodeComponent(clipName) : null,
       'img':
           'https://birdnet.cornell.edu/taxonomy/api/image/$encodedSci?size=thumb',
     });
@@ -547,32 +579,41 @@ String _buildDetectionsHtml(
   if (session.detections.isEmpty) return '';
   final timeFmt = DateFormat('HH:mm:ss');
   final start = session.startTime;
-  final buf = StringBuffer();
-  for (var i = 0; i < session.detections.length; i++) {
-    final d = session.detections[i];
-    final common = _localizedCommon(d, taxonomy, speciesLocale);
-    final sci = d.scientificName;
-    final confPct = (d.confidence * 100).round();
-    final scoreClass =
-        d.confidence >= 0.7 ? 'high' : (d.confidence < 0.4 ? 'low' : '');
-    final relSec = d.timestamp.difference(start).inSeconds;
-    final relText = _fmtRelative(relSec);
-    final wallText = timeFmt.format(d.timestamp.toLocal());
-    final clipName = clipFileMap?[i];
-    final note = d.note;
-    final hasNote = note != null && note.trim().isNotEmpty;
 
-    // Cornell taxonomy API serves a small WebP per scientific name. The
-    // browser falls back to the placeholder block if the request fails
-    // (offline or unknown species) thanks to the inline onerror swap.
+  // Group detections by scientific name, mirroring the in-app session
+  // review screen (one card per species, individual hits listed inside).
+  final indices = <String, List<int>>{};
+  for (var i = 0; i < session.detections.length; i++) {
+    final sci = session.detections[i].scientificName;
+    indices.putIfAbsent(sci, () => []).add(i);
+  }
+  // Sort species by first-detection time (matches session_review_screen).
+  final orderedSpecies = indices.keys.toList()
+    ..sort((a, b) {
+      final ta = session.detections[indices[a]!.first].timestamp;
+      final tb = session.detections[indices[b]!.first].timestamp;
+      return ta.compareTo(tb);
+    });
+
+  final buf = StringBuffer();
+  for (final sci in orderedSpecies) {
+    final ids = indices[sci]!;
+    final firstDet = session.detections[ids.first];
+    final common = _localizedCommon(firstDet, taxonomy, speciesLocale);
+    // Best confidence across all hits for the species header pill.
+    var bestConf = 0.0;
+    for (final i in ids) {
+      final c = session.detections[i].confidence;
+      if (c > bestConf) bestConf = c;
+    }
+    final bestPct = (bestConf * 100).round();
+    final bestClass =
+        bestConf >= 0.7 ? 'high' : (bestConf < 0.4 ? 'low' : '');
+
     final encodedSci = Uri.encodeComponent(sci);
     final imgUrl =
         'https://birdnet.cornell.edu/taxonomy/api/image/$encodedSci?size=thumb';
 
-    // Resolve external reference links from the bundled taxonomy:
-    // eBird / iNaturalist need IDs we already store; Wikipedia URLs
-    // are localized, with English fallback. We only emit a link when
-    // the underlying ID/URL exists.
     final taxon = taxonomy?.lookup(sci);
     final ebirdUrl = taxon?.ebirdUrl;
     final inatUrl = taxon?.inatUrl;
@@ -594,12 +635,12 @@ String _buildDetectionsHtml(
     buf.writeln('      <span class="common">${_esc(common)}</span>');
     buf.writeln('      <span class="sci">${_esc(sci)}</span>');
     buf.writeln('    </div>');
-    buf.writeln('    <div class="meta-row">');
-    buf.writeln('      <span class="score $scoreClass">$confPct%</span>');
-    buf.writeln('      <span>${_esc(wallText)} · ${_esc(relText)}</span>');
-    if (d.isConfirmed) {
-      buf.writeln('      <span class="confirmed-pill">Confirmed</span>');
-    }
+    buf.writeln('    <div class="stats">');
+    buf.writeln('      <span class="score $bestClass">$bestPct%</span>');
+    buf.writeln(
+      '      <span class="count-pill">${ids.length} '
+      '${ids.length == 1 ? 'detection' : 'detections'}</span>',
+    );
     buf.writeln('    </div>');
     if (ebirdUrl != null || inatUrl != null || wikiUrl != null) {
       buf.writeln('    <div class="links">');
@@ -620,14 +661,52 @@ String _buildDetectionsHtml(
       }
       buf.writeln('    </div>');
     }
-    if (hasNote) {
-      buf.writeln('    <div class="note">${_esc(note.trim())}</div>');
-    }
-    if (clipName != null) {
+    // Individual occurrences within this species. Each row: relative
+    // time, confidence pill, and (if present) audio clip + note.
+    buf.writeln('    <div class="occurrences">');
+    for (final i in ids) {
+      final d = session.detections[i];
+      final confPct = (d.confidence * 100).round();
+      final scoreClass =
+          d.confidence >= 0.7 ? 'high' : (d.confidence < 0.4 ? 'low' : '');
+      final relSec = d.timestamp.difference(start).inSeconds;
+      final relText = _fmtRelative(relSec);
+      final wallText = timeFmt.format(d.timestamp.toLocal());
+      // Encode clip filename so '#' or spaces in the user's folder
+      // don't get parsed as URL fragments by the browser.
+      final clipNameRaw = clipFileMap?[i];
+      final clipNameEncoded =
+          clipNameRaw != null ? Uri.encodeComponent(clipNameRaw) : null;
+      final note = d.note;
+      final hasNote = note != null && note.trim().isNotEmpty;
+
+      buf.writeln('      <div class="occurrence">');
       buf.writeln(
-        '    <audio controls preload="none" src="${_esc(clipName)}"></audio>',
+        '        <span class="occ-time">${_esc(wallText)}</span>',
       );
+      buf.writeln(
+        '        <span class="score $scoreClass">$confPct%</span>',
+      );
+      if (clipNameEncoded != null) {
+        buf.writeln(
+          '        <audio controls preload="none" src="${_esc(clipNameEncoded)}"></audio>',
+        );
+      } else {
+        buf.writeln(
+          '        <span style="color:var(--text-muted)">${_esc(relText)}</span>',
+        );
+      }
+      if (d.isConfirmed) {
+        buf.writeln(
+          '        <span class="occ-confirmed">Confirmed</span>',
+        );
+      }
+      if (hasNote) {
+        buf.writeln('        <div class="occ-note">${_esc(note.trim())}</div>');
+      }
+      buf.writeln('      </div>');
     }
+    buf.writeln('    </div>');
     buf.writeln('  </div>');
     buf.writeln('</div>');
   }

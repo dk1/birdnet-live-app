@@ -421,10 +421,11 @@ Map<String, dynamic> buildExportMetadata({
   // applied values live in `appliedSettings` below.
   Map<String, dynamic>? slimAudioModel;
   if (audioModel != null) {
-    slimAudioModel = Map<String, dynamic>.from(audioModel)
-      ..remove('inference')
-      ..remove('onnx')
-      ..remove('labels');
+    slimAudioModel =
+        Map<String, dynamic>.from(audioModel)
+          ..remove('inference')
+          ..remove('onnx')
+          ..remove('labels');
   }
   Map<String, dynamic>? slimGeoModel;
   if (geoModel != null) {
@@ -448,8 +449,7 @@ Map<String, dynamic> buildExportMetadata({
       if (s.poolingWindows != null) 'poolingWindows': s.poolingWindows,
       if (s.gainLinear != null) 'gainLinear': s.gainLinear,
       if (s.highPassHz != null) 'highPassHz': s.highPassHz,
-      if (s.clipContextSeconds > 0)
-        'clipContextSeconds': s.clipContextSeconds,
+      if (s.clipContextSeconds > 0) 'clipContextSeconds': s.clipContextSeconds,
     };
   }
 
