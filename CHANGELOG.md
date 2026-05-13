@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.1] - 2026-05-22
+
+### Changed
+
+- **Compact weather chip on the session review header.** The temperature and condition icon now sit inline with the date row instead of taking their own line, saving vertical space on small phones. Tapping the chip still opens the full weather details sheet (now with an explicit "Condition" row).
+- **Weather snapshot included when sharing from the session library.** The per-row Share action now bundles the same `metadata.json` (with the embedded weather block, app version, model config, and prefs snapshot) that the session review screen produces. When weather data exists and the user picked a non-JSON format (CSV, Raven, GPX), the export is automatically packaged as a ZIP so the metadata sidecar travels with it.
+- **6 h persistent weather cache.** Weather snapshots are now persisted across app launches and reused for any session started within 6 hours at the same 0.1° cell. Multiple short sessions at the same site no longer hit the Open-Meteo API repeatedly.
+- **Persistent reverse-geocode cache + library backfill.** Place names returned by Nominatim are cached on a 0.1° lat/lon grid (no expiry — place names don't change on a birding-trip timescale), so a second session at the same site never re-hits the network. The session library also auto-backfills its location chip from this cache on every list load and writes the resolved name back into each session's `locationName`, making the label permanent for that session.
+
 ## [0.12.0] - 2026-05-21
 
 ### Added
