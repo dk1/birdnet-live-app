@@ -9,6 +9,7 @@ import 'package:archive/archive.dart';
 import 'package:birdnet_live/features/history/session_export.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 
 LiveSession _makeSession({
@@ -54,8 +55,11 @@ DetectionRecord _det(
 }
 
 /// The expected BirdNET_Live export prefix for the test session
-/// (2025-06-15 08:00:00 UTC, no session number).
-const _prefix = 'BirdNET_Live_2025-06-15_08-00-00';
+/// (2025-06-15 08:00:00 UTC, no session number). Built from local time so
+/// the test stays timezone-agnostic — export filenames are always rendered
+/// in the user's local time so they sort sensibly in their file browser.
+final _prefix =
+    'BirdNET_Live_${DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.utc(2025, 6, 15, 8, 0, 0).toLocal())}';
 
 void main() {
   group('buildRavenSelectionTable', () {
@@ -589,16 +593,8 @@ void main() {
 
       final names = archive.map((f) => f.name).toList();
       // Custom name is appended after the timestamp.
-      expect(
-        names,
-        contains('BirdNET_Live_2025-06-15_08-00-00_Morning_walk.wav'),
-      );
-      expect(
-        names,
-        contains(
-          'BirdNET_Live_2025-06-15_08-00-00_Morning_walk.selections.txt',
-        ),
-      );
+      expect(names, contains('${_prefix}_Morning_walk.wav'));
+      expect(names, contains('${_prefix}_Morning_walk.selections.txt'));
     });
 
     test('auto-includes GPX in survey ZIP bundles', () async {

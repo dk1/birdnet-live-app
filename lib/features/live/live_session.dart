@@ -35,6 +35,11 @@ class SessionSettings {
     this.alertMinIntervalSeconds = 15,
     this.alertMaxPerMinute = 3,
     this.alertCoalesce = true,
+    this.sensitivity,
+    this.poolingMode,
+    this.poolingWindows,
+    this.gainLinear,
+    this.highPassHz,
   });
 
   /// Window duration in seconds.
@@ -92,6 +97,29 @@ class SessionSettings {
   /// Whether over-cap alerts are queued for a summary notification.
   final bool alertCoalesce;
 
+  // ── Applied inference / DSP knobs (v0.11.4+) ─────────────────────
+  // These mirror the values the controller actually applied to the
+  // inference isolate / capture pipeline, so exports faithfully record
+  // what produced the detections instead of pretending the user never
+  // touched the defaults. All nullable so legacy sessions round-trip.
+
+  /// Sensitivity multiplier applied to model logits (1.0 = neutral).
+  final double? sensitivity;
+
+  /// Score pooling mode (`avg`, `max`, `lme`, …) applied to the rolling
+  /// detection window.
+  final String? poolingMode;
+
+  /// Number of inference windows pooled together (`null` = unlimited /
+  /// session-wide).
+  final int? poolingWindows;
+
+  /// Linear input gain applied before model inference (1.0 = unity).
+  final double? gainLinear;
+
+  /// High-pass filter cutoff in Hz (0 disables the filter).
+  final double? highPassHz;
+
   /// Deserialize from JSON.
   factory SessionSettings.fromJson(Map<String, dynamic> json) {
     return SessionSettings(
@@ -110,6 +138,11 @@ class SessionSettings {
       alertMinIntervalSeconds: json['alertMinIntervalSeconds'] as int? ?? 15,
       alertMaxPerMinute: json['alertMaxPerMinute'] as int? ?? 3,
       alertCoalesce: json['alertCoalesce'] as bool? ?? true,
+      sensitivity: (json['sensitivity'] as num?)?.toDouble(),
+      poolingMode: json['poolingMode'] as String?,
+      poolingWindows: (json['poolingWindows'] as num?)?.toInt(),
+      gainLinear: (json['gainLinear'] as num?)?.toDouble(),
+      highPassHz: (json['highPassHz'] as num?)?.toDouble(),
     );
   }
 
@@ -128,6 +161,11 @@ class SessionSettings {
     'alertMinIntervalSeconds': alertMinIntervalSeconds,
     'alertMaxPerMinute': alertMaxPerMinute,
     'alertCoalesce': alertCoalesce,
+    if (sensitivity != null) 'sensitivity': sensitivity,
+    if (poolingMode != null) 'poolingMode': poolingMode,
+    if (poolingWindows != null) 'poolingWindows': poolingWindows,
+    if (gainLinear != null) 'gainLinear': gainLinear,
+    if (highPassHz != null) 'highPassHz': highPassHz,
   };
 }
 
@@ -566,7 +604,7 @@ class LiveSession {
     if (customName != null && customName!.isNotEmpty) {
       return customName!;
     }
-    final dt = DateFormat('yyyy-MM-dd_HH-mm-ss').format(startTime);
+    final dt = DateFormat('yyyy-MM-dd_HH-mm-ss').format(startTime.toLocal());
     final suffix = sessionNumber != null ? '_#$sessionNumber' : '';
     return 'Session_$dt$suffix';
   }

@@ -223,6 +223,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         poolingWindows: poolingWindows,
         poolingMode: ref.read(scorePoolingProvider),
         sensitivity: sensitivity,
+        gainLinear: ref.read(audioGainProvider),
+        highPassHz: ref.read(highPassFilterProvider).toDouble(),
       );
 
       _isStarting = false;
