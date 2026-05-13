@@ -676,9 +676,19 @@ Future<String?> buildSessionExport(
   // Decide whether to ZIP. We zip when any of:
   //   • the user wants audio bundled and audio exists,
   //   • more than one format is selected (multiple docs need a container),
-  //   • the user enabled the HTML report.
+  //   • the user enabled the HTML report,
+  //   • we have provenance metadata to ship and the user didn't pick the
+  //     JSON format (which already embeds the metadata block). Forcing a
+  //     ZIP in that last case is what carries the weather snapshot and
+  //     prefs/model context out alongside an otherwise plain CSV/Raven
+  //     selection — without it, those fields would silently disappear.
   final mustZip =
-      (includeAudio && hasAnyAudio) || docs.length > 1 || includeHtmlReport;
+      (includeAudio && hasAnyAudio) ||
+      docs.length > 1 ||
+      includeHtmlReport ||
+      (metadata != null &&
+          session.weather != null &&
+          !selected.contains('json'));
 
   // ── Bundle into ZIP ───────────────────────────────────────────────
   if (mustZip) {
@@ -818,9 +828,9 @@ Future<String?> buildSessionExport(
                 ? p.dirname(clipEntries.values.first.path)
                 : Directory.systemTemp.path);
     final filePath = p.join(dir, '$prefix${entry.extension}');
-    await File(filePath).writeAsBytes(
-      Uint8List.fromList(utf8.encode(entry.content)),
-    );
+    await File(
+      filePath,
+    ).writeAsBytes(Uint8List.fromList(utf8.encode(entry.content)));
     return filePath;
   }
 }

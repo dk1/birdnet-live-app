@@ -37,6 +37,7 @@ import '../live/live_screen.dart';
 import '../live/live_session.dart';
 import '../point_count/point_count_setup_screen.dart';
 import '../survey/survey_setup_screen.dart';
+import 'export_metadata_helper.dart';
 import 'session_export.dart';
 import 'session_review_screen.dart';
 
@@ -688,12 +689,17 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     final useAbsoluteSurveyTime =
         ref.read(timestampDisplayModeProvider) == 'absolute';
+    final metadata = await buildSessionExportMetadata(
+      session,
+      speciesLocale: speciesLocale,
+    );
     final exportPath = await buildSessionExport(
       session,
       formats: exportFormats,
       includeAudio: includeAudio,
       taxonomy: taxonomy,
       speciesLocale: speciesLocale,
+      metadata: metadata,
       useAbsoluteSurveyTime: useAbsoluteSurveyTime,
       includeHtmlReport: includeHtmlReport,
     );
