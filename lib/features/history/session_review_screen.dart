@@ -66,9 +66,11 @@ import '../../core/constants/app_constants.dart';
 import '../../core/theme/score_colors.dart';
 import '../../shared/models/gps_point.dart';
 import '../../shared/models/taxonomy_species.dart';
+import '../../shared/models/weather_snapshot.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/taxonomy_service.dart';
 import '../../shared/utils/timestamp_format.dart';
+import '../../shared/utils/weather_format.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/stat_chip.dart';
 import '../explore/explore_providers.dart';
@@ -780,7 +782,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // Save pending changes before sharing so the export is up to date.
     if (_isDirty) await _save();
 
-    final exportFormat = ref.read(exportFormatProvider);
+    final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
     final includeHtmlReport = ref.read(exportHtmlReportProvider);
     final taxonomy = ref.read(taxonomyServiceProvider).valueOrNull;
@@ -801,7 +803,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     final exportPath = await buildSessionExport(
       widget.session,
-      format: exportFormat,
+      formats: exportFormats,
       includeAudio: includeAudio,
       taxonomy: taxonomy,
       speciesLocale: speciesLocale,
