@@ -166,6 +166,15 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   final List<_ReviewSnapshot> _undoStack = [];
   final List<_ReviewSnapshot> _redoStack = [];
 
+  /// Forces undo SnackBars to auto-dismiss even when the user has
+  /// `MediaQuery.accessibleNavigation` enabled (TalkBack / certain
+  /// reduced-motion settings). Flutter's built-in SnackBar timer is
+  /// disabled in that case whenever a SnackBarAction is present, which
+  /// made the undo banner appear permanent on affected devices. We keep
+  /// our own Timer so the banner always disappears after the same 6 s
+  /// window, regardless of accessibility flags.
+  Timer? _undoSnackBarTimer;
+
   /// Pre-computed spectrogram image covering the current playback range.
   /// When a clip is active this is cropped to the trimmed region.
   ui.Image? _spectrogramImage;
@@ -591,6 +600,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   @override
   void dispose() {
+    _undoSnackBarTimer?.cancel();
     _positionSubscription?.cancel();
     _playerStateSubscription?.cancel();
     _clipPlayerStateSubscription?.cancel();
@@ -1267,20 +1277,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       );
       _isDirty = true;
     });
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(l10n.sessionDetectionRemoved),
-        duration: const Duration(seconds: 6),
-        action: SnackBarAction(
-          label: l10n.sessionUndo,
-          onPressed: () {
-            if (mounted) _undo();
-          },
-        ),
-      ),
-    );
+    _showUndoSnackBar(l10n.sessionDetectionRemoved);
   }
 
   /// Removes every detection of [scientificName] from the session in
@@ -1299,20 +1296,40 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _expandedSpecies.remove(scientificName);
       _isDirty = true;
     });
+    _showUndoSnackBar(l10n.sessionSpeciesRemoved);
+  }
+
+  /// Shows an undo SnackBar with a hard-capped lifetime.
+  ///
+  /// Flutter's SnackBar disables its built-in dismiss timer whenever
+  /// `MediaQuery.accessibleNavigation` is true and an action is present,
+  /// which left the undo banner stuck on-screen on devices with TalkBack
+  /// or certain reduced-motion settings enabled. We attach our own Timer
+  /// here so the banner always disappears after the configured window,
+  /// regardless of accessibility flags.
+  void _showUndoSnackBar(String text) {
+    final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
+    _undoSnackBarTimer?.cancel();
     messenger.hideCurrentSnackBar();
+    const lifetime = Duration(seconds: 6);
     messenger.showSnackBar(
       SnackBar(
-        content: Text(l10n.sessionSpeciesRemoved),
-        duration: const Duration(seconds: 6),
+        content: Text(text),
+        duration: lifetime,
         action: SnackBarAction(
           label: l10n.sessionUndo,
           onPressed: () {
+            _undoSnackBarTimer?.cancel();
             if (mounted) _undo();
           },
         ),
       ),
     );
+    _undoSnackBarTimer = Timer(lifetime, () {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    });
   }
 
   void _seekToCluster(_DetectionCluster cluster) {
