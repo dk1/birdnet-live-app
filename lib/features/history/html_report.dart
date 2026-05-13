@@ -588,12 +588,12 @@ String _buildDetectionsHtml(
     indices.putIfAbsent(sci, () => []).add(i);
   }
   // Sort species by first-detection time (matches session_review_screen).
-  final orderedSpecies = indices.keys.toList()
-    ..sort((a, b) {
-      final ta = session.detections[indices[a]!.first].timestamp;
-      final tb = session.detections[indices[b]!.first].timestamp;
-      return ta.compareTo(tb);
-    });
+  final orderedSpecies =
+      indices.keys.toList()..sort((a, b) {
+        final ta = session.detections[indices[a]!.first].timestamp;
+        final tb = session.detections[indices[b]!.first].timestamp;
+        return ta.compareTo(tb);
+      });
 
   final buf = StringBuffer();
   for (final sci in orderedSpecies) {
@@ -607,8 +607,7 @@ String _buildDetectionsHtml(
       if (c > bestConf) bestConf = c;
     }
     final bestPct = (bestConf * 100).round();
-    final bestClass =
-        bestConf >= 0.7 ? 'high' : (bestConf < 0.4 ? 'low' : '');
+    final bestClass = bestConf >= 0.7 ? 'high' : (bestConf < 0.4 ? 'low' : '');
 
     final encodedSci = Uri.encodeComponent(sci);
     final imgUrl =
@@ -681,12 +680,8 @@ String _buildDetectionsHtml(
       final hasNote = note != null && note.trim().isNotEmpty;
 
       buf.writeln('      <div class="occurrence">');
-      buf.writeln(
-        '        <span class="occ-time">${_esc(wallText)}</span>',
-      );
-      buf.writeln(
-        '        <span class="score $scoreClass">$confPct%</span>',
-      );
+      buf.writeln('        <span class="occ-time">${_esc(wallText)}</span>');
+      buf.writeln('        <span class="score $scoreClass">$confPct%</span>');
       if (clipNameEncoded != null) {
         buf.writeln(
           '        <audio controls preload="none" src="${_esc(clipNameEncoded)}"></audio>',
@@ -697,9 +692,7 @@ String _buildDetectionsHtml(
         );
       }
       if (d.isConfirmed) {
-        buf.writeln(
-          '        <span class="occ-confirmed">Confirmed</span>',
-        );
+        buf.writeln('        <span class="occ-confirmed">Confirmed</span>');
       }
       if (hasNote) {
         buf.writeln('        <div class="occ-note">${_esc(note.trim())}</div>');
