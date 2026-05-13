@@ -25,8 +25,8 @@ import '../../shared/widgets/open_street_map_tile_layer.dart';
 
 /// Map screen showing the recording location with a pin marker.
 ///
-/// Requires user consent before fetching OpenStreetMap tiles.  Consent is
-/// stored via [PrefKeys.mapTileConsent] and is valid across sessions.
+/// Requires user consent before fetching OpenStreetMap tiles. Consent is
+/// stored via [PrefKeys.privacyAllowMap] (revocable from Settings → Privacy).
 class SessionMapScreen extends ConsumerStatefulWidget {
   const SessionMapScreen({
     super.key,
@@ -55,7 +55,7 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
   void _checkConsent() {
     final prefs = ref.read(sharedPreferencesProvider);
     setState(() {
-      _hasConsent = prefs.getBool(PrefKeys.mapTileConsent) ?? false;
+      _hasConsent = prefs.getBool(PrefKeys.privacyAllowMap) ?? false;
     });
   }
 
@@ -80,7 +80,7 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
     );
     if (agreed == true) {
       final prefs = ref.read(sharedPreferencesProvider);
-      await prefs.setBool(PrefKeys.mapTileConsent, true);
+      await prefs.setBool(PrefKeys.privacyAllowMap, true);
       setState(() => _hasConsent = true);
     }
   }

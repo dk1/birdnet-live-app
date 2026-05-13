@@ -88,7 +88,17 @@ abstract final class PrefKeys {
   static const String clipContext = 'clip_context';
 
   // Export settings
+  /// Deprecated since 0.12.0 — superseded by [exportSelection]. Kept only
+  /// for one-time migration of pre-0.12.0 installs.
   static const String exportFormat = 'export_format';
+
+  /// Comma-separated list of formats included in every export ZIP.
+  /// Valid tokens: `raven`, `csv`, `json`, `gpx`. Replaces the legacy
+  /// single-choice [exportFormat]. The user can enable any subset; an
+  /// empty selection falls back to `raven` so the export pipeline always
+  /// produces at least one document.
+  static const String exportSelection = 'export_selection';
+
   static const String includeAudio = 'include_audio';
   static const String exportHtmlReport = 'export_html_report';
 
@@ -97,7 +107,30 @@ abstract final class PrefKeys {
   static const String geoThreshold = 'geo_threshold';
   static const String manualLatitude = 'manual_latitude';
   static const String manualLongitude = 'manual_longitude';
+
+  /// Deprecated since 0.12.0 — superseded by the three privacy-allow
+  /// keys below. Kept only for a one-time migration in [main]: when the
+  /// user previously allowed OSM tiles, both [privacyAllowMap] and
+  /// [privacyAllowReverseGeocoding] inherit `true`.
   static const String mapTileConsent = 'map_tile_consent';
+
+  // --- Privacy gates (0.12.0) -------------------------------------------
+  // Each gates one third-party service. All default `false` for new
+  // installs; existing installs that previously consented to OSM tiles
+  // get the first two flipped on by the migration in `main()`.
+
+  /// Allow fetching OSM map tiles from `tile.openstreetmap.org`. When
+  /// `false`, every map widget falls back to its consent-prompt UI.
+  static const String privacyAllowMap = 'privacy_allow_map';
+
+  /// Allow reverse-geocoding GPS fixes via Nominatim
+  /// (`nominatim.openstreetmap.org`).
+  static const String privacyAllowReverseGeocoding =
+      'privacy_allow_reverse_geocoding';
+
+  /// Allow fetching weather snapshots from Open-Meteo
+  /// (`api.open-meteo.com`).
+  static const String privacyAllowWeather = 'privacy_allow_weather';
 
   // Display settings
   static const String showSciNames = 'show_sci_names';

@@ -51,7 +51,7 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
 
   void _checkConsent() {
     final prefs = ref.read(sharedPreferencesProvider);
-    _hasConsent = prefs.getBool(PrefKeys.mapTileConsent) ?? false;
+    _hasConsent = prefs.getBool(PrefKeys.privacyAllowMap) ?? false;
   }
 
   Future<void> _requestConsent() async {
@@ -75,7 +75,7 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
     );
     if (agreed == true) {
       final prefs = ref.read(sharedPreferencesProvider);
-      await prefs.setBool(PrefKeys.mapTileConsent, true);
+      await prefs.setBool(PrefKeys.privacyAllowMap, true);
       setState(() => _hasConsent = true);
     }
   }
