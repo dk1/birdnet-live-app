@@ -681,7 +681,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
   /// silently if the export couldn't be built (e.g. no audio for an
   /// audio-only export of a metadata-only session).
   Future<void> _shareSession(LiveSession session) async {
-    final exportFormat = ref.read(exportFormatProvider);
+    final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
     final includeHtmlReport = ref.read(exportHtmlReportProvider);
     final taxonomy = ref.read(taxonomyServiceProvider).valueOrNull;
@@ -690,7 +690,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         ref.read(timestampDisplayModeProvider) == 'absolute';
     final exportPath = await buildSessionExport(
       session,
-      format: exportFormat,
+      formats: exportFormats,
       includeAudio: includeAudio,
       taxonomy: taxonomy,
       speciesLocale: speciesLocale,
