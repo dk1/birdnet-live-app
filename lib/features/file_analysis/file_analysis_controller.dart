@@ -318,18 +318,23 @@ class FileAnalysisController {
       } else {
         decoded = await NativeAudioDecoder.decodeFile(filePath);
       }
-      debugPrint('[FileAnalysis] decoded: ${decoded.totalSamples} samples, '
-          '${decoded.sampleRate} Hz, ${decoded.duration}');
+      debugPrint(
+        '[FileAnalysis] decoded: ${decoded.totalSamples} samples, '
+        '${decoded.sampleRate} Hz, ${decoded.duration}',
+      );
 
       // 1b. Resample to the model's expected sample rate if needed.
       final modelSampleRate = _config!.audio.sampleRate;
-      final audio = decoded.sampleRate != modelSampleRate
-          ? decoded.resampleTo(modelSampleRate)
-          : decoded;
+      final audio =
+          decoded.sampleRate != modelSampleRate
+              ? decoded.resampleTo(modelSampleRate)
+              : decoded;
       if (audio != decoded) {
-        debugPrint('[FileAnalysis] resampled '
-            '${decoded.sampleRate} Hz → $modelSampleRate Hz '
-            '(${audio.totalSamples} samples)');
+        debugPrint(
+          '[FileAnalysis] resampled '
+          '${decoded.sampleRate} Hz → $modelSampleRate Hz '
+          '(${audio.totalSamples} samples)',
+        );
       }
 
       // 2. Calculate windows.
@@ -340,7 +345,8 @@ class FileAnalysisController {
 
       if (totalSamples < windowSamples) {
         _state = FileAnalysisState.error;
-        _errorMessage = 'Audio file is shorter than the analysis window '
+        _errorMessage =
+            'Audio file is shorter than the analysis window '
             '(${audio.duration.inSeconds}s < ${windowDuration}s)';
         _notifyListeners();
         return null;
@@ -349,9 +355,11 @@ class FileAnalysisController {
       final totalWindows =
           ((totalSamples - windowSamples) / stepSamples).floor() + 1;
 
-      debugPrint('[FileAnalysis] $totalWindows windows '
-          '(window=${windowDuration}s, overlap=${(overlap * 100).round()}%, '
-          'step=${stepSamples / sampleRate}s)');
+      debugPrint(
+        '[FileAnalysis] $totalWindows windows '
+        '(window=${windowDuration}s, overlap=${(overlap * 100).round()}%, '
+        'step=${stepSamples / sampleRate}s)',
+      );
 
       // 3. Create session.
       final sessionId = DateTime.now().toIso8601String().replaceAll(':', '-');
@@ -365,6 +373,7 @@ class FileAnalysisController {
           confidenceThreshold: confidenceThreshold,
           inferenceRate: 0, // Not applicable for file analysis.
           speciesFilterMode: speciesFilterMode,
+          sensitivity: sensitivity,
         ),
         latitude: latitude,
         longitude: longitude,
@@ -429,10 +438,13 @@ class FileAnalysisController {
 
         // Restrict to geo-model species intersection.
         if (geoModelSpeciesNames != null) {
-          filtered = filtered
-              .where((d) =>
-                  geoModelSpeciesNames.contains(d.species.scientificName))
-              .toList();
+          filtered =
+              filtered
+                  .where(
+                    (d) =>
+                        geoModelSpeciesNames.contains(d.species.scientificName),
+                  )
+                  .toList();
         }
 
         // Convert to detection records, merging consecutive windows of
@@ -509,8 +521,10 @@ class FileAnalysisController {
       _state = FileAnalysisState.complete;
       _notifyListeners();
 
-      debugPrint('[FileAnalysis] complete: ${allDetections.length} detections, '
-          '${speciesSet.length} species');
+      debugPrint(
+        '[FileAnalysis] complete: ${allDetections.length} detections, '
+        '${speciesSet.length} species',
+      );
       return session;
     } catch (e, st) {
       debugPrint('[FileAnalysis] error: $e\n$st');

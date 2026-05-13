@@ -289,6 +289,8 @@ class LiveController {
     int? poolingWindows,
     String poolingMode = 'lme',
     double sensitivity = 1.0,
+    double? gainLinear,
+    double? highPassHz,
   }) async {
     if (_state != LiveState.ready) return;
 
@@ -302,6 +304,11 @@ class LiveController {
         confidenceThreshold: confidenceThreshold,
         inferenceRate: inferenceRate,
         speciesFilterMode: speciesFilterMode,
+        sensitivity: sensitivity,
+        poolingMode: poolingMode,
+        poolingWindows: poolingWindows,
+        gainLinear: gainLinear,
+        highPassHz: highPassHz,
       ),
     );
 

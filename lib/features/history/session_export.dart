@@ -46,7 +46,9 @@ const int _highFreqHz = 16000;
 ///   `BirdNET_Live_2026-04-15_08-00-00_#3`
 ///   `BirdNET_Live_2026-04-15_08-00-00_Morning_walk`
 String _exportPrefix(LiveSession session) {
-  final dt = DateFormat('yyyy-MM-dd_HH-mm-ss').format(session.startTime);
+  final dt = DateFormat(
+    'yyyy-MM-dd_HH-mm-ss',
+  ).format(session.startTime.toLocal());
   final suffix =
       session.sessionNumber != null ? '_#${session.sessionNumber}' : '';
   final name =
@@ -469,12 +471,7 @@ String buildJsonExport(LiveSession session, {Map<String, dynamic>? metadata}) {
     if (session.stopReasonValue != null)
       'stopReasonValue': session.stopReasonValue,
     'recordingPath': session.recordingPath,
-    'settings': {
-      'windowDuration': session.settings.windowDuration,
-      'confidenceThreshold': session.settings.confidenceThreshold,
-      'inferenceRate': session.settings.inferenceRate,
-      'speciesFilterMode': session.settings.speciesFilterMode,
-    },
+    'settings': session.settings.toJson(),
     if (session.trimStartSec != null) 'trimStartSec': session.trimStartSec,
     if (session.trimEndSec != null) 'trimEndSec': session.trimEndSec,
     'detections':
