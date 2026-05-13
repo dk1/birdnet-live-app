@@ -21,7 +21,12 @@
 //   • A small in-process cache deduplicates repeated lookups for the
 //     same coarse cell + hour during a single app run (e.g. when a
 //     point-count session and the live mode finish back-to-back at the
-//     same site).
+//     same site). On top of that, every successful fetch is persisted
+//     to [SharedPreferences] under [PrefKeys.weatherCachePrefix] so that
+//     a fresh app launch within [_cacheTtl] reuses the same snapshot
+//     for nearby coordinates instead of re-hitting Open-Meteo. The
+//     persistent cache is keyed by a 0.1° cell (~10 km) so trips that
+//     stay around the same site share one fetch for several sessions.
 // =============================================================================
 
 import 'dart:async';
@@ -35,15 +40,29 @@ import '../../core/constants/app_constants.dart';
 import '../models/weather_snapshot.dart';
 
 class WeatherService {
-  WeatherService({http.Client? httpClient}) : _client = httpClient ?? http.Client();
+  WeatherService({http.Client? httpClient})
+    : _client = httpClient ?? http.Client();
 
   final http.Client _client;
   final Map<String, WeatherSnapshot> _cache = {};
 
+  /// How long a persisted snapshot stays valid. Birds don't care if the
+  /// wind shifts by 0.5 m/s mid-morning, so a coarse 6 h window is plenty
+  /// for survey-context use and avoids hammering Open-Meteo on days when
+  /// the user runs many short sessions back-to-back.
+  static const Duration _cacheTtl = Duration(hours: 6);
+
   /// Open-Meteo forecast endpoint. Returns hourly observations for the
   /// current day; we extract the hour closest to [observedAt].
-  static const String _endpoint =
-      'https://api.open-meteo.com/v1/forecast';
+  static const String _endpoint = 'https://api.open-meteo.com/v1/forecast';
+
+  /// Builds the persistent-cache key for a 0.1° cell.
+  String _cellKey(double lat, double lon) {
+    final cellLat = (lat * 10).round() / 10;
+    final cellLon = (lon * 10).round() / 10;
+    return '${PrefKeys.weatherCachePrefix}${cellLat.toStringAsFixed(1)}_'
+        '${cellLon.toStringAsFixed(1)}';
+  }
 
   /// Fetches a [WeatherSnapshot] for the given coordinates and time.
   ///
@@ -60,8 +79,7 @@ class WeatherService {
   }) async {
     // Privacy gate.
     final prefs = await SharedPreferences.getInstance();
-    final allowed =
-        prefs.getBool(PrefKeys.privacyAllowWeather) ?? false;
+    final allowed = prefs.getBool(PrefKeys.privacyAllowWeather) ?? false;
     if (!allowed) return null;
 
     final at = (observedAt ?? DateTime.now()).toUtc();
@@ -75,6 +93,28 @@ class WeatherService {
     final cacheKey = '$cellLat,$cellLon,${hourKey.toIso8601String()}';
     final cached = _cache[cacheKey];
     if (cached != null) return cached;
+
+    // Persistent (cross-launch) cache: any successful fetch for the
+    // same 0.1° cell within the last [_cacheTtl] is considered fresh
+    // enough to reuse, so multiple short sessions at the same site
+    // don't repeatedly hit the network.
+    final persistentKey = _cellKey(latitude, longitude);
+    final persistedRaw = prefs.getString(persistentKey);
+    if (persistedRaw != null) {
+      try {
+        final decoded = json.decode(persistedRaw) as Map<String, dynamic>;
+        final snap = WeatherSnapshot.fromJson(decoded);
+        if (snap != null) {
+          final age = DateTime.now().toUtc().difference(snap.fetchedAt);
+          if (age >= Duration.zero && age < _cacheTtl) {
+            _cache[cacheKey] = snap;
+            return snap;
+          }
+        }
+      } catch (_) {
+        // Ignore corrupt cache entries; we'll overwrite on success.
+      }
+    }
 
     final uri = Uri.parse(_endpoint).replace(
       queryParameters: {
@@ -92,10 +132,7 @@ class WeatherService {
 
     try {
       final resp = await _client
-          .get(
-            uri,
-            headers: const {'User-Agent': 'BirdNET-Live/1.0'},
-          )
+          .get(uri, headers: const {'User-Agent': 'BirdNET-Live/1.0'})
           .timeout(const Duration(seconds: 8));
       if (resp.statusCode != 200) return null;
       final body = json.decode(resp.body) as Map<String, dynamic>;
@@ -145,6 +182,13 @@ class WeatherService {
       );
 
       _cache[cacheKey] = snapshot;
+      // Best-effort persist; ignore errors so a failing prefs write
+      // never blocks returning a fresh snapshot to the caller.
+      try {
+        await prefs.setString(persistentKey, json.encode(snapshot.toJson()));
+      } catch (_) {
+        /* non-fatal */
+      }
       return snapshot;
     } on TimeoutException {
       return null;

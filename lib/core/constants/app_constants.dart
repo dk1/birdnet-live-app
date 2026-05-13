@@ -132,6 +132,19 @@ abstract final class PrefKeys {
   /// (`api.open-meteo.com`).
   static const String privacyAllowWeather = 'privacy_allow_weather';
 
+  /// Prefix for the persistent weather-snapshot cache. Each entry is
+  /// keyed by a 0.1° lat/lon cell so multiple sessions in the same area
+  /// share one fetch. See `WeatherService` for the freshness policy.
+  static const String weatherCachePrefix = 'weather_cache_';
+
+  /// Prefix for the persistent reverse-geocode cache. Each entry maps a
+  /// 0.1° lat/lon cell key to the human-readable place name returned by
+  /// Nominatim (e.g. `"Berlin, Germany"`). Place names don't change on
+  /// the timescale of a birding trip, so entries have no TTL — they
+  /// live until the user clears app data. See
+  /// `lib/core/services/reverse_geocoding_service.dart`.
+  static const String reverseGeocodeCachePrefix = 'reverse_geocode_cache_';
+
   // Display settings
   static const String showSciNames = 'show_sci_names';
 
