@@ -627,6 +627,10 @@
   "@sessionWeatherAttribution": {
     "description": "Attribution shown next to the weather row when expanded"
   },
+  "sessionWeatherCondition": "Condition",
+  "@sessionWeatherCondition": {
+    "description": "Label for the weather condition field in weather details"
+  },
   "sessionWeatherTemperature": "Temperature",
   "@sessionWeatherTemperature": {
     "description": "Label for the temperature field in weather details"

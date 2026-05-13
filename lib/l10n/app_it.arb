@@ -662,6 +662,7 @@
   "settingsIncludeAudioFiles": "Includi file audio",
   "sessionWeatherSection": "Meteo",
   "sessionWeatherAttribution": "Dati meteo: Open-Meteo",
+  "sessionWeatherCondition": "Condizione",
   "sessionWeatherTemperature": "Temperatura",
   "sessionWeatherPrecipitation": "Precipitazioni",
   "sessionWeatherWind": "Vento",

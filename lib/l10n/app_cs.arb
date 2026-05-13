@@ -662,6 +662,7 @@
   "settingsIncludeAudioFiles": "Zahrnout zvukové soubory",
   "sessionWeatherSection": "Počasí",
   "sessionWeatherAttribution": "Data o počasí: Open-Meteo",
+  "sessionWeatherCondition": "Stav",
   "sessionWeatherTemperature": "Teplota",
   "sessionWeatherPrecipitation": "Srážky",
   "sessionWeatherWind": "Vítr",

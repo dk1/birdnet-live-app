@@ -149,6 +149,7 @@
   "sessionShare": "Teilen",
   "sessionWeatherSection": "Wetter",
   "sessionWeatherAttribution": "Wetterdaten: Open-Meteo",
+  "sessionWeatherCondition": "Bedingung",
   "sessionWeatherTemperature": "Temperatur",
   "sessionWeatherPrecipitation": "Niederschlag",
   "sessionWeatherWind": "Wind",
