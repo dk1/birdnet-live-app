@@ -5,7 +5,8 @@
 // The two user-facing knobs (§3 intro of dev/announcements.md):
 //
 //   • Verbosity  — minimal | balanced (default) | chatty | custom
-//   • Frequency  — sparse  | normal   (default) | frequent | custom
+//   • Frequency  — rare | sparse | normal (default) | frequent | constant
+//                  | custom
 //
 // Each preset stamps a fixed set of Advanced numerics into shared
 // preferences in one transaction. The settings layer is responsible
@@ -24,7 +25,12 @@ enum AnnouncementVerbosity { minimal, balanced, chatty, custom }
 
 /// How often the controller is allowed to speak. Maps to the throttling
 /// constants below via [FrequencyProfile].
-enum AnnouncementFrequency { sparse, normal, frequent, custom }
+///
+/// The five named levels span the practical range from "barely speaks at
+/// all" ([rare]) to "keeps up with every detection cycle, no startup
+/// delay" ([constant]). [custom] is the downgrade target when the user
+/// edits an Advanced numeric individually.
+enum AnnouncementFrequency { rare, sparse, normal, frequent, constant, custom }
 
 /// Round-trip safe enum parsing — used by the providers to decode the
 /// string-backed pref values. Anything unrecognized falls back to the
@@ -78,10 +84,28 @@ class FrequencyProfile {
   });
 }
 
-/// Profile lookup. The `normal` profile is the §5.2 baseline; `sparse`
-/// roughly halves the cadence for survey use; `frequent` roughly
-/// doubles it for short Live sessions.
+/// Profile lookup. The `normal` profile is the §5.2 baseline. The other
+/// four levels are rough geometric steps either side of it so users have
+/// a real spectrum to dial in:
+///
+///   • [rare]     — long survey use, only the most distinct calls.
+///   • [sparse]   — background listening; 1–2 utterances/min.
+///   • [normal]   — conversational cadence (default).
+///   • [frequent] — short Live sessions where you want most calls voiced.
+///   • [constant] — demo / accessibility — no startup grace, almost
+///                  every detection cycle is allowed to speak.
 const Map<AnnouncementFrequency, FrequencyProfile> kFrequencyProfiles = {
+  AnnouncementFrequency.rare: FrequencyProfile(
+    startupGraceSeconds: 120,
+    minIntervalSeconds: 60,
+    minIntervalSecondsSpeaker: 90,
+    maxPerMinute: 1,
+    maxPerMinuteSpeaker: 1,
+    streakSilenceSeconds: 600,
+    recencyResetSeconds: 600,
+    sessionResetSeconds: 3600,
+    coalesceWindowSeconds: 8,
+  ),
   AnnouncementFrequency.sparse: FrequencyProfile(
     startupGraceSeconds: 60,
     minIntervalSeconds: 30,
@@ -114,6 +138,21 @@ const Map<AnnouncementFrequency, FrequencyProfile> kFrequencyProfiles = {
     recencyResetSeconds: 90,
     sessionResetSeconds: 600,
     coalesceWindowSeconds: 2,
+  ),
+  // [constant] removes the startup grace entirely so the *first*
+  // detection of a session can be voiced; the per-species streak
+  // silence still prevents the same bird from being announced over
+  // and over while it keeps singing.
+  AnnouncementFrequency.constant: FrequencyProfile(
+    startupGraceSeconds: 0,
+    minIntervalSeconds: 2,
+    minIntervalSecondsSpeaker: 4,
+    maxPerMinute: 20,
+    maxPerMinuteSpeaker: 10,
+    streakSilenceSeconds: 12,
+    recencyResetSeconds: 60,
+    sessionResetSeconds: 300,
+    coalesceWindowSeconds: 1,
   ),
 };
 

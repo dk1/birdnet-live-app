@@ -404,6 +404,22 @@ class SettingsScreen extends ConsumerWidget {
               const Divider(),
             ],
 
+            // --- Announcements ---
+            // Sits high up in the list (right after Spectrogram) because
+            // it is the only setting users typically need to revisit
+            // mid-session — the verbosity × frequency pickers are the
+            // entire setup, so making them easy to find matters more
+            // than category alphabetization.
+            if (_showSection('announcements'))
+              AnnouncementsSettingsSection(
+                sectionHeader:
+                    ({required String title, required String subtitle}) =>
+                        _SectionHeader(title: title, subtitle: subtitle),
+                titleWithHelp:
+                    ({required String title, String? helpBody}) =>
+                        _TitleWithHelp(title: title, helpBody: helpBody),
+              ),
+
             // --- Recording ---
             if (_showSection('recording')) ...[
               _SectionHeader(
@@ -637,15 +653,10 @@ class SettingsScreen extends ConsumerWidget {
             ],
 
             // --- Announcements ---
-            if (_showSection('announcements'))
-              AnnouncementsSettingsSection(
-                sectionHeader:
-                    ({required String title, required String subtitle}) =>
-                        _SectionHeader(title: title, subtitle: subtitle),
-                titleWithHelp:
-                    ({required String title, String? helpBody}) =>
-                        _TitleWithHelp(title: title, helpBody: helpBody),
-              ),
+            // Section moved up: it now renders right after Spectrogram
+            // (see above). Kept the comment marker here as a redirect
+            // breadcrumb so future readers searching for it find the
+            // new location.
 
             // --- About ---
             if (_showSection('about'))

@@ -83,6 +83,16 @@ class PhrasingEngine {
           ? '${names.first}.'
           : '${names.first}.';
     }
+    // Two-name batches don't fit the H_three / H_many templates (which
+    // hard-code three {name*} slots). Speaking them through those
+    // templates would either drop a name or leave a literal empty slot
+    // ("…A, B, and ."). Render them as a plain comma list instead;
+    // the locale-specific conjunction ("and" / "und" / "et") is left
+    // out on purpose so this fallback works in every locale without
+    // pulling in a translation table.
+    if (names.length == 2) {
+      return '${names[0]}, ${names[1]}.';
+    }
     final bucket = selectCoalesceBucket(names.length);
     if (verbosity == AnnouncementVerbosity.minimal) {
       // Minimal mode never hedges; just list the names.
@@ -92,14 +102,13 @@ class PhrasingEngine {
     if (template == null) {
       return '${names.take(3).join(', ')}.';
     }
-    final padded = [
-      ...names.take(3),
-      if (names.length < 3) ...List.filled(3 - names.length, ''),
-    ];
+    // names.length is guaranteed ≥ 3 here, so name1/name2/name3 are
+    // always populated; the padding is defensive only.
+    final picks = names.take(3).toList();
     return template
-        .replaceAll('{name1}', padded[0])
-        .replaceAll('{name2}', padded[1])
-        .replaceAll('{name3}', padded[2]);
+        .replaceAll('{name1}', picks[0])
+        .replaceAll('{name2}', picks[1])
+        .replaceAll('{name3}', picks[2]);
   }
 
   /// Reset the per-bucket anti-repeat memory. Called at session start

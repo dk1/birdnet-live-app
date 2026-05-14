@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.3] - Unreleased
+
+### Changed
+
+- **Announcements now pick the peak-confidence call for each species, not the first marginal detection.** Live, Point Count, and Survey submit the full per-cycle detection list to the announcement controller, which dedups by species and keeps the highest score. Streak silence and the global min-interval gate continue to do all the throttling, so this only affects *which* call is voiced when a species fires, not *how often*.
+- **Frequency presets expanded from 3 to 5 levels.** Added **Rare** (very long gaps, ~1/min cap, for multi-hour surveys) and **Constant** (zero startup grace, ~20/min cap, for demos and accessibility). Constant directly addresses the field complaint that even *Frequent* could take a while to start talking after a session began.
+- **Removed the planned first-run announcements setup wizard.** The verbosity × frequency pickers are the entire setup — five frequency steps and three verbosity steps mean users can experiment with segments and find their sweet spot without leaving the screen.
+- **Announcements section moved up in Settings**, now directly after Spectrogram (was below Privacy). It is the only setting users typically revisit mid-session, so discoverability matters more than category alphabetization.
+
+### Fixed
+
+- **Two-species announcement no longer drops the third slot.** A batch of exactly two species used to render through a `{name1}, {name2}, and {name3}` template with `name3` silently empty (e.g. *"Robin, Jay, and ."*). The phrasing engine now early-returns a plain comma list (*"Robin, Jay."*) for two-name batches, locale-agnostic.
+
 ## [0.13.2] - Unreleased
 
 ### Added

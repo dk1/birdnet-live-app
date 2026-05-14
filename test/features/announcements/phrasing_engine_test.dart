@@ -111,6 +111,17 @@ void main() {
       expect(out, 'Three: Robin, Jay, Vireo.');
     });
 
+    test('two names render as a comma list (no empty {name3} slot)', () {
+      // Regression: H_three templates hard-code three {name*} slots, so
+      // routing a two-name batch through them produced "...A, B, and ."
+      final engine = PhrasingEngine(bundle: _bundle());
+      final out = engine.speakMany(
+        names: ['Robin', 'Jay'],
+        verbosity: AnnouncementVerbosity.balanced,
+      );
+      expect(out, 'Robin, Jay.');
+    });
+
     test('four names route to H_many', () {
       final engine = PhrasingEngine(bundle: _bundle());
       final out = engine.speakMany(

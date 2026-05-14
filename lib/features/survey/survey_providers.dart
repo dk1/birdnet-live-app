@@ -76,12 +76,14 @@ final surveyControllerProvider = Provider<SurveyController>((ref) {
 // ---------------------------------------------------------------------------
 
 /// Current [SurveyState].
-final surveyStateProvider =
-    StateProvider<SurveyState>((ref) => SurveyState.idle);
+final surveyStateProvider = StateProvider<SurveyState>(
+  (ref) => SurveyState.idle,
+);
 
 /// Current live detections from the active survey.
-final surveyDetectionsProvider =
-    StateProvider<List<DetectionRecord>>((ref) => const []);
+final surveyDetectionsProvider = StateProvider<List<DetectionRecord>>(
+  (ref) => const [],
+);
 
 /// The active survey [LiveSession].
 final surveySessionProvider = StateProvider<LiveSession?>((ref) => null);

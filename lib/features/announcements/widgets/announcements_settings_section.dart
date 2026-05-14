@@ -11,11 +11,10 @@
 //
 // Visibility / scope: this section is shown in the global Settings
 // screen and from the per-mode Settings entries (Live, Survey, Point
-// Count). The first-run setup *wizard* is hosted only by the Survey
-// flow's notification setup step; Live and Point Count wizards do not
-// expose it. The "Run setup again" button is therefore a placeholder
-// pending Phase 3b — when the wizard widget lands it is wired in
-// directly here.
+// Count). There is no first-run setup wizard — the two preset pickers
+// (verbosity × frequency) are intentionally the only knobs the user
+// has to touch, so they can experiment by tapping segments and find a
+// cadence that works without leaving the screen.
 //
 // All gating is done with [announcementsEnabledProvider]. Editing any
 // Advanced numeric or routing toggle should downgrade the corresponding
@@ -177,6 +176,10 @@ class _FrequencyPicker extends ConsumerWidget {
             child: SegmentedButton<AnnouncementFrequency>(
               segments: [
                 ButtonSegment(
+                  value: AnnouncementFrequency.rare,
+                  label: Text(l10n.settingsAnnouncementsFrequencyRare),
+                ),
+                ButtonSegment(
                   value: AnnouncementFrequency.sparse,
                   label: Text(l10n.settingsAnnouncementsFrequencySparse),
                 ),
@@ -187,6 +190,10 @@ class _FrequencyPicker extends ConsumerWidget {
                 ButtonSegment(
                   value: AnnouncementFrequency.frequent,
                   label: Text(l10n.settingsAnnouncementsFrequencyFrequent),
+                ),
+                ButtonSegment(
+                  value: AnnouncementFrequency.constant,
+                  label: Text(l10n.settingsAnnouncementsFrequencyConstant),
                 ),
                 if (value == AnnouncementFrequency.custom)
                   ButtonSegment(
@@ -303,7 +310,7 @@ class _LabeledSlider extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Preview + setup buttons
+// Preview button
 // ---------------------------------------------------------------------------
 
 class _PreviewAndWizardRow extends ConsumerWidget {
@@ -323,20 +330,9 @@ class _PreviewAndWizardRow extends ConsumerWidget {
             label: Text(l10n.settingsAnnouncementsPreview),
             onPressed: () => _speakPreview(ref, l10n),
           ),
-          OutlinedButton.icon(
-            icon: const Icon(Icons.tune),
-            // The wizard widget lands in Phase 3b; for now this is a
-            // no-op that surfaces a SnackBar so the UI affordance is
-            // discoverable without a half-wired action.
-            label: Text(l10n.settingsAnnouncementsRunSetupWizard),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.settingsAnnouncementsRunSetupWizard),
-                ),
-              );
-            },
-          ),
+          // Setup wizard intentionally omitted — the verbosity ×
+          // frequency pickers above are the entire setup. Users find
+          // their sweet spot by tapping segments, no multi-step flow.
         ],
       ),
     );
