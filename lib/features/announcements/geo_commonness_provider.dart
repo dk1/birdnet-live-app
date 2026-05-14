@@ -69,52 +69,53 @@ class GeoCommonnessEntry {
 /// *top-scoring species at this location for the current week*. That
 /// rank-relative anchor makes the same thresholds work across regions
 /// of wildly different absolute geo-scores (tropics vs. Arctic).
-final geoCommonnessProvider =
-    FutureProvider<Map<String, GeoCommonnessEntry>?>((ref) async {
-      final location = await ref.watch(currentLocationProvider.future);
-      final geoModel = await ref.watch(geoModelProvider.future);
-      if (location == null) return null;
+final geoCommonnessProvider = FutureProvider<Map<String, GeoCommonnessEntry>?>((
+  ref,
+) async {
+  final location = await ref.watch(currentLocationProvider.future);
+  final geoModel = await ref.watch(geoModelProvider.future);
+  if (location == null) return null;
 
-      final week = GeoModel.dateTimeToWeek(DateTime.now());
-      final allWeeks = await geoModel.predictAllWeeks(
-        latitude: location.latitude,
-        longitude: location.longitude,
-      );
+  final week = GeoModel.dateTimeToWeek(DateTime.now());
+  final allWeeks = await geoModel.predictAllWeeks(
+    latitude: location.latitude,
+    longitude: location.longitude,
+  );
 
-      // Find the top current-week score across *all* species at this
-      // location. Used as the denominator for the commonness ratio so
-      // bins are rank-relative (see file header).
-      double topCurrent = 0.0;
-      for (final scores in allWeeks.values) {
-        final s = scores[week - 1];
-        if (s > topCurrent) topCurrent = s;
-      }
-      if (topCurrent <= 0) return const {};
+  // Find the top current-week score across *all* species at this
+  // location. Used as the denominator for the commonness ratio so
+  // bins are rank-relative (see file header).
+  double topCurrent = 0.0;
+  for (final scores in allWeeks.values) {
+    final s = scores[week - 1];
+    if (s > topCurrent) topCurrent = s;
+  }
+  if (topCurrent <= 0) return const {};
 
-      final out = <String, GeoCommonnessEntry>{};
-      for (final entry in allWeeks.entries) {
-        final scores = entry.value;
-        final current = scores[week - 1];
-        var annualMax = 0.0;
-        for (final s in scores) {
-          if (s > annualMax) annualMax = s;
-        }
-        final ratio = current / topCurrent;
-        final bin = commonnessBinForRatio(ratio);
-        if (bin == null) continue;
-        // Out of season: well below annual peak, and the peak is high
-        // enough to be a meaningful comparison. Skip the seasonal
-        // signal entirely for species whose annual maximum at this
-        // location is itself near zero — those are vagrants, not
-        // migrants, and the "off-season" framing would be misleading.
-        final isOff =
-            annualMax > 0.05 && current > 0 && (current / annualMax) < 0.4;
-        out[entry.key] = GeoCommonnessEntry(
-          commonness: bin,
-          isOutOfSeason: isOff,
-          currentScore: current,
-          annualMax: annualMax,
-        );
-      }
-      return out;
-    });
+  final out = <String, GeoCommonnessEntry>{};
+  for (final entry in allWeeks.entries) {
+    final scores = entry.value;
+    final current = scores[week - 1];
+    var annualMax = 0.0;
+    for (final s in scores) {
+      if (s > annualMax) annualMax = s;
+    }
+    final ratio = current / topCurrent;
+    final bin = commonnessBinForRatio(ratio);
+    if (bin == null) continue;
+    // Out of season: well below annual peak, and the peak is high
+    // enough to be a meaningful comparison. Skip the seasonal
+    // signal entirely for species whose annual maximum at this
+    // location is itself near zero — those are vagrants, not
+    // migrants, and the "off-season" framing would be misleading.
+    final isOff =
+        annualMax > 0.05 && current > 0 && (current / annualMax) < 0.4;
+    out[entry.key] = GeoCommonnessEntry(
+      commonness: bin,
+      isOutOfSeason: isOff,
+      currentScore: current,
+      annualMax: annualMax,
+    );
+  }
+  return out;
+});

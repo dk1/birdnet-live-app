@@ -268,10 +268,7 @@ void main() {
       final engine = PhrasingEngine(bundle: bundleWithCommonness());
       final out = engine.speakOne(
         name: 'Robin',
-        signals: firstAnnSig(
-          bin: CommonnessBin.uncommon,
-          offSeason: true,
-        ),
+        signals: firstAnnSig(bin: CommonnessBin.uncommon, offSeason: true),
         verbosity: AnnouncementVerbosity.chatty,
       );
       expect(out, 'CHATTY Robin. Uncommon here. Off-season too.');

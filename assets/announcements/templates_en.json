@@ -1,12 +1,19 @@
 {
   "locale": "en",
-  "version": 1,
+  "version": 2,
   "_comment": [
     "Phrasing templates for the Announcements feature. See dev/announcements.md §3.",
     "Each bucket has a `balanced` list (always present, used by Balanced verbosity)",
     "and an optional `chatty` list (longer / more conversational variants used when",
     "the user picks Chatty). Minimal verbosity bypasses these templates and speaks",
-    "just `{name}.` directly. Translators rewrite natively, not literally."
+    "just `{name}.` directly. Translators rewrite natively, not literally.",
+    "",
+    "Tone guide:",
+    "  - Minimal: bare species name only (handled by the engine).",
+    "  - Balanced: short, friendly, occasionally a touch of personality. Don't",
+    "    apologise for low-confidence calls — the user already saw the score.",
+    "  - Chatty: a full conversational sentence, sometimes a small comment or",
+    "    aside. Should feel like a birding companion, not a robot."
   ],
   "buckets": {
     "A": {
@@ -14,102 +21,152 @@
         "There's a {name} calling.",
         "That's a {name}.",
         "Got a {name}.",
-        "{name}, clearly."
+        "{name}, clearly.",
+        "Picked up {name}.",
+        "{name}, no doubt about it.",
+        "Heard a {name}.",
+        "{name} just popped in."
       ],
       "chatty": [
         "There's a {name} calling — first one this session.",
         "That's a {name}, nice and clear.",
         "Definitely a {name} in there.",
-        "Picked up a {name}, good signal."
+        "Picked up a {name}, good signal.",
+        "{name} just chimed in — textbook call.",
+        "No mistaking that one — {name}.",
+        "Got a {name} loud and clear.",
+        "{name} — that's a clean one."
       ]
     },
     "B": {
       "balanced": [
         "The {name} is back.",
         "Here's the {name} again.",
-        "{name} again."
+        "{name} again.",
+        "{name}, round two.",
+        "There's the {name} once more."
       ],
       "chatty": [
         "The {name} is back, second time now.",
         "Here's that {name} again.",
-        "{name} keeps showing up."
+        "{name} keeps showing up.",
+        "Same {name} popping in again — they're sticking around.",
+        "Round two for the {name}.",
+        "{name} again — clearly settled in."
       ]
     },
     "C": {
       "balanced": [
         "{name} still calling.",
         "{name} keeps going.",
-        "Another from the {name}."
+        "Another from the {name}.",
+        "{name}, still at it.",
+        "{name} in full song."
       ],
       "chatty": [
         "The {name} is keeping at it.",
         "Still going, that {name}.",
-        "{name} is on a roll."
+        "{name} is on a roll.",
+        "{name} really doesn't want to stop.",
+        "Looks like the {name} has a lot to say today.",
+        "Quite the performance from {name}."
       ]
     },
     "D": {
       "balanced": [
-        "I'm pretty sure there's a {name}.",
         "Sounds like a {name}.",
-        "That looks like a {name} to me.",
-        "Probably a {name}."
+        "Probably a {name}.",
+        "Looks like a {name}.",
+        "I'd say {name}.",
+        "Likely a {name}.",
+        "That's a {name}, fairly sure.",
+        "Going with {name} on this one."
       ],
       "chatty": [
-        "I'm pretty sure that's a {name}, though I wouldn't bet the farm.",
-        "Sounds like a {name} to me.",
-        "Could call that a {name}, fairly confident."
+        "Sounds like a {name} to me — fairly confident.",
+        "I'd call that a {name}, pretty sure.",
+        "Looks like a {name} — signal's decent.",
+        "Going with {name} on this one.",
+        "That'll be a {name}, I reckon.",
+        "Reasonable match for {name}."
       ]
     },
     "E": {
       "balanced": [
-        "The {name} might be back.",
-        "That could be the {name} again."
+        "{name} might be back.",
+        "Could be {name} again.",
+        "Sounds like {name} returning.",
+        "{name}, possibly again.",
+        "That's likely {name} once more."
       ],
       "chatty": [
-        "Might be the {name} returning, hard to say.",
-        "Sounds like the {name} could be back."
+        "Sounds like {name} could be back for another round.",
+        "Possibly the {name} returning — fair signal.",
+        "Looks like {name} again, decent match.",
+        "{name} probably back in the mix."
       ]
     },
     "F": {
       "balanced": [
-        "I'm not sure, but this might be a {name}.",
-        "Not sure — possibly a {name}.",
-        "Hard to tell, but maybe a {name}.",
-        "For a brief moment that sounded like a {name}."
+        "Possibly a {name}.",
+        "Could be a {name}.",
+        "Sounds a bit like a {name}.",
+        "Might be a {name}.",
+        "{name}, perhaps.",
+        "Faint match for {name}.",
+        "Worth a look — possibly {name}."
       ],
       "chatty": [
-        "Not at all sure, but for a moment that sounded like a {name}.",
-        "Hard to tell — could have been a {name}.",
-        "Might have been a {name}, I wouldn't swear to it."
+        "Could well be a {name}, signal's a touch faint.",
+        "Sounds a bit like a {name} — worth a second listen.",
+        "Possibly a {name} in there — keep an ear out.",
+        "I'd lean toward {name}, but it's a marginal one.",
+        "Might be a {name} — not a perfect match but plausible.",
+        "{name} is my best guess on this one."
       ]
     },
     "G": {
       "balanced": [
-        "Maybe the {name} again, hard to tell.",
-        "Could be the {name}, not sure."
+        "{name} again, possibly.",
+        "Could be {name} once more.",
+        "Faint, but might be {name}.",
+        "Possibly {name} returning.",
+        "Marginal — maybe {name}."
       ],
       "chatty": [
-        "Maybe the {name} again, but the signal's marginal.",
-        "Could be the {name} once more, hard to tell."
+        "Possibly {name} again, signal's a bit thin.",
+        "Could be {name} returning — worth keeping an ear on.",
+        "Faint match, but might be {name} once more.",
+        "Leaning toward {name} again, but not a strong call."
       ]
     },
     "H_three": {
       "balanced": [
         "A few at once: {name1}, {name2}, and {name3}.",
-        "Several birds — {name1}, {name2}, {name3}."
+        "Several birds — {name1}, {name2}, {name3}.",
+        "Three calling together: {name1}, {name2}, {name3}.",
+        "{name1}, {name2}, and {name3}, all in the mix."
       ],
       "chatty": [
         "Quite a chorus — {name1}, {name2}, and {name3} all at once.",
-        "Three at once: {name1}, {name2}, and a {name3}."
+        "Three at once: {name1}, {name2}, and {name3} — busy spot.",
+        "{name1}, {name2}, and {name3} all chiming in together.",
+        "Triple bill right now — {name1}, {name2}, and {name3}.",
+        "Lovely mix coming through — {name1}, {name2}, and {name3}."
       ]
     },
     "H_many": {
       "balanced": [
-        "Lots happening: {name1}, {name2}, {name3}, and a few more."
+        "Lots happening: {name1}, {name2}, {name3}, and a few more.",
+        "Plenty going on — {name1}, {name2}, {name3}, and others.",
+        "Busy moment: {name1}, {name2}, {name3}, plus more."
       ],
       "chatty": [
-        "Lots going on right now — {name1}, {name2}, {name3}, and several more.",
-        "Busy moment — {name1}, {name2}, {name3}, and a handful of others."
+        "Lots going on right now — {name1}, {name2}, {name3}, and several more in the mix.",
+        "Busy moment — {name1}, {name2}, {name3}, and a handful of others all calling.",
+        "Whole chorus going — {name1}, {name2}, {name3}, and more besides.",
+        "Real activity here — {name1}, {name2}, {name3}, and a few more I can pick out.",
+        "Quite a soundscape — {name1}, {name2}, {name3}, and others joining in."
       ]
     }
   },
@@ -123,27 +180,37 @@
     "abundant": [
       "A really common bird in your area.",
       "You'll hear this one a lot around here.",
-      "Very common in your area at this time of year."
+      "Very common in your area at this time of year.",
+      "About as familiar as it gets around here.",
+      "One of the regulars in your area."
     ],
     "common": [
       "A common bird around here.",
       "Fairly common in your area at this time of year.",
-      "Regular visitor in this area."
+      "Regular visitor in this area.",
+      "You're in good territory for this one.",
+      "Pretty typical for your area."
     ],
     "uncommon": [
       "Not super common around here.",
       "A bit less common in your area.",
-      "Worth noting — not heard every day around here."
+      "Worth noting — not heard every day around here.",
+      "Bit of a treat — not too frequent in your area.",
+      "Not the everyday call around here."
     ],
     "rare": [
       "A bit of a rarity around here — nice catch!",
       "Unusual species for this area.",
-      "Quite rare for your area, that one."
+      "Quite rare for your area, that one.",
+      "Definitely one to remember — pretty scarce around here.",
+      "Standout record for your area."
     ],
     "seasonalAddendum": [
       "Though they're not usually around this time of year.",
       "And a touch out of season too.",
-      "Bit early or late for them, normally."
+      "Bit early or late for them, normally.",
+      "Off-season for them, which makes it extra interesting.",
+      "Outside their usual window here, too."
     ]
   }
 }

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.5] - Unreleased
+
+### Changed
+
+- **Announcement phrasing is livelier and more varied across all seven languages.** Bumped each bucket from 3-5 phrases to 6-8, gave Chatty mode more personality (small asides, conversational comments), and dropped the apologetic "Hard to tell" / "I'm not at all sure" tone on low-confidence detections — the user already sees the score, so phrasing now leans on lighter hedges like *"Possibly a {bird}"*, *"Sounds a bit like a {bird}"*, *"My best guess on this one"*. Multi-bird Chatty announcements (three or more species at once) now feel like a real birding companion rather than a list dump (*"Quite a chorus — Robin, Wren, and Blackbird all at once"*). The commonness phrase pool also grew from 3 to 5 variants per bin.
+- **Settings: announcement frequency is now a slider** (Rare ↔ Constant) instead of a five-button segmented control. The five labels — *Rare, Sparse, Normal, Frequent, Constant* — used to wrap and sometimes broke across multiple lines on narrower screens (one report had *"frequent"* rendering as *"fre / qu / ent"*, one letter per row). The slider is always one row, with the active preset name shown above it.
+
 ## [0.13.4] - Unreleased
 
 ### Added

@@ -159,6 +159,43 @@ class _FrequencyPicker extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final value = ref.watch(announcementsFrequencyProvider);
+    // Five presets sit on a 0..4 axis (rare → constant). Custom is
+    // off-axis: when the user has tweaked an Advanced numeric the
+    // slider thumb parks at the closest preset visually but the
+    // selection label below shows "Custom" so the UI never lies.
+    const presets = <AnnouncementFrequency>[
+      AnnouncementFrequency.rare,
+      AnnouncementFrequency.sparse,
+      AnnouncementFrequency.normal,
+      AnnouncementFrequency.frequent,
+      AnnouncementFrequency.constant,
+    ];
+    String labelFor(AnnouncementFrequency f) {
+      switch (f) {
+        case AnnouncementFrequency.rare:
+          return l10n.settingsAnnouncementsFrequencyRare;
+        case AnnouncementFrequency.sparse:
+          return l10n.settingsAnnouncementsFrequencySparse;
+        case AnnouncementFrequency.normal:
+          return l10n.settingsAnnouncementsFrequencyNormal;
+        case AnnouncementFrequency.frequent:
+          return l10n.settingsAnnouncementsFrequencyFrequent;
+        case AnnouncementFrequency.constant:
+          return l10n.settingsAnnouncementsFrequencyConstant;
+        case AnnouncementFrequency.custom:
+          return l10n.settingsAnnouncementsFrequencyCustom;
+      }
+    }
+
+    final isCustom = value == AnnouncementFrequency.custom;
+    // Slider position: when on a preset, snap to its index. When custom,
+    // park at "normal" (the middle) so dragging just one notch lands on
+    // a sensible nearby preset rather than jumping across the range.
+    final sliderPos =
+        isCustom
+            ? presets.indexOf(AnnouncementFrequency.normal).toDouble()
+            : presets.indexOf(value).toDouble();
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -170,44 +207,50 @@ class _FrequencyPicker extends ConsumerWidget {
           subtitle: Text(l10n.settingsAnnouncementsFrequencyDescription),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: SizedBox(
-            width: double.infinity,
-            child: SegmentedButton<AnnouncementFrequency>(
-              segments: [
-                ButtonSegment(
-                  value: AnnouncementFrequency.rare,
-                  label: Text(l10n.settingsAnnouncementsFrequencyRare),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                labelFor(value),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.primary,
                 ),
-                ButtonSegment(
-                  value: AnnouncementFrequency.sparse,
-                  label: Text(l10n.settingsAnnouncementsFrequencySparse),
-                ),
-                ButtonSegment(
-                  value: AnnouncementFrequency.normal,
-                  label: Text(l10n.settingsAnnouncementsFrequencyNormal),
-                ),
-                ButtonSegment(
-                  value: AnnouncementFrequency.frequent,
-                  label: Text(l10n.settingsAnnouncementsFrequencyFrequent),
-                ),
-                ButtonSegment(
-                  value: AnnouncementFrequency.constant,
-                  label: Text(l10n.settingsAnnouncementsFrequencyConstant),
-                ),
-                if (value == AnnouncementFrequency.custom)
-                  ButtonSegment(
-                    value: AnnouncementFrequency.custom,
-                    label: Text(l10n.settingsAnnouncementsFrequencyCustom),
-                  ),
-              ],
-              selected: {value},
-              onSelectionChanged: (sel) {
-                final v = sel.first;
-                if (v == AnnouncementFrequency.custom) return;
-                ref.read(announcementsFrequencyProvider.notifier).set(v);
-              },
-            ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Slider(
+            min: 0,
+            max: (presets.length - 1).toDouble(),
+            divisions: presets.length - 1,
+            value: sliderPos,
+            label: labelFor(presets[sliderPos.round()]),
+            onChanged: (raw) {
+              final idx = raw.round().clamp(0, presets.length - 1);
+              final next = presets[idx];
+              if (next == value) return;
+              ref.read(announcementsFrequencyProvider.notifier).set(next);
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                l10n.settingsAnnouncementsFrequencyRare,
+                style: theme.textTheme.labelSmall,
+              ),
+              Text(
+                l10n.settingsAnnouncementsFrequencyConstant,
+                style: theme.textTheme.labelSmall,
+              ),
+            ],
           ),
         ),
       ],
