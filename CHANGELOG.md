@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.2] - 2026-05-22
+
+### Changed
+
+- **Setup wizard pre-fetches site context.** The "Ready" step in the survey and point-count wizards now resolves the place name and current weather as soon as GPS coordinates are known and shows them in a small card under the parameter summary, so you can confirm what will be recorded with the session before tapping Start. Both lookups go through the same persistent caches as everything else (no network spam).
+- **Weather retry on session review open.** If the original end-of-session weather fetch failed (no consent at the time, no internet, Open-Meteo unreachable), opening the session in Review now tries once more and persists the result — mirroring the existing reverse-geocode retry behavior. Already-captured snapshots are left untouched.
+
 ## [0.12.1] - 2026-05-22
 
 ### Changed
