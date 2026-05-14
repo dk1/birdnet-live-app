@@ -688,6 +688,7 @@
   "settingsPrivacyAllowWeather": "Wetterabfrage erlauben",
   "settingsPrivacyAllowWeatherSubtitle": "Holt beim Speichern einer Aufnahme Temperatur, Wind und Bedingungen von Open-Meteo.",
   "settingsHelpPrivacyAllowWeather": "Wenn aktiv, sendet die App einmal pro Aufnahme deine Koordinaten und die Aufnahmezeit an Open-Meteo und speichert die zurückgelieferten Bedingungen (Temperatur, Niederschlag, Wind, Bewölkung) zusammen mit der Aufnahme. Open-Meteo ist ein kostenloser Dienst und benötigt weder Konto noch API-Schlüssel.",
+  "siteContextOfflineNote": "Offline — Ortsname und Wetter kannst du später in der Aufnahmeansicht ergänzen.",
   "settingsOfflineMapDownload": "Offline-Karten herunterladen",
   "settingsOfflineMapDownloadSubtitle": "Kartenkacheln rund um den aktuellen Standort vorab speichern",
   "settingsOfflineMapRadiusLabel": "Radius um den aktuellen Standort",

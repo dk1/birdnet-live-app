@@ -688,6 +688,7 @@
   "settingsPrivacyAllowWeather": "Consenti ricerca meteo",
   "settingsPrivacyAllowWeatherSubtitle": "Recupera temperatura, vento e condizioni locali da Open-Meteo al salvataggio della sessione.",
   "settingsHelpPrivacyAllowWeather": "Se attivo, l’app invia una volta per sessione le tue coordinate di registrazione e l’orario a Open-Meteo e salva con la sessione le condizioni restituite (temperatura, precipitazioni, vento, copertura nuvolosa). Open-Meteo è un servizio gratuito che non richiede account né chiave API.",
+  "siteContextOfflineNote": "Offline — puoi aggiungere il nome del luogo e il meteo più tardi dalla revisione della sessione.",
   "settingsOfflineMapDownload": "Scarica mappe offline",
   "settingsOfflineMapDownloadSubtitle": "Pre-carica le tile della mappa intorno alla posizione attuale",
   "settingsOfflineMapRadiusLabel": "Raggio intorno alla posizione attuale",

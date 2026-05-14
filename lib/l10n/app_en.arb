@@ -2687,6 +2687,10 @@
   "@settingsHelpPrivacyAllowWeather": {
     "description": "Long-form help for the Open-Meteo privacy toggle"
   },
+  "siteContextOfflineNote": "Offline — you can add place name and weather later from the session review.",
+  "@siteContextOfflineNote": {
+    "description": "Note shown on the site-context card when reverse-geocoding or weather lookup failed (typically no internet). Tells the user the data can be filled in later from the session review screen, which retries both services on open."
+  },
   "settingsMicrophone": "Microphone",
   "@settingsMicrophone": {
     "description": "Microphone input device setting label"

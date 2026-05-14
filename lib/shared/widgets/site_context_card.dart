@@ -62,6 +62,12 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
   String? _locationName;
   WeatherSnapshot? _weather;
   bool _loading = true;
+  // Per-service "we tried while consent was on, but the lookup did not
+  // produce a result" flags. Used to decide whether to show the offline
+  // note. Reset whenever we (re)attempt a lookup so a successful retry
+  // clears the warning.
+  bool _locationFailed = false;
+  bool _weatherFailed = false;
 
   @override
   void initState() {
@@ -86,19 +92,27 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
   }
 
   Future<void> _resolveLocation() async {
+    // Only attempt if the user has granted consent; otherwise the row
+    // shows the consent prompt instead of an offline note.
+    if (!ref.read(privacyAllowReverseGeocodingProvider)) return;
     try {
       final name = await reverseGeocode(
         latitude: widget.latitude,
         longitude: widget.longitude,
       );
       if (!mounted) return;
-      setState(() => _locationName = name);
+      setState(() {
+        _locationName = name;
+        _locationFailed = name == null;
+      });
     } catch (_) {
-      /* non-fatal */
+      if (!mounted) return;
+      setState(() => _locationFailed = true);
     }
   }
 
   Future<void> _resolveWeather() async {
+    if (!ref.read(privacyAllowWeatherProvider)) return;
     try {
       final svc = ref.read(weatherServiceProvider);
       final w = await svc.fetch(
@@ -107,9 +121,13 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
         observedAt: widget.observedAt ?? DateTime.now(),
       );
       if (!mounted) return;
-      setState(() => _weather = w);
+      setState(() {
+        _weather = w;
+        _weatherFailed = w == null;
+      });
     } catch (_) {
-      /* non-fatal */
+      if (!mounted) return;
+      setState(() => _weatherFailed = true);
     }
   }
 
@@ -201,6 +219,34 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
           icon: Icons.cloud_outlined,
           label: l10n.settingsPrivacyAllowWeather,
           onTap: _enableWeatherConsent,
+        ),
+      );
+    }
+
+    // If at least one consented lookup failed, append a subtle offline
+    // note. Reverse-geo and weather both retry on session-review open,
+    // so the data isn't lost — we just want users to know.
+    final showOfflineNote = _locationFailed || _weatherFailed;
+    if (showOfflineNote) {
+      rows.add(
+        Row(
+          children: [
+            Icon(
+              Icons.cloud_off_outlined,
+              size: 16,
+              color: onSurfaceVariant,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                l10n.siteContextOfflineNote,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: onSurfaceVariant,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }

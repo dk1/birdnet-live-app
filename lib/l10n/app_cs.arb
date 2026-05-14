@@ -688,6 +688,7 @@
   "settingsPrivacyAllowWeather": "Povolit vyhledání počasí",
   "settingsPrivacyAllowWeatherSubtitle": "Při uložení relace stáhne teplotu, vítr a podmínky ze služby Open-Meteo.",
   "settingsHelpPrivacyAllowWeather": "Pokud je zapnuto, aplikace jednou za relaci pošle souřadnice nahrávky a čas službě Open-Meteo a uloží vrácené podmínky (teplota, srážky, vítr, oblačnost) k relaci. Open-Meteo je bezplatná služba, která nevyžaduje účet ani API klíč.",
+  "siteContextOfflineNote": "Offline — název místa a počasí můžete doplnit později v přehledu relace.",
   "settingsOfflineMapDownload": "Download offline maps",
   "settingsOfflineMapDownloadSubtitle": "Pre-cache map tiles around your current location",
   "settingsOfflineMapRadiusLabel": "Radius around current location",
