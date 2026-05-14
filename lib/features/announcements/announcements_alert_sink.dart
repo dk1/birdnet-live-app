@@ -124,7 +124,7 @@ class AnnouncementsAlertSink {
     ];
   }
 
-  /// 
+  ///
   /// Attach geo-model commonness/season metadata to each detection in
   /// the batch when available. Reads the cached
   /// [geoCommonnessProvider] value non-blockingly via
