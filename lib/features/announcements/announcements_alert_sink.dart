@@ -210,6 +210,12 @@ class AnnouncementsAlertSink {
       enabled: enabled,
       verbosity: verbosity,
       profile: profile,
+      speakerOutputAllowed: _ref.read(announcementsSpeakerOutputAllowedProvider),
+      muteCaptureDuringSpeech: _ref.read(
+        announcementsMuteCaptureDuringSpeechProvider,
+      ),
+      duckOtherAudio: _ref.read(announcementsDuckOtherAudioProvider),
+      prerollCue: _ref.read(announcementsPrerollCueProvider),
     );
   }
 }

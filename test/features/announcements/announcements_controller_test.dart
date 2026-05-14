@@ -13,6 +13,7 @@ import 'package:birdnet_live/features/announcements/platform/tts_engine.dart';
 
 class _FakeTts implements TtsEngine {
   final List<String> spoken = <String>[];
+  int prerollCueCount = 0;
   bool throwOnSpeak = false;
   @override
   Future<void> configure({
@@ -27,6 +28,11 @@ class _FakeTts implements TtsEngine {
   }
 
   @override
+  Future<void> playPrerollCue() async {
+    prerollCueCount++;
+  }
+
+  @override
   Future<void> stop() async {}
   @override
   Future<void> dispose() async {}
@@ -35,6 +41,7 @@ class _FakeTts implements TtsEngine {
 class _FakeRouting implements RoutingService {
   RoutingState next = RoutingState.ok;
   bool speaker = false;
+  bool? lastDuckRequest;
   @override
   Future<void> dispose() async {}
   @override
@@ -42,7 +49,10 @@ class _FakeRouting implements RoutingService {
   @override
   bool get isSpeakerOutput => speaker;
   @override
-  Future<RoutingState> prepareForSpeech() async => next;
+  Future<RoutingState> prepareForSpeech({bool duckOtherAudio = true}) async {
+    lastDuckRequest = duckOtherAudio;
+    return next;
+  }
 }
 
 PhrasingEngine _engine() {
@@ -91,10 +101,18 @@ AnnouncementsControllerConfig _cfg(
   FrequencyProfile profile, {
   bool enabled = true,
   AnnouncementVerbosity verbosity = AnnouncementVerbosity.balanced,
+  bool speakerOutputAllowed = true,
+  bool muteCaptureDuringSpeech = true,
+  bool duckOtherAudio = true,
+  bool prerollCue = true,
 }) => AnnouncementsControllerConfig(
   enabled: enabled,
   verbosity: verbosity,
   profile: profile,
+  speakerOutputAllowed: speakerOutputAllowed,
+  muteCaptureDuringSpeech: muteCaptureDuringSpeech,
+  duckOtherAudio: duckOtherAudio,
+  prerollCue: prerollCue,
 );
 
 void main() {
@@ -137,7 +155,7 @@ void main() {
     });
 
     test('startup grace blocks early utterances', () async {
-      now = now.add(const Duration(seconds: 5));
+      now = now.add(const Duration(seconds: 3));
       final out = await ctrl.announce([
         det('Robin', 0.9),
       ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
@@ -243,6 +261,89 @@ void main() {
       // resetSession clears _lastAnnouncedAt so the min-interval gate
       // no longer applies.
       expect(out, AnnounceOutcome.spoken);
+    });
+  });
+
+  group('Advanced toggles', () {
+    late DateTime now;
+    late RingBuffer ring;
+    late _FakeTts tts;
+    late _FakeRouting routing;
+    late AnnouncementsController ctrl;
+
+    setUp(() {
+      now = DateTime(2026, 1, 1, 12, 0, 0);
+      ring = RingBuffer(capacity: 1024);
+      ring.clock = () => now;
+      tts = _FakeTts();
+      routing = _FakeRouting();
+      ctrl = AnnouncementsController(
+        engine: _engine(),
+        tts: tts,
+        routing: routing,
+        ringBuffer: ring,
+        now: () => now,
+      );
+      now = now.add(const Duration(seconds: 31));
+    });
+
+    AnnouncementDetection det(String name, double score) => AnnouncementDetection(
+      speciesId: name,
+      displayName: name,
+      score: score,
+      at: now,
+    );
+
+    test('speakerOutputAllowed=false suppresses when on speaker', () async {
+      routing.speaker = true;
+      final out = await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!,
+          speakerOutputAllowed: false));
+      expect(out, AnnounceOutcome.speakerOutputDisallowed);
+      expect(tts.spoken, isEmpty);
+    });
+
+    test('speakerOutputAllowed=true speaks even on speaker', () async {
+      routing.speaker = true;
+      final out = await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!,
+          speakerOutputAllowed: true));
+      expect(out, AnnounceOutcome.spoken);
+    });
+
+    test('muteCaptureDuringSpeech=false leaves ring buffer unmuted', () async {
+      final out = await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!,
+          muteCaptureDuringSpeech: false));
+      expect(out, AnnounceOutcome.spoken);
+      expect(ring.isMuted, false);
+    });
+
+    test('duckOtherAudio flag is forwarded to routing service', () async {
+      await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!,
+          duckOtherAudio: false));
+      expect(routing.lastDuckRequest, false);
+    });
+
+    test('prerollCue=true plays cue before speech', () async {
+      await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!,
+          prerollCue: true));
+      expect(tts.prerollCueCount, 1);
+    });
+
+    test('prerollCue=false skips cue', () async {
+      await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!,
+          prerollCue: false));
+      expect(tts.prerollCueCount, 0);
     });
   });
 }

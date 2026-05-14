@@ -61,7 +61,10 @@ abstract class RoutingService {
   /// return the resulting [RoutingState].
   ///
   /// Should be called immediately before `TtsEngine.speak`.
-  Future<RoutingState> prepareForSpeech();
+  /// [duckOtherAudio] controls whether the session requests
+  /// transient-may-duck focus; when `false` other audio (music,
+  /// podcasts) plays through unattenuated.
+  Future<RoutingState> prepareForSpeech({bool duckOtherAudio = true});
 
   /// Whether the most recently observed output device is the
   /// device's loudspeaker (as opposed to headphones / A2DP). The
@@ -78,6 +81,7 @@ class AudioSessionRoutingService implements RoutingService {
   AudioSession? _session;
   bool _isSpeakerOutput = true;
   StreamSubscription<Set<AudioDevice>>? _devicesSub;
+  bool _appliedDuck = true;
 
   @override
   bool get isSpeakerOutput => _isSpeakerOutput;
@@ -86,6 +90,20 @@ class AudioSessionRoutingService implements RoutingService {
   Future<void> init() async {
     if (_session != null) return;
     final session = await AudioSession.instance;
+    await _applyConfiguration(session, duck: _appliedDuck);
+    _session = session;
+    _devicesSub = session.devicesStream.listen((event) {
+      _isSpeakerOutput = _detectSpeakerOutput(event);
+    });
+    // Seed the initial value.
+    final initial = await session.getDevices();
+    _isSpeakerOutput = _detectSpeakerOutput(initial);
+  }
+
+  Future<void> _applyConfiguration(
+    AudioSession session, {
+    required bool duck,
+  }) async {
     await session.configure(
       AudioSessionConfiguration(
         // iOS: playAndRecord lets us mix capture and speech in one
@@ -96,7 +114,9 @@ class AudioSessionRoutingService implements RoutingService {
         avAudioSessionCategoryOptions:
             AVAudioSessionCategoryOptions.allowBluetoothA2dp |
             AVAudioSessionCategoryOptions.defaultToSpeaker |
-            AVAudioSessionCategoryOptions.duckOthers,
+            (duck
+                ? AVAudioSessionCategoryOptions.duckOthers
+                : AVAudioSessionCategoryOptions.mixWithOthers),
         avAudioSessionMode: AVAudioSessionMode.spokenAudio,
         avAudioSessionRouteSharingPolicy:
             AVAudioSessionRouteSharingPolicy.defaultPolicy,
@@ -111,24 +131,23 @@ class AudioSessionRoutingService implements RoutingService {
           usage: AndroidAudioUsage.assistanceAccessibility,
         ),
         androidAudioFocusGainType:
-            AndroidAudioFocusGainType.gainTransientMayDuck,
+            duck
+                ? AndroidAudioFocusGainType.gainTransientMayDuck
+                : AndroidAudioFocusGainType.gain,
         androidWillPauseWhenDucked: false,
       ),
     );
-    _session = session;
-    _devicesSub = session.devicesStream.listen((event) {
-      _isSpeakerOutput = _detectSpeakerOutput(event);
-    });
-    // Seed the initial value.
-    final initial = await session.getDevices();
-    _isSpeakerOutput = _detectSpeakerOutput(initial);
+    _appliedDuck = duck;
   }
 
   @override
-  Future<RoutingState> prepareForSpeech() async {
+  Future<RoutingState> prepareForSpeech({bool duckOtherAudio = true}) async {
     final session = _session;
     if (session == null) return RoutingState.failed;
     try {
+      if (duckOtherAudio != _appliedDuck) {
+        await _applyConfiguration(session, duck: duckOtherAudio);
+      }
       final activated = await session.setActive(true);
       if (!activated) return RoutingState.failed;
       // Sample the input device set; if any is a BT-SCO mic, the OS

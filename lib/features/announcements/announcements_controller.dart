@@ -95,6 +95,24 @@ class AnnouncementsControllerConfig {
   final AnnouncementVerbosity verbosity;
   final FrequencyProfile profile;
 
+  /// Allow speaking when the device is routed to its built-in
+  /// loudspeaker. When `false`, announcements are suppressed in
+  /// speaker mode (headphones / BT A2DP only).
+  final bool speakerOutputAllowed;
+
+  /// Mute the input ring buffer for the duration of an utterance so
+  /// the TTS audio doesn't bleed back into inference. Turn off if you
+  /// want detections to keep flowing while the phone speaks.
+  final bool muteCaptureDuringSpeech;
+
+  /// Request `transient_may_duck` audio focus so background media
+  /// (music, podcasts) is briefly attenuated during speech.
+  final bool duckOtherAudio;
+
+  /// Play a short system alert tone immediately before each utterance
+  /// so the listener has a beat to switch their attention.
+  final bool prerollCue;
+
   /// Estimated TTS speech duration after which the ring-buffer mute
   /// window auto-expires. Used as a fallback when the engine doesn't
   /// report an exact end time. Kept as a separate config knob so we
@@ -105,6 +123,10 @@ class AnnouncementsControllerConfig {
     required this.enabled,
     required this.verbosity,
     required this.profile,
+    this.speakerOutputAllowed = true,
+    this.muteCaptureDuringSpeech = true,
+    this.duckOtherAudio = true,
+    this.prerollCue = true,
     this.mutePadding = const Duration(milliseconds: 400),
   });
 }
@@ -119,6 +141,7 @@ enum AnnounceOutcome {
   maxPerMinuteHit,
   streakSilence,
   routingFailed,
+  speakerOutputDisallowed,
   emptyBatch,
   duplicateInflight,
 }
@@ -261,24 +284,42 @@ class AnnouncementsController {
     if (text.isEmpty) return AnnounceOutcome.emptyBatch;
 
     // Routing — last gate before we touch the speaker.
-    final routing = await _routing.prepareForSpeech();
+    final routing = await _routing.prepareForSpeech(
+      duckOtherAudio: config.duckOtherAudio,
+    );
     if (routing != RoutingState.ok) {
       _touchSpecies(detections, now);
       return AnnounceOutcome.routingFailed;
+    }
+
+    // Honour "don't speak through the built-in loudspeaker". We check
+    // after `prepareForSpeech` so the routing state reflects whatever
+    // the audio session resolved to.
+    if (!config.speakerOutputAllowed && _routing.isSpeakerOutput) {
+      _touchSpecies(detections, now);
+      return AnnounceOutcome.speakerOutputDisallowed;
     }
 
     // Mute the input ring buffer for the estimated speech duration
     // plus a small guard band. The actual TTS speak() future settles
     // when the engine reports completion; we unmute either way.
     final estimated = _estimateDuration(text) + config.mutePadding;
-    _ringBuffer.muteFor(estimated);
+    final shouldMute = config.muteCaptureDuringSpeech;
+    if (shouldMute) {
+      _ringBuffer.muteFor(estimated);
+    }
 
     _speaking = true;
     try {
+      if (config.prerollCue) {
+        await _tts.playPrerollCue();
+      }
       await _tts.speak(text);
     } finally {
       _speaking = false;
-      _ringBuffer.unmute();
+      if (shouldMute) {
+        _ringBuffer.unmute();
+      }
     }
 
     final spokenAt = _now();

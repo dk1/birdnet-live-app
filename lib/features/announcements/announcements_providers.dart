@@ -105,14 +105,17 @@ final announcementsVoicePitchProvider =
 // Advanced — routing / capture
 // ---------------------------------------------------------------------------
 
-/// Set by the wizard's "Just the phone" confirmation step (§6.2 step 3).
+/// Allow speaking through the device's built-in loudspeaker.
+/// Default `true` so the app speaks out of the box; users who want
+/// headphones-only operation can disable this in the advanced
+/// announcements settings.
 final announcementsSpeakerOutputAllowedProvider =
     StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
       return BoolSettingNotifier(
         prefs,
         PrefKeys.announcementsSpeakerOutputAllowed,
-        false,
+        true,
       );
     });
 
@@ -216,16 +219,10 @@ final announcementsCoalesceWindowSecondsProvider =
       );
     });
 
-/// Trigger mode — `all` | `firstInSession` | `watchlist`.
-final announcementsTriggerModeProvider =
-    StateNotifierProvider<StringSettingNotifier, String>((ref) {
-      final prefs = ref.watch(sharedPreferencesProvider);
-      return StringSettingNotifier(
-        prefs,
-        PrefKeys.announcementsTriggerMode,
-        'all',
-      );
-    });
+// Trigger mode (`What to announce` picker) was removed in 0.13.8.
+// The PrefKey is left declared so older installs don't see schema
+// migration errors, but the provider is gone — the controller never
+// honoured the value anyway.
 
 // ---------------------------------------------------------------------------
 // Custom notifiers

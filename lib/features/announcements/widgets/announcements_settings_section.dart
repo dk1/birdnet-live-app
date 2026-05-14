@@ -7,7 +7,7 @@
 // a dozen interacting widgets — master toggle, verbosity segmented
 // button, frequency slider, two voice sliders, a preview button that
 // drives the local TTS engine, and an "Advanced" disclosure with four
-// routing/capture switches plus a trigger-mode picker.
+// routing/capture switches.
 //
 // Visibility / scope: this section is shown in the global Settings
 // screen and from the per-mode Settings entries (Live, Survey, Point
@@ -462,58 +462,11 @@ class _AdvancedDisclosure extends ConsumerWidget {
           onChanged:
               (v) => ref.read(announcementsPrerollCueProvider.notifier).set(v),
         ),
-        const SizedBox(height: 8),
         // Throttling numerics (startup grace, min interval, max per
         // minute, streak silence, recency / session reset, coalesce
         // window) are intentionally hidden — they are stamped by the
         // frequency slider above and rarely need per-knob tweaking.
-        const Divider(),
-        _TriggerModePicker(),
       ],
-    );
-  }
-}
-
-class _TriggerModePicker extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final mode = ref.watch(announcementsTriggerModeProvider);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            l10n.settingsAnnouncementsTriggerMode,
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          const SizedBox(height: 8),
-          SegmentedButton<String>(
-            segments: [
-              ButtonSegment(
-                value: 'all',
-                label: Text(l10n.settingsAnnouncementsTriggerModeAll),
-              ),
-              ButtonSegment(
-                value: 'firstInSession',
-                label: Text(
-                  l10n.settingsAnnouncementsTriggerModeFirstInSession,
-                ),
-              ),
-              ButtonSegment(
-                value: 'watchlist',
-                label: Text(l10n.settingsAnnouncementsTriggerModeWatchlist),
-              ),
-            ],
-            selected: {mode},
-            onSelectionChanged:
-                (sel) => ref
-                    .read(announcementsTriggerModeProvider.notifier)
-                    .set(sel.first),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.8] - Unreleased
+
+### Changed
+
+- **Startup grace is now a uniform 5 seconds across every frequency preset.** Previously *Rare* held back announcements for 2 minutes and *Sparse* for 1 minute — by the time the app finally spoke, users were unsure whether anything was working. Five seconds is enough for the audio session to settle while still giving immediate feedback on the first detection.
+- **Speaker output is allowed by default.** The setting used to ship off (it was a wizard-set flag, but no wizard exists in the current build), which meant the app silently skipped every announcement when nothing was plugged in. The toggle still lives in *Advanced* for headphones-only setups.
+
+### Fixed
+
+- **The four advanced announcement toggles now actually do something.** *Allow speaker output*, *Mute capture during speech*, *Lower other audio*, and *Cue tone before speaking* were UI-only — flipping them had no effect on runtime behavior. They are now threaded all the way through the controller, routing service, and TTS engine: speaker mode is gated, ring-buffer muting is conditional, audio focus is requested with or without ducking, and a short system alert tone plays before each utterance when the cue is enabled.
+
+### Removed
+
+- **"What to announce" trigger-mode picker.** The picker offered *Every detection / First time per session / Watchlist only* but the controller never consulted the value — it was dead UI. Removed to keep the settings surface honest; first-in-session and watchlist filtering will return when the underlying logic exists.
+
 ## [0.13.7] - Unreleased
 
 ### Fixed

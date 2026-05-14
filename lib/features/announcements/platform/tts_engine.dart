@@ -27,6 +27,7 @@
 
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 /// Pure interface — what the rest of the Announcements code touches.
@@ -47,6 +48,12 @@ abstract class TtsEngine {
   /// If a previous utterance is still playing it is cancelled before
   /// the new one starts (never queued — stale calls have no value).
   Future<void> speak(String text);
+
+  /// Play a short pre-roll cue (system alert tone) before an
+  /// utterance to give the listener a moment to switch attention.
+  /// Fire-and-forget on failure — the cue is decorative and must
+  /// never block speech.
+  Future<void> playPrerollCue();
 
   /// Cancel any in-flight utterance immediately.
   Future<void> stop();
@@ -129,6 +136,19 @@ class FlutterTtsEngine implements TtsEngine {
       inflight.complete();
     }
     _activeUtterance = null;
+  }
+
+  @override
+  Future<void> playPrerollCue() async {
+    try {
+      await SystemSound.play(SystemSoundType.alert);
+      // Give the OS a brief moment to render the tone before speech
+      // starts so the cue isn't talked over.
+      await Future<void>.delayed(const Duration(milliseconds: 180));
+    } catch (_) {
+      // Cue tone is decorative — never let a platform hiccup block
+      // the actual announcement.
+    }
   }
 
   @override
