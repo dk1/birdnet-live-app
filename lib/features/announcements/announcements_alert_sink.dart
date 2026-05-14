@@ -66,10 +66,10 @@ class AnnouncementsAlertSink {
     FrequencyProfile profile;
     if (frequency == AnnouncementFrequency.custom) {
       profile = FrequencyProfile(
-        startupGraceSeconds:
-            _ref.read(announcementsStartupGraceSecondsProvider),
-        minIntervalSeconds:
-            _ref.read(announcementsMinIntervalSecondsProvider),
+        startupGraceSeconds: _ref.read(
+          announcementsStartupGraceSecondsProvider,
+        ),
+        minIntervalSeconds: _ref.read(announcementsMinIntervalSecondsProvider),
         // No separate "speaker" pref yet; double the headphone value
         // so speaker mode stays meaningfully stricter (matches the
         // ratio used in the named profiles).
@@ -78,10 +78,12 @@ class AnnouncementsAlertSink {
         maxPerMinute: _ref.read(announcementsMaxPerMinuteProvider),
         maxPerMinuteSpeaker:
             (_ref.read(announcementsMaxPerMinuteProvider) * 2 / 3).floor(),
-        streakSilenceSeconds:
-            _ref.read(announcementsStreakSilenceSecondsProvider),
-        recencyResetSeconds:
-            _ref.read(announcementsRecencyResetSecondsProvider),
+        streakSilenceSeconds: _ref.read(
+          announcementsStreakSilenceSecondsProvider,
+        ),
+        recencyResetSeconds: _ref.read(
+          announcementsRecencyResetSecondsProvider,
+        ),
         // sessionResetSeconds / coalesceWindowSeconds are not exposed
         // as live providers yet; fall back to the `normal` profile
         // values so the controller has reasonable numbers.

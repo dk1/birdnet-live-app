@@ -1,0 +1,125 @@
+{
+  "locale": "it",
+  "version": 1,
+  "_comment": [
+    "Modelli di frasi per la funzione Announcements. Vedi dev/announcements.md §3.",
+    "Ogni bucket ha una lista `balanced` (sempre presente) e opzionalmente una",
+    "lista `chatty` (varianti più discorsive). Con Verbosity = Minimal i modelli",
+    "vengono saltati e si pronuncia solo `{name}.`. Le traduzioni sono",
+    "riformulazioni naturali, non letterali.",
+    "",
+    "IMPORTANTE — trappola di genere:",
+    "  I nomi degli uccelli hanno genere grammaticale (il pettirosso, la cinciallegra)",
+    "  che NON conosciamo a runtime. Mai inserire articoli determinativi o",
+    "  indeterminativi (il, la, lo, i, gli, le, un, uno, una) davanti a {name},",
+    "  {name1}, {name2}, {name3}. Sicuro:",
+    "    - due punti: 'Rilevato: {name}.'",
+    "    - {name} a inizio frase: '{name}, senza dubbio.'",
+    "    - senza articolo: 'Sembra {name}.'"
+  ],
+  "buckets": {
+    "A": {
+      "balanced": [
+        "Rilevato: {name}.",
+        "{name}, senza dubbio.",
+        "Identificato: {name}.",
+        "È {name}."
+      ],
+      "chatty": [
+        "Rilevato: {name}, segnale molto pulito.",
+        "{name}, perfettamente chiaro.",
+        "Senza esitazione: {name}.",
+        "Segnale netto: {name}."
+      ]
+    },
+    "B": {
+      "balanced": [
+        "Di nuovo: {name}.",
+        "Ancora {name}.",
+        "{name}, di nuovo."
+      ],
+      "chatty": [
+        "Ancora {name}, non si ferma.",
+        "Ritorna {name}, molto chiaro.",
+        "Di nuovo {name}, insiste."
+      ]
+    },
+    "C": {
+      "balanced": [
+        "{name} continua.",
+        "Sempre {name}.",
+        "{name}, ancora attivo."
+      ],
+      "chatty": [
+        "{name} continua senza sosta.",
+        "Ancora attivo: {name}.",
+        "{name} non molla."
+      ]
+    },
+    "D": {
+      "balanced": [
+        "Probabilmente {name}.",
+        "Sembra {name}.",
+        "Forse {name}.",
+        "Direi {name}."
+      ],
+      "chatty": [
+        "Abbastanza sicuro: {name}.",
+        "Sembra proprio {name}.",
+        "Direi {name}, con discreta sicurezza."
+      ]
+    },
+    "E": {
+      "balanced": [
+        "Forse di nuovo {name}.",
+        "Potrebbe essere ancora {name}."
+      ],
+      "chatty": [
+        "Forse {name} di nuovo, difficile dirlo.",
+        "Potrebbe essere {name} che ritorna."
+      ]
+    },
+    "F": {
+      "balanced": [
+        "Non sicuro — forse {name}.",
+        "Difficile dirlo, forse {name}.",
+        "Per un attimo sembrava {name}."
+      ],
+      "chatty": [
+        "Non sono sicuro, ma sembrava {name}.",
+        "Difficile dirlo — potrebbe essere stato {name}.",
+        "Forse {name}, non ci scommetterei."
+      ]
+    },
+    "G": {
+      "balanced": [
+        "Forse ancora {name}, difficile dirlo.",
+        "Potrebbe essere {name}, senza certezza."
+      ],
+      "chatty": [
+        "Forse {name} di nuovo, segnale debole.",
+        "Senza certezza — potrebbe essere ancora {name}."
+      ]
+    },
+    "H_three": {
+      "balanced": [
+        "Diversi insieme: {name1}, {name2}, {name3}.",
+        "Tre insieme: {name1}, {name2}, {name3}."
+      ],
+      "chatty": [
+        "Bel coro — {name1}, {name2} e {name3} contemporaneamente.",
+        "Tre specie insieme: {name1}, {name2}, {name3}."
+      ]
+    },
+    "H_many": {
+      "balanced": [
+        "Molta attività: {name1}, {name2}, {name3} e altri.",
+        "Diversi insieme: {name1}, {name2}, {name3} e qualche altro."
+      ],
+      "chatty": [
+        "Momento intenso — {name1}, {name2}, {name3} e diversi altri.",
+        "Bel movimento: {name1}, {name2}, {name3} e ancora altri."
+      ]
+    }
+  }
+}

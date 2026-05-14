@@ -1,0 +1,126 @@
+{
+  "locale": "fr",
+  "version": 1,
+  "_comment": [
+    "Modèles de phrases pour la fonction Announcements. Voir dev/announcements.md §3.",
+    "Chaque bucket a une liste `balanced` (toujours présente) et éventuellement",
+    "une liste `chatty` (variantes plus longues). Pour Verbosity = Minimal, les",
+    "modèles sont contournés et seul `{name}.` est prononcé. Les traductions",
+    "sont des reformulations naturelles, pas littérales.",
+    "",
+    "IMPORTANT — piège de genre :",
+    "  Les noms d'oiseaux ont un genre grammatical (le rouge-gorge, la mésange)",
+    "  que nous NE connaissons PAS à l'exécution. Ne jamais placer d'article",
+    "  défini ou indéfini fléchi (le, la, les, un, une, des) directement devant",
+    "  {name}, {name1}, {name2}, {name3}. Sûr :",
+    "    - deux-points : 'Détecté : {name}.'",
+    "    - {name} en début de phrase : '{name}, sans aucun doute.'",
+    "    - prépositions sans article : 'On dirait du {name}'... NON, éviter.",
+    "    - préférer : 'Cela ressemble à {name}.'"
+  ],
+  "buckets": {
+    "A": {
+      "balanced": [
+        "Détecté : {name}.",
+        "{name}, sans aucun doute.",
+        "Repéré : {name}.",
+        "C'est bien {name}."
+      ],
+      "chatty": [
+        "Détecté : {name}, signal très net.",
+        "{name}, parfaitement clair.",
+        "Sans hésitation, {name}.",
+        "Signal franc : {name}."
+      ]
+    },
+    "B": {
+      "balanced": [
+        "De nouveau : {name}.",
+        "{name}, encore.",
+        "Encore {name}."
+      ],
+      "chatty": [
+        "Encore {name}, ça insiste.",
+        "À nouveau {name}, très clair.",
+        "{name}, cela revient."
+      ]
+    },
+    "C": {
+      "balanced": [
+        "{name} continue.",
+        "Toujours {name}.",
+        "{name}, encore actif."
+      ],
+      "chatty": [
+        "{name} ne s'arrête pas.",
+        "Cela continue : {name}.",
+        "{name} reste très actif."
+      ]
+    },
+    "D": {
+      "balanced": [
+        "Probablement {name}.",
+        "Cela ressemble à {name}.",
+        "Plutôt {name}.",
+        "Vraisemblablement {name}."
+      ],
+      "chatty": [
+        "Plutôt sûr : {name}.",
+        "Cela ressemble bien à {name}.",
+        "Je dirais {name}, assez confiant."
+      ]
+    },
+    "E": {
+      "balanced": [
+        "Peut-être encore {name}.",
+        "Cela pourrait être {name} à nouveau."
+      ],
+      "chatty": [
+        "Peut-être à nouveau {name}, difficile à dire.",
+        "Cela ressemble peut-être à {name}, qui revient."
+      ]
+    },
+    "F": {
+      "balanced": [
+        "Pas sûr — peut-être {name}.",
+        "Difficile à dire, possiblement {name}.",
+        "Brièvement, on aurait dit {name}."
+      ],
+      "chatty": [
+        "Pas certain, mais on aurait dit {name}.",
+        "Difficile à dire — peut-être bien {name}.",
+        "Possiblement {name}, je ne m'avance pas."
+      ]
+    },
+    "G": {
+      "balanced": [
+        "Peut-être encore {name}, difficile à dire.",
+        "Cela pourrait être {name}, sans certitude."
+      ],
+      "chatty": [
+        "Peut-être à nouveau {name}, le signal est faible.",
+        "Sans certitude — pourrait être {name} qui revient."
+      ]
+    },
+    "H_three": {
+      "balanced": [
+        "Plusieurs en même temps : {name1}, {name2}, {name3}.",
+        "Trois à la fois : {name1}, {name2}, {name3}."
+      ],
+      "chatty": [
+        "Beau concert — {name1}, {name2} et {name3} en même temps.",
+        "Trois espèces simultanées : {name1}, {name2}, {name3}."
+      ]
+    },
+    "H_many": {
+      "balanced": [
+        "Beaucoup d'activité : {name1}, {name2}, {name3} et d'autres.",
+        "Plusieurs ensemble : {name1}, {name2}, {name3} et quelques autres."
+      ],
+      "chatty": [
+        "Moment chargé — {name1}, {name2}, {name3} et plusieurs autres.",
+        "Belle activité : {name1}, {name2}, {name3} et d'autres encore."
+      ]
+    }
+  }
+}

@@ -142,12 +142,12 @@ class AnnouncementsController {
     required RoutingService routing,
     required RingBuffer ringBuffer,
     DateTime Function()? now,
-  })  : _engine = engine,
-        _tts = tts,
-        _routing = routing,
-        _ringBuffer = ringBuffer,
-        _now = now ?? DateTime.now,
-        _sessionStartedAt = (now ?? DateTime.now)();
+  }) : _engine = engine,
+       _tts = tts,
+       _routing = routing,
+       _ringBuffer = ringBuffer,
+       _now = now ?? DateTime.now,
+       _sessionStartedAt = (now ?? DateTime.now)();
 
   /// Process a fresh batch of detections and decide whether to speak.
   ///
@@ -166,9 +166,10 @@ class AnnouncementsController {
     final now = _now();
     final profile = config.profile;
     final isSpeaker = _routing.isSpeakerOutput;
-    final minIntervalSec = isSpeaker
-        ? profile.minIntervalSecondsSpeaker
-        : profile.minIntervalSeconds;
+    final minIntervalSec =
+        isSpeaker
+            ? profile.minIntervalSecondsSpeaker
+            : profile.minIntervalSeconds;
     final maxPerMin =
         isSpeaker ? profile.maxPerMinuteSpeaker : profile.maxPerMinute;
 
@@ -187,9 +188,7 @@ class AnnouncementsController {
     }
 
     // 3. Max-per-minute sliding window.
-    _utteranceTimestamps.removeWhere(
-      (t) => now.difference(t).inSeconds >= 60,
-    );
+    _utteranceTimestamps.removeWhere((t) => now.difference(t).inSeconds >= 60);
     if (_utteranceTimestamps.length >= maxPerMin) {
       _touchSpecies(detections, now);
       return AnnounceOutcome.maxPerMinuteHit;
@@ -231,8 +230,8 @@ class AnnouncementsController {
     } else {
       // Coalesced multi-species: pick the highest-scoring N (engine
       // handles the H_three / H_many split internally).
-      final sorted = pickedDetections.toList()
-        ..sort((a, b) => b.score.compareTo(a.score));
+      final sorted =
+          pickedDetections.toList()..sort((a, b) => b.score.compareTo(a.score));
       final top = sorted.take(4).toList();
       text = _engine.speakMany(
         names: top.map((d) => d.displayName).toList(growable: false),
@@ -299,14 +298,16 @@ class AnnouncementsController {
   ) {
     final st = _bySpecies[det.speciesId];
     final isFirstInSession = st == null;
-    final isRecent = st != null &&
+    final isRecent =
+        st != null &&
         now.difference(st.lastSeenAt).inSeconds < profile.recencyResetSeconds;
-    final streakLength = st == null
-        ? 1
-        : (now.difference(st.lastSeenAt).inSeconds <
-                profile.streakSilenceSeconds
-            ? st.streakLength + 1
-            : 1);
+    final streakLength =
+        st == null
+            ? 1
+            : (now.difference(st.lastSeenAt).inSeconds <
+                    profile.streakSilenceSeconds
+                ? st.streakLength + 1
+                : 1);
     return AnnouncementSignals(
       confidence: confidenceBinFor(det.score),
       isRecent: isRecent,

@@ -197,10 +197,12 @@ void main() {
 
         // Write 3 batches that cause multiple wraps.
         buf.write(Float32List.fromList([1, 2, 3])); // [1,2,3,_]
-        buf.write(Float32List.fromList(
-            [4, 5, 6])); // wrap → [5,6,3,4] → most recent: [3,4,5,6]
         buf.write(
-            Float32List.fromList([7, 8])); // wrap → most recent: [5,6,7,8]
+          Float32List.fromList([4, 5, 6]),
+        ); // wrap → [5,6,3,4] → most recent: [3,4,5,6]
+        buf.write(
+          Float32List.fromList([7, 8]),
+        ); // wrap → most recent: [5,6,7,8]
 
         final result = buf.readLast(4);
         expect(result[0], closeTo(5, 1e-6));
@@ -242,9 +244,7 @@ void main() {
       test('returns correct RMS for known signal', () {
         final buf = RingBuffer(capacity: 100);
         // A constant signal of 0.5 should have RMS = 0.5.
-        final signal = Float32List.fromList(
-          List.generate(100, (_) => 0.5),
-        );
+        final signal = Float32List.fromList(List.generate(100, (_) => 0.5));
         buf.write(signal);
 
         expect(buf.rmsLevel(windowSize: 100), closeTo(0.5, 0.01));
@@ -386,8 +386,11 @@ void main() {
         // A shorter request must NOT shorten the window.
         buf.muteFor(const Duration(milliseconds: 100));
         fakeNow = fakeNow.add(const Duration(seconds: 1));
-        expect(buf.isMuted, true,
-            reason: 'longer original window must still be in effect');
+        expect(
+          buf.isMuted,
+          true,
+          reason: 'longer original window must still be in effect',
+        );
       });
 
       test('unmute() takes effect immediately', () {

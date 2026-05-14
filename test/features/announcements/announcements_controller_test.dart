@@ -25,6 +25,7 @@ class _FakeTts implements TtsEngine {
     if (throwOnSpeak) throw StateError('boom');
     spoken.add(text);
   }
+
   @override
   Future<void> stop() async {}
   @override
@@ -54,15 +55,29 @@ PhrasingEngine _engine() {
         'balanced': ['{name}.'],
         'chatty': ['{name} singing.'],
       },
-      'B': {'balanced': ['{name} again.']},
-      'C': {'balanced': ['{name} still calling.']},
-      'D': {'balanced': ['Sounds like {name}.']},
-      'E': {'balanced': ['{name} maybe back.']},
-      'F': {'balanced': ['Maybe {name}.']},
-      'G': {'balanced': ['Could be {name}.']},
-      'H_three': {'balanced': ['{name1}, {name2}, {name3}.']},
+      'B': {
+        'balanced': ['{name} again.'],
+      },
+      'C': {
+        'balanced': ['{name} still calling.'],
+      },
+      'D': {
+        'balanced': ['Sounds like {name}.'],
+      },
+      'E': {
+        'balanced': ['{name} maybe back.'],
+      },
+      'F': {
+        'balanced': ['Maybe {name}.'],
+      },
+      'G': {
+        'balanced': ['Could be {name}.'],
+      },
+      'H_three': {
+        'balanced': ['{name1}, {name2}, {name3}.'],
+      },
       'H_many': {
-        'balanced': ['{name1}, {name2}, {name3}, and more.']
+        'balanced': ['{name1}, {name2}, {name3}, and more.'],
       },
     },
   });
@@ -73,12 +88,11 @@ AnnouncementsControllerConfig _cfg(
   FrequencyProfile profile, {
   bool enabled = true,
   AnnouncementVerbosity verbosity = AnnouncementVerbosity.balanced,
-}) =>
-    AnnouncementsControllerConfig(
-      enabled: enabled,
-      verbosity: verbosity,
-      profile: profile,
-    );
+}) => AnnouncementsControllerConfig(
+  enabled: enabled,
+  verbosity: verbosity,
+  profile: profile,
+);
 
 void main() {
   group('AnnouncementsController', () {
@@ -103,19 +117,17 @@ void main() {
       );
     });
 
-    AnnouncementDetection det(String id, double score) =>
-        AnnouncementDetection(
-          speciesId: id,
-          displayName: id,
-          score: score,
-          at: now,
-        );
+    AnnouncementDetection det(String id, double score) => AnnouncementDetection(
+      speciesId: id,
+      displayName: id,
+      score: score,
+      at: now,
+    );
 
     test('disabled config never speaks', () async {
       final out = await ctrl.announce(
         [det('Robin', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!,
-            enabled: false),
+        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!, enabled: false),
       );
       expect(out, AnnounceOutcome.disabled);
       expect(tts.spoken, isEmpty);
@@ -123,35 +135,31 @@ void main() {
 
     test('startup grace blocks early utterances', () async {
       now = now.add(const Duration(seconds: 5));
-      final out = await ctrl.announce(
-        [det('Robin', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
+      final out = await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
       expect(out, AnnounceOutcome.startupGrace);
       expect(tts.spoken, isEmpty);
     });
 
     test('speaks once startup grace has passed', () async {
       now = now.add(const Duration(seconds: 31));
-      final out = await ctrl.announce(
-        [det('Robin', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
+      final out = await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
       expect(out, AnnounceOutcome.spoken);
       expect(tts.spoken, ['Robin.']);
     });
 
     test('min interval gate blocks back-to-back speech', () async {
       now = now.add(const Duration(seconds: 31));
-      await ctrl.announce(
-        [det('Robin', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
+      await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
       now = now.add(const Duration(seconds: 3));
-      final out = await ctrl.announce(
-        [det('Wren', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
+      final out = await ctrl.announce([
+        det('Wren', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
       expect(out, AnnounceOutcome.minIntervalNotMet);
       expect(tts.spoken.length, 1);
     });
@@ -159,85 +167,76 @@ void main() {
     test('speaker mode applies stricter min-interval', () async {
       routing.speaker = true;
       now = now.add(const Duration(seconds: 31));
-      await ctrl.announce(
-        [det('Robin', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
+      await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
       // headphone min is 8 s, speaker min is 12 s — 10 s should fail.
       now = now.add(const Duration(seconds: 10));
-      final out = await ctrl.announce(
-        [det('Wren', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
+      final out = await ctrl.announce([
+        det('Wren', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
       expect(out, AnnounceOutcome.minIntervalNotMet);
     });
 
     test('streak silence mutes the same species briefly', () async {
       now = now.add(const Duration(seconds: 31));
-      await ctrl.announce(
-        [det('Robin', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
+      await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
       now = now.add(const Duration(seconds: 30)); // > min, < streak (45)
-      final out = await ctrl.announce(
-        [det('Robin', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
+      final out = await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
       expect(out, AnnounceOutcome.streakSilence);
     });
 
     test('routing failure suppresses speech', () async {
       routing.next = RoutingState.hfpDowngrade;
       now = now.add(const Duration(seconds: 31));
-      final out = await ctrl.announce(
-        [det('Robin', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
+      final out = await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
       expect(out, AnnounceOutcome.routingFailed);
       expect(tts.spoken, isEmpty);
     });
 
-    test('mute window sized for spoken text and unmuted on completion',
-        () async {
-      now = now.add(const Duration(seconds: 31));
-      await ctrl.announce(
-        [det('Robin', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
-      // After speak() resolves, controller calls unmute().
-      expect(ring.isMuted, false);
-    });
+    test(
+      'mute window sized for spoken text and unmuted on completion',
+      () async {
+        now = now.add(const Duration(seconds: 31));
+        await ctrl.announce([
+          det('Robin', 0.9),
+        ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
+        // After speak() resolves, controller calls unmute().
+        expect(ring.isMuted, false);
+      },
+    );
 
     test('coalesces multiple species into a batch utterance', () async {
       now = now.add(const Duration(seconds: 31));
-      final out = await ctrl.announce(
-        [
-          det('Robin', 0.9),
-          det('Wren', 0.85),
-          det('Crow', 0.82),
-        ],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
+      final out = await ctrl.announce([
+        det('Robin', 0.9),
+        det('Wren', 0.85),
+        det('Crow', 0.82),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
       expect(out, AnnounceOutcome.spoken);
       expect(tts.spoken, ['Robin, Wren, Crow.']);
     });
 
     test('resetSession clears throttling state', () async {
       now = now.add(const Duration(seconds: 31));
-      await ctrl.announce(
-        [det('Robin', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
+      await ctrl.announce([
+        det('Robin', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
       ctrl.resetSession();
       // Without reset, this would hit min-interval. After reset, the
       // session-clock gate is not — but the *controller's* startup
       // grace tracks the original session start, so we still need to
       // be past it (we are).
       now = now.add(const Duration(seconds: 1));
-      final out = await ctrl.announce(
-        [det('Wren', 0.9)],
-        _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!),
-      );
+      final out = await ctrl.announce([
+        det('Wren', 0.9),
+      ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));
       // resetSession clears _lastAnnouncedAt so the min-interval gate
       // no longer applies.
       expect(out, AnnounceOutcome.spoken);

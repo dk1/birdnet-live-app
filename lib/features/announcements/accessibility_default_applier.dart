@@ -62,15 +62,13 @@ class _AnnouncementsAccessibilityDefaultApplierState
     final prefs = ref.read(sharedPreferencesProvider);
     final alreadyApplied =
         prefs.getBool(PrefKeys.announcementsAccessibilityDefaultApplied) ??
-            false;
+        false;
     if (alreadyApplied) return;
-    final userTouchedToggle =
-        prefs.containsKey(PrefKeys.announcementsEnabled);
+    final userTouchedToggle = prefs.containsKey(PrefKeys.announcementsEnabled);
     if (userTouchedToggle) {
       // Respect existing user choice; just stamp the marker so we
       // never re-apply.
-      prefs.setBool(
-          PrefKeys.announcementsAccessibilityDefaultApplied, true);
+      prefs.setBool(PrefKeys.announcementsAccessibilityDefaultApplied, true);
       return;
     }
     // Default ON for screen-reader users.

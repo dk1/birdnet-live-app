@@ -86,32 +86,35 @@ class AudioSessionRoutingService implements RoutingService {
   Future<void> init() async {
     if (_session != null) return;
     final session = await AudioSession.instance;
-    await session.configure(AudioSessionConfiguration(
-      // iOS: playAndRecord lets us mix capture and speech in one
-      // session. Crucially we DO NOT pass `.allowBluetooth`, which on
-      // iOS forces HFP. `.allowBluetoothA2DP` keeps Bluetooth output
-      // at high fidelity without touching the mic route.
-      avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
-      avAudioSessionCategoryOptions:
-          AVAudioSessionCategoryOptions.allowBluetoothA2dp |
-              AVAudioSessionCategoryOptions.defaultToSpeaker |
-              AVAudioSessionCategoryOptions.duckOthers,
-      avAudioSessionMode: AVAudioSessionMode.spokenAudio,
-      avAudioSessionRouteSharingPolicy:
-          AVAudioSessionRouteSharingPolicy.defaultPolicy,
-      avAudioSessionSetActiveOptions:
-          AVAudioSessionSetActiveOptions.notifyOthersOnDeactivation,
-      // Android: usage = assistanceAccessibility makes the system
-      // treat our utterance like a screen-reader prompt (mixed with
-      // / ducks media, doesn't steal the mic).
-      androidAudioAttributes: AndroidAudioAttributes(
-        contentType: AndroidAudioContentType.speech,
-        flags: AndroidAudioFlags.none,
-        usage: AndroidAudioUsage.assistanceAccessibility,
+    await session.configure(
+      AudioSessionConfiguration(
+        // iOS: playAndRecord lets us mix capture and speech in one
+        // session. Crucially we DO NOT pass `.allowBluetooth`, which on
+        // iOS forces HFP. `.allowBluetoothA2DP` keeps Bluetooth output
+        // at high fidelity without touching the mic route.
+        avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
+        avAudioSessionCategoryOptions:
+            AVAudioSessionCategoryOptions.allowBluetoothA2dp |
+            AVAudioSessionCategoryOptions.defaultToSpeaker |
+            AVAudioSessionCategoryOptions.duckOthers,
+        avAudioSessionMode: AVAudioSessionMode.spokenAudio,
+        avAudioSessionRouteSharingPolicy:
+            AVAudioSessionRouteSharingPolicy.defaultPolicy,
+        avAudioSessionSetActiveOptions:
+            AVAudioSessionSetActiveOptions.notifyOthersOnDeactivation,
+        // Android: usage = assistanceAccessibility makes the system
+        // treat our utterance like a screen-reader prompt (mixed with
+        // / ducks media, doesn't steal the mic).
+        androidAudioAttributes: AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.speech,
+          flags: AndroidAudioFlags.none,
+          usage: AndroidAudioUsage.assistanceAccessibility,
+        ),
+        androidAudioFocusGainType:
+            AndroidAudioFocusGainType.gainTransientMayDuck,
+        androidWillPauseWhenDucked: false,
       ),
-      androidAudioFocusGainType: AndroidAudioFocusGainType.gainTransientMayDuck,
-      androidWillPauseWhenDucked: false,
-    ));
+    );
     _session = session;
     _devicesSub = session.devicesStream.listen((event) {
       _isSpeakerOutput = _detectSpeakerOutput(event);

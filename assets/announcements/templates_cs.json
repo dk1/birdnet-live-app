@@ -1,0 +1,123 @@
+{
+  "locale": "cs",
+  "version": 1,
+  "_comment": [
+    "Vzory frází pro funkci Announcements. Viz dev/announcements.md §3.",
+    "Každý bucket má seznam `balanced` (vždy přítomný) a volitelně seznam",
+    "`chatty` (delší, hovorové varianty). Při Verbosity = Minimal se vzory",
+    "obcházejí a vysloví se jen `{name}.`. Překlady jsou přirozené",
+    "přeformulace, ne doslovné.",
+    "",
+    "DŮLEŽITÉ — pád a rod:",
+    "  Česká jména ptáků mají gramatický rod (ten střízlík, ta kos[ka], to",
+    "  červenka — různé) a {name} je vždy v 1. pádě, který v běžné větě",
+    "  často nesedí. Vzory tedy POUŽÍVAJÍ {name} v izolaci (po dvojtečce,",
+    "  na začátku) nebo s neutrálními predikáty, které snesou nominativ.",
+    "  Vyhněte se předložkám a slovesům vyžadujícím jiný pád než nominativ."
+  ],
+  "buckets": {
+    "A": {
+      "balanced": [
+        "Detekováno: {name}.",
+        "{name}, jednoznačně.",
+        "Identifikováno: {name}.",
+        "Slyším: {name}."
+      ],
+      "chatty": [
+        "Detekováno: {name}, signál velmi čistý.",
+        "{name}, naprosto jasně.",
+        "Bez pochyb: {name}.",
+        "Čistý signál: {name}."
+      ]
+    },
+    "B": {
+      "balanced": [
+        "Znovu: {name}.",
+        "Opět: {name}.",
+        "{name}, znovu."
+      ],
+      "chatty": [
+        "Znovu: {name}, neustává.",
+        "Opět: {name}, jasně.",
+        "Vrací se: {name}."
+      ]
+    },
+    "C": {
+      "balanced": [
+        "{name} pokračuje.",
+        "Stále: {name}.",
+        "{name}, dál aktivní."
+      ],
+      "chatty": [
+        "{name} neúnavně pokračuje.",
+        "Stále aktivní: {name}.",
+        "{name} se nezastavuje."
+      ]
+    },
+    "D": {
+      "balanced": [
+        "Pravděpodobně: {name}.",
+        "Patrně: {name}.",
+        "Spíše: {name}.",
+        "Tipuji: {name}."
+      ],
+      "chatty": [
+        "Docela jistě: {name}.",
+        "Zní to jako {name}, dost jistě.",
+        "Tipuji {name}, s rezervou."
+      ]
+    },
+    "E": {
+      "balanced": [
+        "Možná znovu: {name}.",
+        "Možná opět: {name}."
+      ],
+      "chatty": [
+        "Možná znovu: {name}, těžko říct.",
+        "Možná se vrací: {name}."
+      ]
+    },
+    "F": {
+      "balanced": [
+        "Nejistě — možná: {name}.",
+        "Těžko říct, snad: {name}.",
+        "Krátce to znělo jako {name}."
+      ],
+      "chatty": [
+        "Nejsem si jist, ale znělo to jako {name}.",
+        "Těžko říct — mohlo to být {name}.",
+        "Možná: {name}, nedal bych ruku do ohně."
+      ]
+    },
+    "G": {
+      "balanced": [
+        "Možná opět: {name}, těžko říct.",
+        "Možná: {name}, nejsem si jist."
+      ],
+      "chatty": [
+        "Možná znovu: {name}, signál je slabý.",
+        "Bez jistoty — mohlo by to být znovu: {name}."
+      ]
+    },
+    "H_three": {
+      "balanced": [
+        "Několik najednou: {name1}, {name2}, {name3}.",
+        "Tři současně: {name1}, {name2}, {name3}."
+      ],
+      "chatty": [
+        "Pěkný sbor — {name1}, {name2} a {name3} současně.",
+        "Tři druhy najednou: {name1}, {name2}, {name3}."
+      ]
+    },
+    "H_many": {
+      "balanced": [
+        "Hodně dění: {name1}, {name2}, {name3} a další.",
+        "Několik najednou: {name1}, {name2}, {name3} a další."
+      ],
+      "chatty": [
+        "Rušná chvíle — {name1}, {name2}, {name3} a několik dalších.",
+        "Pěkný ruch: {name1}, {name2}, {name3} a další."
+      ]
+    }
+  }
+}
