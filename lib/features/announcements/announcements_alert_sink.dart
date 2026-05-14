@@ -42,6 +42,7 @@ import 'dart:ui' as ui;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../audio/audio_providers.dart';
+import '../explore/explore_providers.dart';
 import '../../shared/providers/settings_providers.dart';
 import 'announcements_controller.dart';
 import 'announcements_providers.dart';
@@ -78,13 +79,52 @@ class AnnouncementsAlertSink {
       }
       final controller = _controller ?? await _ensureController();
       await _reconfigureIfLanguageChanged();
-      final enriched = _enrichWithCommonness(batch);
+      final localized = _localizeNames(batch);
+      final enriched = _enrichWithCommonness(localized);
       return await controller.announce(enriched, _readConfig());
     } catch (_) {
       return AnnounceOutcome.routingFailed;
     }
   }
 
+  /// Replace each detection's `displayName` with the localized common
+  /// name from the taxonomy bundle (matching what the on-screen
+  /// detection list shows). The mode controllers hand us the raw
+  /// audio-classifier label as `displayName`, which sometimes differs
+  /// from the localized name users see — e.g. the classifier emits
+  /// "Red Fox Sparrow" while the taxonomy entry is "Fox Sparrow", or
+  /// "Mangrove Warbler" vs the locale's preferred name. Looking up
+  /// here keeps speech and screen aligned and gives non-English UIs
+  /// the localized name (e.g. "Amsel" instead of "Eurasian Blackbird")
+  /// without the mode controllers having to know about taxonomy or
+  /// the species-locale setting. Falls back to the payload name when
+  /// the taxonomy isn't loaded yet or the species isn't in the table.
+  List<AnnouncementDetection> _localizeNames(
+    List<AnnouncementDetection> batch,
+  ) {
+    final taxonomy = _ref.read(taxonomyServiceProvider).valueOrNull;
+    if (taxonomy == null) return batch;
+    final speciesLocale = _ref.read(effectiveSpeciesLocaleProvider);
+    return [
+      for (final d in batch)
+        () {
+          final localized = taxonomy
+              .lookup(d.speciesId)
+              ?.commonNameForLocale(speciesLocale);
+          if (localized == null || localized == d.displayName) return d;
+          return AnnouncementDetection(
+            speciesId: d.speciesId,
+            displayName: localized,
+            score: d.score,
+            at: d.at,
+            commonness: d.commonness,
+            isOutOfSeason: d.isOutOfSeason,
+          );
+        }(),
+    ];
+  }
+
+  /// 
   /// Attach geo-model commonness/season metadata to each detection in
   /// the batch when available. Reads the cached
   /// [geoCommonnessProvider] value non-blockingly via

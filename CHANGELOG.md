@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.13] - 2026-05-14
+
+### Fixed
+
+- **Spoken species name now matches the name shown on the detection card.** The on-screen detection list resolves each species through the bundled taxonomy and the user's species-name language (so users see *Fox Sparrow*, *Mangrove Warbler* or *Amsel* depending on locale), but the announcement pipeline was forwarding the raw audio-classifier label instead. The two label sources sometimes disagree on English wording — for example the classifier emits *"Red Fox Sparrow"* while the taxonomy entry is *"Fox Sparrow"* — which is why TTS occasionally said something different from what the screen showed. The announcements sink now applies the same taxonomy + species-locale lookup the UI uses, so speech and screen always agree (and non-English UIs hear the localized common name instead of the English classifier label).
+
 ## [0.13.12] - 2026-05-14
 
 ### Changed
