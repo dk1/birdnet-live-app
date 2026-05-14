@@ -130,17 +130,12 @@ Two sliders that adjust the platform TTS voice. **Speed** ranges 0.5×–1.5×; 
 
 ### Advanced
 
-A disclosure that exposes the underlying numeric and routing controls. You generally do not need to open this — the verbosity and frequency presets stamp sensible defaults. Touching anything in here downgrades the corresponding preset to *Custom* so the UI never claims a preset is in effect when it isn't.
+A disclosure that exposes a handful of audio-routing toggles plus the trigger-mode picker. You generally do not need to open this — the verbosity and frequency presets above are the only knobs that matter day to day. The rate-limiting numerics (startup grace, minimum gap, max per minute, streak silence, recency reset) are bundled into the **Frequency** slider so there is one obvious place to dial cadence up or down.
 
 - **Allow phone speaker** — When off, announcements are silently skipped if no headphones or external speaker is connected. When on, the phone speaker is used as a fallback. Turn this on for casual listening at home; leave it off for fieldwork to guarantee no acoustic feedback into the microphone.
 - **Mute mic while speaking** — Replaces incoming audio with silence while the app speaks, so the speaker output cannot be picked up by the microphone and re-detected. Highly recommended (and the default). Only turn this off if your microphone is acoustically isolated from the phone speaker — for example a clip-on lapel mic on a different cable or a Bluetooth headset.
-- **Lower other audio** — Briefly reduces the volume of music or podcasts from other apps during the announcement and restores it afterwards. Off plays at full mix.
-- **Cue tone before speaking** — Plays a short, quiet tone before each utterance so your ear has a moment to switch from passive listening to attending to the voice. Particularly helpful when announcements are infrequent or when you have music playing in the background.
-- **Startup grace** — Seconds of silence at the start of each session before the first announcement is allowed. Avoids a flurry of utterances during the noisy "phone in pocket / mic just settled" period.
-- **Minimum gap** — Minimum seconds between any two announcements, regardless of species.
-- **Max per minute** — Hard ceiling on the number of utterances within any 60-second sliding window. Prevents a sudden chorus from triggering rapid-fire speech.
-- **Streak silence** — How long to stay silent about a *single species* after it has been announced repeatedly in a row. Stops the same name from dominating the soundtrack.
-- **Recency reset** — How long until a previously-announced species is treated as "new again" and re-eligible for a phrasing that does not assume recent context.
+- **Lower other audio** — Briefly reduces the volume of music or podcasts from other apps during the announcement and restores it afterwards. On by default. Off plays at full mix.
+- **Cue tone before speaking** — Plays a short, quiet tone before each utterance so your ear has a moment to switch from passive listening to attending to the voice. On by default. Particularly helpful when announcements are infrequent or when you have music playing in the background.
 - **What to announce** — Picks which detections are eligible for an announcement at all. *Every detection* (default) lets the throttling decide. *First time per session* announces a species only the first time it appears in the current session. *Watchlist only* limits announcements to species on your watchlist (useful for targeted survey work where you want to hear about your priority taxa and nothing else).
 
 ## Recording

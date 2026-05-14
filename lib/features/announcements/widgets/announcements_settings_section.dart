@@ -3,25 +3,26 @@
 // =============================================================================
 //
 // The Settings → Announcements section. Pulled into its own file (rather
-// than dropped inline into settings_screen.dart) because it owns roughly
-// fifteen interacting widgets — master toggle, two preset segmented
-// buttons, two voice sliders, a preview button that drives the local
-// TTS engine, and an "Advanced" disclosure with four routing/capture
-// switches plus six numeric sliders and a trigger-mode picker.
+// than dropped inline into settings_screen.dart) because it owns about
+// a dozen interacting widgets — master toggle, verbosity segmented
+// button, frequency slider, two voice sliders, a preview button that
+// drives the local TTS engine, and an "Advanced" disclosure with four
+// routing/capture switches plus a trigger-mode picker.
 //
 // Visibility / scope: this section is shown in the global Settings
 // screen and from the per-mode Settings entries (Live, Survey, Point
 // Count). There is no first-run setup wizard — the two preset pickers
 // (verbosity × frequency) are intentionally the only knobs the user
-// has to touch, so they can experiment by tapping segments and find a
-// cadence that works without leaving the screen.
+// has to touch.
 //
-// All gating is done with [announcementsEnabledProvider]. Editing any
-// Advanced numeric or routing toggle should downgrade the corresponding
-// preset to `custom` so the UI never lies about which preset is in
-// effect; that downgrade is implemented inline in the slider/switch
-// `onChanged` callbacks below (writing through to both the numeric
-// pref and the preset pref).
+// All gating is done with [announcementsEnabledProvider]. The numeric
+// throttling knobs (startup grace, min interval, max per minute,
+// streak silence, recency reset, session reset, coalesce window) are
+// intentionally NOT exposed in the UI — they are stamped automatically
+// by the frequency slider via `frequencyProfileFor()`. Hiding them
+// keeps the surface area small; power users with a `custom` profile
+// saved from older builds still see their preset name (the slider
+// thumb just parks at the closest preset visually).
 // =============================================================================
 
 import 'package:flutter/material.dart';
@@ -462,142 +463,13 @@ class _AdvancedDisclosure extends ConsumerWidget {
               (v) => ref.read(announcementsPrerollCueProvider.notifier).set(v),
         ),
         const SizedBox(height: 8),
-        // Numeric sliders. Each one writes the int and downgrades the
-        // frequency preset to `custom` so the UI's preset chip stops
-        // claiming a named profile is in effect.
-        _IntAdvancedSlider(
-          label: l10n.settingsAnnouncementsStartupGraceSeconds(
-            ref.watch(announcementsStartupGraceSecondsProvider),
-          ),
-          value: ref.watch(announcementsStartupGraceSecondsProvider),
-          min: 0,
-          max: 120,
-          divisions: 12,
-          onChanged:
-              (v) => _setIntAndCustomize(
-                ref,
-                announcementsStartupGraceSecondsProvider,
-                v,
-              ),
-        ),
-        _IntAdvancedSlider(
-          label: l10n.settingsAnnouncementsMinIntervalSeconds(
-            ref.watch(announcementsMinIntervalSecondsProvider),
-          ),
-          value: ref.watch(announcementsMinIntervalSecondsProvider),
-          min: 2,
-          max: 60,
-          divisions: 29,
-          onChanged:
-              (v) => _setIntAndCustomize(
-                ref,
-                announcementsMinIntervalSecondsProvider,
-                v,
-              ),
-        ),
-        _IntAdvancedSlider(
-          label: l10n.settingsAnnouncementsMaxPerMinute(
-            ref.watch(announcementsMaxPerMinuteProvider),
-          ),
-          value: ref.watch(announcementsMaxPerMinuteProvider),
-          min: 1,
-          max: 20,
-          divisions: 19,
-          onChanged:
-              (v) => _setIntAndCustomize(
-                ref,
-                announcementsMaxPerMinuteProvider,
-                v,
-              ),
-        ),
-        _IntAdvancedSlider(
-          label: l10n.settingsAnnouncementsStreakSilenceSeconds(
-            ref.watch(announcementsStreakSilenceSecondsProvider),
-          ),
-          value: ref.watch(announcementsStreakSilenceSecondsProvider),
-          min: 10,
-          max: 300,
-          divisions: 29,
-          onChanged:
-              (v) => _setIntAndCustomize(
-                ref,
-                announcementsStreakSilenceSecondsProvider,
-                v,
-              ),
-        ),
-        _IntAdvancedSlider(
-          label: l10n.settingsAnnouncementsRecencyResetSeconds(
-            ref.watch(announcementsRecencyResetSecondsProvider),
-          ),
-          value: ref.watch(announcementsRecencyResetSecondsProvider),
-          min: 30,
-          max: 600,
-          divisions: 19,
-          onChanged:
-              (v) => _setIntAndCustomize(
-                ref,
-                announcementsRecencyResetSecondsProvider,
-                v,
-              ),
-        ),
+        // Throttling numerics (startup grace, min interval, max per
+        // minute, streak silence, recency / session reset, coalesce
+        // window) are intentionally hidden — they are stamped by the
+        // frequency slider above and rarely need per-knob tweaking.
         const Divider(),
         _TriggerModePicker(),
       ],
-    );
-  }
-
-  void _setIntAndCustomize(
-    WidgetRef ref,
-    StateNotifierProvider<dynamic, int> provider,
-    int value,
-  ) {
-    (ref.read(provider.notifier) as dynamic).set(value);
-    final freq = ref.read(announcementsFrequencyProvider);
-    if (freq != AnnouncementFrequency.custom) {
-      ref
-          .read(announcementsFrequencyProvider.notifier)
-          .set(AnnouncementFrequency.custom);
-    }
-  }
-}
-
-class _IntAdvancedSlider extends StatelessWidget {
-  const _IntAdvancedSlider({
-    required this.label,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.divisions,
-    required this.onChanged,
-  });
-
-  /// Localized label including the formatted value (callers pass
-  /// `l10n.settingsAnnouncementsXxx(value)`).
-  final String label;
-  final int value;
-  final int min;
-  final int max;
-  final int divisions;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label),
-          Slider(
-            value: value.toDouble().clamp(min.toDouble(), max.toDouble()),
-            min: min.toDouble(),
-            max: max.toDouble(),
-            divisions: divisions,
-            label: value.toString(),
-            onChanged: (v) => onChanged(v.round()),
-          ),
-        ],
-      ),
     );
   }
 }

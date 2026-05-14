@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.6] - Unreleased
+
+### Changed
+
+- **Announcement settings consolidated.** Removed the five "Advanced" numeric sliders (startup grace, minimum gap, max per minute, streak silence, recency reset) — these are now bundled into the **Frequency** slider, which stamps the right values for each preset. The Advanced disclosure now only holds the four audio-routing switches and the trigger-mode picker, so there is a single, obvious place to adjust cadence. Defaults unchanged: *Lower other audio* and *Cue tone before speaking* are both on out of the box.
+
 ## [0.13.5] - Unreleased
 
 ### Changed
