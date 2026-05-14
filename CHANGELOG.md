@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] - Unreleased
+
+Internal scaffolding for spoken detection announcements (TTS) shipping
+later in this version. No user-visible changes yet — the master toggle
+defaults to off and the feature has no UI surface in this commit.
+
+### Added
+
+- **Foundations for spoken detection announcements.** Pure-Dart
+  phrasing engine (bucket router for confidence × recency × streak,
+  3-slot anti-repeat memory, locale fallback chain), JSON template
+  bundles for English and German under `assets/announcements/`,
+  preference keys, verbosity / frequency preset enums, and Riverpod
+  providers. Setting a frequency preset stamps the matching numeric
+  profile (startup grace, min interval, max-per-minute, streak
+  silence, recency reset, session reset, coalesce window) into the
+  Advanced prefs in one transaction so the engine and the UI can
+  never disagree.
+- **Gender-safe German phrasing rule.** Bird names in German (and
+  several other locales) are gendered (`der Zaunkönig`, `die Amsel`,
+  `das Rotkehlchen`) and we do not carry a gender field per species.
+  All German announcement templates have been authored without a
+  determiner directly in front of `{name}`; a unit test fails the
+  build if a regression slips one in. The rule and safe phrasing
+  patterns are documented in `dev/announcements.md` §3.8.1 for
+  future translators.
+
 ## [0.12.3] - 2026-05-22
 
 ### Changed

@@ -1,0 +1,136 @@
+{
+  "locale": "de",
+  "version": 2,
+  "_comment": [
+    "Phrasing-Vorlagen für die Announcements-Funktion. Siehe dev/announcements.md §3.",
+    "Pro Bucket eine `balanced`-Liste (immer vorhanden) und optional eine `chatty`-",
+    "Liste (längere, gesprächigere Varianten). Bei Verbosity = Minimal werden die",
+    "Vorlagen umgangen und nur `{name}.` gesprochen. Übersetzungen sind freie",
+    "Neuformulierungen, keine wörtlichen Übersetzungen.",
+    "",
+    "WICHTIG — Genus-Falle:",
+    "  Vogelnamen haben ein grammatisches Geschlecht (der Zaunkönig, die Amsel,",
+    "  das Rotkehlchen), das wir zur Laufzeit NICHT kennen. Daher dürfen vor",
+    "  {name}, {name1}, {name2}, {name3} NIEMALS gebeugte Artikel oder",
+    "  Indefinitpronomen stehen (kein 'ein', 'eine', 'einen', 'einem', 'der',",
+    "  'die', 'das', 'dem', 'den'). Sicher sind:",
+    "    - Doppelpunkt-/Gedankenstrich-Konstruktionen: 'Erkannt: {name}.'",
+    "    - {name} am Satzanfang: '{name}, eindeutig.'",
+    "    - Präpositionen ohne Artikel: 'Klingt nach {name}.'",
+    "  Die englischen Templates haben dieses Problem nicht; weitere Locales",
+    "  (fr/es/it/cs/pt) erben dieselbe Regel."
+  ],
+  "buckets": {
+    "A": {
+      "balanced": [
+        "Da: {name}.",
+        "Erkannt: {name}.",
+        "Eindeutig {name}.",
+        "{name}, ganz klar.",
+        "Ich höre {name}."
+      ],
+      "chatty": [
+        "Eindeutig {name} — schön sauberes Signal.",
+        "{name}, ganz klar erkannt.",
+        "Ich höre {name} — kein Zweifel.",
+        "Erkannt: {name}, deutlich und sauber."
+      ]
+    },
+    "B": {
+      "balanced": [
+        "Wieder: {name}.",
+        "Noch einmal: {name}.",
+        "{name}, schon wieder.",
+        "Erneut {name}."
+      ],
+      "chatty": [
+        "Wieder {name}, lässt nicht locker.",
+        "Schon wieder {name} — bleibt heute dran.",
+        "Noch einmal {name}, deutlich."
+      ]
+    },
+    "C": {
+      "balanced": [
+        "{name} ruft weiter.",
+        "{name} bleibt dran.",
+        "Weiter: {name}.",
+        "{name}, immer noch."
+      ],
+      "chatty": [
+        "{name} ruft munter weiter.",
+        "{name} ist heute ausdauernd.",
+        "Bleibt dran: {name}."
+      ]
+    },
+    "D": {
+      "balanced": [
+        "Vermutlich {name}.",
+        "Wahrscheinlich {name}.",
+        "Klingt nach {name}.",
+        "Tippe auf {name}."
+      ],
+      "chatty": [
+        "Klingt für mich nach {name}, ziemlich sicher.",
+        "Würde sagen {name}, ganz festlegen will ich mich nicht.",
+        "Recht sicher: {name}."
+      ]
+    },
+    "E": {
+      "balanced": [
+        "Vielleicht wieder {name}.",
+        "Könnte erneut {name} sein.",
+        "Klingt nach {name}, noch einmal."
+      ],
+      "chatty": [
+        "Klingt, als wäre {name} wieder dabei.",
+        "Vermutlich noch einmal {name}.",
+        "Könnte zurückkommen: {name}."
+      ]
+    },
+    "F": {
+      "balanced": [
+        "Schwer zu sagen, vielleicht {name}.",
+        "Unsicher — eventuell {name}.",
+        "Kurz klang das nach {name}.",
+        "Möglicherweise {name}."
+      ],
+      "chatty": [
+        "Bin nicht sicher, aber kurz klang das nach {name}.",
+        "Schwer zu sagen — hätte {name} sein können.",
+        "Eventuell {name}, festlegen würde ich mich nicht."
+      ]
+    },
+    "G": {
+      "balanced": [
+        "Vielleicht noch einmal {name}, schwer zu sagen.",
+        "Könnte erneut {name} sein, bin unsicher.",
+        "Eventuell wieder {name}."
+      ],
+      "chatty": [
+        "Vielleicht wieder {name}, das Signal ist schwach.",
+        "Könnte noch einmal {name} sein, schwer einzuordnen."
+      ]
+    },
+    "H_three": {
+      "balanced": [
+        "Mehrere auf einmal: {name1}, {name2}, {name3}.",
+        "Gleich drei: {name1}, {name2}, {name3}.",
+        "Erkannt: {name1}, {name2}, {name3}."
+      ],
+      "chatty": [
+        "Ganz schöner Chor — {name1}, {name2} und {name3} gleichzeitig.",
+        "Drei auf einmal: {name1}, {name2}, {name3}."
+      ]
+    },
+    "H_many": {
+      "balanced": [
+        "Viel los: {name1}, {name2}, {name3} und einige mehr.",
+        "Mehrere gleichzeitig: {name1}, {name2}, {name3} und weitere."
+      ],
+      "chatty": [
+        "Hier ist gerade richtig was los — {name1}, {name2}, {name3} und einige mehr.",
+        "Geschäftiger Moment — {name1}, {name2}, {name3} und ein paar weitere."
+      ]
+    }
+  }
+}
