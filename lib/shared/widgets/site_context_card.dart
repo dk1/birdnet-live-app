@@ -14,21 +14,27 @@
 // means visiting the same site twice never re-hits the network, and
 // session-end captures will be cache-fast too.
 //
-// Both calls are best-effort:
-//   • If consent is off or the network is unreachable, the corresponding
-//     row is hidden and the card simply gets smaller.
-//   • If both fail, the card renders nothing (returns SizedBox.shrink).
+// Consent handling
+// ----------------
+// Both services are gated behind privacy toggles in Settings → Privacy.
+// If a toggle is off and there is no cached value to fall back on, the
+// card shows an inline "Tap to allow X" row instead of silently hiding
+// the service. Tapping the row flips the toggle on, fires the lookup,
+// and replaces itself with the result. This is the same opportunistic
+// consent prompt used elsewhere in the wizard (e.g. for GPS).
 //
-// Layout follows the same compact chip style used in session review:
-// icon + value, single line per service. No headings, no borders \u2014
-// the parent's Card wraps it.
+// All calls are best-effort: failures (network unreachable, service down,
+// consent still off) collapse the corresponding row. If both rows would
+// be empty, the card renders nothing (returns SizedBox.shrink).
 // =============================================================================
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/reverse_geocoding_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../models/weather_snapshot.dart';
+import '../providers/settings_providers.dart';
 import '../services/weather_service.dart';
 import '../utils/weather_format.dart';
 
@@ -79,44 +85,60 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
     }
   }
 
-  Future<void> _resolve() async {
-    final lat = widget.latitude;
-    final lon = widget.longitude;
-
-    String? name;
+  Future<void> _resolveLocation() async {
     try {
-      name = await reverseGeocode(latitude: lat, longitude: lon);
+      final name = await reverseGeocode(
+        latitude: widget.latitude,
+        longitude: widget.longitude,
+      );
+      if (!mounted) return;
+      setState(() => _locationName = name);
     } catch (_) {
       /* non-fatal */
     }
+  }
 
-    WeatherSnapshot? weather;
+  Future<void> _resolveWeather() async {
     try {
       final svc = ref.read(weatherServiceProvider);
-      weather = await svc.fetch(
-        latitude: lat,
-        longitude: lon,
+      final w = await svc.fetch(
+        latitude: widget.latitude,
+        longitude: widget.longitude,
         observedAt: widget.observedAt ?? DateTime.now(),
       );
+      if (!mounted) return;
+      setState(() => _weather = w);
     } catch (_) {
       /* non-fatal */
     }
+  }
 
+  Future<void> _resolve() async {
+    await Future.wait([_resolveLocation(), _resolveWeather()]);
     if (!mounted) return;
-    setState(() {
-      _locationName = name;
-      _weather = weather;
-      _loading = false;
-    });
+    setState(() => _loading = false);
+  }
+
+  Future<void> _enableLocationConsent() async {
+    await ref.read(privacyAllowReverseGeocodingProvider.notifier).set(true);
+    await _resolveLocation();
+  }
+
+  Future<void> _enableWeatherConsent() async {
+    await ref.read(privacyAllowWeatherProvider.notifier).set(true);
+    await _resolveWeather();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+    final allowReverseGeo = ref.watch(privacyAllowReverseGeocodingProvider);
+    final allowWeather = ref.watch(privacyAllowWeatherProvider);
 
     if (_loading && _locationName == null && _weather == null) {
-      // Single-line placeholder while both lookups are in flight \u2014
+      // Single-line placeholder while both lookups are in flight —
       // avoids a layout pop when results arrive.
       return SizedBox(
         height: 24,
@@ -137,44 +159,48 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
     }
 
     final rows = <Widget>[];
+
+    // Place name row.
     if (_locationName != null) {
       rows.add(
-        Row(
-          children: [
-            Icon(
-              Icons.location_on_outlined,
-              size: 18,
-              color: onSurfaceVariant,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                _locationName!,
-                style: theme.textTheme.bodyMedium,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+        _ContextRow(
+          icon: Icons.location_on_outlined,
+          child: Text(
+            _locationName!,
+            style: theme.textTheme.bodyMedium,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      );
+    } else if (!allowReverseGeo) {
+      rows.add(
+        _ConsentPromptRow(
+          icon: Icons.location_on_outlined,
+          label: l10n.settingsPrivacyAllowReverseGeocoding,
+          onTap: _enableLocationConsent,
         ),
       );
     }
+
+    // Weather row.
     if (_weather != null) {
       final cond = weatherConditionFromCode(_weather!.weatherCode);
       rows.add(
-        Row(
-          children: [
-            Icon(
-              weatherConditionIcon(cond),
-              size: 18,
-              color: onSurfaceVariant,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              formatTemperature(_weather!.temperatureC),
-              style: theme.textTheme.bodyMedium,
-            ),
-          ],
+        _ContextRow(
+          icon: weatherConditionIcon(cond),
+          child: Text(
+            formatTemperature(_weather!.temperatureC),
+            style: theme.textTheme.bodyMedium,
+          ),
+        ),
+      );
+    } else if (!allowWeather) {
+      rows.add(
+        _ConsentPromptRow(
+          icon: Icons.cloud_outlined,
+          label: l10n.settingsPrivacyAllowWeather,
+          onTap: _enableWeatherConsent,
         ),
       );
     }
@@ -190,6 +216,69 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
           rows[i],
         ],
       ],
+    );
+  }
+}
+
+class _ContextRow extends StatelessWidget {
+  const _ContextRow({required this.icon, required this.child});
+
+  final IconData icon;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: onSurfaceVariant),
+        const SizedBox(width: 8),
+        Expanded(child: child),
+      ],
+    );
+  }
+}
+
+class _ConsentPromptRow extends StatelessWidget {
+  const _ConsentPromptRow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: primary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: primary,
+                  decoration: TextDecoration.underline,
+                  decorationColor: primary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
