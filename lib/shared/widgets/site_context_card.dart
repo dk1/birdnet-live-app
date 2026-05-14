@@ -231,11 +231,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
       rows.add(
         Row(
           children: [
-            Icon(
-              Icons.cloud_off_outlined,
-              size: 16,
-              color: onSurfaceVariant,
-            ),
+            Icon(Icons.cloud_off_outlined, size: 16, color: onSurfaceVariant),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
