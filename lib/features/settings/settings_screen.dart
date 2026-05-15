@@ -768,9 +768,7 @@ class SettingsScreen extends ConsumerWidget {
                   // with the freshly-reset defaults applied to every
                   // provider. Other platforms leave the app running and
                   // rely on the user to relaunch manually.
-                  await Future<void>.delayed(
-                    const Duration(milliseconds: 800),
-                  );
+                  await Future<void>.delayed(const Duration(milliseconds: 800));
                   await SystemNavigator.pop();
                 },
                 child: Text(l10n.confirm),

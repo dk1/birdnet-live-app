@@ -351,12 +351,12 @@ class _WeatherRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final cond = weatherConditionFromCode(weather.weatherCode);
     final tempLabel = formatTemperature(weather.temperatureC);
-    final windLabel = weather.windSpeedMs != null
-        ? formatWind(weather.windSpeedMs, weather.windDirectionDeg)
-        : null;
-    final inlineLabel = windLabel == null
-        ? tempLabel
-        : '$tempLabel · $windLabel';
+    final windLabel =
+        weather.windSpeedMs != null
+            ? formatWind(weather.windSpeedMs, weather.windDirectionDeg)
+            : null;
+    final inlineLabel =
+        windLabel == null ? tempLabel : '$tempLabel · $windLabel';
 
     return InkWell(
       onTap: () => _showDetails(context, l10n, cond),
