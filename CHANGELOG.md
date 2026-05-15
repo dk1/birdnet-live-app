@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] - 2026-05-15
+
+### Added
+
+- **Tips carousel on the live empty state.** When a session is recording but no detections have come in yet, the otherwise-empty detection panel now rotates through ten short, localized hints — *"Hear it called out"* (announcements), *"Mind the wind"* (mic placement), *"Filter by your location"* (geo filter), *"Watch the sound"* (spectrogram), *"Tune the threshold"*, *"Star your targets"* (watchlists), *"Got a recording?"* (file analysis) and others. A new tip appears every 10 s with a soft fade; tapping the card jumps to the next one. Tips are randomized per build so opening a fresh session does not always start at #1. Helps newcomers discover features they would otherwise miss while waiting for the first detection.
+
 ## [0.13.14] - 2026-05-15
 
 ### Added
