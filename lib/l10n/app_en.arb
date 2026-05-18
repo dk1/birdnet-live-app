@@ -1815,9 +1815,9 @@
   "@surveyLocationSkip": {
     "description": "No GPS tracking option"
   },
-  "surveyLocationUnavailable": "Location permission not granted",
+  "surveyLocationUnavailable": "Location unavailable",
   "@surveyLocationUnavailable": {
-    "description": "Warning when location permission is not available"
+    "description": "Shown when GPS is not available"
   },
   "surveyManualGpsWarning": "Manual mode captures GPS only when you open the app. Detection locations will be interpolated between captures.",
   "@surveyManualGpsWarning": {
