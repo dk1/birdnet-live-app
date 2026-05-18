@@ -341,6 +341,15 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!isActive) {
+      return const Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: LiveTipsCarousel(),
+        ),
+      );
+    }
+
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
@@ -357,22 +366,18 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              isActive ? l10n.liveListening : l10n.liveDetections,
+              l10n.liveListening,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurface.withAlpha(128),
               ),
             ),
             Text(
-              isActive ? l10n.liveSpeciesWillAppear : l10n.liveStartSession,
+              l10n.liveSpeciesWillAppear,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withAlpha(77),
               ),
               textAlign: TextAlign.center,
             ),
-            if (isActive) ...[
-              const SizedBox(height: 44),
-              const LiveTipsCarousel(),
-            ],
           ],
         ),
       ),
