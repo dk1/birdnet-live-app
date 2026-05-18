@@ -30,6 +30,7 @@ import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/site_context_card.dart';
+import '../../shared/widgets/weather_setup_card.dart';
 import '../../shared/widgets/wizard_scaffold.dart';
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
@@ -93,9 +94,14 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _awaitingSettingsReturn) {
-      _awaitingSettingsReturn = false;
-      _checkBackgroundPermission();
+    if (state == AppLifecycleState.resumed) {
+      if (_awaitingSettingsReturn) {
+        _awaitingSettingsReturn = false;
+        _checkBackgroundPermission();
+      }
+      if (_locationChoice == _LocationChoice.gps && !_gpsFetching) {
+        _fetchGpsLocation();
+      }
     }
   }
 
@@ -351,7 +357,7 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
 // Step 1 — Survey Details
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _DetailsStep extends StatelessWidget {
+class _DetailsStep extends ConsumerWidget {
   const _DetailsStep({
     super.key,
     required this.nameController,
@@ -386,7 +392,7 @@ class _DetailsStep extends StatelessWidget {
   final void Function(double lat, double lon) onMapPick;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
@@ -483,6 +489,12 @@ class _DetailsStep extends StatelessWidget {
                 ),
               ),
             ),
+          const SizedBox(height: 8),
+          WeatherSetupCard(
+            latitude: latitude,
+            longitude: longitude,
+            locationUnavailableLabel: l10n.surveyLocationUnavailable,
+          ),
           if (!hasBackgroundGps) ...[
             const SizedBox(height: 8),
             Card(
@@ -604,6 +616,16 @@ class _DetailsStep extends StatelessWidget {
               ),
             ),
           ),
+
+        if (locationChoice != _LocationChoice.gps) ...[
+          const SizedBox(height: 12),
+          WeatherSetupCard(
+            latitude: locationChoice == _LocationChoice.skip ? null : latitude,
+            longitude:
+                locationChoice == _LocationChoice.skip ? null : longitude,
+            locationUnavailableLabel: l10n.surveyLocationUnavailable,
+          ),
+        ],
       ],
     );
   }

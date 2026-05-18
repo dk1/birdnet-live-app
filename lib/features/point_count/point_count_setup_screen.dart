@@ -28,6 +28,7 @@ import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/site_context_card.dart';
+import '../../shared/widgets/weather_setup_card.dart';
 import '../../shared/widgets/wizard_scaffold.dart';
 import '../explore/explore_providers.dart';
 import '../settings/settings_screen.dart';
@@ -45,7 +46,8 @@ class PointCountSetupScreen extends ConsumerStatefulWidget {
       _PointCountSetupScreenState();
 }
 
-class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
+class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
+    with WidgetsBindingObserver {
   int _step = 0;
   static const _totalSteps = 4;
 
@@ -73,6 +75,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Pre-fill observer with the last value used.
     _observerController.text = ref.read(pointCountLastObserverProvider);
     // Seed parameter state from the global app defaults.
@@ -86,11 +89,21 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _latController.dispose();
     _lonController.dispose();
     _nameController.dispose();
     _observerController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        _locationChoice == _LocationChoice.gps &&
+        !_gpsFetching) {
+      _fetchGpsLocation();
+    }
   }
 
   Future<void> _fetchGpsLocation() async {
@@ -457,8 +470,7 @@ class _DurationStep extends ConsumerWidget {
                   children: [
                     Icon(
                       Icons.location_on_rounded,
-                      size: 18,
-                      color: theme.colorScheme.primary,
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -472,7 +484,7 @@ class _DurationStep extends ConsumerWidget {
                     ),
                     IconButton(
                       onPressed: onFetchGps,
-                      icon: const Icon(Icons.refresh, size: 18),
+                      icon: const Icon(Icons.refresh),
                       tooltip: l10n.pointCountLocationRefresh,
                     ),
                   ],
@@ -487,8 +499,7 @@ class _DurationStep extends ConsumerWidget {
                   children: [
                     Icon(
                       Icons.location_off_rounded,
-                      size: 18,
-                      color: theme.colorScheme.onSurface.withAlpha(153),
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -501,7 +512,7 @@ class _DurationStep extends ConsumerWidget {
                     ),
                     IconButton(
                       onPressed: onFetchGps,
-                      icon: const Icon(Icons.refresh, size: 18),
+                      icon: const Icon(Icons.refresh),
                       tooltip: l10n.pointCountLocationRefresh,
                     ),
                   ],
@@ -579,6 +590,13 @@ class _DurationStep extends ConsumerWidget {
             ),
           ),
         ],
+
+        const SizedBox(height: 16),
+        WeatherSetupCard(
+          latitude: locationChoice == _LocationChoice.skip ? null : latitude,
+          longitude: locationChoice == _LocationChoice.skip ? null : longitude,
+          locationUnavailableLabel: l10n.pointCountLocationUnavailable,
+        ),
       ],
     );
   }
