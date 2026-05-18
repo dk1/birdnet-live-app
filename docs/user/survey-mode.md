@@ -19,7 +19,12 @@ You can enter:
 - observer name
 - GPS, manual coordinates, or no starting location
 
-This step also exposes the map picker and background-GPS permission reminder when needed.
+This step also exposes the map picker, refreshes GPS when you return from
+system permission screens, and shows the background-GPS permission reminder
+when needed. A weather card is available in the same location area. If weather
+access is off, it asks for **Allow weather lookup** consent; once enabled, it
+previews the site with a weather icon, temperature, and wind only. The same
+cached Open-Meteo snapshot is reused when the survey is saved.
 
 ### 2. Parameters
 
