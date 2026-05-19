@@ -17,6 +17,8 @@
 // runs the timed session with a countdown timer.
 // =============================================================================
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
@@ -54,11 +56,22 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
   /// Available durations in minutes.
   static const _durations = [3, 5, 10, 15, 20];
 
+  // Auto-retry GPS until a fix is acquired or we give up.
+  static const _maxGpsAttempts = 5;
+  static const _gpsRetryDelay = Duration(seconds: 5);
+  // Reuse a recent fix instead of re-fetching when the wizard is reopened
+  // shortly after a previous successful fix. The refresh button forces a
+  // fresh read by passing `Duration.zero`.
+  static const _gpsCacheMaxAge = Duration(minutes: 2);
+
   // ── Location state ──────────────────────────────────────────────────────
   _LocationChoice _locationChoice = _LocationChoice.gps;
   double? _latitude;
   double? _longitude;
   bool _gpsFetching = false;
+  int _gpsAttempts = 0;
+  int _gpsRequestSerial = 0;
+  Timer? _gpsRetryTimer;
   final _latController = TextEditingController();
   final _lonController = TextEditingController();
 
@@ -83,13 +96,16 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
     _inferenceRate = ref.read(inferenceRateProvider);
     _confidenceThreshold = ref.read(confidenceThresholdProvider);
     _speciesFilterMode = ref.read(speciesFilterModeProvider);
-    // Start fetching GPS location immediately.
+    // Start fetching GPS location immediately. Reuse a recent fix if one
+    // is still warm — closing and reopening the wizard within a couple of
+    // minutes shouldn't burn another 10s waiting on the same fix.
     _fetchGpsLocation();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _gpsRetryTimer?.cancel();
     _latController.dispose();
     _lonController.dispose();
     _nameController.dispose();
@@ -101,27 +117,50 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed &&
         _locationChoice == _LocationChoice.gps &&
+        _latitude == null &&
         !_gpsFetching) {
+      // Resuming with no fix yet — restart the auto-retry budget so a user
+      // who came back from settings (or just stepped outdoors) gets another
+      // round of attempts rather than the stale "Location unavailable" card.
       _fetchGpsLocation();
     }
   }
 
-  Future<void> _fetchGpsLocation() async {
-    setState(() => _gpsFetching = true);
+  /// Kick off (or restart) the GPS auto-retry loop.
+  ///
+  /// Pass [resetAttempts] `false` only from the retry timer — callers from
+  /// the UI (initState, refresh button, location-mode toggle) should leave
+  /// it as `true` so the attempt counter resets.
+  ///
+  /// Pass [forceFresh] `true` from the refresh button to bypass the
+  /// service-level cache and re-read GPS hardware.
+  Future<void> _fetchGpsLocation({
+    bool resetAttempts = true,
+    bool forceFresh = false,
+  }) async {
+    if (resetAttempts) {
+      _gpsRetryTimer?.cancel();
+      _gpsRetryTimer = null;
+      _gpsAttempts = 0;
+    }
+    _gpsAttempts++;
+    final serial = ++_gpsRequestSerial;
+    if (!_gpsFetching) setState(() => _gpsFetching = true);
     try {
-      // Force a fresh fix — the user just tapped this button explicitly
-      // because they wanted up-to-date coordinates, not whatever the
-      // FutureProvider happened to cache on a previous open.
-      ref.invalidate(currentLocationProvider);
-      final location = await ref.read(currentLocationProvider.future);
-      if (location != null && mounted) {
+      final service = ref.read(locationServiceProvider);
+      final location = await service.getCurrentLocation(
+        maxAge: forceFresh ? Duration.zero : _gpsCacheMaxAge,
+      );
+      if (!mounted || serial != _gpsRequestSerial) return;
+      if (location != null) {
+        _gpsRetryTimer?.cancel();
+        _gpsRetryTimer = null;
         setState(() {
           _latitude = location.latitude;
           _longitude = location.longitude;
           _gpsFetching = false;
         });
-        final svc = ref.read(locationServiceProvider);
-        if (svc.lastFetchUsedCachedFallback) {
+        if (service.lastFetchUsedCachedFallback) {
           final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
@@ -132,11 +171,34 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
               ),
             );
         }
-      } else {
-        if (mounted) setState(() => _gpsFetching = false);
+        return;
       }
+      _scheduleGpsRetryOrStop();
     } catch (_) {
+      if (!mounted || serial != _gpsRequestSerial) return;
+      _scheduleGpsRetryOrStop();
+    }
+  }
+
+  void _scheduleGpsRetryOrStop() {
+    if (!mounted || _locationChoice != _LocationChoice.gps ||
+        _gpsAttempts >= _maxGpsAttempts) {
       if (mounted) setState(() => _gpsFetching = false);
+      return;
+    }
+    _gpsRetryTimer?.cancel();
+    _gpsRetryTimer = Timer(_gpsRetryDelay, () {
+      if (!mounted || _locationChoice != _LocationChoice.gps) return;
+      _fetchGpsLocation(resetAttempts: false);
+    });
+  }
+
+  void _cancelGpsAutoRetry() {
+    _gpsRetryTimer?.cancel();
+    _gpsRetryTimer = null;
+    _gpsRequestSerial++;
+    if (_gpsFetching && mounted) {
+      setState(() => _gpsFetching = false);
     }
   }
 
@@ -268,9 +330,13 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
             lonController: _lonController,
             onLocationChoiceChanged: (c) {
               setState(() => _locationChoice = c);
-              if (c == _LocationChoice.gps) _fetchGpsLocation();
+              if (c == _LocationChoice.gps) {
+                _fetchGpsLocation();
+              } else {
+                _cancelGpsAutoRetry();
+              }
             },
-            onFetchGps: _fetchGpsLocation,
+            onFetchGps: () => _fetchGpsLocation(forceFresh: true),
             onMapPick: (lat, lon) {
               setState(() {
                 _latitude = lat;
@@ -456,10 +522,30 @@ class _DurationStep extends ConsumerWidget {
         if (locationChoice == _LocationChoice.gps) ...[
           const SizedBox(height: 16),
           if (gpsFetching)
-            const Center(
+            Card(
               child: Padding(
-                padding: EdgeInsets.all(16),
-                child: CircularProgressIndicator(),
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        l10n.pointCountLocationAcquiring,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             )
           else if (latitude != null && longitude != null)
