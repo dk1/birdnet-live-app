@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.5] - 2026-05-19
+
+### Added
+
+- Added two new hints to the Live Mode carousel explaining that confidence scores are not probabilities and that distance affects detection.
+- Implemented an auto-retry mechanism for GPS location fetching to improve resilience on devices with spotty location reception.
+
 ## [0.14.4] - 2026-05-18
 
 ### Added
