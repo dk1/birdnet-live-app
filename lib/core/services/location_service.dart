@@ -44,18 +44,23 @@ class LocationService {
   LocationService();
 
   AppLocation? _lastKnownLocation;
+  DateTime? _lastFetchAt;
 
-  /// Whether the most recent [getCurrentLocation] call returned a cached
-  /// last-known position because the live fix timed out. Callers can read
-  /// this immediately after the future resolves to surface a "GPS is
-  /// stale" warning to the user.
+  /// Whether [lastKnownLocation] came from the OS's last-known-position
+  /// fallback (because the live fix timed out). Callers can read this to
+  /// surface a "GPS is stale" warning.
   bool _lastFetchUsedCachedFallback = false;
 
   /// The most recently fetched location (may be stale).
   AppLocation? get lastKnownLocation => _lastKnownLocation;
 
-  /// True when the most recent [getCurrentLocation] returned a cached
-  /// position because the live fix could not be acquired in time.
+  /// Wall-clock time the cached fix was retrieved. Set on both a live fix
+  /// and the timeout fallback — callers that need to distinguish freshness
+  /// can check [lastFetchUsedCachedFallback].
+  DateTime? get lastFetchAt => _lastFetchAt;
+
+  /// True when the most recent fetch returned the OS last-known-position
+  /// fallback instead of a live fix.
   bool get lastFetchUsedCachedFallback => _lastFetchUsedCachedFallback;
 
   /// Check whether the device's location services are enabled.
@@ -82,9 +87,36 @@ class LocationService {
 
   /// Get the current GPS position.
   ///
-  /// Returns the position or `null` if location services are disabled or
-  /// permission is denied.  Updates [lastKnownLocation] on success.
-  Future<AppLocation?> getCurrentLocation() async {
+  /// If [maxAge] is non-null and a fix has been retrieved within that
+  /// window, the cached value is returned without touching GPS hardware —
+  /// opening a setup wizard, dismissing it, and reopening seconds later
+  /// should not trigger another 10-second `getCurrentPosition` call.
+  ///
+  /// Default: `null` (always fetch fresh). UI-only contexts (setup wizards,
+  /// pickers) should opt in with a generous [maxAge] like
+  /// `Duration(minutes: 2)`. Contexts that record a position for an actual
+  /// measurement (session start, file-analysis tagging) should leave it
+  /// `null` so the saved coordinates reflect the user's current position.
+  ///
+  /// Returns `null` if location services are disabled, permission is
+  /// denied, and no cached value is available.
+  Future<AppLocation?> getCurrentLocation({Duration? maxAge}) async {
+    // Cache hit — return immediately, no I/O, no GPS hardware wake.
+    if (maxAge != null && maxAge > Duration.zero) {
+      final cached = _lastKnownLocation;
+      final cachedAt = _lastFetchAt;
+      if (cached != null && cachedAt != null) {
+        final age = DateTime.now().difference(cachedAt);
+        if (age < maxAge) {
+          debugPrint(
+            '[LocationService] cache hit (age=${age.inSeconds}s, '
+            'fallback=$_lastFetchUsedCachedFallback)',
+          );
+          return cached;
+        }
+      }
+    }
+
     try {
       final serviceEnabled = await isLocationServiceEnabled();
       if (!serviceEnabled) {
@@ -113,6 +145,7 @@ class LocationService {
           latitude: position.latitude,
           longitude: position.longitude,
         );
+        _lastFetchAt = DateTime.now();
         _lastFetchUsedCachedFallback = false;
         debugPrint('[LocationService] got position: $_lastKnownLocation');
         return _lastKnownLocation;
@@ -129,6 +162,7 @@ class LocationService {
             latitude: cached.latitude,
             longitude: cached.longitude,
           );
+          _lastFetchAt = DateTime.now();
         }
         _lastFetchUsedCachedFallback = true;
         return _lastKnownLocation;
@@ -142,5 +176,6 @@ class LocationService {
   /// Set a manual location (for testing or user override).
   void setManualLocation(double latitude, double longitude) {
     _lastKnownLocation = AppLocation(latitude: latitude, longitude: longitude);
+    _lastFetchAt = DateTime.now();
   }
 }

@@ -8,8 +8,9 @@
 //     by the caller, since this util is intentionally context-free).
 //   * WMO weather code → Material/MDI icon.
 //   * Compass-bearing → 8-point cardinal abbreviation.
-//   * One-line summary string ("20.1 °C · Light rain · Wind 3 m/s S")
-//     used by the session review header, HTML report, and exports.
+//   * Compact stat strings ("20.1 °C · 3.2 m/s S") used in space-tight UI.
+//   * Descriptive one-line summary strings ("20.1 °C · Light rain · Wind 3 m/s S")
+//     used where verbal condition labels are appropriate.
 //
 // Why a dedicated file: the same logic is used in three layers
 // (UI, HTML, CSV/JSON exports) and we want a single source of truth so
@@ -111,6 +112,19 @@ String formatPrecipitation(double? mm) {
 String formatCloudCover(int? percent) {
   if (percent == null) return '—';
   return '$percent %';
+}
+
+/// Compact setup/review label with no verbal condition text.
+///
+/// The condition is represented by [weatherConditionIcon] in the UI so this
+/// string deliberately keeps only numeric field data: temperature + wind.
+String formatWeatherCompactStats(WeatherSnapshot w) {
+  final parts = <String>[];
+  if (w.temperatureC != null) parts.add(formatTemperature(w.temperatureC));
+  if (w.windSpeedMs != null) {
+    parts.add(formatWind(w.windSpeedMs, w.windDirectionDeg));
+  }
+  return parts.isEmpty ? '—' : parts.join(' · ');
 }
 
 /// Resolves a `WeatherCondition` to a human label using the provided lookup

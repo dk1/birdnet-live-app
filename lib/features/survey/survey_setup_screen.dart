@@ -13,6 +13,7 @@
 // After pressing Start, navigates to [SurveyLiveScreen].
 // =============================================================================
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -30,6 +31,7 @@ import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/site_context_card.dart';
+import '../../shared/widgets/weather_setup_card.dart';
 import '../../shared/widgets/wizard_scaffold.dart';
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
@@ -57,6 +59,14 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
   int _step = 0;
   static const _totalSteps = 5;
 
+  // Auto-retry GPS until a fix is acquired or we give up.
+  static const _maxGpsAttempts = 5;
+  static const _gpsRetryDelay = Duration(seconds: 5);
+  // Reuse a recent fix instead of re-fetching when the wizard is reopened
+  // shortly after a previous successful fix. The refresh button forces a
+  // fresh read by passing `Duration.zero`.
+  static const _gpsCacheMaxAge = Duration(minutes: 2);
+
   // ── Step 1: Survey Details ────────────────────────────────────────────
   _LocationChoice _locationChoice = _LocationChoice.gps;
   double? _latitude;
@@ -64,6 +74,9 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
   bool _gpsFetching = false;
   bool _hasBackgroundGps = false;
   bool _awaitingSettingsReturn = false;
+  int _gpsAttempts = 0;
+  int _gpsRequestSerial = 0;
+  Timer? _gpsRetryTimer;
   final _nameController = TextEditingController();
   final _transectController = TextEditingController();
   final _observerController = TextEditingController();
@@ -76,6 +89,9 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
     WidgetsBinding.instance.addObserver(this);
     _observerController.text = ref.read(surveyLastObserverProvider);
     _transectController.text = ref.read(surveyLastTransectIdProvider);
+    // Reuse a recent fix if one is still warm — closing and reopening the
+    // wizard within a couple of minutes shouldn't burn another 10s on the
+    // same fix.
     _fetchGpsLocation();
     _checkBackgroundPermission();
   }
@@ -83,6 +99,7 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _gpsRetryTimer?.cancel();
     _nameController.dispose();
     _transectController.dispose();
     _observerController.dispose();
@@ -93,28 +110,57 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _awaitingSettingsReturn) {
-      _awaitingSettingsReturn = false;
-      _checkBackgroundPermission();
+    if (state == AppLifecycleState.resumed) {
+      if (_awaitingSettingsReturn) {
+        _awaitingSettingsReturn = false;
+        _checkBackgroundPermission();
+      }
+      if (_locationChoice == _LocationChoice.gps &&
+          _latitude == null &&
+          !_gpsFetching) {
+        // Resuming with no fix yet — restart the auto-retry budget so a user
+        // who came back from settings (or just stepped outdoors) gets another
+        // round of attempts rather than the stale "Location unavailable" card.
+        _fetchGpsLocation();
+      }
     }
   }
 
-  Future<void> _fetchGpsLocation() async {
-    setState(() => _gpsFetching = true);
+  /// Kick off (or restart) the GPS auto-retry loop.
+  ///
+  /// Pass [resetAttempts] `false` only from the retry timer — callers from
+  /// the UI (initState, refresh button, location-mode toggle) should leave
+  /// it as `true` so the attempt counter resets.
+  ///
+  /// Pass [forceFresh] `true` from the refresh button to bypass the
+  /// service-level cache and re-read GPS hardware.
+  Future<void> _fetchGpsLocation({
+    bool resetAttempts = true,
+    bool forceFresh = false,
+  }) async {
+    if (resetAttempts) {
+      _gpsRetryTimer?.cancel();
+      _gpsRetryTimer = null;
+      _gpsAttempts = 0;
+    }
+    _gpsAttempts++;
+    final serial = ++_gpsRequestSerial;
+    if (!_gpsFetching) setState(() => _gpsFetching = true);
     try {
-      // Force a fresh fix — the user just tapped this button explicitly
-      // because they wanted up-to-date coordinates, not whatever the
-      // FutureProvider happened to cache on a previous open.
-      ref.invalidate(currentLocationProvider);
-      final location = await ref.read(currentLocationProvider.future);
-      if (location != null && mounted) {
+      final service = ref.read(locationServiceProvider);
+      final location = await service.getCurrentLocation(
+        maxAge: forceFresh ? Duration.zero : _gpsCacheMaxAge,
+      );
+      if (!mounted || serial != _gpsRequestSerial) return;
+      if (location != null) {
+        _gpsRetryTimer?.cancel();
+        _gpsRetryTimer = null;
         setState(() {
           _latitude = location.latitude;
           _longitude = location.longitude;
           _gpsFetching = false;
         });
-        final svc = ref.read(locationServiceProvider);
-        if (svc.lastFetchUsedCachedFallback) {
+        if (service.lastFetchUsedCachedFallback) {
           final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
@@ -125,11 +171,34 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
               ),
             );
         }
-      } else {
-        if (mounted) setState(() => _gpsFetching = false);
+        return;
       }
+      _scheduleGpsRetryOrStop();
     } catch (_) {
+      if (!mounted || serial != _gpsRequestSerial) return;
+      _scheduleGpsRetryOrStop();
+    }
+  }
+
+  void _scheduleGpsRetryOrStop() {
+    if (!mounted || _locationChoice != _LocationChoice.gps ||
+        _gpsAttempts >= _maxGpsAttempts) {
       if (mounted) setState(() => _gpsFetching = false);
+      return;
+    }
+    _gpsRetryTimer?.cancel();
+    _gpsRetryTimer = Timer(_gpsRetryDelay, () {
+      if (!mounted || _locationChoice != _LocationChoice.gps) return;
+      _fetchGpsLocation(resetAttempts: false);
+    });
+  }
+
+  void _cancelGpsAutoRetry() {
+    _gpsRetryTimer?.cancel();
+    _gpsRetryTimer = null;
+    _gpsRequestSerial++;
+    if (_gpsFetching && mounted) {
+      setState(() => _gpsFetching = false);
     }
   }
 
@@ -321,9 +390,13 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
             lonController: _lonController,
             onLocationChoiceChanged: (c) {
               setState(() => _locationChoice = c);
-              if (c == _LocationChoice.gps) _fetchGpsLocation();
+              if (c == _LocationChoice.gps) {
+                _fetchGpsLocation();
+              } else {
+                _cancelGpsAutoRetry();
+              }
             },
-            onFetchGps: _fetchGpsLocation,
+            onFetchGps: () => _fetchGpsLocation(forceFresh: true),
             onRequestBackgroundGps: _requestBackgroundPermission,
             onMapPick: (lat, lon) {
               setState(() {
@@ -351,7 +424,7 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
 // Step 1 — Survey Details
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _DetailsStep extends StatelessWidget {
+class _DetailsStep extends ConsumerWidget {
   const _DetailsStep({
     super.key,
     required this.nameController,
@@ -386,7 +459,7 @@ class _DetailsStep extends StatelessWidget {
   final void Function(double lat, double lon) onMapPick;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
@@ -455,7 +528,19 @@ class _DetailsStep extends StatelessWidget {
         // GPS result or manual input
         if (locationChoice == _LocationChoice.gps) ...[
           if (gpsFetching)
-            const Center(child: CircularProgressIndicator())
+            Card(
+              child: ListTile(
+                leading: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                title: Text(l10n.pointCountLocationAcquiring),
+              ),
+            )
           else if (latitude != null && longitude != null)
             Card(
               child: ListTile(
@@ -483,6 +568,12 @@ class _DetailsStep extends StatelessWidget {
                 ),
               ),
             ),
+          const SizedBox(height: 8),
+          WeatherSetupCard(
+            latitude: latitude,
+            longitude: longitude,
+            locationUnavailableLabel: l10n.surveyLocationUnavailable,
+          ),
           if (!hasBackgroundGps) ...[
             const SizedBox(height: 8),
             Card(
@@ -604,6 +695,16 @@ class _DetailsStep extends StatelessWidget {
               ),
             ),
           ),
+
+        if (locationChoice != _LocationChoice.gps) ...[
+          const SizedBox(height: 12),
+          WeatherSetupCard(
+            latitude: locationChoice == _LocationChoice.skip ? null : latitude,
+            longitude:
+                locationChoice == _LocationChoice.skip ? null : longitude,
+            locationUnavailableLabel: l10n.surveyLocationUnavailable,
+          ),
+        ],
       ],
     );
   }

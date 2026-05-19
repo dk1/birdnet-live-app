@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.5] - 2026-05-19
+
+### Added
+
+- Added two new hints to the Live Mode carousel explaining that confidence scores are not probabilities and that distance affects detection.
+- Implemented an auto-retry mechanism for GPS location fetching to improve resilience on devices with spotty location reception.
+
+## [0.14.4] - 2026-05-18
+
+### Added
+
+- **Weather lookup can now be enabled from setup.** Point Count and Survey setup both show a compact weather card near the location controls. If weather access is off, the card asks for **Allow weather lookup** consent; once enabled, it previews the selected site with the same condition icon used in Session Review plus temperature and wind only. The lookup uses the same weather cache as session saving, so setup preview, ready preview, and the eventual session save reuse one fetch instead of repeatedly calling Open-Meteo.
+- **Dynamic Color translations completed for all locales.** The Dynamic Color setting added in 0.14.3 is now translated in Czech, Spanish, French, Italian, and Portuguese as well as English and German.
+
+### Changed
+
+- **Live hints now live before recording starts.** The idle Live detection panel now shows the rotating hint carousel instead of the old “Detections / Start a session…” placeholder. Once recording starts, the panel keeps the calmer “Listening… / Species will appear here” empty state until detections arrive.
+- **Setup GPS refresh is more forgiving.** Point Count and Survey setup refresh the GPS fix when the app resumes, so newly granted location permission or a recovered GPS signal can update the coordinates without restarting the wizard. Survey’s unavailable-location copy is now neutral (“Location unavailable”) instead of implying permission is missing when the real issue may be a stale or unavailable fix.
+
+### Documentation
+
+- Documented setup-screen weather consent, setup GPS refresh behavior, and the four-step Point Count setup flow.
+
 ## [0.14.3] - 2026-05-18
 
 ### Added

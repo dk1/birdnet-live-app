@@ -1815,9 +1815,9 @@
   "@surveyLocationSkip": {
     "description": "No GPS tracking option"
   },
-  "surveyLocationUnavailable": "Location permission not granted",
+  "surveyLocationUnavailable": "Location unavailable",
   "@surveyLocationUnavailable": {
-    "description": "Warning when location permission is not available"
+    "description": "Shown when GPS is not available"
   },
   "surveyManualGpsWarning": "Manual mode captures GPS only when you open the app. Detection locations will be interpolated between captures.",
   "@surveyManualGpsWarning": {
@@ -3004,6 +3004,14 @@
   "@liveTipBatteryTitle": {},
   "liveTipBatteryBody": "Long surveys with the screen on and GPS active drain the battery quickly. Pack a power bank for anything longer than an hour.",
   "@liveTipBatteryBody": {},
+  "liveTipScoresTitle": "Scores aren't probabilities",
+  "@liveTipScoresTitle": {},
+  "liveTipScoresBody": "Confidence scores show how well the audio matched the model's pattern, not the statistical chance that a species is actually present.",
+  "@liveTipScoresBody": {},
+  "liveTipDistanceTitle": "Distance matters",
+  "@liveTipDistanceTitle": {},
+  "liveTipDistanceBody": "Distant calls lose high frequencies over long ranges and might not trigger a detection, even if human ears can pick them out.",
+  "@liveTipDistanceBody": {},
   "settingsGain": "Gain",
   "@settingsGain": {
     "description": "Audio gain slider label"

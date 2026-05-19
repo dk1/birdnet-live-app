@@ -204,25 +204,15 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
     // Weather row.
     if (_weather != null) {
       final cond = weatherConditionFromCode(_weather!.weatherCode);
-      // Show temperature + wind side by side: with the icon prefix the
-      // line stays compact (e.g. "☀️ 18.4 °C · 3.2 m/s SW")
-      // and gives users the second most useful field for assessing how
-      // much wind noise is in the recording at a glance.
-      final parts = <String>[];
-      if (_weather!.temperatureC != null) {
-        parts.add(formatTemperature(_weather!.temperatureC));
-      }
-      if (_weather!.windSpeedMs != null) {
-        parts.add(
-          formatWind(_weather!.windSpeedMs, _weather!.windDirectionDeg),
-        );
-      }
-      if (parts.isNotEmpty) {
+      // Show temperature + wind side by side; the condition itself is
+      // represented by the icon to keep this row compact.
+      final compactStats = formatWeatherCompactStats(_weather!);
+      if (compactStats != '—') {
         rows.add(
           _ContextRow(
             icon: weatherConditionIcon(cond),
             child: Text(
-              parts.join(' · '),
+              compactStats,
               style: theme.textTheme.bodyMedium,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
