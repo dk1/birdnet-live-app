@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>BirdNET Live needs microphone access to listen for bird and animal sounds for identification.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>BirdNET Live uses your location to geotag detections and improve local species filtering.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>BirdNET Live can use your location during surveys to record GPS tracks and attach coordinates to detections.</string>
 </dict>
 </plist>
