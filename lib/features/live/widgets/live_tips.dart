@@ -114,6 +114,16 @@ List<LiveTip> buildLiveTips(AppLocalizations l10n) => <LiveTip>[
     title: l10n.liveTipBatteryTitle,
     body: l10n.liveTipBatteryBody,
   ),
+  LiveTip(
+    icon: Icons.percent,
+    title: l10n.liveTipScoresTitle,
+    body: l10n.liveTipScoresBody,
+  ),
+  LiveTip(
+    icon: Icons.volume_down_outlined,
+    title: l10n.liveTipDistanceTitle,
+    body: l10n.liveTipDistanceBody,
+  ),
 ];
 
 /// Rotating tip card. Auto-advances every [interval] (default 10s) with
