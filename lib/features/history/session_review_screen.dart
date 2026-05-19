@@ -821,7 +821,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
     final includeHtmlReport = ref.read(exportHtmlReportProvider);
-    final taxonomy = ref.read(taxonomyServiceProvider).valueOrNull;
+    final taxonomy = ref.read(taxonomyServiceProvider).value;
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     // Legacy sessions persisted before SessionSettings.clipContextSeconds
     // existed default to 0, which would falsely place every detection at
@@ -854,7 +854,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     );
 
     if (exportPath == null) return;
-    await Share.shareXFiles([XFile(exportPath)]);
+    await SharePlus.instance.share(ShareParams(files: [XFile(exportPath)]));
   }
 
   void _done() {
@@ -2307,7 +2307,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   Widget _buildSpeciesList(ThemeData theme, AppLocalizations l10n) {
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
-    final taxonomy = ref.watch(taxonomyServiceProvider).valueOrNull;
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
 
     // Locale-aware common-name resolver — mirrors the lookup used by
     // the species tile so the filter/sort match what the user sees.
@@ -2769,7 +2769,7 @@ class _FullscreenSurveyMapScreenState
   /// Localized common name for [sciName]. Falls back to the record's stored
   /// common name when the taxonomy hasn't loaded yet.
   String _localizedName(String sciName, String fallback) {
-    final taxonomy = ref.watch(taxonomyServiceProvider).valueOrNull;
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     return taxonomy?.lookup(sciName)?.commonNameForLocale(speciesLocale) ??
         fallback;

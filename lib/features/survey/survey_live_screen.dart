@@ -451,7 +451,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   /// *after* survey start).
   String Function(String, String) _buildNameLocalizer() {
     return (sciName, fallback) {
-      final taxonomy = ref.read(taxonomyServiceProvider).valueOrNull;
+      final taxonomy = ref.read(taxonomyServiceProvider).value;
       final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
       return taxonomy?.lookup(sciName)?.commonNameForLocale(speciesLocale) ??
           fallback;
@@ -668,7 +668,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
             PageRouteBuilder<void>(
               transitionDuration: Duration.zero,
               reverseTransitionDuration: Duration.zero,
-              pageBuilder: (_, __, ___) => const SessionLibraryScreen(),
+              pageBuilder: (a, b, c) => const SessionLibraryScreen(),
             ),
           );
           navigator.push(
@@ -1120,7 +1120,7 @@ class _SurveySummaryTab extends ConsumerWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
-    final taxonomy = ref.watch(taxonomyServiceProvider).valueOrNull;
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
     final showSciNames = ref.watch(showSciNamesProvider);
 
     if (session == null) {

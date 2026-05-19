@@ -60,7 +60,7 @@ class AboutScreen extends ConsumerWidget {
                           ),
                         ),
                     loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
+                    error: (a, b) => const SizedBox.shrink(),
                   ),
                 ],
               ),

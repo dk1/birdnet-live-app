@@ -400,7 +400,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
           PageRouteBuilder<void>(
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
-            pageBuilder: (_, __, ___) => const SessionLibraryScreen(),
+            pageBuilder: (a, b, c) => const SessionLibraryScreen(),
           ),
         );
         navigator.push(
