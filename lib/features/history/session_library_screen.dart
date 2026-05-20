@@ -144,14 +144,16 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
           (_) => AppHelpBottomSheet(
             title: l10n.sessionLibraryHelpTitle,
             sections: [
-              // Icons here intentionally mirror the actual AppBar buttons so
-              // users can map each help section to a tap target on screen.
+              // These icons match the meaning of each help section. The
+              // toolbar collapses view and filter controls behind one options
+              // button, so the sheet-level concepts read clearer than a
+              // strict AppBar icon mirror here.
               AppHelpSection(
                 icon: AppIcons.search,
                 body: l10n.sessionLibraryHelpSearch,
               ),
               AppHelpSection(
-                icon: AppIcons.filterList,
+                icon: AppIcons.gridViewRounded,
                 body: l10n.sessionLibraryHelpView,
               ),
               AppHelpSection(
@@ -159,7 +161,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                 body: l10n.sessionLibraryHelpSort,
               ),
               AppHelpSection(
-                icon: AppIcons.category,
+                icon: AppIcons.filterList,
                 body: l10n.sessionLibraryHelpFilter,
               ),
               AppHelpSection(
@@ -904,7 +906,7 @@ class _SessionTile extends ConsumerWidget {
                     variant: StatChipVariant.badge,
                   ),
                   StatChip(
-                    icon: AppIcons.musicNote,
+                    icon: AppIcons.detections,
                     value: '$detectionCount det.',
                     variant: StatChipVariant.badge,
                   ),
@@ -1147,7 +1149,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
                             (a, b, c) => ColoredBox(
                               color: theme.colorScheme.surfaceContainerHighest,
                               child: Icon(
-                                AppIcons.speciesFallback,
+                                AppIcons.brokenImage,
                                 size: 18,
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -1156,7 +1158,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
                       : ColoredBox(
                         color: theme.colorScheme.surfaceContainerHighest,
                         child: Icon(
-                          AppIcons.speciesFallback,
+                          AppIcons.brokenImage,
                           size: 18,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),

@@ -361,7 +361,7 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isActive ? AppIcons.hearing : AppIcons.listAlt,
+              isActive ? AppIcons.hearing : AppIcons.micOff,
               size: 40,
               color: theme.colorScheme.onSurface.withAlpha(77),
             ),

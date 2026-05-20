@@ -691,7 +691,7 @@ class _SpeciesMarker extends ConsumerWidget {
           (a, b, c) => Container(
             color: borderColor.withAlpha(60),
             child: Icon(
-              AppIcons.musicNote,
+              AppIcons.brokenImage,
               size: size * 0.45,
               color: borderColor,
             ),

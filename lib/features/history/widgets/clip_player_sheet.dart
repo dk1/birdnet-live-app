@@ -480,7 +480,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                         errorBuilder:
                             (a, b, c) => Container(
                               color: scoreColor.withAlpha(60),
-                              child: Icon(AppIcons.musicNote, color: scoreColor),
+                              child: Icon(AppIcons.brokenImage, color: scoreColor),
                             ),
                       ),
                     ),

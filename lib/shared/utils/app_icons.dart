@@ -30,6 +30,7 @@ abstract final class AppIcons {
   static const IconData batterySaverRounded = Symbols.battery_saver_rounded;
   static const IconData bluetoothAudio = Symbols.bluetooth_audio;
   static const IconData bookmarkAdded = Symbols.bookmark_added;
+  static const IconData brokenImage = Symbols.broken_image;
   static const IconData calendarToday = Symbols.calendar_today;
   static const IconData calendarTodayRounded = Symbols.calendar_today_rounded;
   static const IconData campaign = Symbols.campaign;
@@ -52,6 +53,7 @@ abstract final class AppIcons {
   static const IconData deleteOutlineRounded = Symbols.delete_outline_rounded;
   static const IconData deleteSweep = Symbols.delete_sweep;
   static const IconData directionsWalkRounded = Symbols.directions_walk_rounded;
+  static const IconData detections = Symbols.radar;
   static const IconData downloadForOffline = Symbols.download_for_offline;
   static const IconData edit = Symbols.edit;
   static const IconData editLocationAlt = Symbols.edit_location_alt;
@@ -148,8 +150,8 @@ abstract final class AppIcons {
   static const IconData skipNextRounded = Symbols.skip_next_rounded;
   static const IconData skipPreviousRounded = Symbols.skip_previous_rounded;
   static const IconData sort = Symbols.sort;
-  static const IconData species = Symbols.raven;
-  static const IconData speciesFallback = Symbols.raven;
+  static const IconData species = Symbols.category;
+  static const IconData speciesFallback = brokenImage;
   static const IconData speedRounded = Symbols.speed_rounded;
   static const IconData stickyNote2 = Symbols.sticky_note_2;
   static const IconData stop = Symbols.stop;

@@ -145,7 +145,7 @@ class HelpScreen extends StatelessWidget {
             // every screen. They follow the modes because users typically
             // discover them only after they've started using the app.
             _SectionHeader(
-              icon: AppIcons.tuneRounded,
+              icon: AppIcons.gridViewRounded,
               title: l10n.helpControlsTitle,
             ),
             const SizedBox(height: 12),

@@ -133,7 +133,7 @@ class _SummaryHeader extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               StatChip(
-                icon: AppIcons.graphicEq,
+                icon: AppIcons.detections,
                 value: l10n.sessionDetectionCount(detectionCount),
               ),
             ],

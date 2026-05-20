@@ -1364,7 +1364,7 @@ class _AnalysisStepState extends State<_AnalysisStep> {
               children: [
                 Expanded(
                   child: StatChip(
-                    icon: AppIcons.barChart,
+                    icon: AppIcons.detections,
                     label: l10n.fileAnalysisDetections,
                     value: '${progress.detectionsFound}',
                     variant: StatChipVariant.card,
@@ -1431,4 +1431,3 @@ class _AnalysisStepState extends State<_AnalysisStep> {
     );
   }
 }
-

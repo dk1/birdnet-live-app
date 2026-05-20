@@ -99,7 +99,7 @@ class SurveyStatsBar extends StatelessWidget {
             style: style,
           ),
           StatChip(
-            icon: AppIcons.graphicEq,
+            icon: AppIcons.detections,
             value: '$detectionCount',
             style: style,
           ),
