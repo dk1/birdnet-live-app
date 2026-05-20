@@ -19,6 +19,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../providers/app_providers.dart';
+import '../providers/settings_providers.dart';
 import 'open_street_map_tile_layer.dart';
 
 /// Full-screen map for picking a location by tapping.
@@ -76,8 +77,7 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
           ),
     );
     if (agreed == true) {
-      final prefs = ref.read(sharedPreferencesProvider);
-      await prefs.setBool(PrefKeys.privacyAllowMap, true);
+      await ref.read(privacyAllowMapProvider.notifier).set(true);
       setState(() => _hasConsent = true);
     }
   }

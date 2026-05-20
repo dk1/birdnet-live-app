@@ -258,7 +258,7 @@
   "sessionCardPointCountNum": "Point Count #{number}",
   "sessionCardSurveyNum": "Sesión de Survey #{number}",
   "mapTileConsentTitle": "Mosaicos del mapa",
-  "mapTileConsentBody": "Cargar el mapa se conecta a servidores de mosaicos de OpenStreetMap. Su dirección IP y ubicación aproximada serán visibles para el servidor de mosaicos.\n\n¿Desea cargar los mosaicos del mapa?",
+  "mapTileConsentBody": "Cargar el mapa se conecta a servidores de mosaicos de OpenStreetMap. Su dirección IP y ubicación aproximada serán visibles para el servidor de mosaicos. Esto también activa la búsqueda de nombres de lugar, que puedes desactivar por separado en Ajustes.\n\n¿Desea cargar los mosaicos del mapa?",
   "mapTileConsentCancel": "Cancelar",
   "mapTileConsentAllow": "Permitir",
   "mapLoadButton": "Cargar mapa",

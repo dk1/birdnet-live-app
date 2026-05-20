@@ -24,6 +24,7 @@ import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/score_colors.dart';
 import '../../../shared/models/gps_point.dart';
 import '../../../shared/providers/app_providers.dart';
+import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/widgets/open_street_map_tile_layer.dart';
 import '../../explore/explore_providers.dart';
 import '../../live/live_session.dart';
@@ -169,8 +170,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           ),
     );
     if (agreed == true) {
-      final prefs = ref.read(sharedPreferencesProvider);
-      await prefs.setBool(PrefKeys.privacyAllowMap, true);
+      await ref.read(privacyAllowMapProvider.notifier).set(true);
       setState(() => _hasConsent = true);
     }
   }
@@ -495,34 +495,57 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
   Widget _buildConsentPlaceholder(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              AppIcons.map,
-              size: 48,
-              color: theme.colorScheme.onSurface.withAlpha(100),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxHeight = constraints.maxHeight;
+        final tiny = maxHeight.isFinite && maxHeight < 80;
+        final compact = maxHeight.isFinite && maxHeight < 220;
+        final cramped = maxHeight.isFinite && maxHeight < 130;
+        final showIcon = !compact;
+        final showHint = !cramped;
+        final padding = tiny ? 4.0 : (compact ? 12.0 : 32.0);
+
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.all(padding),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (showIcon) ...[
+                  Icon(
+                    AppIcons.mapOutlined,
+                    size: 48,
+                    color: theme.colorScheme.onSurface.withAlpha(100),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                if (tiny)
+                  IconButton.filled(
+                    onPressed: _requestConsent,
+                    tooltip: l10n.mapLoadButton,
+                    icon: const Icon(AppIcons.map),
+                  )
+                else
+                  FilledButton.icon(
+                    onPressed: _requestConsent,
+                    icon: const Icon(AppIcons.map),
+                    label: Text(l10n.mapLoadButton),
+                  ),
+                if (showHint) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.mapLoadHint,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(120),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: _requestConsent,
-              icon: const Icon(AppIcons.map),
-              label: Text(l10n.mapLoadButton),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.mapLoadHint,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withAlpha(120),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

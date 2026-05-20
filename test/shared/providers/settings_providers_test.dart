@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:birdnet_live/core/constants/app_constants.dart';
 import 'package:birdnet_live/shared/providers/app_providers.dart';
 import 'package:birdnet_live/shared/providers/settings_providers.dart';
 
@@ -13,9 +14,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
     });
 
@@ -103,9 +102,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 
@@ -118,9 +115,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 
@@ -133,9 +128,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 
@@ -148,15 +141,50 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 
       await container.read(includeAudioProvider.notifier).set(true);
       expect(container.read(includeAudioProvider), true);
       expect(prefs.getBool('include_audio'), true);
+    });
+  });
+
+  group('Privacy setting relationships', () {
+    test('allowing map tiles also allows place-name lookup', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(privacyAllowMapProvider.notifier).set(true);
+
+      expect(container.read(privacyAllowMapProvider), true);
+      expect(container.read(privacyAllowReverseGeocodingProvider), true);
+      expect(prefs.getBool(PrefKeys.privacyAllowMap), true);
+      expect(prefs.getBool(PrefKeys.privacyAllowReverseGeocoding), true);
+    });
+
+    test('place-name lookup remains independently revocable', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(privacyAllowMapProvider.notifier).set(true);
+      await container
+          .read(privacyAllowReverseGeocodingProvider.notifier)
+          .set(false);
+
+      expect(container.read(privacyAllowMapProvider), true);
+      expect(container.read(privacyAllowReverseGeocodingProvider), false);
+      expect(prefs.getBool(PrefKeys.privacyAllowMap), true);
+      expect(prefs.getBool(PrefKeys.privacyAllowReverseGeocoding), false);
     });
   });
 
@@ -171,9 +199,7 @@ void main() {
       });
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 

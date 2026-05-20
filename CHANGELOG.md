@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.10] - 2026-05-20
+
+### Changed
+
+- Allowing OpenStreetMap map tiles now also enables place-name lookup automatically, while keeping the place-name lookup setting separately revocable from Settings.
+
+### Fixed
+
+- Prevented the Survey map consent placeholder from overflowing in short embedded map previews by switching to a compact layout when space is limited.
+
 ## [0.14.9] - 2026-05-20
 
 ### Fixed
