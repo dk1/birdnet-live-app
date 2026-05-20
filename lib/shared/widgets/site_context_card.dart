@@ -224,7 +224,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
     } else if (!allowWeather) {
       rows.add(
         _ConsentPromptRow(
-          icon: AppIcons.cloudOutlined,
+          icon: AppIcons.cloud,
           label: l10n.settingsPrivacyAllowWeather,
           onTap: _enableWeatherConsent,
         ),
@@ -239,7 +239,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
       rows.add(
         Row(
           children: [
-            Icon(AppIcons.cloudOffOutlined, size: 16, color: onSurfaceVariant),
+            Icon(AppIcons.cloudOff, size: 16, color: onSurfaceVariant),
             const SizedBox(width: 8),
             Expanded(
               child: Text(

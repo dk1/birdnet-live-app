@@ -59,21 +59,21 @@ WeatherCondition weatherConditionFromCode(int? code) {
 IconData weatherConditionIcon(WeatherCondition cond) {
   switch (cond) {
     case WeatherCondition.clear:
-      return AppIcons.wbSunnyOutlined;
+      return AppIcons.wbSunny;
     case WeatherCondition.partlyCloudy:
-      return AppIcons.wbCloudyOutlined;
+      return AppIcons.wbCloudy;
     case WeatherCondition.cloudy:
-      return AppIcons.cloudOutlined;
+      return AppIcons.cloud;
     case WeatherCondition.fog:
       return AppIcons.foggy;
     case WeatherCondition.drizzle:
       return AppIcons.grain;
     case WeatherCondition.rain:
-      return AppIcons.waterDropOutlined;
+      return AppIcons.waterDrop;
     case WeatherCondition.snow:
       return AppIcons.acUnit;
     case WeatherCondition.thunder:
-      return AppIcons.thunderstormOutlined;
+      return AppIcons.thunderstorm;
     case WeatherCondition.unknown:
       return AppIcons.helpOutline;
   }

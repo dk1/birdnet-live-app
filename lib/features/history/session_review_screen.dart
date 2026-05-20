@@ -2346,7 +2346,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   onTap: () => Navigator.of(ctx).pop('species'),
                 ),
                 ListTile(
-                  leading: const Icon(AppIcons.noteAddOutlined),
+                  leading: const Icon(AppIcons.noteAdd),
                   title: Text(l10n.sessionAddAnnotationOption),
                   onTap: () => Navigator.of(ctx).pop('annotation'),
                 ),

@@ -21,18 +21,19 @@ abstract final class AppIcons {
   static const IconData arrowBackRounded = Symbols.arrow_back_rounded;
   static const IconData arrowDownward = Symbols.arrow_downward;
   static const IconData arrowDropUpRounded = Symbols.arrow_drop_up_rounded;
+  // Keep style-explicit names when outlined and rounded variants are both used.
   static const IconData audioFileOutlined = Symbols.audio_file;
   static const IconData audioFileRounded = Symbols.audio_file_rounded;
   static const IconData barChart = Symbols.bar_chart;
-  static const IconData batteryAlertOutlined = Symbols.battery_alert;
+  static const IconData batteryAlert = Symbols.battery_alert;
   static const IconData batteryChargingFull = Symbols.battery_charging_full;
   static const IconData batterySaverRounded = Symbols.battery_saver_rounded;
   static const IconData bluetoothAudio = Symbols.bluetooth_audio;
-  static const IconData bookmarkAddedOutlined = Symbols.bookmark_added;
+  static const IconData bookmarkAdded = Symbols.bookmark_added;
   static const IconData calendarToday = Symbols.calendar_today;
   static const IconData calendarTodayRounded = Symbols.calendar_today_rounded;
-  static const IconData campaignOutlined = Symbols.campaign;
-  static const IconData categoryOutlined = Symbols.category;
+  static const IconData campaign = Symbols.campaign;
+  static const IconData category = Symbols.category;
   static const IconData check = Symbols.check;
   static const IconData checkCircle = Symbols.check_circle;
   static const IconData checkCircleOutline = Symbols.check_circle;
@@ -43,15 +44,15 @@ abstract final class AppIcons {
   static const IconData clearRounded = Symbols.clear_rounded;
   static const IconData close = Symbols.close;
   static const IconData closeRounded = Symbols.close_rounded;
-  static const IconData cloudOffOutlined = Symbols.cloud_off;
-  static const IconData cloudOutlined = Symbols.cloud;
+  static const IconData cloudOff = Symbols.cloud_off;
+  static const IconData cloud = Symbols.cloud;
   static const IconData code = Symbols.code;
   static const IconData contentCut = Symbols.content_cut;
   static const IconData deleteOutline = Symbols.delete;
   static const IconData deleteOutlineRounded = Symbols.delete_outline_rounded;
-  static const IconData deleteSweepOutlined = Symbols.delete_sweep;
+  static const IconData deleteSweep = Symbols.delete_sweep;
   static const IconData directionsWalkRounded = Symbols.directions_walk_rounded;
-  static const IconData downloadForOfflineOutlined = Symbols.download_for_offline;
+  static const IconData downloadForOffline = Symbols.download_for_offline;
   static const IconData edit = Symbols.edit;
   static const IconData editLocationAlt = Symbols.edit_location_alt;
   static const IconData editNote = Symbols.edit_note;
@@ -77,11 +78,11 @@ abstract final class AppIcons {
   static const IconData helpOutline = Symbols.help;
   static const IconData helpOutlineRounded = Symbols.help_outline_rounded;
   static const IconData hourglassTopRounded = Symbols.hourglass_top_rounded;
-  static const IconData imageNotSupportedOutlined = Symbols.image_not_supported;
+  static const IconData imageNotSupported = Symbols.image_not_supported;
   static const IconData infoOutline = Symbols.info;
   static const IconData landscapeRounded = Symbols.landscape_rounded;
-  static const IconData libraryBooksOutlined = Symbols.library_books;
-  static const IconData libraryMusicOutlined = Symbols.library_music;
+  static const IconData libraryBooks = Symbols.library_books;
+  static const IconData libraryMusic = Symbols.library_music;
   static const IconData lightbulbOutline = Symbols.lightbulb;
   static const IconData listAlt = Symbols.list_alt;
   static const IconData listAltRounded = Symbols.list_alt_rounded;
@@ -92,17 +93,19 @@ abstract final class AppIcons {
   static const IconData lockOutline = Symbols.lock;
   static const IconData map = Symbols.map;
   static const IconData memory = Symbols.memory;
-  static const IconData menuBookOutlined = Symbols.menu_book;
+  static const IconData menuBook = Symbols.menu_book;
   static const IconData mic = Symbols.mic;
   static const IconData micExternalOnRounded = Symbols.mic_external_on_rounded;
   static const IconData micNone = Symbols.mic_none;
+  // Kept for style clarity alongside mic/micRounded/micOff variants.
   static const IconData micNoneOutlined = Symbols.mic_none;
   static const IconData micOff = Symbols.mic_off;
   static const IconData micRounded = Symbols.mic_rounded;
   static const IconData moreVert = Symbols.more_vert;
   static const IconData musicNote = Symbols.music_note;
   static const IconData myLocation = Symbols.my_location;
-  static const IconData noteAddOutlined = Symbols.note_add;
+  static const IconData noteAdd = Symbols.note_add;
+  // Kept as explicit style variant for notification status icon usage.
   static const IconData notificationsActiveOutlined = Symbols.notifications_active;
   static const IconData notificationsActiveRounded = Symbols.notifications_active_rounded;
   static const IconData openInNew = Symbols.open_in_new;
@@ -115,14 +118,15 @@ abstract final class AppIcons {
   static const IconData playArrow = Symbols.play_arrow;
   static const IconData playArrowRounded = Symbols.play_arrow_rounded;
   static const IconData playCircleOutline = Symbols.play_circle;
-  static const IconData privacyTipOutlined = Symbols.privacy_tip;
+  static const IconData privacyTip = Symbols.privacy_tip;
   static const IconData public = Symbols.public;
   static const IconData publicOffRounded = Symbols.public_off_rounded;
   static const IconData radioButtonUnchecked = Symbols.radio_button_unchecked;
   static const IconData redo = Symbols.redo;
   static const IconData refresh = Symbols.refresh;
   static const IconData repeatRounded = Symbols.repeat_rounded;
-  static const IconData reportProblemOutlined = Symbols.report_problem;
+  static const IconData reportProblem = Symbols.report_problem;
+  // Kept as outlined to pair with routeRounded where style is intentional.
   static const IconData routeOutlined = Symbols.route;
   static const IconData routeRounded = Symbols.route_rounded;
   static const IconData save = Symbols.save;
@@ -130,9 +134,10 @@ abstract final class AppIcons {
   static const IconData saveRounded = Symbols.save_rounded;
   static const IconData schedule = Symbols.schedule;
   static const IconData scheduleRounded = Symbols.schedule_rounded;
+  // Kept as outlined to pair with scienceRounded.
   static const IconData scienceOutlined = Symbols.science;
   static const IconData scienceRounded = Symbols.science_rounded;
-  static const IconData sdStorageOutlined = Symbols.sd_storage;
+  static const IconData sdStorage = Symbols.sd_storage;
   static const IconData search = Symbols.search;
   static const IconData searchOff = Symbols.search_off;
   static const IconData searchRounded = Symbols.search_rounded;
@@ -146,35 +151,36 @@ abstract final class AppIcons {
   static const IconData species = Symbols.raven;
   static const IconData speciesFallback = Symbols.raven;
   static const IconData speedRounded = Symbols.speed_rounded;
-  static const IconData stickyNote2Outlined = Symbols.sticky_note_2;
+  static const IconData stickyNote2 = Symbols.sticky_note_2;
   static const IconData stop = Symbols.stop;
   static const IconData stopCircle = Symbols.stop_circle;
   static const IconData stopRounded = Symbols.stop_rounded;
   static const IconData storage = Symbols.storage;
   static const IconData straighten = Symbols.straighten;
-  static const IconData straightenOutlined = Symbols.straighten;
   static const IconData summaryChart = Symbols.bar_chart;
   static const IconData swapHoriz = Symbols.swap_horiz;
-  static const IconData thunderstormOutlined = Symbols.thunderstorm;
-  static const IconData timerOffOutlined = Symbols.timer_off;
+  static const IconData thunderstorm = Symbols.thunderstorm;
+  static const IconData timerOff = Symbols.timer_off;
+  // Kept as outlined to pair with timerRounded.
   static const IconData timerOutlined = Symbols.timer;
   static const IconData timerRounded = Symbols.timer_rounded;
-  static const IconData touchAppOutlined = Symbols.touch_app;
-  static const IconData travelExploreOutlined = Symbols.travel_explore;
+  static const IconData touchApp = Symbols.touch_app;
+  static const IconData travelExplore = Symbols.travel_explore;
   static const IconData tune = Symbols.tune;
   static const IconData tuneRounded = Symbols.tune_rounded;
   static const IconData undo = Symbols.undo;
   static const IconData uploadFileRounded = Symbols.upload_file_rounded;
   static const IconData verifiedRounded = Symbols.verified_rounded;
   static const IconData vibrationRounded = Symbols.vibration_rounded;
-  static const IconData volumeDownOutlined = Symbols.volume_down;
+  static const IconData volumeDown = Symbols.volume_down;
   static const IconData volumeMuteRounded = Symbols.volume_mute_rounded;
   static const IconData volumeOffRounded = Symbols.volume_off_rounded;
+  // Kept as outlined to pair with volumeUpRounded.
   static const IconData volumeUpOutlined = Symbols.volume_up;
   static const IconData volumeUpRounded = Symbols.volume_up_rounded;
   static const IconData warningAmberRounded = Symbols.warning_amber_rounded;
-  static const IconData waterDropOutlined = Symbols.water_drop;
-  static const IconData wbCloudyOutlined = Symbols.wb_cloudy;
-  static const IconData wbSunnyOutlined = Symbols.wb_sunny;
+  static const IconData waterDrop = Symbols.water_drop;
+  static const IconData wbCloudy = Symbols.wb_cloudy;
+  static const IconData wbSunny = Symbols.wb_sunny;
   static const IconData wbTwilightRounded = Symbols.wb_twilight_rounded;
 }

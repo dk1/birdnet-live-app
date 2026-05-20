@@ -206,7 +206,7 @@ class _SummaryHeader extends StatelessWidget {
                   if (session.distanceMeters != null &&
                       session.distanceMeters! > 0) ...[
                     StatChip(
-                      icon: AppIcons.straightenOutlined,
+                      icon: AppIcons.straighten,
                       value:
                           session.distanceMeters! >= 1000
                               ? '${(session.distanceMeters! / 1000).toStringAsFixed(1)} km'
@@ -275,11 +275,11 @@ class _StopReasonBanner extends StatelessWidget {
     final String text;
     switch (reason) {
       case SessionStopReason.maxDuration:
-        icon = AppIcons.timerOffOutlined;
+        icon = AppIcons.timerOff;
         text = l10n.sessionAutoStopMaxDuration;
         break;
       case SessionStopReason.lowBattery:
-        icon = AppIcons.batteryAlertOutlined;
+        icon = AppIcons.batteryAlert;
         text = l10n.sessionAutoStopLowBattery((value ?? 0).round());
         break;
       case SessionStopReason.manual:
@@ -1447,7 +1447,7 @@ class _SpeciesTile extends ConsumerWidget {
       alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(color: color.withAlpha(40)),
-      child: Icon(AppIcons.deleteSweepOutlined, color: color),
+      child: Icon(AppIcons.deleteSweep, color: color),
     );
   }
 }
@@ -1682,7 +1682,7 @@ class _ClusterRow extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Icon(
-                      AppIcons.stickyNote2Outlined,
+                      AppIcons.stickyNote2,
                       size: 22,
                       color: theme.colorScheme.primary.withAlpha(180),
                     ),
@@ -2220,7 +2220,7 @@ class _SpeciesResultTile extends ConsumerWidget {
                 height: 48,
                 color: theme.colorScheme.surfaceContainerHighest,
                 child: Icon(
-                  AppIcons.imageNotSupportedOutlined,
+                  AppIcons.imageNotSupported,
                   size: 20,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),

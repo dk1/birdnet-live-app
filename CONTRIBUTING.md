@@ -46,6 +46,8 @@ flutter test --coverage
 - Use `flutter analyze` to check for lint issues
 - Format code with `dart format .`
 - Use dartdoc comments for public APIs
+- Use `AppIcons` (`lib/shared/utils/app_icons.dart`) instead of direct `Symbols.*` or `Icons.*` in feature code
+- Prefer neutral icon names; keep `...Outlined`/`...Rounded` names only when the style distinction is intentional and both variants are used
 
 ### File Structure
 

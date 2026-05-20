@@ -63,7 +63,7 @@ class OfflineMapDownloadTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     return ListTile(
-      leading: const Icon(AppIcons.downloadForOfflineOutlined),
+      leading: const Icon(AppIcons.downloadForOffline),
       title: Text(l10n.settingsOfflineMapDownload),
       subtitle: Text(l10n.settingsOfflineMapDownloadSubtitle),
       trailing: const Icon(AppIcons.chevronRight),

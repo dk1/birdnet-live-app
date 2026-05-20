@@ -391,7 +391,7 @@ class _Footer extends StatelessWidget {
         // slot. Settings sits near the end where infrequent prefs
         // belong (#33).
         _FooterButton(
-          icon: AppIcons.libraryMusicOutlined,
+          icon: AppIcons.libraryMusic,
           label: l10n.sessionLibraryTitle,
           color: color,
           onPressed:

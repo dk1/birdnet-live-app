@@ -159,11 +159,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                 body: l10n.sessionLibraryHelpSort,
               ),
               AppHelpSection(
-                icon: AppIcons.categoryOutlined,
+                icon: AppIcons.category,
                 body: l10n.sessionLibraryHelpFilter,
               ),
               AppHelpSection(
-                icon: AppIcons.touchAppOutlined,
+                icon: AppIcons.touchApp,
                 body: l10n.sessionLibraryHelpOpen,
               ),
             ],
@@ -455,7 +455,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
           data: (sessions) {
             if (sessions.isEmpty) {
               return EmptyView(
-                icon: AppIcons.libraryMusicOutlined,
+                icon: AppIcons.libraryMusic,
                 title: l10n.sessionLibraryEmpty,
               );
             }
@@ -1423,7 +1423,7 @@ class _SessionSizeChip extends StatelessWidget {
           // Reserve a fixed slot so the row layout doesn't shift when
           // the future resolves. Show a neutral placeholder.
           return const StatChip(
-            icon: AppIcons.sdStorageOutlined,
+            icon: AppIcons.sdStorage,
             value: '…',
             variant: StatChipVariant.badge,
           );
@@ -1435,7 +1435,7 @@ class _SessionSizeChip extends StatelessWidget {
           return const SizedBox.shrink();
         }
         return StatChip(
-          icon: AppIcons.sdStorageOutlined,
+          icon: AppIcons.sdStorage,
           value: _format(bytes),
           variant: StatChipVariant.badge,
         );
@@ -1625,7 +1625,7 @@ class _SwipeToDeleteSession extends StatelessWidget {
             alignLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
         children: [
           Icon(
-            AppIcons.deleteSweepOutlined,
+            AppIcons.deleteSweep,
             color: theme.colorScheme.onErrorContainer,
           ),
           const SizedBox(width: 8),

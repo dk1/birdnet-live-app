@@ -215,7 +215,7 @@ class DetectionActionsOverflow extends StatelessWidget {
             PopupMenuItem<_OverflowAction>(
               value: _OverflowAction.editNote,
               child: _OverflowRow(
-                icon: AppIcons.stickyNote2Outlined,
+                icon: AppIcons.stickyNote2,
                 label:
                     actions.hasNote
                         ? l10n.detectionEditNote
@@ -267,7 +267,7 @@ class DetectionActionsOverflow extends StatelessWidget {
             PopupMenuItem<_OverflowAction>(
               value: _OverflowAction.deleteSpecies,
               child: _OverflowRow(
-                icon: AppIcons.deleteSweepOutlined,
+                icon: AppIcons.deleteSweep,
                 label: l10n.detectionDeleteSpecies,
                 color: theme.colorScheme.error,
               ),

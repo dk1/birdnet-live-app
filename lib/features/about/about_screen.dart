@@ -182,7 +182,7 @@ class AboutScreen extends ConsumerWidget {
               onTap: () => openExternalUrl(context, AppConstants.githubUrl),
             ),
             ListTile(
-              leading: const Icon(AppIcons.privacyTipOutlined),
+              leading: const Icon(AppIcons.privacyTip),
               title: Text(l10n.aboutPrivacyPolicy),
               trailing: const Icon(AppIcons.openInNew),
               onTap:
@@ -202,7 +202,7 @@ class AboutScreen extends ConsumerWidget {
                   ),
             ),
             ListTile(
-              leading: const Icon(AppIcons.menuBookOutlined),
+              leading: const Icon(AppIcons.menuBook),
               title: Text(l10n.aboutUserGuide),
               trailing: const Icon(AppIcons.openInNew),
               onTap:

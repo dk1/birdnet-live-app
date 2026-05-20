@@ -751,7 +751,7 @@ class _TermsPage extends StatelessWidget {
                 ),
                 TextButton.icon(
                   onPressed: () => _open(context, '/privacy/'),
-                  icon: const Icon(AppIcons.privacyTipOutlined, size: 18),
+                  icon: const Icon(AppIcons.privacyTip, size: 18),
                   label: Text(l10n.onboardingPrivacyLink),
                 ),
               ],

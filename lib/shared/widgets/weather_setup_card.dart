@@ -116,7 +116,7 @@ class _WeatherSetupCardState extends ConsumerState<WeatherSetupCard> {
         child: InkWell(
           onTap: _enableWeatherConsent,
           child: ListTile(
-            leading: Icon(AppIcons.cloudOutlined, color: onSurfaceVariant),
+            leading: Icon(AppIcons.cloud, color: onSurfaceVariant),
             title: Text(l10n.settingsPrivacyAllowWeather),
             subtitle: Text(l10n.settingsPrivacyAllowWeatherSubtitle),
             trailing: Icon(
@@ -131,7 +131,7 @@ class _WeatherSetupCardState extends ConsumerState<WeatherSetupCard> {
     if (widget.latitude == null || widget.longitude == null) {
       return Card(
         child: ListTile(
-          leading: Icon(AppIcons.cloudOffOutlined, color: onSurfaceVariant),
+          leading: Icon(AppIcons.cloudOff, color: onSurfaceVariant),
           title: Text(l10n.sessionWeatherSection),
           subtitle: Text(widget.locationUnavailableLabel),
         ),
@@ -180,7 +180,7 @@ class _WeatherSetupCardState extends ConsumerState<WeatherSetupCard> {
 
     return Card(
       child: ListTile(
-        leading: Icon(AppIcons.cloudOffOutlined, color: onSurfaceVariant),
+        leading: Icon(AppIcons.cloudOff, color: onSurfaceVariant),
         title: Text(l10n.sessionWeatherSection),
         subtitle: Text(
           _failed

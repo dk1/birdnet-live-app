@@ -698,7 +698,7 @@ void _showLiveHelp(BuildContext context) {
               body: l10n.liveScreenHelpInfoBar,
             ),
             AppHelpSection(
-              icon: AppIcons.libraryMusicOutlined,
+              icon: AppIcons.libraryMusic,
               body: l10n.liveScreenHelpDetections,
             ),
           ],

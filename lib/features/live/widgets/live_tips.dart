@@ -41,7 +41,7 @@ class LiveTip {
 /// see the same tip first.
 List<LiveTip> buildLiveTips(AppLocalizations l10n) => <LiveTip>[
   LiveTip(
-    icon: AppIcons.campaignOutlined,
+    icon: AppIcons.campaign,
     title: l10n.liveTipAnnouncementsTitle,
     body: l10n.liveTipAnnouncementsBody,
   ),
@@ -81,7 +81,7 @@ List<LiveTip> buildLiveTips(AppLocalizations l10n) => <LiveTip>[
     body: l10n.liveTipThresholdBody,
   ),
   LiveTip(
-    icon: AppIcons.bookmarkAddedOutlined,
+    icon: AppIcons.bookmarkAdded,
     title: l10n.liveTipWatchlistTitle,
     body: l10n.liveTipWatchlistBody,
   ),
@@ -106,7 +106,7 @@ List<LiveTip> buildLiveTips(AppLocalizations l10n) => <LiveTip>[
     body: l10n.liveTipStudyDesignBody,
   ),
   LiveTip(
-    icon: AppIcons.reportProblemOutlined,
+    icon: AppIcons.reportProblem,
     title: l10n.liveTipAiMistakesTitle,
     body: l10n.liveTipAiMistakesBody,
   ),
@@ -121,7 +121,7 @@ List<LiveTip> buildLiveTips(AppLocalizations l10n) => <LiveTip>[
     body: l10n.liveTipScoresBody,
   ),
   LiveTip(
-    icon: AppIcons.volumeDownOutlined,
+    icon: AppIcons.volumeDown,
     title: l10n.liveTipDistanceTitle,
     body: l10n.liveTipDistanceBody,
   ),

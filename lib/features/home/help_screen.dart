@@ -120,7 +120,7 @@ class HelpScreen extends StatelessWidget {
             // *what to expect* before recording — these two screens are
             // where they go.
             _SectionHeader(
-              icon: AppIcons.travelExploreOutlined,
+              icon: AppIcons.travelExplore,
               title: l10n.helpToolsTitle,
             ),
             const SizedBox(height: 12),
@@ -132,7 +132,7 @@ class HelpScreen extends StatelessWidget {
               body: l10n.helpExploreBody,
             ),
             _HelpSection(
-              icon: AppIcons.libraryBooksOutlined,
+              icon: AppIcons.libraryBooks,
               color: theme.colorScheme.secondary,
               containerColor: theme.colorScheme.secondaryContainer,
               title: l10n.helpSessionsTitle,
@@ -194,7 +194,7 @@ class HelpScreen extends StatelessWidget {
                     Row(
                       children: [
                         Icon(
-                          AppIcons.menuBookOutlined,
+                          AppIcons.menuBook,
                           size: 20,
                           color: theme.colorScheme.primary,
                         ),

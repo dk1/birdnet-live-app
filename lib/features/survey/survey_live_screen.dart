@@ -244,7 +244,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                   onTap: () => Navigator.of(ctx).pop('species'),
                 ),
                 ListTile(
-                  leading: const Icon(AppIcons.noteAddOutlined),
+                  leading: const Icon(AppIcons.noteAdd),
                   title: Text(l10n.sessionAddAnnotationOption),
                   onTap: () => Navigator.of(ctx).pop('annotation'),
                 ),
