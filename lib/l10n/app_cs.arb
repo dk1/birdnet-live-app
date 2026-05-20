@@ -115,6 +115,8 @@
   "exploreNoSpecies": "Žádná data o druzích pro toto místo",
   "exploreSpeciesCount": "{count} druhů",
   "exploreInfoNote": "Druhy, které podle geomodelu BirdNET mohou být přítomny na tomto místě.",
+  "explorePredictionSummary": "Geomodelové předpovědi druhů pro vaši polohu",
+  "exploreTapHint": "Klepnutím na druh zobrazíte další informace.",
   "exploreSearchHint": "Hledat druhy…",
   "exploreSearchTooltip": "Hledat",
   "exploreFilterTooltip": "Řadit a filtrovat",

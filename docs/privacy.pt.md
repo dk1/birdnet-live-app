@@ -15,9 +15,9 @@ O aplicativo pode acessar os serviços externos abaixo. Cada um é controlado po
 
 | Recurso | Propósito | Interruptor | Enviado por requisição |
 |---------|-----------|-------------|------------------------|
-| Tiles de mapa (OpenStreetMap) | Mapa base para seletor de localização, mapa ao vivo do Survey, mapa da sessão e pré-download | **Configurações → Privacidade → Permitir tiles de mapa** | Apenas coordenadas do tile `(z, x, y)` — sem PII |
-| Geocodificação reversa (OpenStreetMap Nominatim) | Resolver coordenadas GPS num nome de lugar (ex. “Lisboa, Portugal”) | **Configurações → Privacidade → Permitir busca de nome de lugar** | Lat/lon da sessão e um user-agent genérico `BirdNET-Live/<versão>` |
-| Snapshot do clima (Open-Meteo) | Captura única das condições (temperatura, precipitação, vento, nuvens, código WMO) nas coordenadas e hora de fim | **Configurações → Privacidade → Permitir consulta de clima** | Lat/lon da sessão e timestamp de fim, mais um user-agent genérico `BirdNET-Live/<versão>` |
+| Tiles de mapa (OpenStreetMap) | Mapa base para seletor de localização, mapa ao vivo do Survey e mapa da sessão | **Configurações → Privacidade → Permitir tiles de mapa** | Coordenadas do tile `(z, x, y)` e user-agent BirdNET Live — sem PII |
+| Geocodificação reversa (OpenStreetMap Nominatim) | Resolver coordenadas GPS num nome de lugar (ex. “Lisboa, Portugal”) | **Configurações → Privacidade → Permitir busca de nome de lugar** | Lat/lon da sessão e user-agent BirdNET Live |
+| Snapshot do clima (Open-Meteo) | Captura única das condições (temperatura, precipitação, vento, nuvens, código WMO) nas coordenadas e hora de fim | **Configurações → Privacidade → Permitir consulta de clima** | Lat/lon da sessão e timestamp de fim, mais user-agent BirdNET Live |
 
 As requisições de tiles são HTTPS GET padrão para `tile.openstreetmap.org`; a geocodificação reversa vai para `nominatim.openstreetmap.org` seguindo a [Política de uso do Nominatim](https://operations.osmfoundation.org/policies/nominatim/); as consultas de clima vão para `api.open-meteo.com`. O [Open-Meteo](https://open-meteo.com/) é um serviço gratuito e não exige conta nem chave de API.
 

@@ -159,7 +159,7 @@ Tato sekce řídí, **které externí služby smí BirdNET Live kontaktovat vaš
 
 ### Povolit mapové dlaždice
 
-Vyžadováno pro každou interaktivní mapu (výběr polohy, živá mapa Survey, mapa relace, předstahování dlaždic). Když je zapnuto, mapové prvky stahují rastrové dlaždice z veřejných serverů **OpenStreetMap**; požadavky o souřadnice dlaždic prozrazují, kterou oblast světa právě prohlížíte. Když je vypnuto, všechny mapové obrazovky zobrazí zástupný panel.
+Vyžadováno pro každou interaktivní mapu (výběr polohy, živá mapa Survey, mapa relace). Když je zapnuto, mapové prvky stahují rastrové dlaždice z veřejných serverů **OpenStreetMap**; požadavky o souřadnice dlaždic prozrazují, kterou oblast světa právě prohlížíte. Když je vypnuto, všechny mapové obrazovky zobrazí zástupný panel.
 
 ### Povolit vyhledávání názvu místa
 

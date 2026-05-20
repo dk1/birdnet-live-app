@@ -12,21 +12,21 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 
-import '../../inference/geo_model.dart';
-import '../../history/global_species_history.dart';
-import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/utils/app_icons.dart';
+import '../../inference/geo_model.dart';
 import '../explore_providers.dart';
 
 /// A compact species card with a 3:2 thumbnail.
-class SpeciesCard extends ConsumerWidget {
+class SpeciesCard extends StatelessWidget {
   const SpeciesCard({
     super.key,
     required this.scientificName,
     required this.commonName,
+    required this.showScientificName,
+    required this.detected,
+    this.assetImagePath,
     this.geoScore,
     this.confidence,
     this.weeklyScores,
@@ -38,6 +38,15 @@ class SpeciesCard extends ConsumerWidget {
 
   /// Common name to display.
   final String commonName;
+
+  /// Whether to display the scientific name under the common name.
+  final bool showScientificName;
+
+  /// Whether this species has already appeared in the user's saved sessions.
+  final bool detected;
+
+  /// Bundled thumbnail asset path, if known by the parent list.
+  final String? assetImagePath;
 
   /// Optional geo-model score (0–100) shown as a subtle indicator.
   final double? geoScore;
@@ -52,10 +61,13 @@ class SpeciesCard extends ConsumerWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final showSciNames = ref.watch(showSciNamesProvider);
+    final cardHeight =
+        weeklyScores == null
+            ? (showScientificName ? 78.0 : 68.0)
+            : (showScientificName ? 96.0 : 88.0);
 
     return Material(
       color:
@@ -66,37 +78,24 @@ class SpeciesCard extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: IntrinsicHeight(
+        child: SizedBox(
+          height: cardHeight,
           child: Row(
-            // Stretch so the thumbnail fills the card's full height and the
-            // rounded left corners hug the photo.
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── Thumbnail (3:2, matching the 360×240 bundled photos) ──
-              //
-              // Width is 120 so that the AspectRatio's intrinsic height
-              // (120 / 1.5 = 80) matches the text column's natural height
-              // closely. With Row(stretch) + IntrinsicHeight that gives a
-              // 120×80 box whose ratio matches the source image, so
-              // BoxFit.cover fills it exactly with no edge cropping.
               SizedBox(
                 width: 120,
-                child: AspectRatio(
-                  aspectRatio: 3 / 2,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      _SpeciesImage(scientificName: scientificName),
-                      if (ref
-                          .watch(detectedSpeciesSetProvider)
-                          .contains(scientificName))
-                        const Positioned(
-                          top: 4,
-                          right: 4,
-                          child: _DetectedBadge(),
-                        ),
-                    ],
-                  ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    _SpeciesImage(assetImagePath: assetImagePath),
+                    if (detected)
+                      const Positioned(
+                        top: 4,
+                        right: 4,
+                        child: _DetectedBadge(),
+                      ),
+                  ],
                 ),
               ),
               // ── Names and Details ──
@@ -183,7 +182,7 @@ class SpeciesCard extends ConsumerWidget {
                         ],
                       ),
                       // Row 2: Scientific name (optional)
-                      if (showSciNames)
+                      if (showScientificName)
                         Text(
                           scientificName,
                           style: theme.textTheme.bodySmall?.copyWith(
@@ -211,24 +210,29 @@ class SpeciesCard extends ConsumerWidget {
 }
 
 /// Species thumbnail loaded from bundled assets.
-class _SpeciesImage extends ConsumerWidget {
-  const _SpeciesImage({required this.scientificName});
+class _SpeciesImage extends StatelessWidget {
+  const _SpeciesImage({required this.assetImagePath});
 
-  final String scientificName;
+  final String? assetImagePath;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final taxonomyAsync = ref.watch(taxonomyServiceProvider);
-    final path =
-        taxonomyAsync.value?.assetImagePath(scientificName) ??
-        'assets/images/dummy_species.png';
+  Widget build(BuildContext context) {
+    final path = assetImagePath ?? 'assets/images/dummy_species.png';
 
     return Image.asset(
       path,
       fit: BoxFit.cover,
+      cacheWidth: 360,
+      cacheHeight: 240,
+      filterQuality: FilterQuality.low,
       errorBuilder:
-          (a, b, c) =>
-              Image.asset('assets/images/dummy_species.png', fit: BoxFit.cover),
+          (a, b, c) => Image.asset(
+            'assets/images/dummy_species.png',
+            fit: BoxFit.cover,
+            cacheWidth: 360,
+            cacheHeight: 240,
+            filterQuality: FilterQuality.low,
+          ),
     );
   }
 }
@@ -256,53 +260,20 @@ class _MiniChart extends StatelessWidget {
 
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Bars (center-aligned) ──
         SizedBox(
           height: _chartHeight,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: List.generate(48, (index) {
-              final score = weeklyScores[index];
-              final normalized = (score / 100.0).clamp(0.0, 1.0);
-              final isCurrentWeek = index == currentWeekIndex;
-
-              final barHeight =
-                  score > 0
-                      ? (normalized * _chartHeight).clamp(
-                        _minBarHeight,
-                        _chartHeight,
-                      )
-                      : 0.0;
-
-              final baseColor = theme.colorScheme.primary;
-              final activeColor = theme.colorScheme.tertiary;
-
-              return Expanded(
-                child: Center(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 0.5),
-                    height: barHeight,
-                    decoration: BoxDecoration(
-                      color:
-                          isCurrentWeek
-                              ? activeColor
-                              : baseColor.withAlpha(
-                                (50 + (normalized * 150)).toInt().clamp(0, 255),
-                              ),
-                      borderRadius: BorderRadius.circular(1),
-                      border:
-                          isCurrentWeek
-                              ? Border.all(
-                                color: theme.colorScheme.onSurface,
-                                width: 0.5,
-                              )
-                              : null,
-                    ),
-                  ),
-                ),
-              );
-            }),
+          width: double.infinity,
+          child: CustomPaint(
+            size: const Size.fromHeight(_chartHeight),
+            painter: _MiniChartBarsPainter(
+              weeklyScores: weeklyScores,
+              currentWeekIndex: currentWeekIndex,
+              baseColor: theme.colorScheme.primary,
+              activeColor: theme.colorScheme.tertiary,
+              borderColor: theme.colorScheme.onSurface,
+            ),
           ),
         ),
         // ── Month labels ──
@@ -344,6 +315,71 @@ class _MiniChart extends StatelessWidget {
     l10n.monthN,
     l10n.monthD,
   ];
+}
+
+class _MiniChartBarsPainter extends CustomPainter {
+  const _MiniChartBarsPainter({
+    required this.weeklyScores,
+    required this.currentWeekIndex,
+    required this.baseColor,
+    required this.activeColor,
+    required this.borderColor,
+  });
+
+  final List<double> weeklyScores;
+  final int currentWeekIndex;
+  final Color baseColor;
+  final Color activeColor;
+  final Color borderColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0) return;
+
+    final weekWidth = size.width / weeklyScores.length;
+    final barWidth = (weekWidth * 0.65).clamp(1.0, weekWidth);
+    final radius = Radius.circular(barWidth < 2 ? 0.5 : 1.0);
+    final fillPaint = Paint();
+    final borderPaint =
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.5
+          ..color = borderColor;
+
+    for (var index = 0; index < weeklyScores.length; index++) {
+      final score = weeklyScores[index];
+      if (score <= 0) continue;
+
+      final normalized = (score / 100.0).clamp(0.0, 1.0);
+      final barHeight = (normalized * _MiniChart._chartHeight).clamp(
+        _MiniChart._minBarHeight,
+        size.height,
+      );
+      final left = index * weekWidth + (weekWidth - barWidth) / 2;
+      final top = (size.height - barHeight) / 2;
+      final rect = Rect.fromLTWH(left, top, barWidth, barHeight);
+      final rrect = RRect.fromRectAndRadius(rect, radius);
+
+      final isCurrentWeek = index == currentWeekIndex;
+      fillPaint.color =
+          isCurrentWeek
+              ? activeColor
+              : baseColor.withAlpha(
+                (50 + (normalized * 150)).toInt().clamp(0, 255),
+              );
+      canvas.drawRRect(rrect, fillPaint);
+      if (isCurrentWeek) canvas.drawRRect(rrect, borderPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniChartBarsPainter oldDelegate) {
+    return weeklyScores != oldDelegate.weeklyScores ||
+        currentWeekIndex != oldDelegate.currentWeekIndex ||
+        baseColor != oldDelegate.baseColor ||
+        activeColor != oldDelegate.activeColor ||
+        borderColor != oldDelegate.borderColor;
+  }
 }
 
 /// Small overlay badge that flags a species as previously detected by the
