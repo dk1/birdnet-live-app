@@ -38,11 +38,11 @@ enum StatChipVariant {
 /// Examples:
 /// ```dart
 /// // Inline chip in a session-review header
-/// StatChip(icon: Icons.timer_outlined, value: '2:34')
+/// StatChip(icon: AppIcons.timerOutlined, value: '2:34')
 ///
 /// // Card in the analysis results dashboard
 /// StatChip(
-///   icon: Icons.bar_chart,
+///   icon: AppIcons.barChart,
 ///   value: '142',
 ///   label: l10n.fileAnalysisDetections,
 ///   variant: StatChipVariant.card,

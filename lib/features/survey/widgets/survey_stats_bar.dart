@@ -8,9 +8,9 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../../core/theme/app_semantic_colors.dart';
+import '../../../shared/utils/app_icons.dart';
 import '../../../shared/widgets/stat_chip.dart';
 
 enum _AudioQuality { bad, marginal, good }
@@ -94,17 +94,17 @@ class SurveyStatsBar extends StatelessWidget {
             style: style,
           ),
           StatChip(
-            icon: Icons.straighten,
+            icon: AppIcons.straighten,
             value: _formatDistance(distanceMeters),
             style: style,
           ),
           StatChip(
-            icon: Icons.graphic_eq,
+            icon: AppIcons.detections,
             value: '$detectionCount',
             style: style,
           ),
           StatChip(
-            icon: MdiIcons.feather,
+            icon: AppIcons.species,
             value: '$speciesCount',
             style: style,
           ),
@@ -155,7 +155,7 @@ class _AudioLevelChip extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Icon(Icons.mic, size: 16, color: color),
+        Icon(AppIcons.mic, size: 16, color: color),
         const SizedBox(width: 3),
         for (int i = 0; i < 3; i++)
           Container(

@@ -33,6 +33,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/open_street_map_tile_layer.dart';
@@ -62,10 +63,10 @@ class OfflineMapDownloadTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     return ListTile(
-      leading: const Icon(Icons.download_for_offline_outlined),
+      leading: const Icon(AppIcons.downloadForOffline),
       title: Text(l10n.settingsOfflineMapDownload),
       subtitle: Text(l10n.settingsOfflineMapDownloadSubtitle),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: const Icon(AppIcons.chevronRight),
       onTap: () => _start(context, ref),
     );
   }

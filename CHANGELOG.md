@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.11] - 2026-05-20
+
+### Changed
+
+- Replaced the `material_design_icons_flutter` dependency with `material_symbols_icons` for the app's shared icon set.
+- Refactored feature and shared UI code to use centralized `AppIcons` mappings instead of direct package icon references, improving icon consistency across Live, Survey, Point Count, File Analysis, History, Explore, Settings, Help, and onboarding views.
+- Refined centralized app icon choices for species, detections, map actions, filled map pins, stop controls, and survey start/end flags so review and map views read more consistently.
+
 ## [0.14.10] - 2026-05-20
 
 ### Changed

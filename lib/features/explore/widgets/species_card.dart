@@ -18,6 +18,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import '../../inference/geo_model.dart';
 import '../../history/global_species_history.dart';
 import '../../../shared/providers/settings_providers.dart';
+import '../../../shared/utils/app_icons.dart';
 import '../explore_providers.dart';
 
 /// A compact species card with a 3:2 thumbnail.
@@ -372,7 +373,7 @@ class _DetectedBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(Icons.check, size: 12, color: theme.colorScheme.onPrimary),
+      child: Icon(AppIcons.check, size: 12, color: theme.colorScheme.onPrimary),
     );
   }
 }

@@ -13,7 +13,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -22,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/session_type_visuals.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
@@ -144,26 +144,28 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
           (_) => AppHelpBottomSheet(
             title: l10n.sessionLibraryHelpTitle,
             sections: [
-              // Icons here intentionally mirror the actual AppBar buttons so
-              // users can map each help section to a tap target on screen.
+              // These icons match the meaning of each help section. The
+              // toolbar collapses view and filter controls behind one options
+              // button, so the sheet-level concepts read clearer than a
+              // strict AppBar icon mirror here.
               AppHelpSection(
-                icon: Icons.search,
+                icon: AppIcons.search,
                 body: l10n.sessionLibraryHelpSearch,
               ),
               AppHelpSection(
-                icon: Icons.filter_list_outlined,
+                icon: AppIcons.gridViewRounded,
                 body: l10n.sessionLibraryHelpView,
               ),
               AppHelpSection(
-                icon: Icons.sort,
+                icon: AppIcons.sort,
                 body: l10n.sessionLibraryHelpSort,
               ),
               AppHelpSection(
-                icon: Icons.category_outlined,
+                icon: AppIcons.filterList,
                 body: l10n.sessionLibraryHelpFilter,
               ),
               AppHelpSection(
-                icon: Icons.touch_app_outlined,
+                icon: AppIcons.touchApp,
                 body: l10n.sessionLibraryHelpOpen,
               ),
             ],
@@ -415,7 +417,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         actions: [
           if (_showSearch)
             IconButton(
-              icon: const Icon(Icons.close),
+              icon: const Icon(AppIcons.close),
               tooltip: l10n.tooltipClearSearch,
               onPressed:
                   () => setState(() {
@@ -425,17 +427,17 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
             )
           else ...[
             IconButton(
-              icon: const Icon(Icons.search),
+              icon: const Icon(AppIcons.search),
               tooltip: l10n.tooltipSearch,
               onPressed: () => setState(() => _showSearch = true),
             ),
             IconButton(
-              icon: const Icon(Icons.help_outline_rounded),
+              icon: const Icon(AppIcons.helpOutlineRounded),
               tooltip: l10n.sessionLibraryHelpTitle,
               onPressed: _showHelp,
             ),
             IconButton(
-              icon: const Icon(Icons.filter_list_outlined),
+              icon: const Icon(AppIcons.filterList),
               tooltip: l10n.settings,
               onPressed: _showOptionsSheet,
             ),
@@ -455,7 +457,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
           data: (sessions) {
             if (sessions.isEmpty) {
               return EmptyView(
-                icon: Icons.library_music_outlined,
+                icon: AppIcons.libraryMusic,
                 title: l10n.sessionLibraryEmpty,
               );
             }
@@ -647,7 +649,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                   trailing:
                       m.type == _newSessionMode
                           ? Icon(
-                            Icons.check_rounded,
+                            AppIcons.checkRounded,
                             color: theme.colorScheme.primary,
                           )
                           : null,
@@ -804,7 +806,7 @@ class _SessionTile extends ConsumerWidget {
                         Row(
                           children: [
                             Icon(
-                              Icons.calendar_today_outlined,
+                              AppIcons.calendarToday,
                               size: 14,
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
@@ -822,8 +824,8 @@ class _SessionTile extends ConsumerWidget {
                           children: [
                             Icon(
                               session.latitude != null
-                                  ? Icons.location_on_outlined
-                                  : Icons.location_off_outlined,
+                                  ? AppIcons.locationOn
+                                  : AppIcons.locationOff,
                               size: 14,
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
@@ -894,17 +896,17 @@ class _SessionTile extends ConsumerWidget {
                 runSpacing: 6,
                 children: [
                   StatChip(
-                    icon: Icons.timer_outlined,
+                    icon: AppIcons.timerOutlined,
                     value: _formatDuration(duration),
                     variant: StatChipVariant.badge,
                   ),
                   StatChip(
-                    icon: MdiIcons.feather,
+                    icon: AppIcons.species,
                     value: '$speciesCount spp.',
                     variant: StatChipVariant.badge,
                   ),
                   StatChip(
-                    icon: Icons.music_note_outlined,
+                    icon: AppIcons.detections,
                     value: '$detectionCount det.',
                     variant: StatChipVariant.badge,
                   ),
@@ -968,7 +970,7 @@ class _CompactSessionTile extends ConsumerWidget {
         onShare: onShare,
         onDelete: onDelete,
         trailingExpandToggle: IconButton(
-          icon: const Icon(Icons.expand_less),
+          icon: const Icon(AppIcons.expandLess),
           tooltip: l10n.sessionLibraryCollapse,
           onPressed: onToggleExpanded,
           padding: EdgeInsets.zero,
@@ -994,7 +996,7 @@ class _CompactSessionTile extends ConsumerWidget {
         ),
       ),
       trailing: IconButton(
-        icon: const Icon(Icons.expand_more, size: 22),
+        icon: const Icon(AppIcons.expandMore, size: 22),
         tooltip: l10n.sessionLibraryExpand,
         onPressed: onToggleExpanded,
         padding: EdgeInsets.zero,
@@ -1147,7 +1149,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
                             (a, b, c) => ColoredBox(
                               color: theme.colorScheme.surfaceContainerHighest,
                               child: Icon(
-                                MdiIcons.bird,
+                                AppIcons.brokenImage,
                                 size: 18,
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -1156,7 +1158,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
                       : ColoredBox(
                         color: theme.colorScheme.surfaceContainerHighest,
                         child: Icon(
-                          MdiIcons.bird,
+                          AppIcons.brokenImage,
                           size: 18,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -1326,7 +1328,7 @@ class _NewSessionFab extends StatelessWidget {
                 onTap: onChooseMode,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(10, 12, 16, 12),
-                  child: Icon(Icons.arrow_drop_up_rounded, size: 28, color: fg),
+                  child: Icon(AppIcons.arrowDropUpRounded, size: 28, color: fg),
                 ),
               ),
             ),
@@ -1423,7 +1425,7 @@ class _SessionSizeChip extends StatelessWidget {
           // Reserve a fixed slot so the row layout doesn't shift when
           // the future resolves. Show a neutral placeholder.
           return const StatChip(
-            icon: Icons.sd_storage_outlined,
+            icon: AppIcons.sdStorage,
             value: '…',
             variant: StatChipVariant.badge,
           );
@@ -1435,7 +1437,7 @@ class _SessionSizeChip extends StatelessWidget {
           return const SizedBox.shrink();
         }
         return StatChip(
-          icon: Icons.sd_storage_outlined,
+          icon: AppIcons.sdStorage,
           value: _format(bytes),
           variant: StatChipVariant.badge,
         );
@@ -1518,7 +1520,7 @@ class _SessionRowMenu extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return PopupMenuButton<_SessionRowAction>(
       tooltip: l10n.sessionLibraryRowMenuTooltip,
-      icon: const Icon(Icons.more_vert),
+      icon: const Icon(AppIcons.moreVert),
       padding: EdgeInsets.zero,
       onSelected: (action) {
         switch (action) {
@@ -1535,7 +1537,7 @@ class _SessionRowMenu extends StatelessWidget {
             PopupMenuItem(
               value: _SessionRowAction.open,
               child: ListTile(
-                leading: const Icon(Icons.open_in_new),
+                leading: const Icon(AppIcons.openInNew),
                 title: Text(l10n.sessionLibraryRowOpen),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
@@ -1544,7 +1546,7 @@ class _SessionRowMenu extends StatelessWidget {
             PopupMenuItem(
               value: _SessionRowAction.share,
               child: ListTile(
-                leading: const Icon(Icons.share_outlined),
+                leading: const Icon(AppIcons.share),
                 title: Text(l10n.sessionLibraryRowShare),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
@@ -1554,7 +1556,7 @@ class _SessionRowMenu extends StatelessWidget {
               value: _SessionRowAction.delete,
               child: ListTile(
                 leading: Icon(
-                  Icons.delete_outline,
+                  AppIcons.deleteOutline,
                   color: theme.colorScheme.error,
                 ),
                 title: Text(
@@ -1625,7 +1627,7 @@ class _SwipeToDeleteSession extends StatelessWidget {
             alignLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
         children: [
           Icon(
-            Icons.delete_sweep_outlined,
+            AppIcons.deleteSweep,
             color: theme.colorScheme.onErrorContainer,
           ),
           const SizedBox(width: 8),

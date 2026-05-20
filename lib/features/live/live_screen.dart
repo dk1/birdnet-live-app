@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/wakelock_service.dart';
@@ -618,7 +619,7 @@ class _CompactStatusBar extends StatelessWidget {
         children: [
           // Back button.
           IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, size: 22),
+            icon: const Icon(AppIcons.arrowBackRounded, size: 22),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             onPressed: () => Navigator.of(context).maybePop(),
@@ -639,7 +640,7 @@ class _CompactStatusBar extends StatelessWidget {
 
           IconButton(
             icon: Icon(
-              Icons.help_outline_rounded,
+              AppIcons.helpOutlineRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -652,7 +653,7 @@ class _CompactStatusBar extends StatelessWidget {
           // Settings gear.
           IconButton(
             icon: Icon(
-              Icons.tune_rounded,
+              AppIcons.tuneRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -687,17 +688,17 @@ void _showLiveHelp(BuildContext context) {
         (_) => AppHelpBottomSheet(
           title: l10n.liveScreenHelpTitle,
           sections: [
-            AppHelpSection(icon: Icons.mic, body: l10n.liveScreenHelpOverview),
+            AppHelpSection(icon: AppIcons.mic, body: l10n.liveScreenHelpOverview),
             AppHelpSection(
-              icon: Icons.help_outline_rounded,
+              icon: AppIcons.helpOutlineRounded,
               body: l10n.liveScreenHelpControls,
             ),
             AppHelpSection(
-              icon: Icons.info_outline,
+              icon: AppIcons.infoOutline,
               body: l10n.liveScreenHelpInfoBar,
             ),
             AppHelpSection(
-              icon: Icons.library_music_outlined,
+              icon: AppIcons.libraryMusic,
               body: l10n.liveScreenHelpDetections,
             ),
           ],
@@ -732,17 +733,17 @@ class _CaptureButton extends StatelessWidget {
 
     if (isActive) {
       bgColor = theme.colorScheme.error;
-      icon = Icons.stop_rounded;
+      icon = AppIcons.stopRounded;
       iconColor = theme.colorScheme.onError;
       semanticsLabel = l10n.a11yLiveCaptureStop;
     } else if (isPaused) {
       bgColor = theme.colorScheme.primary;
-      icon = Icons.play_arrow_rounded;
+      icon = AppIcons.playArrowRounded;
       iconColor = theme.colorScheme.onPrimary;
       semanticsLabel = l10n.a11yLiveCaptureResume;
     } else {
       bgColor = theme.colorScheme.primary;
-      icon = Icons.mic;
+      icon = AppIcons.mic;
       iconColor = theme.colorScheme.onPrimary;
       semanticsLabel = l10n.a11yLiveCaptureStart;
     }
@@ -808,7 +809,7 @@ class _StatusBanner extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons.error_outline,
+            AppIcons.errorOutline,
             size: 16,
             color: theme.colorScheme.onErrorContainer,
           ),
@@ -914,7 +915,7 @@ class _SessionInfoBar extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.info_outline,
+                AppIcons.infoOutline,
                 size: 14,
                 color: theme.colorScheme.primary,
               ),

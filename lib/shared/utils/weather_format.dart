@@ -18,6 +18,7 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../models/weather_snapshot.dart';
 
@@ -58,23 +59,23 @@ WeatherCondition weatherConditionFromCode(int? code) {
 IconData weatherConditionIcon(WeatherCondition cond) {
   switch (cond) {
     case WeatherCondition.clear:
-      return Icons.wb_sunny_outlined;
+      return AppIcons.wbSunny;
     case WeatherCondition.partlyCloudy:
-      return Icons.wb_cloudy_outlined;
+      return AppIcons.wbCloudy;
     case WeatherCondition.cloudy:
-      return Icons.cloud_outlined;
+      return AppIcons.cloud;
     case WeatherCondition.fog:
-      return Icons.foggy;
+      return AppIcons.foggy;
     case WeatherCondition.drizzle:
-      return Icons.grain;
+      return AppIcons.grain;
     case WeatherCondition.rain:
-      return Icons.water_drop_outlined;
+      return AppIcons.waterDrop;
     case WeatherCondition.snow:
-      return Icons.ac_unit;
+      return AppIcons.acUnit;
     case WeatherCondition.thunder:
-      return Icons.thunderstorm_outlined;
+      return AppIcons.thunderstorm;
     case WeatherCondition.unknown:
-      return Icons.help_outline;
+      return AppIcons.helpOutline;
   }
 }
 

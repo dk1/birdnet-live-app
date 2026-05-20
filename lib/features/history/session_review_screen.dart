@@ -52,7 +52,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -72,6 +71,7 @@ import '../../shared/models/weather_snapshot.dart';
 import '../../shared/services/weather_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/taxonomy_service.dart';
+import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/timestamp_format.dart';
 import '../../shared/utils/weather_format.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
@@ -2341,17 +2341,17 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.add_circle_outline),
+                  leading: const Icon(AppIcons.addCircleOutline),
                   title: Text(l10n.sessionAddSpecies),
                   onTap: () => Navigator.of(ctx).pop('species'),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.note_add_outlined),
+                  leading: const Icon(AppIcons.noteAdd),
                   title: Text(l10n.sessionAddAnnotationOption),
                   onTap: () => Navigator.of(ctx).pop('annotation'),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.mic_none),
+                  leading: const Icon(AppIcons.micNone),
                   title: Text(l10n.sessionAddVoiceMemoOption),
                   onTap: () => Navigator.of(ctx).pop('voice_memo'),
                 ),
@@ -2442,7 +2442,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                           spacing: 8,
                           children: [
                             ChoiceChip(
-                              avatar: const Icon(Icons.public, size: 18),
+                              avatar: const Icon(AppIcons.public, size: 18),
                               label: Text(l10n.sessionAnnotationGlobal),
                               selected: !atTimestamp,
                               onSelected: (_) {
@@ -2453,7 +2453,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                               },
                             ),
                             ChoiceChip(
-                              avatar: const Icon(Icons.schedule, size: 18),
+                              avatar: const Icon(AppIcons.schedule, size: 18),
                               label: Text(l10n.sessionInsertAtTimestamp),
                               selected: atTimestamp,
                               onSelected: (_) {
@@ -2468,7 +2468,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                         if (isEdit) ...[
                           const SizedBox(height: 12),
                           OutlinedButton.icon(
-                            icon: const Icon(Icons.mic, size: 18),
+                            icon: const Icon(AppIcons.mic, size: 18),
                             label: Text(l10n.detectionReplaceVoiceMemo),
                             onPressed: () async {
                               final result = await showVoiceMemoDialog(
@@ -2595,7 +2595,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                           spacing: 8,
                           children: [
                             ChoiceChip(
-                              avatar: const Icon(Icons.public, size: 18),
+                              avatar: const Icon(AppIcons.public, size: 18),
                               label: Text(l10n.sessionAnnotationGlobal),
                               selected: !atTimestamp,
                               onSelected:
@@ -2603,7 +2603,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                                       setDialogState(() => atTimestamp = false),
                             ),
                             ChoiceChip(
-                              avatar: const Icon(Icons.schedule, size: 18),
+                              avatar: const Icon(AppIcons.schedule, size: 18),
                               label: Text(l10n.sessionInsertAtTimestamp),
                               selected: atTimestamp,
                               onSelected:
@@ -2852,7 +2852,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   ),
                   const SizedBox(width: 4),
                   Icon(
-                    Icons.edit,
+                    AppIcons.edit,
                     size: 16,
                     color: Theme.of(
                       context,
@@ -2863,7 +2863,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             ),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.close),
+            icon: const Icon(AppIcons.close),
             tooltip: l10n.tooltipClose,
             onPressed: () async {
               if (_isDirty) {
@@ -2876,12 +2876,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.help_outline),
+              icon: const Icon(AppIcons.helpOutline),
               tooltip: l10n.sessionHelpTitle,
               onPressed: _showHelp,
             ),
             IconButton(
-              icon: const Icon(Icons.tune_rounded),
+              icon: const Icon(AppIcons.tuneRounded),
               tooltip: l10n.settings,
               onPressed:
                   () => Navigator.of(context).push(
@@ -2972,13 +2972,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           IconButton(
-            icon: const Icon(Icons.add_circle_outline),
+            icon: const Icon(AppIcons.addCircleOutline),
             tooltip: l10n.sessionAddContent,
             onPressed: _showAddMenu,
           ),
           IconButton(
             icon: Icon(
-              Icons.undo,
+              AppIcons.undo,
               color:
                   _canUndo ? null : theme.colorScheme.onSurface.withAlpha(80),
             ),
@@ -2987,7 +2987,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
           IconButton(
             icon: Icon(
-              Icons.redo,
+              AppIcons.redo,
               color:
                   _canRedo ? null : theme.colorScheme.onSurface.withAlpha(80),
             ),
@@ -2997,7 +2997,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           if (_audioAvailable)
             IconButton(
               icon: Icon(
-                _trimMode ? Icons.content_cut : Icons.content_cut_outlined,
+                AppIcons.contentCut,
               ),
               tooltip: l10n.sessionTrimRecording,
               onPressed: _toggleTrimMode,
@@ -3005,7 +3005,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             ),
           IconButton(
             icon: Icon(
-              Icons.save,
+              AppIcons.save,
               color:
                   _isDirty
                       ? theme.colorScheme.primary
@@ -3015,19 +3015,19 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             onPressed: _isDirty ? _save : null,
           ),
           IconButton(
-            icon: const Icon(Icons.share),
+            icon: const Icon(AppIcons.share),
             tooltip: l10n.sessionShare,
             onPressed: _share,
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline),
+            icon: const Icon(AppIcons.deleteOutline),
             tooltip: l10n.sessionDiscard,
             onPressed: _discard,
           ),
           if (widget.session.type == SessionType.survey)
             IconButton(
               icon: Icon(
-                Icons.play_arrow_rounded,
+                AppIcons.playArrowRounded,
                 color: theme.colorScheme.primary,
               ),
               tooltip: l10n.surveyContinue,
@@ -3104,7 +3104,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(6),
                     child: Icon(
-                      Icons.fullscreen,
+                      AppIcons.fullscreen,
                       size: 20,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
@@ -3116,7 +3116,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         ),
       if (_audioTruncatedWarning)
         _ReviewWarningCard(
-          icon: Icons.warning_amber_rounded,
+          icon: AppIcons.warningAmberRounded,
           title: l10n.sessionReviewAudioShortTitle,
           body: l10n.sessionReviewAudioShortBody,
         ),
@@ -3263,8 +3263,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
       avatar: Icon(
         a.hasVoiceMemo
-            ? Icons.mic
-            : (a.offsetInRecording != null ? Icons.schedule : Icons.short_text),
+            ? AppIcons.mic
+            : (a.offsetInRecording != null ? AppIcons.schedule : AppIcons.shortText),
         size: 16,
       ),
       onPressed: () => _editAnnotation(i),
@@ -3272,7 +3272,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           a.hasVoiceMemo
               ? l10n.sessionEditVoiceMemo
               : l10n.sessionEditAnnotation,
-      deleteIcon: const Icon(Icons.close, size: 16),
+      deleteIcon: const Icon(AppIcons.close, size: 16),
       onDeleted: () => _deleteAnnotation(i),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       visualDensity: VisualDensity.compact,
@@ -3447,7 +3447,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 decoration: InputDecoration(
                   isDense: true,
                   hintText: l10n.sessionSearchSpecies,
-                  prefixIcon: const Icon(Icons.search, size: 18),
+                  prefixIcon: const Icon(AppIcons.search, size: 18),
                   prefixIconConstraints: const BoxConstraints(
                     minWidth: 32,
                     minHeight: 32,
@@ -3456,7 +3456,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                       _speciesSearchQuery.isEmpty
                           ? null
                           : IconButton(
-                            icon: const Icon(Icons.clear, size: 18),
+                            icon: const Icon(AppIcons.clear, size: 18),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
                               minWidth: 32,
@@ -3480,7 +3480,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
           PopupMenuButton<SpeciesSortMode>(
             tooltip: l10n.sessionSpeciesSortMenu,
-            icon: const Icon(Icons.sort),
+            icon: const Icon(AppIcons.sort),
             initialValue: _speciesSort,
             onSelected: _setSpeciesSort,
             itemBuilder:
@@ -3960,7 +3960,7 @@ class _FullscreenSurveyMapScreenState
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline),
+                      const Icon(AppIcons.infoOutline),
                       const SizedBox(width: 12),
                       Expanded(child: Text(l10n.surveyMapFilterEmpty)),
                     ],
@@ -4192,7 +4192,7 @@ class _MapFilterSheetState extends State<_MapFilterSheet> {
                     TextField(
                       decoration: InputDecoration(
                         isDense: true,
-                        prefixIcon: const Icon(Icons.search, size: 20),
+                        prefixIcon: const Icon(AppIcons.search, size: 20),
                         hintText: l10n.surveyMapFilterSpeciesSearchHint,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -4295,8 +4295,8 @@ class _SpeciesPickerTile extends ConsumerWidget {
           children: [
             Icon(
               selected
-                  ? Icons.check_circle_rounded
-                  : Icons.radio_button_unchecked,
+                  ? AppIcons.checkCircleRounded
+                  : AppIcons.radioButtonUnchecked,
               size: 20,
               color:
                   selected
@@ -4392,7 +4392,7 @@ class _MapFilterChip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  isActive ? Icons.filter_list : Icons.filter_list_outlined,
+                  AppIcons.filterList,
                   size: 18,
                   color: fg,
                 ),
