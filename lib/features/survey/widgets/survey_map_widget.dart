@@ -494,34 +494,57 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
   Widget _buildConsentPlaceholder(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.map_outlined,
-              size: 48,
-              color: theme.colorScheme.onSurface.withAlpha(100),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxHeight = constraints.maxHeight;
+        final tiny = maxHeight.isFinite && maxHeight < 80;
+        final compact = maxHeight.isFinite && maxHeight < 220;
+        final cramped = maxHeight.isFinite && maxHeight < 130;
+        final showIcon = !compact;
+        final showHint = !cramped;
+        final padding = tiny ? 4.0 : (compact ? 12.0 : 32.0);
+
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.all(padding),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (showIcon) ...[
+                  Icon(
+                    Icons.map_outlined,
+                    size: 48,
+                    color: theme.colorScheme.onSurface.withAlpha(100),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                if (tiny)
+                  IconButton.filled(
+                    onPressed: _requestConsent,
+                    tooltip: l10n.mapLoadButton,
+                    icon: const Icon(Icons.map),
+                  )
+                else
+                  FilledButton.icon(
+                    onPressed: _requestConsent,
+                    icon: const Icon(Icons.map),
+                    label: Text(l10n.mapLoadButton),
+                  ),
+                if (showHint) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.mapLoadHint,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(120),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: _requestConsent,
-              icon: const Icon(Icons.map),
-              label: Text(l10n.mapLoadButton),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.mapLoadHint,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withAlpha(120),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

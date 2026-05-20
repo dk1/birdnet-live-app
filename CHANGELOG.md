@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Allowing OpenStreetMap map tiles now also enables place-name lookup automatically, while keeping the place-name lookup setting separately revocable from Settings.
 
+### Fixed
+
+- Prevented the Survey map consent placeholder from overflowing in short embedded map previews by switching to a compact layout when space is limited.
+
 ## [0.14.9] - 2026-05-20
 
 ### Fixed
