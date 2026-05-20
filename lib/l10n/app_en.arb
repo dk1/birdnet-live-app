@@ -3029,6 +3029,37 @@
   "@fileAnalysisModelError": {
     "description": "Fallback error shown when file analysis model loading fails"
   },
+  "fileAnalysisDecodedSize": "Decoded audio",
+  "@fileAnalysisDecodedSize": {
+    "description": "Metadata row label for estimated decoded PCM size"
+  },
+  "fileAnalysisLargeFileTitle": "Large audio file",
+  "@fileAnalysisLargeFileTitle": {
+    "description": "Warning title shown when selected audio expands to a large decoded PCM buffer"
+  },
+  "fileAnalysisLargeFileBody": "This file expands to about {size} of decoded audio. Analysis uses windowed reads where possible, but review may limit the spectrogram on memory-constrained devices.",
+  "@fileAnalysisLargeFileBody": {
+    "description": "Warning body shown when selected audio has a large decoded PCM footprint",
+    "placeholders": {
+      "size": { "type": "String" }
+    }
+  },
+  "sessionReviewAudioShortTitle": "Audio is shorter than the session",
+  "@sessionReviewAudioShortTitle": {
+    "description": "Warning title shown when recording duration is shorter than session events"
+  },
+  "sessionReviewAudioShortBody": "The recording ends before the latest session event. Playback and exports may stop early, but detections remain available.",
+  "@sessionReviewAudioShortBody": {
+    "description": "Warning body shown when recording duration is shorter than session events"
+  },
+  "sessionReviewSpectrogramLimitedTitle": "",
+  "@sessionReviewSpectrogramLimitedTitle": {
+    "description": "Warning title shown when the review spectrogram is downsampled for memory (empty to keep the warning to a single sentence)"
+  },
+  "sessionReviewSpectrogramLimitedBody": "Spectrogram detail loads as you play, pan, or zoom.",
+  "@sessionReviewSpectrogramLimitedBody": {
+    "description": "Warning body shown when the review spectrogram is downsampled for memory"
+  },
   "speciesChartLoadFailed": "Failed to load chart",
   "@speciesChartLoadFailed": {
     "description": "Shown when the seasonal species chart fails to load"
