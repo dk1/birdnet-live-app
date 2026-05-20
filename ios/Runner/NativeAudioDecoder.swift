@@ -19,6 +19,32 @@ import Foundation
 ///   - "totalSamples": Int — number of mono samples
 enum NativeAudioDecoder {
 
+    static func inspect(path: String) throws -> [String: Any] {
+        let url = URL(fileURLWithPath: path)
+
+        guard FileManager.default.fileExists(atPath: path) else {
+            throw DecoderError.fileNotFound(path)
+        }
+
+        let asset = AVURLAsset(url: url)
+
+        guard let track = asset.tracks(withMediaType: .audio).first else {
+            throw DecoderError.noAudioTrack(path)
+        }
+
+        let sampleRate = sampleRateFromTrack(track)
+        let durationSeconds = CMTimeGetSeconds(asset.duration)
+        let totalSamples =
+            (durationSeconds.isFinite && durationSeconds > 0)
+            ? Int(durationSeconds * Double(sampleRate))
+            : 0
+
+        return [
+            "sampleRate": sampleRate,
+            "totalSamples": totalSamples,
+        ]
+    }
+
     static func decode(path: String) throws -> [String: Any] {
         let url = URL(fileURLWithPath: path)
 
@@ -51,6 +77,11 @@ enum NativeAudioDecoder {
         guard reader.startReading() else {
             let msg = reader.error?.localizedDescription ?? "Unknown error"
             throw DecoderError.readerFailed(msg)
+        }
+        defer {
+            if reader.status != .completed && reader.status != .cancelled {
+                reader.cancelReading()
+            }
         }
 
         // Read all sample buffers.

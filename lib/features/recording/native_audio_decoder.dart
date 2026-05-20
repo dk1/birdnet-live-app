@@ -31,14 +31,32 @@ class NativeAudioDecoder {
 
   static const _channel = MethodChannel('com.birdnet/audio_decoder');
 
+  /// Inspect [path] via the platform audio stack without decoding full PCM.
+  static Future<AudioMetadata> inspectFile(String path, String format) async {
+    final result = await _channel.invokeMapMethod<String, dynamic>('inspect', {
+      'path': path,
+    });
+
+    if (result == null) {
+      throw const FormatException('Native audio inspector returned null');
+    }
+
+    final sampleRate = result['sampleRate'] as int;
+    final totalSamples = result['totalSamples'] as int;
+    return AudioMetadata(
+      sampleRate: sampleRate,
+      totalSamples: totalSamples,
+      format: format,
+    );
+  }
+
   /// Decode [path] to mono 16-bit PCM via the platform channel.
   ///
   /// Throws [PlatformException] if the native decoder fails.
   static Future<DecodedAudio> decodeFile(String path) async {
-    final result = await _channel.invokeMapMethod<String, dynamic>(
-      'decode',
-      {'path': path},
-    );
+    final result = await _channel.invokeMapMethod<String, dynamic>('decode', {
+      'path': path,
+    });
 
     if (result == null) {
       throw const FormatException('Native audio decoder returned null');
@@ -55,9 +73,6 @@ class NativeAudioDecoder {
       samples[i] = bd.getInt16(i * 2, Endian.little);
     }
 
-    return DecodedAudio(
-      samples: samples,
-      sampleRate: sampleRate,
-    );
+    return DecodedAudio(samples: samples, sampleRate: sampleRate);
   }
 }
