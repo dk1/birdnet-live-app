@@ -30,7 +30,6 @@ abstract final class AppIcons {
   static const IconData bluetoothAudio = Symbols.bluetooth_audio;
   static const IconData bookmarkAddedOutlined = Symbols.bookmark_added;
   static const IconData calendarToday = Symbols.calendar_today;
-  static const IconData calendarTodayOutlined = Symbols.calendar_today;
   static const IconData calendarTodayRounded = Symbols.calendar_today_rounded;
   static const IconData campaignOutlined = Symbols.campaign;
   static const IconData categoryOutlined = Symbols.category;
