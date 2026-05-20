@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - 2026-05-20
+
+### Changed
+
+- Hid the offline map download setting while the app uses public OpenStreetMap tiles, centralized a contactable BirdNET Live user agent for map tile, place-name, and weather requests, and extended interactive map tile caching to six months with a 6000-tile storage cap.
+
 ## [0.14.12] - 2026-05-20
 
 ### Changed
