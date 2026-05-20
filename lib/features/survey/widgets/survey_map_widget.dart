@@ -13,6 +13,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -318,8 +319,26 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           width: 28,
           height: 28,
           child: Icon(
-            Icons.flag_rounded,
+            AppIcons.flagFilled,
             color: AppSemanticColors.of(context).success,
+            size: 28,
+          ),
+        ),
+      );
+    }
+
+    // Add end (flag) marker when reviewing a completed survey track. During
+    // live tracking the last point is represented by the current-position
+    // marker below instead.
+    if (widget.fitAllPoints && trackPoints.length >= 2) {
+      auxMarkers.add(
+        Marker(
+          point: trackPoints.last,
+          width: 28,
+          height: 28,
+          child: Icon(
+            AppIcons.flagFilled,
+            color: theme.colorScheme.error,
             size: 28,
           ),
         ),
@@ -339,7 +358,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
             width: 28,
             height: 28,
             child: Icon(
-              Icons.person_pin_circle_rounded,
+              AppIcons.personPinCircleRounded,
               color: theme.colorScheme.primary,
               size: 28,
             ),
@@ -512,7 +531,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
               children: [
                 if (showIcon) ...[
                   Icon(
-                    Icons.map_outlined,
+                    AppIcons.map,
                     size: 48,
                     color: theme.colorScheme.onSurface.withAlpha(100),
                   ),
@@ -522,12 +541,12 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
                   IconButton.filled(
                     onPressed: _requestConsent,
                     tooltip: l10n.mapLoadButton,
-                    icon: const Icon(Icons.map),
+                    icon: const Icon(AppIcons.map),
                   )
                 else
                   FilledButton.icon(
                     onPressed: _requestConsent,
-                    icon: const Icon(Icons.map),
+                    icon: const Icon(AppIcons.map),
                     label: Text(l10n.mapLoadButton),
                   ),
                 if (showHint) ...[
@@ -690,7 +709,7 @@ class _SpeciesMarker extends ConsumerWidget {
           (a, b, c) => Container(
             color: borderColor.withAlpha(60),
             child: Icon(
-              Icons.music_note,
+              AppIcons.brokenImage,
               size: size * 0.45,
               color: borderColor,
             ),
@@ -777,7 +796,7 @@ class _SpeciesMarker extends ConsumerWidget {
                   ],
                 ),
                 child: Icon(
-                  Icons.play_arrow_rounded,
+                  AppIcons.playArrowRounded,
                   size: badgeSize * 0.85,
                   color: theme.colorScheme.onPrimary,
                 ),
@@ -836,7 +855,7 @@ class _SpeciesMarker extends ConsumerWidget {
                 ],
               ),
               child: Icon(
-                Icons.check_rounded,
+                AppIcons.checkRounded,
                 size: badgeSize * 0.85,
                 color: semanticColors.onSuccess,
               ),

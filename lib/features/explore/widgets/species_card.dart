@@ -14,6 +14,7 @@
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 
+import '../../../shared/utils/app_icons.dart';
 import '../../inference/geo_model.dart';
 import '../explore_providers.dart';
 
@@ -408,7 +409,7 @@ class _DetectedBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(Icons.check, size: 12, color: theme.colorScheme.onPrimary),
+      child: Icon(AppIcons.check, size: 12, color: theme.colorScheme.onPrimary),
     );
   }
 }

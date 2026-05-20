@@ -26,6 +26,7 @@ import '../../core/services/reverse_geocoding_service.dart';
 import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/link_launcher.dart';
+import '../../shared/utils/app_icons.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/empty_view.dart';
@@ -257,7 +258,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             icon: Stack(
               clipBehavior: Clip.none,
               children: [
-                const Icon(Icons.filter_list_outlined),
+                const Icon(AppIcons.filterList),
                 if (_filterActive)
                   Positioned(
                     right: -2,
@@ -278,7 +279,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           ),
           // Search toggle.
           IconButton(
-            icon: Icon(_searchVisible ? Icons.close : Icons.search),
+            icon: Icon(_searchVisible ? AppIcons.close : AppIcons.search),
             tooltip:
                 _searchVisible
                     ? l10n.tooltipClearSearch
@@ -289,7 +290,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           // location header next to the location indicator since that's
           // what it actually re-queries).
           IconButton(
-            icon: const Icon(Icons.help_outline_rounded),
+            icon: const Icon(AppIcons.helpOutlineRounded),
             tooltip: l10n.exploreHelpTitle,
             onPressed: _showHelp,
           ),
@@ -327,7 +328,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               textInputAction: TextInputAction.search,
                               decoration: InputDecoration(
                                 hintText: l10n.exploreSearchHint,
-                                prefixIcon: const Icon(Icons.search, size: 20),
+                                prefixIcon: const Icon(AppIcons.search, size: 20),
                                 isDense: true,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -340,7 +341,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                     _query.isNotEmpty
                                         ? IconButton(
                                           icon: const Icon(
-                                            Icons.clear,
+                                            AppIcons.clear,
                                             size: 20,
                                           ),
                                           tooltip: l10n.tooltipClearSearch,
@@ -543,7 +544,7 @@ class _GeoList extends ConsumerWidget {
 
     if (filtered.isEmpty) {
       return EmptyView(
-        icon: locationAvailable ? Icons.search_off : Icons.location_off,
+        icon: locationAvailable ? AppIcons.searchOff : AppIcons.locationOff,
         title:
             locationAvailable ? l10n.exploreNoSpecies : l10n.exploreNoLocation,
       );
@@ -720,7 +721,7 @@ class _SearchResults extends ConsumerWidget {
       items.add(
         _ListEntry.header(
           l10n.exploreSectionAtLocation(atLocation.length),
-          Icons.location_on,
+          AppIcons.locationOn,
         ),
       );
       items.addAll(atLocation.map(_ListEntry.hit));
@@ -729,7 +730,7 @@ class _SearchResults extends ConsumerWidget {
       items.add(
         _ListEntry.header(
           l10n.exploreSectionElsewhere(elsewhere.length),
-          Icons.public,
+          AppIcons.public,
         ),
       );
       items.addAll(elsewhere.map(_ListEntry.hit));
@@ -909,7 +910,7 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
           Row(
             children: [
               Icon(
-                Icons.location_on,
+                AppIcons.locationOn,
                 size: 18,
                 color: theme.colorScheme.primary,
               ),
@@ -942,7 +943,7 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
               IconButton(
                 onPressed: widget.onRefresh,
                 icon: Icon(
-                  Icons.refresh,
+                  AppIcons.refresh,
                   size: 22,
                   color: theme.colorScheme.onSurface.withAlpha(160),
                 ),
@@ -971,13 +972,13 @@ class _ExploreHelpSheet extends StatelessWidget {
       title: l10n.exploreHelpTitle,
       initialChildSize: 0.62,
       sections: [
-        AppHelpSection(icon: Icons.info_outline, body: l10n.exploreHelpBody),
-        AppHelpSection(icon: Icons.refresh, body: l10n.exploreHelpRefresh),
+        AppHelpSection(icon: AppIcons.infoOutline, body: l10n.exploreHelpBody),
+        AppHelpSection(icon: AppIcons.refresh, body: l10n.exploreHelpRefresh),
         AppHelpSection(
-          icon: Icons.help_outline_rounded,
+          icon: AppIcons.helpOutlineRounded,
           body: l10n.exploreHelpLocation,
         ),
-        AppHelpSection(icon: Icons.search_rounded, body: l10n.exploreHelpCards),
+        AppHelpSection(icon: AppIcons.searchRounded, body: l10n.exploreHelpCards),
       ],
       footer: _ExploreHelpLink(label: l10n.exploreHelpLearnMore),
     );
@@ -1001,7 +1002,7 @@ class _ExploreHelpLink extends StatelessWidget {
           ),
       child: Row(
         children: [
-          Icon(Icons.open_in_new, size: 18, color: theme.colorScheme.primary),
+          Icon(AppIcons.openInNew, size: 18, color: theme.colorScheme.primary),
           const SizedBox(width: 8),
           Flexible(
             child: Text(

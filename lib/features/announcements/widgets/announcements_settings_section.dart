@@ -29,6 +29,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/utils/app_icons.dart';
 import '../announcements_providers.dart';
 import '../domain/announcement_presets.dart';
 import '../platform/tts_engine.dart';
@@ -370,7 +371,7 @@ class _PreviewAndWizardRow extends ConsumerWidget {
         runSpacing: 8,
         children: [
           OutlinedButton.icon(
-            icon: const Icon(Icons.volume_up_outlined),
+            icon: const Icon(AppIcons.volumeUpOutlined),
             label: Text(l10n.settingsAnnouncementsPreview),
             onPressed: () => _speakPreview(ref, l10n),
           ),

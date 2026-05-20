@@ -16,6 +16,7 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../../core/theme/app_semantic_colors.dart';
 import '../../core/theme/app_theme.dart';
@@ -42,13 +43,13 @@ class SessionTypePalette {
 IconData sessionTypeIcon(SessionType type) {
   switch (type) {
     case SessionType.live:
-      return Icons.mic_rounded;
+      return AppIcons.micRounded;
     case SessionType.pointCount:
-      return Icons.location_on_rounded;
+      return AppIcons.locationOnRounded;
     case SessionType.survey:
-      return Icons.route_rounded;
+      return AppIcons.routeRounded;
     case SessionType.fileUpload:
-      return Icons.audio_file_rounded;
+      return AppIcons.audioFileRounded;
   }
 }
 

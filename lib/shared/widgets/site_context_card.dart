@@ -30,6 +30,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../../core/services/reverse_geocoding_service.dart';
 import '../../l10n/app_localizations.dart';
@@ -182,7 +183,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
     if (_locationName != null) {
       rows.add(
         _ContextRow(
-          icon: Icons.location_on_outlined,
+          icon: AppIcons.locationOn,
           child: Text(
             _locationName!,
             style: theme.textTheme.bodyMedium,
@@ -194,7 +195,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
     } else if (!allowReverseGeo) {
       rows.add(
         _ConsentPromptRow(
-          icon: Icons.location_on_outlined,
+          icon: AppIcons.locationOn,
           label: l10n.settingsPrivacyAllowReverseGeocoding,
           onTap: _enableLocationConsent,
         ),
@@ -223,7 +224,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
     } else if (!allowWeather) {
       rows.add(
         _ConsentPromptRow(
-          icon: Icons.cloud_outlined,
+          icon: AppIcons.cloud,
           label: l10n.settingsPrivacyAllowWeather,
           onTap: _enableWeatherConsent,
         ),
@@ -238,7 +239,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
       rows.add(
         Row(
           children: [
-            Icon(Icons.cloud_off_outlined, size: 16, color: onSurfaceVariant),
+            Icon(AppIcons.cloudOff, size: 16, color: onSurfaceVariant),
             const SizedBox(width: 8),
             Expanded(
               child: Text(

@@ -31,7 +31,6 @@ import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,6 +44,7 @@ import '../../shared/widgets/confirm_destructive.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/stat_chip.dart';
 import '../../shared/widgets/wizard_scaffold.dart';
+import '../../shared/utils/app_icons.dart';
 import '../explore/explore_providers.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
@@ -102,15 +102,15 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
             title: l10n.fileAnalysisHelpTitle,
             sections: [
               AppHelpSection(
-                icon: Icons.audio_file_rounded,
+                icon: AppIcons.audioFileRounded,
                 body: l10n.fileAnalysisHelpSteps,
               ),
               AppHelpSection(
-                icon: Icons.location_on_rounded,
+                icon: AppIcons.locationOnRounded,
                 body: l10n.fileAnalysisHelpLocation,
               ),
               AppHelpSection(
-                icon: Icons.play_arrow_rounded,
+                icon: AppIcons.playArrowRounded,
                 body: l10n.fileAnalysisHelpAnalyze,
               ),
             ],
@@ -403,19 +403,19 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
         leading:
             isAnalyzing
                 ? IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(AppIcons.close),
                   tooltip: l10n.tooltipCancelAnalysis,
                   onPressed: _confirmCancel,
                 )
                 : null,
         actions: [
           IconButton(
-            icon: const Icon(Icons.help_outline_rounded, size: 20),
+            icon: const Icon(AppIcons.helpOutlineRounded, size: 20),
             onPressed: _showHelp,
             tooltip: l10n.fileAnalysisHelpTitle,
           ),
           IconButton(
-            icon: const Icon(Icons.tune_rounded, size: 20),
+            icon: const Icon(AppIcons.tuneRounded, size: 20),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -438,7 +438,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
         backLabel: l10n.fileAnalysisBack,
         nextLabel:
             _currentStep == 3 ? l10n.fileAnalysisStart : l10n.fileAnalysisNext,
-        nextIcon: _currentStep == 3 ? Icons.play_arrow : null,
+        nextIcon: _currentStep == 3 ? AppIcons.playArrow : null,
         child: PageView(
           controller: _pageController,
           physics: const NeverScrollableScrollPhysics(),
@@ -549,7 +549,7 @@ class _FileStep extends StatelessWidget {
           // ── Pick button ──────────────────────────────────────
           FilledButton.icon(
             onPressed: isInspecting ? null : onPickFile,
-            icon: const Icon(Icons.audio_file_rounded),
+            icon: const Icon(AppIcons.audioFileRounded),
             label: Text(
               fileInfo == null
                   ? l10n.fileAnalysisPickButton
@@ -581,7 +581,7 @@ class _FileStep extends StatelessWidget {
                     Row(
                       children: [
                         Icon(
-                          Icons.audio_file_rounded,
+                          AppIcons.audioFileRounded,
                           color: theme.colorScheme.primary,
                         ),
                         const SizedBox(width: 12),
@@ -598,27 +598,27 @@ class _FileStep extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     _MetadataRow(
-                      icon: Icons.straighten,
+                      icon: AppIcons.straighten,
                       label: l10n.fileAnalysisFormat,
                       value: fileInfo!.format,
                     ),
                     _MetadataRow(
-                      icon: Icons.timer_outlined,
+                      icon: AppIcons.timerOutlined,
                       label: l10n.fileAnalysisDuration,
                       value: fileInfo!.durationText,
                     ),
                     _MetadataRow(
-                      icon: Icons.storage,
+                      icon: AppIcons.storage,
                       label: l10n.fileAnalysisSize,
                       value: fileInfo!.fileSizeText,
                     ),
                     _MetadataRow(
-                      icon: Icons.graphic_eq,
+                      icon: AppIcons.graphicEq,
                       label: l10n.fileAnalysisSampleRate,
                       value: '${fileInfo!.sampleRate} Hz',
                     ),
                     _MetadataRow(
-                      icon: Icons.memory,
+                      icon: AppIcons.memory,
                       label: l10n.fileAnalysisDecodedSize,
                       value: fileInfo!.decodedSizeText,
                     ),
@@ -653,7 +653,7 @@ class _LargeAudioWarning extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.memory, color: theme.colorScheme.onTertiaryContainer),
+            Icon(AppIcons.memory, color: theme.colorScheme.onTertiaryContainer),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -783,17 +783,17 @@ class _LocationStep extends StatelessWidget {
             segments: [
               ButtonSegment(
                 value: _LocationChoice.gps,
-                icon: const Icon(Icons.my_location, size: 18),
+                icon: const Icon(AppIcons.myLocation, size: 18),
                 label: Text(l10n.fileAnalysisLocationGps),
               ),
               ButtonSegment(
                 value: _LocationChoice.manual,
-                icon: const Icon(Icons.edit_location_alt, size: 18),
+                icon: const Icon(AppIcons.editLocationAlt, size: 18),
                 label: Text(l10n.fileAnalysisLocationManual),
               ),
               ButtonSegment(
                 value: _LocationChoice.skip,
-                icon: const Icon(Icons.location_off, size: 18),
+                icon: const Icon(AppIcons.locationOff, size: 18),
                 label: Text(l10n.fileAnalysisLocationSkip),
               ),
             ],
@@ -835,7 +835,7 @@ class _LocationStep extends StatelessWidget {
               const SizedBox(height: 8),
               TextButton.icon(
                 onPressed: onFetchGps,
-                icon: const Icon(Icons.refresh, size: 18),
+                icon: const Icon(AppIcons.refresh, size: 18),
                 label: Text(l10n.fileAnalysisLocationRefresh),
               ),
             ],
@@ -895,7 +895,7 @@ class _LocationStep extends StatelessWidget {
                   onMapPick(result.latitude, result.longitude);
                 }
               },
-              icon: const Icon(Icons.map, size: 18),
+              icon: const Icon(AppIcons.map, size: 18),
               label: Text(l10n.fileAnalysisPickOnMap),
             ),
           ],
@@ -957,7 +957,7 @@ class _DatePickerTile extends StatelessWidget {
               );
               if (picked != null) onDateChanged(picked);
             },
-            icon: const Icon(Icons.calendar_today, size: 18),
+            icon: const Icon(AppIcons.calendarToday, size: 18),
             label: Text(label),
           ),
         ),
@@ -965,7 +965,7 @@ class _DatePickerTile extends StatelessWidget {
           const SizedBox(width: 8),
           IconButton(
             onPressed: () => onDateChanged(null),
-            icon: const Icon(Icons.clear, size: 18),
+            icon: const Icon(AppIcons.clear, size: 18),
             tooltip: l10n.fileAnalysisDateClear,
           ),
         ],
@@ -1364,7 +1364,7 @@ class _AnalysisStepState extends State<_AnalysisStep> {
               children: [
                 Expanded(
                   child: StatChip(
-                    icon: Icons.bar_chart,
+                    icon: AppIcons.detections,
                     label: l10n.fileAnalysisDetections,
                     value: '${progress.detectionsFound}',
                     variant: StatChipVariant.card,
@@ -1373,7 +1373,7 @@ class _AnalysisStepState extends State<_AnalysisStep> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: StatChip(
-                    icon: MdiIcons.feather,
+                    icon: AppIcons.species,
                     label: l10n.fileAnalysisSpecies,
                     value: '${progress.speciesFound}',
                     variant: StatChipVariant.card,
@@ -1386,7 +1386,7 @@ class _AnalysisStepState extends State<_AnalysisStep> {
             // ── Cancel button ─────────────────────────────────
             OutlinedButton.icon(
               onPressed: onCancel,
-              icon: const Icon(Icons.stop),
+              icon: const Icon(AppIcons.stop),
               label: Text(l10n.cancel),
             ),
           ],
@@ -1402,7 +1402,7 @@ class _AnalysisStepState extends State<_AnalysisStep> {
                     Row(
                       children: [
                         Icon(
-                          Icons.error_outline,
+                          AppIcons.errorOutline,
                           color: theme.colorScheme.onErrorContainer,
                         ),
                         const SizedBox(width: 8),
