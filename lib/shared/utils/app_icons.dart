@@ -57,7 +57,7 @@ abstract final class AppIcons {
   static const IconData edit = Symbols.edit;
   static const IconData editLocationAlt = Symbols.edit_location_alt;
   static const IconData editNote = Symbols.edit_note;
-  static const IconData errorOutline = Symbols.error;
+  static const IconData errorOutline = Symbols.error_outline;
   static const IconData errorOutlineRounded = Symbols.error_outline_rounded;
   static const IconData expandLess = Symbols.expand_less;
   static const IconData expandMore = Symbols.expand_more;
