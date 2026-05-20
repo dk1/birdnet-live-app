@@ -274,7 +274,7 @@
   "sessionCardPointCountNum": "Point Count #{number}",
   "sessionCardSurveyNum": "Survey-Session #{number}",
   "mapTileConsentTitle": "Kartenkacheln",
-  "mapTileConsentBody": "Das Laden der Karte verbindet sich mit OpenStreetMap-Tile-Servern. Ihre IP-Adresse und ungefähre Position werden für den Tile-Server sichtbar.\n\nMöchten Sie Kartenkacheln laden?",
+  "mapTileConsentBody": "Das Laden der Karte verbindet sich mit OpenStreetMap-Tile-Servern. Ihre IP-Adresse und ungefähre Position werden für den Tile-Server sichtbar. Dies aktiviert auch die Ortsnamenssuche, die Sie in den Einstellungen separat wieder ausschalten können.\n\nMöchten Sie Kartenkacheln laden?",
   "mapTileConsentCancel": "Abbrechen",
   "mapTileConsentAllow": "Erlauben",
   "mapLoadButton": "Karte laden",

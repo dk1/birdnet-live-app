@@ -258,7 +258,7 @@
   "sessionCardPointCountNum": "Point Count #{number}",
   "sessionCardSurveyNum": "Sessão de Survey #{number}",
   "mapTileConsentTitle": "Blocos do mapa",
-  "mapTileConsentBody": "Carregar o mapa conecta-se aos servidores de blocos do OpenStreetMap. Seu endereço IP e localização aproximada serão visíveis para o servidor de blocos.\n\nDeseja carregar os blocos do mapa?",
+  "mapTileConsentBody": "Carregar o mapa conecta-se aos servidores de blocos do OpenStreetMap. Seu endereço IP e localização aproximada serão visíveis para o servidor de blocos. Isso também ativa a busca por nomes de lugares, que você pode desativar separadamente nas Configurações.\n\nDeseja carregar os blocos do mapa?",
   "mapTileConsentCancel": "Cancelar",
   "mapTileConsentAllow": "Permitir",
   "mapLoadButton": "Carregar mapa",

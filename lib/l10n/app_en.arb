@@ -1149,7 +1149,7 @@
   "@mapTileConsentTitle": {
     "description": "Title for the map tile consent dialog"
   },
-  "mapTileConsentBody": "Loading the map connects to OpenStreetMap tile servers. Your IP address and approximate location will be visible to the tile server.\n\nDo you agree to load map tiles?",
+  "mapTileConsentBody": "Loading the map connects to OpenStreetMap tile servers. Your IP address and approximate location will be visible to the tile server. This also enables place-name lookup, which you can turn off separately in Settings.\n\nDo you agree to load map tiles?",
   "@mapTileConsentBody": {
     "description": "Body text for the map tile consent dialog"
   },

@@ -258,7 +258,7 @@
   "sessionCardPointCountNum": "Point Count #{number}",
   "sessionCardSurveyNum": "Sessione Survey #{number}",
   "mapTileConsentTitle": "Riquadri mappa",
-  "mapTileConsentBody": "Il caricamento della mappa si connette ai server di riquadri di OpenStreetMap. Il tuo indirizzo IP e la posizione approssimativa saranno visibili al server dei riquadri.\n\nVuoi caricare i riquadri della mappa?",
+  "mapTileConsentBody": "Il caricamento della mappa si connette ai server di riquadri di OpenStreetMap. Il tuo indirizzo IP e la posizione approssimativa saranno visibili al server dei riquadri. Questo attiva anche la ricerca del nome del luogo, che puoi disattivare separatamente nelle Impostazioni.\n\nVuoi caricare i riquadri della mappa?",
   "mapTileConsentCancel": "Annulla",
   "mapTileConsentAllow": "Consenti",
   "mapLoadButton": "Carica mappa",

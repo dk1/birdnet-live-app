@@ -258,7 +258,7 @@
   "sessionCardPointCountNum": "Point Count #{number}",
   "sessionCardSurveyNum": "Survey relace #{number}",
   "mapTileConsentTitle": "Mapové dlaždice",
-  "mapTileConsentBody": "Načtení mapy se připojí k serverům dlaždic OpenStreetMap. Vaše IP adresa a přibližná poloha budou viditelné pro server dlaždic.\n\nChcete načíst mapové dlaždice?",
+  "mapTileConsentBody": "Načtení mapy se připojí k serverům dlaždic OpenStreetMap. Vaše IP adresa a přibližná poloha budou viditelné pro server dlaždic. Tím se také zapne vyhledávání názvů míst, které můžete v Nastavení samostatně vypnout.\n\nChcete načíst mapové dlaždice?",
   "mapTileConsentCancel": "Zrušit",
   "mapTileConsentAllow": "Povolit",
   "mapLoadButton": "Načíst mapu",

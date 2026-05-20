@@ -258,7 +258,7 @@
   "sessionCardPointCountNum": "Point d'écoute n°{number}",
   "sessionCardSurveyNum": "Session de relevé n°{number}",
   "mapTileConsentTitle": "Tuiles cartographiques",
-  "mapTileConsentBody": "Le chargement de la carte se connecte aux serveurs de tuiles OpenStreetMap. Votre adresse IP et votre position approximative seront visibles par le serveur de tuiles.\n\nSouhaitez-vous charger les tuiles cartographiques ?",
+  "mapTileConsentBody": "Le chargement de la carte se connecte aux serveurs de tuiles OpenStreetMap. Votre adresse IP et votre position approximative seront visibles par le serveur de tuiles. Cela active aussi la recherche de nom de lieu, que vous pouvez désactiver séparément dans les paramètres.\n\nSouhaitez-vous charger les tuiles cartographiques ?",
   "mapTileConsentCancel": "Annuler",
   "mapTileConsentAllow": "Autoriser",
   "mapLoadButton": "Charger la carte",
