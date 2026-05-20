@@ -103,7 +103,7 @@ class SpeciesAlertNotifier {
       'ic_notification',
     );
     const initSettings = InitializationSettings(android: initSettingsAndroid);
-    await _plugin.initialize(initSettings);
+    await _plugin.initialize(settings: initSettings);
 
     if (Platform.isAndroid) {
       final android = _plugin.resolvePlatformSpecificImplementation<
@@ -147,7 +147,7 @@ class SpeciesAlertNotifier {
         'ic_notification',
       );
       await _plugin.initialize(
-        const InitializationSettings(android: initSettingsAndroid),
+        settings: const InitializationSettings(android: initSettingsAndroid),
       );
     }
     final android = _plugin.resolvePlatformSpecificImplementation<
@@ -232,7 +232,12 @@ class SpeciesAlertNotifier {
     );
     final details = NotificationDetails(android: androidDetails);
     try {
-      await _plugin.show(_nextId++, title, body, details);
+      await _plugin.show(
+        id: _nextId++,
+        title: title,
+        body: body,
+        notificationDetails: details,
+      );
     } catch (e) {
       // Notification permission denied or platform unavailable — never let
       // this take down the survey.

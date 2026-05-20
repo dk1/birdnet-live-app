@@ -424,13 +424,13 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final showSciNames = ref.watch(showSciNamesProvider);
     final imagePath =
-        taxonomyAsync.valueOrNull?.assetImagePath(det.scientificName) ??
+        taxonomyAsync.value?.assetImagePath(det.scientificName) ??
         'assets/images/dummy_species.png';
     // Resolve the localized common name from the taxonomy when available;
     // fall back to whatever was stored on the record (English at detection
     // time) so legacy or unknown species still render something.
     final displayName =
-        taxonomyAsync.valueOrNull
+        taxonomyAsync.value
             ?.lookup(det.scientificName)
             ?.commonNameForLocale(speciesLocale) ??
         det.commonName;
@@ -477,7 +477,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                         imagePath,
                         fit: BoxFit.cover,
                         errorBuilder:
-                            (_, __, ___) => Container(
+                            (a, b, c) => Container(
                               color: scoreColor.withAlpha(60),
                               child: Icon(Icons.music_note, color: scoreColor),
                             ),

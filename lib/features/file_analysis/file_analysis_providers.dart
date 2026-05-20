@@ -13,7 +13,9 @@
 // ```
 // =============================================================================
 
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import 'file_analysis_controller.dart';
 

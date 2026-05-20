@@ -372,8 +372,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             groups: _groups,
                             sortMode: _sortMode,
                             detectionFilter: _detectionFilter,
-                            locationAvailable:
-                                locationAsync.valueOrNull != null,
+                            locationAvailable: locationAsync.value != null,
                           )
                           : _SearchResults(
                             query: _query,
@@ -555,7 +554,7 @@ class _GeoList extends ConsumerWidget {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       itemCount: filtered.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 6),
+      separatorBuilder: (a, b) => const SizedBox(height: 6),
       itemBuilder: (context, index) {
         final s = filtered[index];
         return SpeciesCard(
@@ -603,8 +602,8 @@ class _SearchResults extends ConsumerWidget {
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final detected = ref.watch(detectedSpeciesSetProvider);
 
-    final taxonomy = taxonomyAsync.valueOrNull;
-    final audioLabels = audioLabelsAsync.valueOrNull;
+    final taxonomy = taxonomyAsync.value;
+    final audioLabels = audioLabelsAsync.value;
     if (taxonomy == null || audioLabels == null) {
       return const LoadingView();
     }
@@ -713,7 +712,7 @@ class _SearchResults extends ConsumerWidget {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       itemCount: items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 6),
+      separatorBuilder: (a, b) => const SizedBox(height: 6),
       itemBuilder: (context, index) {
         final entry = items[index];
         if (entry.isHeader) {
@@ -815,7 +814,7 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
   }
 
   Future<void> _tryGeocode() async {
-    final loc = ref.read(currentLocationProvider).valueOrNull;
+    final loc = ref.read(currentLocationProvider).value;
     if (loc == null || _geocoded) return;
     _geocoded = true;
     final name = await reverseGeocode(
@@ -879,7 +878,7 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
                         ),
                       ),
                   error:
-                      (_, __) => Text(
+                      (a, b) => Text(
                         l10n.exploreLocationError,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.error,

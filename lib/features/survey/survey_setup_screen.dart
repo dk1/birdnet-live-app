@@ -181,7 +181,8 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
   }
 
   void _scheduleGpsRetryOrStop() {
-    if (!mounted || _locationChoice != _LocationChoice.gps ||
+    if (!mounted ||
+        _locationChoice != _LocationChoice.gps ||
         _gpsAttempts >= _maxGpsAttempts) {
       if (mounted) setState(() => _gpsFetching = false);
       return;
@@ -752,7 +753,7 @@ class _ParametersStep extends ConsumerWidget {
                 ),
               ),
           error:
-              (_, __) => ListTile(
+              (a, b) => ListTile(
                 leading: const Icon(Icons.mic_rounded),
                 title: Text(l10n.surveyMicrophone),
                 trailing: const Text('—'),
@@ -1625,7 +1626,7 @@ class _CreateWatchlistScreenState
   }
 
   void _onSearchChanged(String query) {
-    final svc = ref.read(taxonomyServiceProvider).valueOrNull;
+    final svc = ref.read(taxonomyServiceProvider).value;
     if (svc == null) return;
     setState(() {
       _results = query.trim().isEmpty ? const [] : svc.search(query, limit: 60);
@@ -1666,7 +1667,7 @@ class _CreateWatchlistScreenState
         setState(() => _error = l10n.surveyAlertCreateListImportError);
         return;
       }
-      final svc = ref.read(taxonomyServiceProvider).valueOrNull;
+      final svc = ref.read(taxonomyServiceProvider).value;
       final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
       setState(() {
         _selected.addAll(names);

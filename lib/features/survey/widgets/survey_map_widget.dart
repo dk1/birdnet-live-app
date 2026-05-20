@@ -626,7 +626,7 @@ class _SpeciesMarker extends ConsumerWidget {
 
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
     final path =
-        taxonomyAsync.valueOrNull?.assetImagePath(scientificName) ??
+        taxonomyAsync.value?.assetImagePath(scientificName) ??
         'assets/images/dummy_species.png';
 
     // Silent markers are desaturated to grayscale so the user can tell at
@@ -664,7 +664,7 @@ class _SpeciesMarker extends ConsumerWidget {
       path,
       fit: BoxFit.cover,
       errorBuilder:
-          (_, __, ___) => Container(
+          (a, b, c) => Container(
             color: borderColor.withAlpha(60),
             child: Icon(
               Icons.music_note,

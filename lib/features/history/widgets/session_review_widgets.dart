@@ -1089,7 +1089,7 @@ class _SpeciesTile extends ConsumerWidget {
     final tsShowSeconds = ref.watch(timestampShowSecondsProvider);
 
     final displayName =
-        taxonomyAsync.valueOrNull
+        taxonomyAsync.value
             ?.lookup(group.scientificName)
             ?.commonNameForLocale(speciesLocale) ??
         group.commonName;
@@ -1220,13 +1220,13 @@ class _SpeciesTile extends ConsumerWidget {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(6),
                           child: Image.asset(
-                            taxonomyAsync.valueOrNull?.assetImagePath(
+                            taxonomyAsync.value?.assetImagePath(
                                   group.scientificName,
                                 ) ??
                                 'assets/images/dummy_species.png',
                             fit: BoxFit.cover,
                             errorBuilder:
-                                (_, __, ___) => Image.asset(
+                                (a, b, c) => Image.asset(
                                   'assets/images/dummy_species.png',
                                   fit: BoxFit.cover,
                                 ),
@@ -1889,9 +1889,9 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
   }
 
   void _onSearchChanged(String query) {
-    final svc = ref.read(taxonomyServiceProvider).valueOrNull;
+    final svc = ref.read(taxonomyServiceProvider).value;
     if (svc == null) return;
-    final geoScores = ref.read(geoScoresProvider).valueOrNull;
+    final geoScores = ref.read(geoScoresProvider).value;
     setState(() {
       if (query.trim().isEmpty) {
         _results = [];
@@ -2010,7 +2010,7 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
             _ReplaceTargetBanner(
               target: _replaceTarget!,
               speciesLocale: speciesLocale,
-              taxonomy: taxonomyAsync.valueOrNull,
+              taxonomy: taxonomyAsync.value,
             ),
 
           // ── Insert mode selector (add mode only) ──────────
@@ -2084,7 +2084,7 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
                     : ListView.separated(
                       itemCount: _results.length,
                       separatorBuilder:
-                          (_, __) =>
+                          (a, b) =>
                               Divider(height: 1, color: theme.dividerColor),
                       itemBuilder: (context, index) {
                         final sp = _results[index];
@@ -2144,7 +2144,7 @@ class _ReplaceTargetBanner extends ConsumerWidget {
               height: 56,
               fit: BoxFit.cover,
               errorBuilder:
-                  (_, __, ___) => Container(
+                  (a, b, c) => Container(
                     width: 56,
                     height: 56,
                     color: theme.colorScheme.surfaceContainerHigh,
@@ -2215,7 +2215,7 @@ class _SpeciesResultTile extends ConsumerWidget {
           height: 48,
           fit: BoxFit.cover,
           errorBuilder:
-              (_, __, ___) => Container(
+              (a, b, c) => Container(
                 width: 48,
                 height: 48,
                 color: theme.colorScheme.surfaceContainerHighest,

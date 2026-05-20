@@ -136,7 +136,7 @@ class DetectionTile extends ConsumerWidget {
 
     // Resolve localized common name, falling back to English inference name.
     final displayName =
-        taxonomyAsync.valueOrNull
+        taxonomyAsync.value
             ?.lookup(detection.scientificName)
             ?.commonNameForLocale(speciesLocale) ??
         detection.commonName;
@@ -321,13 +321,13 @@ class DetectionTile extends ConsumerWidget {
 
   Widget _buildSpeciesImage(AsyncValue<TaxonomyService> taxonomyAsync) {
     final path =
-        taxonomyAsync.valueOrNull?.assetImagePath(detection.scientificName) ??
+        taxonomyAsync.value?.assetImagePath(detection.scientificName) ??
         'assets/images/dummy_species.png';
     return Image.asset(
       path,
       fit: BoxFit.cover,
       errorBuilder:
-          (_, __, ___) =>
+          (a, b, c) =>
               Image.asset('assets/images/dummy_species.png', fit: BoxFit.cover),
     );
   }

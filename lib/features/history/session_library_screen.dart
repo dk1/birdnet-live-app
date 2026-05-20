@@ -688,7 +688,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
     final includeHtmlReport = ref.read(exportHtmlReportProvider);
-    final taxonomy = ref.read(taxonomyServiceProvider).valueOrNull;
+    final taxonomy = ref.read(taxonomyServiceProvider).value;
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     final useAbsoluteSurveyTime =
         ref.read(timestampDisplayModeProvider) == 'absolute';
@@ -707,7 +707,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       includeHtmlReport: includeHtmlReport,
     );
     if (exportPath == null) return;
-    await Share.shareXFiles([XFile(exportPath)]);
+    await SharePlus.instance.share(ShareParams(files: [XFile(exportPath)]));
   }
 
   /// Toggles whether a compact-view row is expanded to show the full
@@ -869,7 +869,7 @@ class _SessionTile extends ConsumerWidget {
                           effectiveSpeciesLocaleProvider,
                         );
                         final taxonomy =
-                            ref.watch(taxonomyServiceProvider).valueOrNull;
+                            ref.watch(taxonomyServiceProvider).value;
                         final displayName =
                             taxonomy
                                 ?.lookup(entry.key)
@@ -1044,7 +1044,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
-    final taxonomy = ref.watch(taxonomyServiceProvider).valueOrNull;
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
     final showSciNames = ref.watch(showSciNamesProvider);
 
     // Group: scientificName → set of sessions containing it.
@@ -1144,7 +1144,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
                         taxon.assetImagePath,
                         fit: BoxFit.cover,
                         errorBuilder:
-                            (_, __, ___) => ColoredBox(
+                            (a, b, c) => ColoredBox(
                               color: theme.colorScheme.surfaceContainerHighest,
                               child: Icon(
                                 MdiIcons.bird,

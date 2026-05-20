@@ -219,14 +219,14 @@ class _SpeciesImage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
     final path =
-        taxonomyAsync.valueOrNull?.assetImagePath(scientificName) ??
+        taxonomyAsync.value?.assetImagePath(scientificName) ??
         'assets/images/dummy_species.png';
 
     return Image.asset(
       path,
       fit: BoxFit.cover,
       errorBuilder:
-          (_, __, ___) =>
+          (a, b, c) =>
               Image.asset('assets/images/dummy_species.png', fit: BoxFit.cover),
     );
   }

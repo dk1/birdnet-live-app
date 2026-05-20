@@ -1289,7 +1289,7 @@ class _MicInputTile extends ConsumerWidget {
             ),
           ),
       error:
-          (_, __) => ListTile(
+          (a, b) => ListTile(
             title: Text(l10n.settingsMicrophone),
             trailing: Text(l10n.statusError),
           ),
@@ -1459,7 +1459,7 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final loc = ref.watch(currentLocationProvider).valueOrNull;
+    final loc = ref.watch(currentLocationProvider).value;
     final subtitle =
         _refreshing
             ? l10n.settingsGpsRefreshing
