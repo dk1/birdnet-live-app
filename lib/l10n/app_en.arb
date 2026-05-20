@@ -470,6 +470,14 @@
   "@exploreInfoNote": {
     "description": "Short note explaining what the explore species list shows"
   },
+  "explorePredictionSummary": "Geomodel species predictions for your location",
+  "@explorePredictionSummary": {
+    "description": "Short explore header summary explaining that the list is based on geomodel predictions at the current location"
+  },
+  "exploreTapHint": "Tap a species to learn more.",
+  "@exploreTapHint": {
+    "description": "Short explore header hint telling users that species cards are tappable"
+  },
   "exploreSearchHint": "Search species…",
   "@exploreSearchHint": {
     "description": "Hint text for the explore screen search field"
