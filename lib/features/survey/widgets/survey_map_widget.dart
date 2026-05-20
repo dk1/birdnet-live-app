@@ -513,7 +513,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
               children: [
                 if (showIcon) ...[
                   Icon(
-                    AppIcons.mapOutlined,
+                    AppIcons.map,
                     size: 48,
                     color: theme.colorScheme.onSurface.withAlpha(100),
                   ),
