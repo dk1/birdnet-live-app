@@ -24,6 +24,7 @@ import '../../explore/explore_providers.dart';
 import '../../history/widgets/detection_actions.dart';
 import '../live_session.dart';
 import 'live_tips.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Displays a scrollable list of species detections.
 ///
@@ -104,7 +105,7 @@ class DetectionList extends StatelessWidget {
       alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       color: theme.colorScheme.error.withAlpha(40),
-      child: Icon(Icons.delete_outline, color: theme.colorScheme.error),
+      child: Icon(AppIcons.deleteOutline, color: theme.colorScheme.error),
     );
   }
 }
@@ -187,7 +188,7 @@ class DetectionTile extends ConsumerWidget {
                           detection.source ==
                               DetectionSource.userSpecified) ...[
                         Icon(
-                          Icons.edit_note,
+                          AppIcons.editNote,
                           size: 14,
                           color: theme.colorScheme.primary,
                         ),
@@ -264,7 +265,7 @@ class DetectionTile extends ConsumerWidget {
               ..._trailingActions(context, theme, actions!)
             else
               Icon(
-                Icons.chevron_right,
+                AppIcons.chevronRight,
                 size: 20,
                 color: theme.colorScheme.onSurface.withAlpha(80),
               ),
@@ -294,8 +295,8 @@ class DetectionTile extends ConsumerWidget {
               padding: const EdgeInsets.all(8),
               child: Icon(
                 actions.isConfirmed
-                    ? Icons.check_circle
-                    : Icons.check_circle_outline,
+                    ? AppIcons.checkCircle
+                    : AppIcons.checkCircleOutline,
                 size: 24,
                 color:
                     actions.isConfirmed
@@ -360,7 +361,7 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isActive ? Icons.hearing : Icons.list_alt,
+              isActive ? AppIcons.hearing : AppIcons.listAlt,
               size: 40,
               color: theme.colorScheme.onSurface.withAlpha(77),
             ),
@@ -384,3 +385,4 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
+

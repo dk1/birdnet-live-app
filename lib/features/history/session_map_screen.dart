@@ -22,6 +22,7 @@ import 'package:latlong2/latlong.dart';
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/app_providers.dart';
 import '../../shared/widgets/open_street_map_tile_layer.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Map screen showing the recording location with a pin marker.
 ///
@@ -115,7 +116,7 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
               width: 40,
               height: 40,
               child: Icon(
-                Icons.location_on,
+                AppIcons.locationOn,
                 color: theme.colorScheme.error,
                 size: 40,
               ),
@@ -141,7 +142,7 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.map_outlined,
+              AppIcons.mapOutlined,
               size: 64,
               color: theme.colorScheme.onSurface.withAlpha(100),
             ),
@@ -154,7 +155,7 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _requestConsent,
-              icon: const Icon(Icons.map),
+              icon: const Icon(AppIcons.map),
               label: Text(l10n.mapLoadButton),
             ),
             const SizedBox(height: 8),
@@ -171,3 +172,4 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
     );
   }
 }
+

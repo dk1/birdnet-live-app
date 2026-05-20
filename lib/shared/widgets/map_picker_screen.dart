@@ -19,6 +19,7 @@ import 'package:latlong2/latlong.dart';
 import '../../core/constants/app_constants.dart';
 import '../providers/app_providers.dart';
 import 'open_street_map_tile_layer.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Full-screen map for picking a location by tapping.
 ///
@@ -122,7 +123,7 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
                 width: 40,
                 height: 40,
                 child: Icon(
-                  Icons.location_on,
+                  AppIcons.locationOn,
                   color: theme.colorScheme.error,
                   size: 40,
                 ),
@@ -147,14 +148,14 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.map_outlined,
+              AppIcons.mapOutlined,
               size: 64,
               color: theme.colorScheme.onSurface.withAlpha(100),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _requestConsent,
-              icon: const Icon(Icons.map),
+              icon: const Icon(AppIcons.map),
               label: Text(l10n.mapLoadButton),
             ),
             const SizedBox(height: 8),
@@ -171,3 +172,4 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
     );
   }
 }
+

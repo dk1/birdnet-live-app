@@ -40,6 +40,7 @@ import '../../spectrogram/color_maps.dart';
 import '../services/detection_sharing_service.dart';
 import 'voice_memo_overlay.dart';
 import 'detection_actions.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Show the modal player for a [detection]'s audio clip.
 ///
@@ -479,7 +480,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                         errorBuilder:
                             (a, b, c) => Container(
                               color: scoreColor.withAlpha(60),
-                              child: Icon(Icons.music_note, color: scoreColor),
+                              child: Icon(AppIcons.musicNote, color: scoreColor),
                             ),
                       ),
                     ),
@@ -614,7 +615,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                       : _spectrogramImage == null
                       ? Center(
                         child: Icon(
-                          Icons.graphic_eq,
+                          AppIcons.graphicEq,
                           color: Colors.white.withAlpha(80),
                           size: 32,
                         ),
@@ -664,14 +665,14 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                               (_) => cb(),
                             );
                           },
-                  icon: const Icon(Icons.skip_previous_rounded),
+                  icon: const Icon(AppIcons.skipPreviousRounded),
                 ),
                 IconButton.filled(
                   iconSize: 28,
                   onPressed:
                       () => _isPlaying ? _player.pause() : _player.play(),
                   icon: Icon(
-                    _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    _isPlaying ? AppIcons.pauseRounded : AppIcons.playArrowRounded,
                   ),
                 ),
                 IconButton(
@@ -687,7 +688,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                               (_) => cb(),
                             );
                           },
-                  icon: const Icon(Icons.skip_next_rounded),
+                  icon: const Icon(AppIcons.skipNextRounded),
                 ),
                 const SizedBox(width: 8),
                 Text(_fmt(_position), style: theme.textTheme.labelSmall),
@@ -720,7 +721,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
               children: [
                 TextButton.icon(
                   onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(AppIcons.close),
                   label: Text(AppLocalizations.of(context)!.tooltipClose),
                 ),
               ],
@@ -791,7 +792,7 @@ class _ConfirmToggle extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Icon(
-            confirmed ? Icons.check_circle : Icons.check_circle_outline,
+            confirmed ? AppIcons.checkCircle : AppIcons.checkCircleOutline,
             size: 28,
             color:
                 confirmed
@@ -803,3 +804,4 @@ class _ConfirmToggle extends StatelessWidget {
     );
   }
 }
+

@@ -42,6 +42,7 @@ import 'species_alert_notifier.dart';
 import 'survey_providers.dart';
 import 'survey_live_screen.dart';
 import 'survey_notification.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Location choice for survey setup.
 enum _LocationChoice { gps, manual, skip }
@@ -323,15 +324,15 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
             title: l10n.surveySetupHelpTitle,
             sections: [
               AppHelpSection(
-                icon: Icons.route_rounded,
+                icon: AppIcons.routeRounded,
                 body: l10n.surveySetupHelpSteps,
               ),
               AppHelpSection(
-                icon: Icons.location_on_rounded,
+                icon: AppIcons.locationOnRounded,
                 body: l10n.surveySetupHelpLocation,
               ),
               AppHelpSection(
-                icon: Icons.play_arrow_rounded,
+                icon: AppIcons.playArrowRounded,
                 body: l10n.surveySetupHelpStart,
               ),
             ],
@@ -350,12 +351,12 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
       totalSteps: _totalSteps,
       actions: [
         IconButton(
-          icon: const Icon(Icons.help_outline_rounded, size: 20),
+          icon: const Icon(AppIcons.helpOutlineRounded, size: 20),
           onPressed: _showHelp,
           tooltip: l10n.surveySetupHelpTitle,
         ),
         IconButton(
-          icon: const Icon(Icons.tune_rounded, size: 20),
+          icon: const Icon(AppIcons.tuneRounded, size: 20),
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
@@ -373,7 +374,7 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
       onNext: isLastStep ? _start : _next,
       backLabel: _step == 0 ? l10n.cancel : l10n.surveyBack,
       nextLabel: isLastStep ? l10n.surveyStart : l10n.surveyNext,
-      nextIcon: isLastStep ? Icons.play_arrow_rounded : null,
+      nextIcon: isLastStep ? AppIcons.playArrowRounded : null,
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 250),
         child: switch (_step) {
@@ -473,7 +474,7 @@ class _DetailsStep extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: l10n.surveyName,
             hintText: l10n.surveyNameHint,
-            prefixIcon: const Icon(Icons.edit),
+            prefixIcon: const Icon(AppIcons.edit),
           ),
         ),
         const SizedBox(height: 16),
@@ -484,7 +485,7 @@ class _DetailsStep extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: l10n.surveyTransectId,
             hintText: l10n.surveyTransectIdHint,
-            prefixIcon: const Icon(Icons.route_rounded),
+            prefixIcon: const Icon(AppIcons.routeRounded),
           ),
         ),
         const SizedBox(height: 16),
@@ -495,7 +496,7 @@ class _DetailsStep extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: l10n.surveyObserverName,
             hintText: l10n.surveyObserverNameHint,
-            prefixIcon: const Icon(Icons.person_rounded),
+            prefixIcon: const Icon(AppIcons.personRounded),
           ),
         ),
         const SizedBox(height: 24),
@@ -545,13 +546,13 @@ class _DetailsStep extends ConsumerWidget {
           else if (latitude != null && longitude != null)
             Card(
               child: ListTile(
-                leading: const Icon(Icons.location_on),
+                leading: const Icon(AppIcons.locationOn),
                 title: Text(
                   '${latitude!.toStringAsFixed(4)}, '
                   '${longitude!.toStringAsFixed(4)}',
                 ),
                 trailing: IconButton(
-                  icon: const Icon(Icons.refresh),
+                  icon: const Icon(AppIcons.refresh),
                   tooltip: l10n.pointCountLocationRefresh,
                   onPressed: onFetchGps,
                 ),
@@ -560,10 +561,10 @@ class _DetailsStep extends ConsumerWidget {
           else
             Card(
               child: ListTile(
-                leading: const Icon(Icons.location_off),
+                leading: const Icon(AppIcons.locationOff),
                 title: Text(l10n.surveyLocationUnavailable),
                 trailing: IconButton(
-                  icon: const Icon(Icons.refresh),
+                  icon: const Icon(AppIcons.refresh),
                   tooltip: l10n.pointCountLocationRefresh,
                   onPressed: onFetchGps,
                 ),
@@ -587,7 +588,7 @@ class _DetailsStep extends ConsumerWidget {
                   child: Row(
                     children: [
                       Icon(
-                        Icons.info_outline,
+                        AppIcons.infoOutline,
                         color: theme.colorScheme.onTertiaryContainer,
                       ),
                       const SizedBox(width: 12),
@@ -600,7 +601,7 @@ class _DetailsStep extends ConsumerWidget {
                         ),
                       ),
                       Icon(
-                        Icons.chevron_right,
+                        AppIcons.chevronRight,
                         color: theme.colorScheme.onTertiaryContainer,
                       ),
                     ],
@@ -623,7 +624,7 @@ class _DetailsStep extends ConsumerWidget {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.lock_outline,
+                      AppIcons.lockOutline,
                       color: AppSemanticColors.of(context).onSuccessContainer,
                     ),
                     const SizedBox(width: 12),
@@ -681,7 +682,7 @@ class _DetailsStep extends ConsumerWidget {
                 onMapPick(result.latitude, result.longitude);
               }
             },
-            icon: const Icon(Icons.map),
+            icon: const Icon(AppIcons.map),
             label: Text(l10n.surveyPickOnMap),
           ),
         ],
@@ -744,7 +745,7 @@ class _ParametersStep extends ConsumerWidget {
         devicesAsync.when(
           loading:
               () => ListTile(
-                leading: const Icon(Icons.mic_rounded),
+                leading: const Icon(AppIcons.micRounded),
                 title: Text(l10n.surveyMicrophone),
                 trailing: const SizedBox(
                   width: 24,
@@ -754,7 +755,7 @@ class _ParametersStep extends ConsumerWidget {
               ),
           error:
               (a, b) => ListTile(
-                leading: const Icon(Icons.mic_rounded),
+                leading: const Icon(AppIcons.micRounded),
                 title: Text(l10n.surveyMicrophone),
                 trailing: const Text('—'),
               ),
@@ -768,7 +769,7 @@ class _ParametersStep extends ConsumerWidget {
                             .firstOrNull ??
                         selectedDevice;
             return ListTile(
-              leading: const Icon(Icons.mic_rounded),
+              leading: const Icon(AppIcons.micRounded),
               title: Text(l10n.surveyMicrophone),
               trailing: Text(label, style: theme.textTheme.bodySmall),
               onTap:
@@ -787,7 +788,7 @@ class _ParametersStep extends ConsumerWidget {
 
         // Inference rate
         ListTile(
-          leading: const Icon(Icons.speed_rounded),
+          leading: const Icon(AppIcons.speedRounded),
           title: Text(l10n.surveyInferenceRate),
           subtitle: Text('${inferenceRate.toStringAsFixed(2)} Hz'),
         ),
@@ -803,7 +804,7 @@ class _ParametersStep extends ConsumerWidget {
 
         // Confidence threshold
         ListTile(
-          leading: const Icon(Icons.verified_rounded),
+          leading: const Icon(AppIcons.verifiedRounded),
           title: Text(l10n.settingsConfidenceThreshold),
           subtitle: Text('$confidenceThreshold %'),
         ),
@@ -820,7 +821,7 @@ class _ParametersStep extends ConsumerWidget {
 
         // GPS interval
         ListTile(
-          leading: const Icon(Icons.my_location),
+          leading: const Icon(AppIcons.myLocation),
           title: Text(l10n.surveyGpsInterval),
         ),
         Padding(
@@ -842,7 +843,7 @@ class _ParametersStep extends ConsumerWidget {
 
         // Max duration
         ListTile(
-          leading: const Icon(Icons.timer_rounded),
+          leading: const Icon(AppIcons.timerRounded),
           title: Text(l10n.surveyMaxDuration),
           subtitle: Text('$maxDuration ${l10n.surveyHours}'),
         ),
@@ -861,7 +862,7 @@ class _ParametersStep extends ConsumerWidget {
 
         // Recording mode
         ListTile(
-          leading: const Icon(Icons.fiber_manual_record_rounded),
+          leading: const Icon(AppIcons.fiberManualRecordRounded),
           title: Text(l10n.surveyRecordingMode),
         ),
         Padding(
@@ -889,7 +890,7 @@ class _ParametersStep extends ConsumerWidget {
         // Clip context (visible only when recording mode = detections)
         if (recordingMode == 'detections') ...[
           ListTile(
-            leading: const Icon(Icons.timer_outlined),
+            leading: const Icon(AppIcons.timerOutlined),
             title: Text(l10n.surveyClipContext),
             subtitle: Text(l10n.surveyClipContextDescription),
           ),
@@ -911,7 +912,7 @@ class _ParametersStep extends ConsumerWidget {
 
         // Detection sampling
         ListTile(
-          leading: const Icon(Icons.filter_alt_rounded),
+          leading: const Icon(AppIcons.filterAltRounded),
           title: Text(l10n.surveyDetectionSampling),
         ),
         Padding(
@@ -939,7 +940,7 @@ class _ParametersStep extends ConsumerWidget {
         // Top N (visible only when sampling = topN or smart)
         if (sampling != 'all') ...[
           ListTile(
-            leading: const Icon(Icons.format_list_numbered_rounded),
+            leading: const Icon(AppIcons.formatListNumberedRounded),
             title: Text(l10n.surveyTopNPerSpecies),
             subtitle: Text('$topN'),
           ),
@@ -1022,13 +1023,13 @@ class _FieldTipsStep extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     final tips = [
-      (Icons.directions_walk_rounded, l10n.surveyTipWalkSteady),
-      (Icons.air_rounded, l10n.surveyTipWind),
-      (Icons.mic_external_on_rounded, l10n.surveyTipMic),
-      (Icons.volume_off_rounded, l10n.surveyTipSilence),
-      (Icons.wb_twilight_rounded, l10n.surveyTipTime),
-      (Icons.repeat_rounded, l10n.surveyTipRepeat),
-      (Icons.battery_saver_rounded, l10n.surveyTipBattery),
+      (AppIcons.directionsWalkRounded, l10n.surveyTipWalkSteady),
+      (AppIcons.airRounded, l10n.surveyTipWind),
+      (AppIcons.micExternalOnRounded, l10n.surveyTipMic),
+      (AppIcons.volumeOffRounded, l10n.surveyTipSilence),
+      (AppIcons.wbTwilightRounded, l10n.surveyTipTime),
+      (AppIcons.repeatRounded, l10n.surveyTipRepeat),
+      (AppIcons.batterySaverRounded, l10n.surveyTipBattery),
     ];
 
     return ListView(
@@ -1172,7 +1173,7 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.help_outline_rounded, size: 20),
+              icon: const Icon(AppIcons.helpOutlineRounded, size: 20),
               tooltip: l10n.surveyAlertHelpModesTitle,
               onPressed: () => _showAlertsHelp(context, l10n),
             ),
@@ -1217,7 +1218,7 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
               child: Row(
                 children: [
                   Icon(
-                    Icons.error_outline_rounded,
+                    AppIcons.errorOutlineRounded,
                     size: 18,
                     color: theme.colorScheme.error,
                   ),
@@ -1240,14 +1241,14 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
           const SizedBox(height: 8),
           SwitchListTile(
             title: Text(l10n.surveyAlertSoundLabel),
-            secondary: const Icon(Icons.volume_up_rounded),
+            secondary: const Icon(AppIcons.volumeUpRounded),
             value: ref.watch(surveyAlertSoundProvider),
             onChanged:
                 (v) => ref.read(surveyAlertSoundProvider.notifier).set(v),
           ),
           SwitchListTile(
             title: Text(l10n.surveyAlertVibrateLabel),
-            secondary: const Icon(Icons.vibration_rounded),
+            secondary: const Icon(AppIcons.vibrationRounded),
             value: ref.watch(surveyAlertVibrateProvider),
             onChanged:
                 (v) => ref.read(surveyAlertVibrateProvider.notifier).set(v),
@@ -1262,7 +1263,7 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
               _SegmentedSecondsControl(
                 label: l10n.surveyAlertGraceLabel,
                 helper: l10n.surveyAlertGraceHelp,
-                icon: Icons.hourglass_top_rounded,
+                icon: AppIcons.hourglassTopRounded,
                 value: ref.watch(surveyAlertStartupGraceSecondsProvider),
                 options: const [0, 30, 60, 120, 300],
                 offLabel: l10n.surveyAlertModeOff,
@@ -1274,7 +1275,7 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
               _SegmentedSecondsControl(
                 label: l10n.surveyAlertMinIntervalLabel,
                 helper: l10n.surveyAlertMinIntervalHelp,
-                icon: Icons.timer_outlined,
+                icon: AppIcons.timerOutlined,
                 value: ref.watch(surveyAlertMinIntervalSecondsProvider),
                 options: const [0, 5, 15, 30, 60],
                 offLabel: l10n.surveyAlertModeOff,
@@ -1286,7 +1287,7 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
               _SegmentedCountControl(
                 label: l10n.surveyAlertMaxPerMinuteLabel,
                 helper: l10n.surveyAlertMaxPerMinuteHelp,
-                icon: Icons.notifications_active_rounded,
+                icon: AppIcons.notificationsActiveRounded,
                 value: ref.watch(surveyAlertMaxPerMinuteProvider),
                 options: const [1, 3, 5, 10, 0],
                 unlimitedValue: 0,
@@ -1321,12 +1322,12 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
             title: l10n.surveyAlertsTitle,
             sections: [
               AppHelpSection(
-                icon: Icons.notifications_active_rounded,
+                icon: AppIcons.notificationsActiveRounded,
                 body:
                     '${l10n.surveyAlertHelpModesTitle}\n\n${l10n.surveyAlertHelpModesBody}',
               ),
               AppHelpSection(
-                icon: Icons.schedule_rounded,
+                icon: AppIcons.scheduleRounded,
                 body:
                     '${l10n.surveyAlertHelpThrottlingTitle}\n\n${l10n.surveyAlertHelpThrottlingBody}',
               ),
@@ -1373,7 +1374,7 @@ class _RareThresholdControl extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ListTile(
-          leading: const Icon(Icons.public_off_rounded),
+          leading: const Icon(AppIcons.publicOffRounded),
           title: Text(l10n.surveyAlertRareThresholdLabel),
           subtitle: Text(
             l10n.surveyAlertRareThresholdHelp,
@@ -1428,7 +1429,7 @@ class _MinConfidenceControl extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ListTile(
-          leading: const Icon(Icons.verified_rounded),
+          leading: const Icon(AppIcons.verifiedRounded),
           title: Text(l10n.surveyAlertMinConfidenceLabel),
           subtitle: Text(
             l10n.surveyAlertMinConfidenceHelp,
@@ -1469,7 +1470,7 @@ class _WatchlistControl extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Row(
             children: [
-              const Icon(Icons.list_alt_rounded),
+              const Icon(AppIcons.listAltRounded),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -1478,7 +1479,7 @@ class _WatchlistControl extends ConsumerWidget {
                 ),
               ),
               TextButton.icon(
-                icon: const Icon(Icons.add_rounded, size: 18),
+                icon: const Icon(AppIcons.addRounded, size: 18),
                 label: Text(l10n.surveyAlertCreateListButton),
                 onPressed: () => _createList(context, ref),
               ),
@@ -1585,7 +1586,7 @@ class _WatchlistTile extends StatelessWidget {
                     ? Text(l10n.surveyAlertSpeciesCount(count))
                     : const Text('…'),
             secondary: IconButton(
-              icon: const Icon(Icons.delete_outline_rounded),
+              icon: const Icon(AppIcons.deleteOutlineRounded),
               onPressed: onDelete,
               tooltip: l10n.sessionRemove,
             ),
@@ -1729,13 +1730,13 @@ class _CreateWatchlistScreenState
       appBar: AppBar(
         title: Text(l10n.surveyAlertCreateListTitle),
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
+          icon: const Icon(AppIcons.closeRounded),
           onPressed: _saving ? null : () => Navigator.of(context).pop(),
           tooltip: l10n.surveyAlertCreateListCancel,
         ),
         actions: [
           TextButton.icon(
-            icon: const Icon(Icons.save_rounded, size: 18),
+            icon: const Icon(AppIcons.saveRounded, size: 18),
             label: Text(l10n.surveyAlertCreateListSave),
             onPressed: _saving ? null : _save,
           ),
@@ -1764,12 +1765,12 @@ class _CreateWatchlistScreenState
                     controller: _searchCtrl,
                     decoration: InputDecoration(
                       hintText: l10n.surveyAlertCreateListSearchHint,
-                      prefixIcon: const Icon(Icons.search_rounded),
+                      prefixIcon: const Icon(AppIcons.searchRounded),
                       suffixIcon:
                           _searchCtrl.text.isEmpty
                               ? null
                               : IconButton(
-                                icon: const Icon(Icons.clear_rounded),
+                                icon: const Icon(AppIcons.clearRounded),
                                 onPressed: () {
                                   _searchCtrl.clear();
                                   _onSearchChanged('');
@@ -1784,7 +1785,7 @@ class _CreateWatchlistScreenState
                 ),
                 const SizedBox(width: 8),
                 IconButton.filledTonal(
-                  icon: const Icon(Icons.upload_file_rounded),
+                  icon: const Icon(AppIcons.uploadFileRounded),
                   tooltip: l10n.surveyAlertCreateListImportFile,
                   onPressed: _importFromFile,
                 ),
@@ -1890,7 +1891,7 @@ class _SelectedSpeciesList extends StatelessWidget {
         final sci = list[i];
         final label = labels[sci] ?? sci;
         return ListTile(
-          leading: const Icon(Icons.check_rounded),
+          leading: const Icon(AppIcons.checkRounded),
           title: Text(label),
           subtitle: Text(
             sci,
@@ -1899,7 +1900,7 @@ class _SelectedSpeciesList extends StatelessWidget {
             ),
           ),
           trailing: IconButton(
-            icon: const Icon(Icons.close_rounded),
+            icon: const Icon(AppIcons.closeRounded),
             onPressed: () => onRemove(sci),
             tooltip: l10n.sessionRemove,
           ),
@@ -2058,7 +2059,7 @@ class _ReadyStep extends ConsumerWidget {
       child: Column(
         children: [
           Icon(
-            Icons.route_rounded,
+            AppIcons.routeRounded,
             size: 64,
             color: theme.colorScheme.tertiary,
           ),
@@ -2073,27 +2074,27 @@ class _ReadyStep extends ConsumerWidget {
               child: Column(
                 children: [
                   _SummaryRow(
-                    Icons.speed_rounded,
+                    AppIcons.speedRounded,
                     l10n.surveyInferenceRate,
                     '${inferenceRate.toStringAsFixed(2)} Hz',
                   ),
                   _SummaryRow(
-                    Icons.my_location,
+                    AppIcons.myLocation,
                     l10n.surveyGpsInterval,
                     '${gpsInterval}s',
                   ),
                   _SummaryRow(
-                    Icons.timer_rounded,
+                    AppIcons.timerRounded,
                     l10n.surveyMaxDuration,
                     '$maxDuration ${l10n.surveyHours}',
                   ),
                   _SummaryRow(
-                    Icons.filter_alt_rounded,
+                    AppIcons.filterAltRounded,
                     l10n.surveyDetectionSampling,
                     sampling,
                   ),
                   _SummaryRow(
-                    Icons.fiber_manual_record_rounded,
+                    AppIcons.fiberManualRecordRounded,
                     l10n.surveyRecordingMode,
                     recordingMode,
                   ),
@@ -2129,7 +2130,7 @@ class _ReadyStep extends ConsumerWidget {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.warning_amber_rounded,
+                      AppIcons.warningAmberRounded,
                       color: theme.colorScheme.onTertiaryContainer,
                     ),
                     const SizedBox(width: 12),
@@ -2178,3 +2179,4 @@ class _SummaryRow extends StatelessWidget {
     );
   }
 }
+

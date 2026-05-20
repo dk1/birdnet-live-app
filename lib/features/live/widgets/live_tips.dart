@@ -25,6 +25,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// One tip entry — icon + short title + one-sentence body. All localized.
 class LiveTip {
@@ -40,87 +41,87 @@ class LiveTip {
 /// see the same tip first.
 List<LiveTip> buildLiveTips(AppLocalizations l10n) => <LiveTip>[
   LiveTip(
-    icon: Icons.campaign_outlined,
+    icon: AppIcons.campaignOutlined,
     title: l10n.liveTipAnnouncementsTitle,
     body: l10n.liveTipAnnouncementsBody,
   ),
   LiveTip(
-    icon: Icons.air,
+    icon: AppIcons.air,
     title: l10n.liveTipWindTitle,
     body: l10n.liveTipWindBody,
   ),
   LiveTip(
-    icon: Icons.volume_up_outlined,
+    icon: AppIcons.volumeUpOutlined,
     title: l10n.liveTipQuietPlaybackTitle,
     body: l10n.liveTipQuietPlaybackBody,
   ),
   LiveTip(
-    icon: Icons.public,
+    icon: AppIcons.public,
     title: l10n.liveTipGeoFilterTitle,
     body: l10n.liveTipGeoFilterBody,
   ),
   LiveTip(
-    icon: Icons.save_alt,
+    icon: AppIcons.saveAlt,
     title: l10n.liveTipSaveClipsTitle,
     body: l10n.liveTipSaveClipsBody,
   ),
   LiveTip(
-    icon: Icons.edit_note,
+    icon: AppIcons.editNote,
     title: l10n.liveTipNotesTitle,
     body: l10n.liveTipNotesBody,
   ),
   LiveTip(
-    icon: Icons.graphic_eq,
+    icon: AppIcons.graphicEq,
     title: l10n.liveTipSpectrogramTitle,
     body: l10n.liveTipSpectrogramBody,
   ),
   LiveTip(
-    icon: Icons.tune,
+    icon: AppIcons.tune,
     title: l10n.liveTipThresholdTitle,
     body: l10n.liveTipThresholdBody,
   ),
   LiveTip(
-    icon: Icons.bookmark_added_outlined,
+    icon: AppIcons.bookmarkAddedOutlined,
     title: l10n.liveTipWatchlistTitle,
     body: l10n.liveTipWatchlistBody,
   ),
   LiveTip(
-    icon: Icons.audio_file_outlined,
+    icon: AppIcons.audioFileOutlined,
     title: l10n.liveTipFileAnalysisTitle,
     body: l10n.liveTipFileAnalysisBody,
   ),
   LiveTip(
-    icon: Icons.bluetooth_audio,
+    icon: AppIcons.bluetoothAudio,
     title: l10n.liveTipBluetoothMicTitle,
     body: l10n.liveTipBluetoothMicBody,
   ),
   LiveTip(
-    icon: Icons.notifications_active_outlined,
+    icon: AppIcons.notificationsActiveOutlined,
     title: l10n.liveTipSurveyNotificationsTitle,
     body: l10n.liveTipSurveyNotificationsBody,
   ),
   LiveTip(
-    icon: Icons.science_outlined,
+    icon: AppIcons.scienceOutlined,
     title: l10n.liveTipStudyDesignTitle,
     body: l10n.liveTipStudyDesignBody,
   ),
   LiveTip(
-    icon: Icons.report_problem_outlined,
+    icon: AppIcons.reportProblemOutlined,
     title: l10n.liveTipAiMistakesTitle,
     body: l10n.liveTipAiMistakesBody,
   ),
   LiveTip(
-    icon: Icons.battery_charging_full,
+    icon: AppIcons.batteryChargingFull,
     title: l10n.liveTipBatteryTitle,
     body: l10n.liveTipBatteryBody,
   ),
   LiveTip(
-    icon: Icons.percent,
+    icon: AppIcons.percent,
     title: l10n.liveTipScoresTitle,
     body: l10n.liveTipScoresBody,
   ),
   LiveTip(
-    icon: Icons.volume_down_outlined,
+    icon: AppIcons.volumeDownOutlined,
     title: l10n.liveTipDistanceTitle,
     body: l10n.liveTipDistanceBody,
   ),
@@ -256,3 +257,4 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
     );
   }
 }
+

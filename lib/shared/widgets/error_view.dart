@@ -6,7 +6,7 @@
 // session save) and we want to give the user a clear path to retry.
 //
 // Design rationale (see dev/STYLE_GUIDE.md → "Error States"):
-//   • Icon `Icons.error_outline` at 64 dp in `colorScheme.error`.
+//   • Icon `AppIcons.errorOutline` at 64 dp in `colorScheme.error`.
 //   • Title `bodyLarge`, message `bodySmall`.
 //   • Retry uses `FilledButton.tonal` so it doesn't look like a primary
 //     destination but still reads as actionable.
@@ -15,6 +15,7 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Centered error placeholder with an optional retry action.
 ///
@@ -34,7 +35,7 @@ class ErrorView extends StatelessWidget {
     this.message,
     this.onRetry,
     this.retryLabel,
-    this.icon = Icons.error_outline,
+    this.icon = AppIcons.errorOutline,
   });
 
   /// Primary line describing what failed.
@@ -49,7 +50,7 @@ class ErrorView extends StatelessWidget {
   /// Localized label for the retry button. Required when [onRetry] is set.
   final String? retryLabel;
 
-  /// Icon to display. Defaults to `Icons.error_outline`.
+  /// Icon to display. Defaults to `AppIcons.errorOutline`.
   final IconData icon;
 
   @override
@@ -95,3 +96,4 @@ class ErrorView extends StatelessWidget {
     );
   }
 }
+

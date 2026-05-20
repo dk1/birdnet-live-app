@@ -21,6 +21,7 @@ import '../models/weather_snapshot.dart';
 import '../providers/settings_providers.dart';
 import '../services/weather_service.dart';
 import '../utils/weather_format.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 class WeatherSetupCard extends ConsumerStatefulWidget {
   const WeatherSetupCard({
@@ -115,11 +116,11 @@ class _WeatherSetupCardState extends ConsumerState<WeatherSetupCard> {
         child: InkWell(
           onTap: _enableWeatherConsent,
           child: ListTile(
-            leading: Icon(Icons.cloud_outlined, color: onSurfaceVariant),
+            leading: Icon(AppIcons.cloudOutlined, color: onSurfaceVariant),
             title: Text(l10n.settingsPrivacyAllowWeather),
             subtitle: Text(l10n.settingsPrivacyAllowWeatherSubtitle),
             trailing: Icon(
-              Icons.chevron_right,
+              AppIcons.chevronRight,
               color: theme.colorScheme.primary,
             ),
           ),
@@ -130,7 +131,7 @@ class _WeatherSetupCardState extends ConsumerState<WeatherSetupCard> {
     if (widget.latitude == null || widget.longitude == null) {
       return Card(
         child: ListTile(
-          leading: Icon(Icons.cloud_off_outlined, color: onSurfaceVariant),
+          leading: Icon(AppIcons.cloudOffOutlined, color: onSurfaceVariant),
           title: Text(l10n.sessionWeatherSection),
           subtitle: Text(widget.locationUnavailableLabel),
         ),
@@ -170,7 +171,7 @@ class _WeatherSetupCardState extends ConsumerState<WeatherSetupCard> {
           ),
           trailing: IconButton(
             onPressed: () => _resolveIfAllowed(force: true),
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(AppIcons.refresh),
             tooltip: l10n.pointCountLocationRefresh,
           ),
         ),
@@ -179,7 +180,7 @@ class _WeatherSetupCardState extends ConsumerState<WeatherSetupCard> {
 
     return Card(
       child: ListTile(
-        leading: Icon(Icons.cloud_off_outlined, color: onSurfaceVariant),
+        leading: Icon(AppIcons.cloudOffOutlined, color: onSurfaceVariant),
         title: Text(l10n.sessionWeatherSection),
         subtitle: Text(
           _failed
@@ -188,10 +189,11 @@ class _WeatherSetupCardState extends ConsumerState<WeatherSetupCard> {
         ),
         trailing: IconButton(
           onPressed: () => _resolveIfAllowed(force: true),
-          icon: const Icon(Icons.refresh),
+          icon: const Icon(AppIcons.refresh),
           tooltip: l10n.pointCountLocationRefresh,
         ),
       ),
     );
   }
 }
+

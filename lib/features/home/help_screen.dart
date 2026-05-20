@@ -15,6 +15,7 @@ import '../../shared/services/link_launcher.dart';
 import '../../shared/utils/session_type_visuals.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../live/live_session.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Comprehensive help screen with mode-by-mode explanations.
 class HelpScreen extends StatelessWidget {
@@ -50,7 +51,7 @@ class HelpScreen extends StatelessWidget {
             // first, in order of increasing structure / commitment:
             //   Live  → Point Count → Survey → File Analysis
             _SectionHeader(
-              icon: Icons.mic_none_outlined,
+              icon: AppIcons.micNoneOutlined,
               title: l10n.helpModesTitle,
             ),
             const SizedBox(height: 12),
@@ -119,19 +120,19 @@ class HelpScreen extends StatelessWidget {
             // *what to expect* before recording — these two screens are
             // where they go.
             _SectionHeader(
-              icon: Icons.travel_explore_outlined,
+              icon: AppIcons.travelExploreOutlined,
               title: l10n.helpToolsTitle,
             ),
             const SizedBox(height: 12),
             _HelpSection(
-              icon: Icons.search_rounded,
+              icon: AppIcons.searchRounded,
               color: theme.colorScheme.primary,
               containerColor: theme.colorScheme.primaryContainer,
               title: l10n.helpExploreTitle,
               body: l10n.helpExploreBody,
             ),
             _HelpSection(
-              icon: Icons.library_books_outlined,
+              icon: AppIcons.libraryBooksOutlined,
               color: theme.colorScheme.secondary,
               containerColor: theme.colorScheme.secondaryContainer,
               title: l10n.helpSessionsTitle,
@@ -144,22 +145,22 @@ class HelpScreen extends StatelessWidget {
             // every screen. They follow the modes because users typically
             // discover them only after they've started using the app.
             _SectionHeader(
-              icon: Icons.tune_rounded,
+              icon: AppIcons.tuneRounded,
               title: l10n.helpControlsTitle,
             ),
             const SizedBox(height: 12),
             _ControlCard(
-              icon: Icons.tune_rounded,
+              icon: AppIcons.tuneRounded,
               title: l10n.settings,
               body: l10n.helpControlSettings,
             ),
             _ControlCard(
-              icon: Icons.help_outline_rounded,
+              icon: AppIcons.helpOutlineRounded,
               title: l10n.helpTitle,
               body: l10n.helpControlHelp,
             ),
             _ControlCard(
-              icon: Icons.info_outline,
+              icon: AppIcons.infoOutline,
               title: l10n.about,
               body: l10n.helpControlAbout,
             ),
@@ -170,7 +171,7 @@ class HelpScreen extends StatelessWidget {
 
             // ── 5. Tips for best results ─────────────────────────
             _SectionHeader(
-              icon: Icons.lightbulb_outline,
+              icon: AppIcons.lightbulbOutline,
               title: l10n.helpTipsTitle,
             ),
             const SizedBox(height: 12),
@@ -193,7 +194,7 @@ class HelpScreen extends StatelessWidget {
                     Row(
                       children: [
                         Icon(
-                          Icons.menu_book_outlined,
+                          AppIcons.menuBookOutlined,
                           size: 20,
                           color: theme.colorScheme.primary,
                         ),
@@ -217,7 +218,7 @@ class HelpScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     FilledButton.tonalIcon(
                       onPressed: () => _launchUserGuide(context),
-                      icon: const Icon(Icons.open_in_new),
+                      icon: const Icon(AppIcons.openInNew),
                       label: Text(l10n.aboutUserGuide),
                     ),
                   ],
@@ -402,7 +403,7 @@ class _TipRow extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 6),
             child: Icon(
-              Icons.chevron_right,
+              AppIcons.chevronRight,
               size: 16,
               color: theme.colorScheme.primary.withAlpha(180),
             ),
@@ -428,3 +429,4 @@ Future<void> _launchUserGuide(BuildContext context) async {
   final basePath = localeCode == 'en' ? '' : '/$localeCode';
   await openExternalUrl(context, '${AppConstants.docsUrl}$basePath/user/');
 }
+

@@ -37,6 +37,7 @@ import '../models/weather_snapshot.dart';
 import '../providers/settings_providers.dart';
 import '../services/weather_service.dart';
 import '../utils/weather_format.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 class SiteContextCard extends ConsumerStatefulWidget {
   const SiteContextCard({
@@ -182,7 +183,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
     if (_locationName != null) {
       rows.add(
         _ContextRow(
-          icon: Icons.location_on_outlined,
+          icon: AppIcons.locationOnOutlined,
           child: Text(
             _locationName!,
             style: theme.textTheme.bodyMedium,
@@ -194,7 +195,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
     } else if (!allowReverseGeo) {
       rows.add(
         _ConsentPromptRow(
-          icon: Icons.location_on_outlined,
+          icon: AppIcons.locationOnOutlined,
           label: l10n.settingsPrivacyAllowReverseGeocoding,
           onTap: _enableLocationConsent,
         ),
@@ -223,7 +224,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
     } else if (!allowWeather) {
       rows.add(
         _ConsentPromptRow(
-          icon: Icons.cloud_outlined,
+          icon: AppIcons.cloudOutlined,
           label: l10n.settingsPrivacyAllowWeather,
           onTap: _enableWeatherConsent,
         ),
@@ -238,7 +239,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
       rows.add(
         Row(
           children: [
-            Icon(Icons.cloud_off_outlined, size: 16, color: onSurfaceVariant),
+            Icon(AppIcons.cloudOffOutlined, size: 16, color: onSurfaceVariant),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -331,3 +332,4 @@ class _ConsentPromptRow extends StatelessWidget {
     );
   }
 }
+

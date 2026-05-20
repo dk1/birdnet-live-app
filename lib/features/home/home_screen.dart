@@ -13,6 +13,7 @@ import '../settings/settings_screen.dart';
 import '../survey/survey_setup_screen.dart';
 import '../../shared/utils/session_type_visuals.dart';
 import 'help_screen.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 // =============================================================================
 // Home Screen — Main Menu
@@ -390,7 +391,7 @@ class _Footer extends StatelessWidget {
         // slot. Settings sits near the end where infrequent prefs
         // belong (#33).
         _FooterButton(
-          icon: Icons.library_music_outlined,
+          icon: AppIcons.libraryMusicOutlined,
           label: l10n.sessionLibraryTitle,
           color: color,
           onPressed:
@@ -401,7 +402,7 @@ class _Footer extends StatelessWidget {
               ),
         ),
         _FooterButton(
-          icon: Icons.search_rounded,
+          icon: AppIcons.searchRounded,
           label: l10n.exploreMode,
           color: color,
           onPressed:
@@ -410,7 +411,7 @@ class _Footer extends StatelessWidget {
               ),
         ),
         _FooterButton(
-          icon: Icons.tune_rounded,
+          icon: AppIcons.tuneRounded,
           label: l10n.settings,
           color: color,
           onPressed:
@@ -419,7 +420,7 @@ class _Footer extends StatelessWidget {
               ),
         ),
         _FooterButton(
-          icon: Icons.help_outline_rounded,
+          icon: AppIcons.helpOutlineRounded,
           label: l10n.helpTitle,
           color: color,
           onPressed:
@@ -428,7 +429,7 @@ class _Footer extends StatelessWidget {
               ),
         ),
         _FooterButton(
-          icon: Icons.info_outline,
+          icon: AppIcons.infoOutline,
           label: l10n.about,
           color: color,
           onPressed:
@@ -463,3 +464,4 @@ class _FooterButton extends StatelessWidget {
     );
   }
 }
+

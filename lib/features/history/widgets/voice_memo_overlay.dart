@@ -57,6 +57,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 import '../../../l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Result returned to the caller when the dialog is dismissed.
 ///
@@ -524,7 +525,7 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
         Row(
           children: [
             IconButton.filled(
-              icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+              icon: Icon(_isPlaying ? AppIcons.pause : AppIcons.playArrow),
               tooltip: l10n.detectionVoiceMemoTooltip,
               onPressed: _togglePlay,
             ),
@@ -569,7 +570,7 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
         Center(
           child: OutlinedButton.icon(
             onPressed: _startRecording,
-            icon: const Icon(Icons.fiber_manual_record, size: 16),
+            icon: const Icon(AppIcons.fiberManualRecord, size: 16),
             label: Text(l10n.detectionReplaceVoiceMemo),
           ),
         ),
@@ -622,7 +623,7 @@ class _RecordButton extends StatelessWidget {
                     : null,
           ),
           child: Icon(
-            isRecording ? Icons.stop : Icons.mic,
+            isRecording ? AppIcons.stop : AppIcons.mic,
             size: 40,
             color:
                 isRecording
@@ -773,3 +774,4 @@ class _WaveformPainter extends CustomPainter {
         old.samples.length != samples.length;
   }
 }
+

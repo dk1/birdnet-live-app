@@ -239,12 +239,12 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.add_circle_outline),
+                  leading: const Icon(AppIcons.addCircleOutline),
                   title: Text(l10n.sessionAddSpecies),
                   onTap: () => Navigator.of(ctx).pop('species'),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.note_add_outlined),
+                  leading: const Icon(AppIcons.noteAddOutlined),
                   title: Text(l10n.sessionAddAnnotationOption),
                   onTap: () => Navigator.of(ctx).pop('annotation'),
                 ),
@@ -476,7 +476,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         content: Row(
           children: [
             Icon(
-              Icons.notifications_active_rounded,
+              AppIcons.notificationsActiveRounded,
               color: Theme.of(context).colorScheme.onInverseSurface,
               size: 18,
             ),
@@ -790,7 +790,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                 ? FloatingActionButton.small(
                   onPressed: _showAddMenu,
                   tooltip: l10n.surveyAddMenuTitle,
-                  child: const Icon(Icons.add),
+                  child: const Icon(AppIcons.add),
                 )
                 : null,
       ),
@@ -819,11 +819,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       controller: _tabController,
       tabs: [
         Tab(
-          icon: const Icon(Icons.map_outlined, size: 18),
+          icon: const Icon(AppIcons.mapOutlined, size: 18),
           text: l10n.surveyTabMap,
         ),
         Tab(
-          icon: const Icon(Icons.graphic_eq, size: 18),
+          icon: const Icon(AppIcons.graphicEq, size: 18),
           text: l10n.surveyTabSpectrogram,
         ),
         Tab(
@@ -977,7 +977,7 @@ class _SurveyStatusBar extends StatelessWidget {
         children: [
           // Stop button (matches point count).
           IconButton(
-            icon: const Icon(Icons.stop_rounded, size: 22),
+            icon: const Icon(AppIcons.stopRounded, size: 22),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             onPressed: isActive ? onStop : () => Navigator.of(context).pop(),
@@ -992,7 +992,7 @@ class _SurveyStatusBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.timer_rounded,
+                    AppIcons.timerRounded,
                     size: 18,
                     color: theme.colorScheme.primary,
                   ),
@@ -1013,7 +1013,7 @@ class _SurveyStatusBar extends StatelessWidget {
           // Help button.
           IconButton(
             icon: Icon(
-              Icons.help_outline_rounded,
+              AppIcons.helpOutlineRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -1030,7 +1030,7 @@ class _SurveyStatusBar extends StatelessWidget {
               child: Tooltip(
                 message: l10n.surveyAlertsTitle,
                 child: Icon(
-                  Icons.notifications_active_rounded,
+                  AppIcons.notificationsActiveRounded,
                   size: 18,
                   color: theme.colorScheme.primary,
                 ),
@@ -1040,7 +1040,7 @@ class _SurveyStatusBar extends StatelessWidget {
           // Settings gear (matches point count).
           IconButton(
             icon: Icon(
-              Icons.tune_rounded,
+              AppIcons.tuneRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -1345,15 +1345,15 @@ class _SurveyLiveHelpSheet extends StatelessWidget {
       title: l10n.surveyLiveHelpTitle,
       sections: [
         AppHelpSection(
-          icon: Icons.info_outline,
+          icon: AppIcons.infoOutline,
           body: l10n.surveyLiveHelpOverview,
         ),
         AppHelpSection(
-          icon: Icons.help_outline_rounded,
+          icon: AppIcons.helpOutlineRounded,
           body: l10n.surveyLiveHelpTopBar,
         ),
-        AppHelpSection(icon: Icons.map_outlined, body: l10n.surveyLiveHelpTabs),
-        AppHelpSection(icon: Icons.mic, body: l10n.surveyLiveHelpSignal),
+        AppHelpSection(icon: AppIcons.mapOutlined, body: l10n.surveyLiveHelpTabs),
+        AppHelpSection(icon: AppIcons.mic, body: l10n.surveyLiveHelpSignal),
         AppHelpSection(
           icon: AppIcons.species,
           body: l10n.surveyLiveHelpDetections,

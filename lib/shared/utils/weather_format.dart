@@ -20,6 +20,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/weather_snapshot.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Symbolic keys for WMO weather code groups. The caller is expected to
 /// resolve these via `AppLocalizations` for user-facing text.
@@ -58,23 +59,23 @@ WeatherCondition weatherConditionFromCode(int? code) {
 IconData weatherConditionIcon(WeatherCondition cond) {
   switch (cond) {
     case WeatherCondition.clear:
-      return Icons.wb_sunny_outlined;
+      return AppIcons.wbSunnyOutlined;
     case WeatherCondition.partlyCloudy:
-      return Icons.wb_cloudy_outlined;
+      return AppIcons.wbCloudyOutlined;
     case WeatherCondition.cloudy:
-      return Icons.cloud_outlined;
+      return AppIcons.cloudOutlined;
     case WeatherCondition.fog:
-      return Icons.foggy;
+      return AppIcons.foggy;
     case WeatherCondition.drizzle:
-      return Icons.grain;
+      return AppIcons.grain;
     case WeatherCondition.rain:
-      return Icons.water_drop_outlined;
+      return AppIcons.waterDropOutlined;
     case WeatherCondition.snow:
-      return Icons.ac_unit;
+      return AppIcons.acUnit;
     case WeatherCondition.thunder:
-      return Icons.thunderstorm_outlined;
+      return AppIcons.thunderstormOutlined;
     case WeatherCondition.unknown:
-      return Icons.help_outline;
+      return AppIcons.helpOutline;
   }
 }
 
@@ -142,3 +143,4 @@ String formatWeatherOneLine(WeatherSnapshot w, WeatherLabelLookup labelFor) {
   }
   return parts.join(' · ');
 }
+

@@ -94,12 +94,12 @@ class SurveyStatsBar extends StatelessWidget {
             style: style,
           ),
           StatChip(
-            icon: Icons.straighten,
+            icon: AppIcons.straighten,
             value: _formatDistance(distanceMeters),
             style: style,
           ),
           StatChip(
-            icon: Icons.graphic_eq,
+            icon: AppIcons.graphicEq,
             value: '$detectionCount',
             style: style,
           ),
@@ -155,7 +155,7 @@ class _AudioLevelChip extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Icon(Icons.mic, size: 16, color: color),
+        Icon(AppIcons.mic, size: 16, color: color),
         const SizedBox(width: 3),
         for (int i = 0; i < 3; i++)
           Container(

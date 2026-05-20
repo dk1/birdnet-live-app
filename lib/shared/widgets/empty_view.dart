@@ -19,7 +19,7 @@ import 'package:flutter/material.dart';
 /// Example:
 /// ```dart
 /// EmptyView(
-///   icon: Icons.library_music_outlined,
+///   icon: AppIcons.libraryMusicOutlined,
 ///   title: l10n.sessionLibraryEmptyTitle,
 ///   body: l10n.sessionLibraryEmptyBody,
 /// )

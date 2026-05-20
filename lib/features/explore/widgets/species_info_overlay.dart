@@ -23,6 +23,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import '../../../shared/models/taxonomy_species.dart';
 import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/services/link_launcher.dart';
+import '../../../shared/utils/app_icons.dart';
 import '../explore_providers.dart';
 import '../../inference/geo_model.dart';
 import '../../history/global_species_history.dart';
@@ -413,7 +414,7 @@ class _LinkChip extends StatelessWidget {
         width: 18,
         height: 18,
         fit: BoxFit.contain,
-        errorBuilder: (a, b, c) => const Icon(Icons.public, size: 18),
+        errorBuilder: (a, b, c) => const Icon(AppIcons.public, size: 18),
       ),
       label: Row(
         mainAxisSize: MainAxisSize.min,
@@ -421,7 +422,7 @@ class _LinkChip extends StatelessWidget {
           Text(label),
           const SizedBox(width: 4),
           Icon(
-            Icons.open_in_new,
+            AppIcons.openInNew,
             size: 12,
             color: theme.colorScheme.onSurface.withAlpha(120),
           ),
@@ -643,7 +644,7 @@ class _OverlayDetectedBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(Icons.check, size: 18, color: theme.colorScheme.onPrimary),
+      child: Icon(AppIcons.check, size: 18, color: theme.colorScheme.onPrimary),
     );
   }
 }
@@ -709,7 +710,7 @@ class _DetectionStatsTile extends ConsumerWidget {
             child: Row(
               children: [
                 Icon(
-                  Icons.check_circle,
+                  AppIcons.checkCircle,
                   size: 20,
                   color: theme.colorScheme.primary,
                 ),

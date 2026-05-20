@@ -36,6 +36,7 @@ import 'package:geolocator/geolocator.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/open_street_map_tile_layer.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Bounding zoom range we seed for offline use.
 const int _minZoom = 12;
@@ -62,10 +63,10 @@ class OfflineMapDownloadTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     return ListTile(
-      leading: const Icon(Icons.download_for_offline_outlined),
+      leading: const Icon(AppIcons.downloadForOfflineOutlined),
       title: Text(l10n.settingsOfflineMapDownload),
       subtitle: Text(l10n.settingsOfflineMapDownloadSubtitle),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: const Icon(AppIcons.chevronRight),
       onTap: () => _start(context, ref),
     );
   }
@@ -363,3 +364,4 @@ class _DownloadProgressDialogState extends State<_DownloadProgressDialog> {
     );
   }
 }
+

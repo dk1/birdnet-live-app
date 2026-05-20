@@ -123,7 +123,7 @@ class _SummaryHeader extends StatelessWidget {
           Row(
             children: [
               StatChip(
-                icon: Icons.timer_outlined,
+                icon: AppIcons.timerOutlined,
                 value: _formatDuration(duration),
               ),
               const SizedBox(width: 16),
@@ -133,7 +133,7 @@ class _SummaryHeader extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               StatChip(
-                icon: Icons.graphic_eq,
+                icon: AppIcons.graphicEq,
                 value: l10n.sessionDetectionCount(detectionCount),
               ),
             ],
@@ -146,7 +146,7 @@ class _SummaryHeader extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(
-                    Icons.location_on_outlined,
+                    AppIcons.locationOnOutlined,
                     size: 18,
                     color: theme.colorScheme.primary,
                   ),
@@ -164,7 +164,7 @@ class _SummaryHeader extends StatelessWidget {
                     ),
                   ),
                   Icon(
-                    Icons.map_outlined,
+                    AppIcons.mapOutlined,
                     size: 18,
                     color: theme.colorScheme.primary.withAlpha(178),
                   ),
@@ -175,7 +175,7 @@ class _SummaryHeader extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  Icons.location_off_outlined,
+                  AppIcons.locationOffOutlined,
                   size: 18,
                   color: theme.colorScheme.onSurface.withAlpha(120),
                 ),
@@ -206,7 +206,7 @@ class _SummaryHeader extends StatelessWidget {
                   if (session.distanceMeters != null &&
                       session.distanceMeters! > 0) ...[
                     StatChip(
-                      icon: Icons.straighten_outlined,
+                      icon: AppIcons.straightenOutlined,
                       value:
                           session.distanceMeters! >= 1000
                               ? '${(session.distanceMeters! / 1000).toStringAsFixed(1)} km'
@@ -217,7 +217,7 @@ class _SummaryHeader extends StatelessWidget {
                   if (session.observerName != null &&
                       session.observerName!.isNotEmpty) ...[
                     StatChip(
-                      icon: Icons.person_outline,
+                      icon: AppIcons.personOutline,
                       value: session.observerName!,
                     ),
                     const SizedBox(width: 16),
@@ -225,7 +225,7 @@ class _SummaryHeader extends StatelessWidget {
                   if (session.transectId != null &&
                       session.transectId!.isNotEmpty) ...[
                     StatChip(
-                      icon: Icons.route_outlined,
+                      icon: AppIcons.routeOutlined,
                       value: session.transectId!,
                     ),
                   ],
@@ -275,11 +275,11 @@ class _StopReasonBanner extends StatelessWidget {
     final String text;
     switch (reason) {
       case SessionStopReason.maxDuration:
-        icon = Icons.timer_off_outlined;
+        icon = AppIcons.timerOffOutlined;
         text = l10n.sessionAutoStopMaxDuration;
         break;
       case SessionStopReason.lowBattery:
-        icon = Icons.battery_alert_outlined;
+        icon = AppIcons.batteryAlertOutlined;
         text = l10n.sessionAutoStopLowBattery((value ?? 0).round());
         break;
       case SessionStopReason.manual:
@@ -977,7 +977,7 @@ class _PlayPauseButton extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Icon(
-            isPlaying ? Icons.pause : Icons.play_arrow,
+            isPlaying ? AppIcons.pause : AppIcons.playArrow,
             color: Colors.white,
             size: 24,
           ),
@@ -1177,8 +1177,8 @@ class _SpeciesTile extends ConsumerWidget {
                             children: [
                               Icon(
                                 isActive && onPause != null
-                                    ? Icons.pause_rounded
-                                    : Icons.play_arrow_rounded,
+                                    ? AppIcons.pauseRounded
+                                    : AppIcons.playArrowRounded,
                                 size: 24,
                                 color: theme.colorScheme.primary,
                               ),
@@ -1257,7 +1257,7 @@ class _SpeciesTile extends ConsumerWidget {
                                 Padding(
                                   padding: const EdgeInsets.only(left: 4),
                                   child: Icon(
-                                    Icons.check_circle,
+                                    AppIcons.checkCircle,
                                     size: 14,
                                     color:
                                         AppSemanticColors.of(context).success,
@@ -1277,7 +1277,7 @@ class _SpeciesTile extends ConsumerWidget {
                                           context,
                                         )!.detectionSourceManual,
                                     child: Icon(
-                                      Icons.edit_note,
+                                      AppIcons.editNote,
                                       size: 16,
                                       color: theme.colorScheme.primary,
                                     ),
@@ -1344,7 +1344,7 @@ class _SpeciesTile extends ConsumerWidget {
                       turns: isExpanded ? 0.5 : 0.0,
                       duration: const Duration(milliseconds: 200),
                       child: Icon(
-                        Icons.expand_more,
+                        AppIcons.expandMore,
                         size: 24,
                         color: theme.colorScheme.onSurface.withAlpha(120),
                       ),
@@ -1447,7 +1447,7 @@ class _SpeciesTile extends ConsumerWidget {
       alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(color: color.withAlpha(40)),
-      child: Icon(Icons.delete_sweep_outlined, color: color),
+      child: Icon(AppIcons.deleteSweepOutlined, color: color),
     );
   }
 }
@@ -1582,7 +1582,7 @@ class _ClusterRow extends ConsumerWidget {
                 child: Tooltip(
                   message: l10n.detectionSourceManual,
                   child: Icon(
-                    Icons.edit_note,
+                    AppIcons.editNote,
                     size: 24,
                     color: theme.colorScheme.primary,
                   ),
@@ -1597,9 +1597,9 @@ class _ClusterRow extends ConsumerWidget {
                   child: Icon(
                     isActive
                         ? (onPause != null
-                            ? Icons.pause_rounded
-                            : Icons.graphic_eq)
-                        : Icons.play_arrow_rounded,
+                            ? AppIcons.pauseRounded
+                            : AppIcons.graphicEq)
+                        : AppIcons.playArrowRounded,
                     size: 24,
                     color: theme.colorScheme.primary,
                   ),
@@ -1645,7 +1645,7 @@ class _ClusterRow extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Icon(
-                    Icons.location_on_outlined,
+                    AppIcons.locationOnOutlined,
                     size: 24,
                     color: theme.colorScheme.onSurface.withAlpha(100),
                   ),
@@ -1662,7 +1662,7 @@ class _ClusterRow extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Icon(
-                    confirmed ? Icons.check_circle : Icons.check_circle_outline,
+                    confirmed ? AppIcons.checkCircle : AppIcons.checkCircleOutline,
                     size: 24,
                     color:
                         confirmed
@@ -1682,7 +1682,7 @@ class _ClusterRow extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Icon(
-                      Icons.sticky_note_2_outlined,
+                      AppIcons.stickyNote2Outlined,
                       size: 22,
                       color: theme.colorScheme.primary.withAlpha(180),
                     ),
@@ -1698,7 +1698,7 @@ class _ClusterRow extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Icon(
-                      Icons.mic,
+                      AppIcons.mic,
                       size: 22,
                       color: theme.colorScheme.primary.withAlpha(180),
                     ),
@@ -1741,13 +1741,13 @@ class _ClusterRow extends ConsumerWidget {
       background: _swipeBackground(
         theme,
         alignLeft: true,
-        icon: Icons.delete_outline,
+        icon: AppIcons.deleteOutline,
         color: theme.colorScheme.error,
       ),
       secondaryBackground: _swipeBackground(
         theme,
         alignLeft: false,
-        icon: Icons.swap_horiz,
+        icon: AppIcons.swapHoriz,
         color: theme.colorScheme.primary,
       ),
       confirmDismiss: (direction) async {
@@ -1998,7 +1998,7 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
                   : l10n.sessionAddSpecies),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(AppIcons.close),
           tooltip: l10n.tooltipClose,
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -2022,12 +2022,12 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
                   ButtonSegment(
                     value: AddSpeciesInsertMode.atTimestamp,
                     label: Text(l10n.sessionInsertAtTimestamp),
-                    icon: const Icon(Icons.schedule, size: 18),
+                    icon: const Icon(AppIcons.schedule, size: 18),
                   ),
                   ButtonSegment(
                     value: AddSpeciesInsertMode.global,
                     label: Text(l10n.sessionInsertGlobally),
-                    icon: const Icon(Icons.public, size: 18),
+                    icon: const Icon(AppIcons.public, size: 18),
                   ),
                 ],
                 selected: {_mode},
@@ -2047,14 +2047,14 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: l10n.sessionSearchSpecies,
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(AppIcons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 suffixIcon:
                     _searchController.text.isNotEmpty
                         ? IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: const Icon(AppIcons.clear),
                           tooltip: l10n.tooltipClearSearch,
                           onPressed: () {
                             _searchController.clear();
@@ -2182,7 +2182,7 @@ class _ReplaceTargetBanner extends ConsumerWidget {
               ],
             ),
           ),
-          Icon(Icons.arrow_downward, color: theme.colorScheme.onSurfaceVariant),
+          Icon(AppIcons.arrowDownward, color: theme.colorScheme.onSurfaceVariant),
         ],
       ),
     );
@@ -2220,7 +2220,7 @@ class _SpeciesResultTile extends ConsumerWidget {
                 height: 48,
                 color: theme.colorScheme.surfaceContainerHighest,
                 child: Icon(
-                  Icons.image_not_supported_outlined,
+                  AppIcons.imageNotSupportedOutlined,
                   size: 20,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -2278,7 +2278,7 @@ class _SearchEmptyState extends StatelessWidget {
         const SizedBox(height: 12),
         const Divider(height: 1),
         ListTile(
-          leading: Icon(Icons.help_outline, color: theme.colorScheme.tertiary),
+          leading: Icon(AppIcons.helpOutline, color: theme.colorScheme.tertiary),
           title: Text(l10n.sessionUnknownSpecies),
           subtitle: Text(
             DetectionRecord.unknownSpeciesName,
@@ -2289,7 +2289,7 @@ class _SearchEmptyState extends StatelessWidget {
           onTap: onPickUnknown,
         ),
         ListTile(
-          leading: Icon(Icons.edit_note, color: theme.colorScheme.tertiary),
+          leading: Icon(AppIcons.editNote, color: theme.colorScheme.tertiary),
           title: Text(l10n.sessionOtherSpecies),
           subtitle: Text(
             l10n.sessionOtherSpeciesHint,
@@ -2321,7 +2321,7 @@ class _NoResultsState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.search_off,
+              AppIcons.searchOff,
               size: 48,
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -2443,7 +2443,7 @@ class _AnnotationsSectionState extends State<_AnnotationsSection> {
                 children: [
                   IconButton(
                     icon: Icon(
-                      _atTimestamp ? Icons.schedule : Icons.public,
+                      _atTimestamp ? AppIcons.schedule : AppIcons.public,
                       size: 20,
                       color:
                           _atTimestamp
@@ -2464,7 +2464,7 @@ class _AnnotationsSectionState extends State<_AnnotationsSection> {
                   ),
                   IconButton(
                     icon: Icon(
-                      Icons.send,
+                      AppIcons.send,
                       size: 20,
                       color: theme.colorScheme.primary,
                     ),
@@ -2593,7 +2593,7 @@ class _AnnotationRowState extends State<_AnnotationRow> {
               child: Padding(
                 padding: const EdgeInsets.all(4),
                 child: Icon(
-                  _isPlaying ? Icons.stop_circle : Icons.play_circle_outline,
+                  _isPlaying ? AppIcons.stopCircle : AppIcons.playCircleOutline,
                   size: 18,
                   color: theme.colorScheme.primary,
                 ),
@@ -2606,7 +2606,7 @@ class _AnnotationRowState extends State<_AnnotationRow> {
             child: Padding(
               padding: const EdgeInsets.all(4),
               child: Icon(
-                Icons.delete_outline,
+                AppIcons.deleteOutline,
                 size: 16,
                 color: theme.colorScheme.onSurface.withAlpha(100),
               ),
@@ -3165,23 +3165,24 @@ class _SessionHelpSheet extends StatelessWidget {
       initialChildSize: 0.72,
       sections: [
         AppHelpSection(
-          icon: Icons.info_outline,
+          icon: AppIcons.infoOutline,
           body: l10n.sessionHelpOverview,
         ),
-        AppHelpSection(icon: Icons.close, body: l10n.sessionHelpTopBar),
+        AppHelpSection(icon: AppIcons.close, body: l10n.sessionHelpTopBar),
         AppHelpSection(
-          icon: Icons.add_circle_outline,
+          icon: AppIcons.addCircleOutline,
           body: l10n.sessionHelpAddSpecies,
         ),
-        AppHelpSection(icon: Icons.undo, body: l10n.sessionHelpUndoRedo),
-        AppHelpSection(icon: Icons.content_cut, body: l10n.sessionHelpTrimming),
-        AppHelpSection(icon: Icons.save, body: l10n.sessionHelpSaveDiscard),
+        AppHelpSection(icon: AppIcons.undo, body: l10n.sessionHelpUndoRedo),
+        AppHelpSection(icon: AppIcons.contentCut, body: l10n.sessionHelpTrimming),
+        AppHelpSection(icon: AppIcons.save, body: l10n.sessionHelpSaveDiscard),
         if (showContinueSurvey)
           AppHelpSection(
-            icon: Icons.play_arrow_rounded,
+            icon: AppIcons.playArrowRounded,
             body: l10n.sessionHelpContinueSurvey,
           ),
       ],
     );
   }
 }
+

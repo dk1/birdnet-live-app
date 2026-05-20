@@ -26,6 +26,7 @@ import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/open_street_map_tile_layer.dart';
 import '../../explore/explore_providers.dart';
 import '../../live/live_session.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Live map showing GPS track and detection markers.
 ///
@@ -318,7 +319,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           width: 28,
           height: 28,
           child: Icon(
-            Icons.flag_rounded,
+            AppIcons.flagRounded,
             color: AppSemanticColors.of(context).success,
             size: 28,
           ),
@@ -339,7 +340,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
             width: 28,
             height: 28,
             child: Icon(
-              Icons.person_pin_circle_rounded,
+              AppIcons.personPinCircleRounded,
               color: theme.colorScheme.primary,
               size: 28,
             ),
@@ -501,14 +502,14 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.map_outlined,
+              AppIcons.mapOutlined,
               size: 48,
               color: theme.colorScheme.onSurface.withAlpha(100),
             ),
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: _requestConsent,
-              icon: const Icon(Icons.map),
+              icon: const Icon(AppIcons.map),
               label: Text(l10n.mapLoadButton),
             ),
             const SizedBox(height: 8),
@@ -667,7 +668,7 @@ class _SpeciesMarker extends ConsumerWidget {
           (a, b, c) => Container(
             color: borderColor.withAlpha(60),
             child: Icon(
-              Icons.music_note,
+              AppIcons.musicNote,
               size: size * 0.45,
               color: borderColor,
             ),
@@ -754,7 +755,7 @@ class _SpeciesMarker extends ConsumerWidget {
                   ],
                 ),
                 child: Icon(
-                  Icons.play_arrow_rounded,
+                  AppIcons.playArrowRounded,
                   size: badgeSize * 0.85,
                   color: theme.colorScheme.onPrimary,
                 ),
@@ -813,7 +814,7 @@ class _SpeciesMarker extends ConsumerWidget {
                 ],
               ),
               child: Icon(
-                Icons.check_rounded,
+                AppIcons.checkRounded,
                 size: badgeSize * 0.85,
                 color: semanticColors.onSuccess,
               ),
@@ -869,3 +870,4 @@ class _ClusterBubble extends StatelessWidget {
     );
   }
 }
+

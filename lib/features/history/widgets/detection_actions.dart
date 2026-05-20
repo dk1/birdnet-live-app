@@ -28,6 +28,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Bundle of optional per-detection action callbacks.
 ///
@@ -165,7 +166,7 @@ class DetectionActionsOverflow extends StatelessWidget {
       padding: EdgeInsets.zero,
       icon: Padding(
         padding: padding,
-        child: Icon(Icons.more_vert, size: iconSize, color: tint),
+        child: Icon(AppIcons.moreVert, size: iconSize, color: tint),
       ),
       onSelected: (a) {
         switch (a) {
@@ -192,7 +193,7 @@ class DetectionActionsOverflow extends StatelessWidget {
             PopupMenuItem<_OverflowAction>(
               value: _OverflowAction.share,
               child: _OverflowRow(
-                icon: Icons.share,
+                icon: AppIcons.share,
                 label: l10n.detectionShareTooltip,
               ),
             ),
@@ -203,7 +204,7 @@ class DetectionActionsOverflow extends StatelessWidget {
             PopupMenuItem<_OverflowAction>(
               value: _OverflowAction.replace,
               child: _OverflowRow(
-                icon: Icons.swap_horiz,
+                icon: AppIcons.swapHoriz,
                 label: l10n.sessionReplaceDetection,
               ),
             ),
@@ -214,7 +215,7 @@ class DetectionActionsOverflow extends StatelessWidget {
             PopupMenuItem<_OverflowAction>(
               value: _OverflowAction.editNote,
               child: _OverflowRow(
-                icon: Icons.sticky_note_2_outlined,
+                icon: AppIcons.stickyNote2Outlined,
                 label:
                     actions.hasNote
                         ? l10n.detectionEditNote
@@ -228,7 +229,7 @@ class DetectionActionsOverflow extends StatelessWidget {
             PopupMenuItem<_OverflowAction>(
               value: _OverflowAction.editVoiceMemo,
               child: _OverflowRow(
-                icon: Icons.mic,
+                icon: AppIcons.mic,
                 label:
                     actions.hasVoiceMemo
                         ? l10n.detectionReplaceVoiceMemo
@@ -242,7 +243,7 @@ class DetectionActionsOverflow extends StatelessWidget {
             PopupMenuItem<_OverflowAction>(
               value: _OverflowAction.deleteVoiceMemo,
               child: _OverflowRow(
-                icon: Icons.mic_off,
+                icon: AppIcons.micOff,
                 label: l10n.detectionDeleteVoiceMemo,
                 color: theme.colorScheme.error,
               ),
@@ -254,7 +255,7 @@ class DetectionActionsOverflow extends StatelessWidget {
             PopupMenuItem<_OverflowAction>(
               value: _OverflowAction.delete,
               child: _OverflowRow(
-                icon: Icons.delete_outline,
+                icon: AppIcons.deleteOutline,
                 label: l10n.detectionDeleteTooltip,
                 color: theme.colorScheme.error,
               ),
@@ -266,7 +267,7 @@ class DetectionActionsOverflow extends StatelessWidget {
             PopupMenuItem<_OverflowAction>(
               value: _OverflowAction.deleteSpecies,
               child: _OverflowRow(
-                icon: Icons.delete_sweep_outlined,
+                icon: AppIcons.deleteSweepOutlined,
                 label: l10n.detectionDeleteSpecies,
                 color: theme.colorScheme.error,
               ),
@@ -299,3 +300,4 @@ class _OverflowRow extends StatelessWidget {
     );
   }
 }
+

@@ -78,7 +78,7 @@ class WizardScaffold extends StatelessWidget {
   /// Localized label for the next/start button.
   final String nextLabel;
 
-  /// Optional leading icon for the next button (e.g. `Icons.play_arrow`
+  /// Optional leading icon for the next button (e.g. `AppIcons.playArrow`
   /// on the final "Start" step).
   final IconData? nextIcon;
 

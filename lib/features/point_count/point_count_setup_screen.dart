@@ -35,6 +35,7 @@ import '../../shared/widgets/wizard_scaffold.dart';
 import '../explore/explore_providers.dart';
 import '../settings/settings_screen.dart';
 import 'point_count_live_screen.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Location choice for the point count setup.
 enum _LocationChoice { gps, manual, skip }
@@ -263,15 +264,15 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
             title: l10n.pointCountSetupHelpTitle,
             sections: [
               AppHelpSection(
-                icon: Icons.timer_rounded,
+                icon: AppIcons.timerRounded,
                 body: l10n.pointCountSetupHelpSteps,
               ),
               AppHelpSection(
-                icon: Icons.location_on_rounded,
+                icon: AppIcons.locationOnRounded,
                 body: l10n.pointCountSetupHelpLocation,
               ),
               AppHelpSection(
-                icon: Icons.play_arrow_rounded,
+                icon: AppIcons.playArrowRounded,
                 body: l10n.pointCountSetupHelpStart,
               ),
             ],
@@ -290,12 +291,12 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
       totalSteps: _totalSteps,
       actions: [
         IconButton(
-          icon: const Icon(Icons.help_outline_rounded, size: 20),
+          icon: const Icon(AppIcons.helpOutlineRounded, size: 20),
           onPressed: _showHelp,
           tooltip: l10n.pointCountSetupHelpTitle,
         ),
         IconButton(
-          icon: const Icon(Icons.tune_rounded, size: 20),
+          icon: const Icon(AppIcons.tuneRounded, size: 20),
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
@@ -313,7 +314,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
       onNext: isLastStep ? _start : _next,
       backLabel: _step == 0 ? l10n.cancel : l10n.pointCountBack,
       nextLabel: isLastStep ? l10n.pointCountStart : l10n.pointCountNext,
-      nextIcon: isLastStep ? Icons.play_arrow_rounded : null,
+      nextIcon: isLastStep ? AppIcons.playArrowRounded : null,
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 250),
         child: switch (_step) {
@@ -419,7 +420,7 @@ class _DurationStep extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: l10n.pointCountName,
             hintText: l10n.pointCountNameHint,
-            prefixIcon: const Icon(Icons.edit),
+            prefixIcon: const Icon(AppIcons.edit),
           ),
         ),
         const SizedBox(height: 16),
@@ -428,7 +429,7 @@ class _DurationStep extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: l10n.surveyObserverName,
             hintText: l10n.surveyObserverNameHint,
-            prefixIcon: const Icon(Icons.person_rounded),
+            prefixIcon: const Icon(AppIcons.personRounded),
           ),
         ),
         const SizedBox(height: 24),
@@ -475,7 +476,7 @@ class _DurationStep extends ConsumerWidget {
             child: Row(
               children: [
                 Icon(
-                  Icons.calendar_today_rounded,
+                  AppIcons.calendarTodayRounded,
                   size: 18,
                   color: theme.colorScheme.primary,
                 ),
@@ -496,17 +497,17 @@ class _DurationStep extends ConsumerWidget {
           segments: [
             ButtonSegment(
               value: _LocationChoice.gps,
-              icon: const Icon(Icons.my_location, size: 18),
+              icon: const Icon(AppIcons.myLocation, size: 18),
               label: Text(l10n.pointCountLocationGps),
             ),
             ButtonSegment(
               value: _LocationChoice.manual,
-              icon: const Icon(Icons.edit_location_alt, size: 18),
+              icon: const Icon(AppIcons.editLocationAlt, size: 18),
               label: Text(l10n.pointCountLocationManual),
             ),
             ButtonSegment(
               value: _LocationChoice.skip,
-              icon: const Icon(Icons.location_off, size: 18),
+              icon: const Icon(AppIcons.locationOff, size: 18),
               label: Text(l10n.pointCountLocationSkip),
             ),
           ],
@@ -555,7 +556,7 @@ class _DurationStep extends ConsumerWidget {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.location_on_rounded,
+                      AppIcons.locationOnRounded,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 8),
@@ -570,7 +571,7 @@ class _DurationStep extends ConsumerWidget {
                     ),
                     IconButton(
                       onPressed: onFetchGps,
-                      icon: const Icon(Icons.refresh),
+                      icon: const Icon(AppIcons.refresh),
                       tooltip: l10n.pointCountLocationRefresh,
                     ),
                   ],
@@ -584,7 +585,7 @@ class _DurationStep extends ConsumerWidget {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.location_off_rounded,
+                      AppIcons.locationOffRounded,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 8),
@@ -598,7 +599,7 @@ class _DurationStep extends ConsumerWidget {
                     ),
                     IconButton(
                       onPressed: onFetchGps,
-                      icon: const Icon(Icons.refresh),
+                      icon: const Icon(AppIcons.refresh),
                       tooltip: l10n.pointCountLocationRefresh,
                     ),
                   ],
@@ -661,7 +662,7 @@ class _DurationStep extends ConsumerWidget {
                 onMapPick(result.latitude, result.longitude);
               }
             },
-            icon: const Icon(Icons.map, size: 18),
+            icon: const Icon(AppIcons.map, size: 18),
             label: Text(l10n.pointCountPickOnMap),
           ),
         ],
@@ -874,12 +875,12 @@ class _TipsStep extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     final tips = [
-      (Icons.landscape_rounded, l10n.pointCountTipStableSurface),
-      (Icons.air_rounded, l10n.pointCountTipWind),
-      (Icons.volume_off_rounded, l10n.pointCountTipQuiet),
-      (Icons.mic_external_on_rounded, l10n.pointCountTipMicrophone),
-      (Icons.volume_mute_rounded, l10n.pointCountTipDisturbance),
-      (Icons.science_rounded, l10n.pointCountTipConsistency),
+      (AppIcons.landscapeRounded, l10n.pointCountTipStableSurface),
+      (AppIcons.airRounded, l10n.pointCountTipWind),
+      (AppIcons.volumeOffRounded, l10n.pointCountTipQuiet),
+      (AppIcons.micExternalOnRounded, l10n.pointCountTipMicrophone),
+      (AppIcons.volumeMuteRounded, l10n.pointCountTipDisturbance),
+      (AppIcons.scienceRounded, l10n.pointCountTipConsistency),
     ];
 
     return ListView(
@@ -933,7 +934,7 @@ class _ReadyStep extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.timer_rounded, size: 64, color: theme.colorScheme.primary),
+          Icon(AppIcons.timerRounded, size: 64, color: theme.colorScheme.primary),
           const SizedBox(height: 24),
           Text(
             l10n.pointCountReady,
@@ -969,3 +970,4 @@ class _ReadyStep extends ConsumerWidget {
     );
   }
 }
+

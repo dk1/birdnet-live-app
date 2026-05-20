@@ -7,6 +7,7 @@ import 'package:birdnet_live/shared/widgets/empty_view.dart';
 import 'package:birdnet_live/shared/widgets/error_view.dart';
 import 'package:birdnet_live/shared/widgets/loading_view.dart';
 import 'package:birdnet_live/shared/widgets/stat_chip.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -75,7 +76,7 @@ void main() {
   group('ErrorView', () {
     testWidgets('renders default error icon and title', (tester) async {
       await tester.pumpWidget(_wrap(const ErrorView(title: 'Oh no')));
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      expect(find.byIcon(AppIcons.errorOutline), findsOneWidget);
       expect(find.text('Oh no'), findsOneWidget);
     });
 

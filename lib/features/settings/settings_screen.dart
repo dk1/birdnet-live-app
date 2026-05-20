@@ -13,6 +13,7 @@ import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
 import '../spectrogram/color_maps.dart';
 import 'offline_map_download_tile.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 // ---------------------------------------------------------------------------
 // Settings context — determines which settings are visible
@@ -671,7 +672,7 @@ class SettingsScreen extends ConsumerWidget {
             if (_showSection('about'))
               ListTile(
                 title: Text(l10n.about),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: const Icon(AppIcons.chevronRight),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
@@ -928,7 +929,7 @@ class _HelpIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return IconButton(
-      icon: const Icon(Icons.help_outline, size: 18),
+      icon: const Icon(AppIcons.helpOutline, size: 18),
       visualDensity: VisualDensity.compact,
       tooltip: l10n.settingsHelpTooltip,
       padding: EdgeInsets.zero,
@@ -1467,7 +1468,7 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
             ? l10n.settingsGpsRefreshSubtitle
             : '${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)}';
     return ListTile(
-      leading: const Icon(Icons.my_location),
+      leading: const Icon(AppIcons.myLocation),
       title: Text(l10n.settingsGpsRefresh),
       subtitle: Text(subtitle),
       trailing:
@@ -1477,7 +1478,7 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
                 height: 24,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-              : const Icon(Icons.refresh),
+              : const Icon(AppIcons.refresh),
       onTap: _refreshing ? null : _refresh,
     );
   }
@@ -1532,3 +1533,4 @@ class _ExportFormatChecklist extends ConsumerWidget {
     );
   }
 }
+
