@@ -19,7 +19,6 @@ import android.media.MediaFormat
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import kotlin.math.roundToInt
 
 /**
  * Decodes an audio file to mono 16-bit PCM using Android's MediaCodec.
@@ -30,6 +29,39 @@ import kotlin.math.roundToInt
  *   - "totalSamples": Int — number of mono samples
  */
 object NativeAudioDecoder {
+
+    fun inspect(path: String): Map<String, Any> {
+        val file = File(path)
+        if (!file.exists()) {
+            throw IllegalArgumentException("File not found: $path")
+        }
+
+        val extractor = MediaExtractor()
+        try {
+            extractor.setDataSource(path)
+            val (_, format) = findAudioTrack(extractor)
+                ?: throw IllegalArgumentException("No audio track found in: $path")
+
+            val sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+            val durationUs = if (format.containsKey(MediaFormat.KEY_DURATION)) {
+                format.getLong(MediaFormat.KEY_DURATION)
+            } else {
+                0L
+            }
+            val totalSamples = if (durationUs > 0) {
+                (durationUs * sampleRate / 1_000_000L).toInt()
+            } else {
+                0
+            }
+
+            return mapOf(
+                "sampleRate" to sampleRate,
+                "totalSamples" to totalSamples,
+            )
+        } finally {
+            extractor.release()
+        }
+    }
 
     fun decode(path: String): Map<String, Any> {
         val file = File(path)

@@ -463,18 +463,32 @@ class _WeatherRow extends StatelessWidget {
 class _SpectrogramStrip extends StatefulWidget {
   const _SpectrogramStrip({
     required this.spectrogramImage,
+    required this.spectrogramChunks,
     required this.decoding,
     required this.position,
     required this.duration,
+    required this.timelineOffsetSec,
+    required this.onViewportChanged,
     required this.onSeek,
     required this.onPause,
     required this.isPlaying,
+    required this.userDefaultViewSeconds,
   });
 
+  /// Initial / preferred view width for short clips, sourced from the
+  /// user's live-spectrogram duration setting. Long files override this
+  /// with a duration-aware default so users don't have to pinch out
+  /// dozens of times to see any context.
+  final double userDefaultViewSeconds;
+
   final ui.Image? spectrogramImage;
+  final List<_SpectrogramChunk> spectrogramChunks;
   final bool decoding;
   final Duration position;
   final Duration duration;
+  final double timelineOffsetSec;
+  final void Function(double absoluteCenterSec, double viewSeconds)?
+  onViewportChanged;
   final ValueChanged<Duration> onSeek;
   final VoidCallback onPause;
   final bool isPlaying;
@@ -501,18 +515,50 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
   /// to render a sub-sample slice or more than the whole clip.
   double _viewSeconds = _defaultViewSeconds;
 
+  /// True once we've snapped [_viewSeconds] to a duration-aware default
+  /// for the current clip. Stops the auto-pick from clobbering a manual
+  /// pinch-zoom every time `widget.duration` jitters.
+  bool _appliedDurationAwareDefault = false;
+
   /// Captured at the start of a scale gesture so single-finger pans and
   /// two-finger pinches both compose smoothly without integrating drift.
   double? _scaleStartViewSeconds;
   double? _scaleStartCenterSec;
+  double? _lastRequestedCenterSec;
+  double? _lastRequestedViewSeconds;
 
   static const double _defaultViewSeconds = 10.0;
   static const double _minViewSeconds = 1.0;
+  static const double _maxInitialViewSeconds = 180.0;
+
+  /// Pick an initial view width that scales with clip length: short
+  /// recordings (≤ 5 min) open at the user's preferred live-spectrogram
+  /// duration; longer ones start showing roughly the first 10 % so users
+  /// don't have to pinch-out a dozen times to see context on a one-hour
+  /// file.
+  double _initialViewSecondsFor(Duration duration) {
+    final totalSec = duration.inMicroseconds / 1000000.0;
+    final userPref = widget.userDefaultViewSeconds.clamp(
+      _minViewSeconds,
+      _maxInitialViewSeconds,
+    );
+    if (totalSec <= 0) return userPref;
+    if (totalSec <= 300.0) {
+      // Never propose a view wider than the clip itself.
+      return math.min(userPref, totalSec);
+    }
+    final tenPercent = totalSec * 0.1;
+    return tenPercent.clamp(userPref, _maxInitialViewSeconds).toDouble();
+  }
 
   @override
   void initState() {
     super.initState();
     _interpolatedPositionSec = widget.position.inMicroseconds / 1000000.0;
+    if (widget.duration > Duration.zero) {
+      _viewSeconds = _initialViewSecondsFor(widget.duration);
+      _appliedDurationAwareDefault = true;
+    }
     _ticker = createTicker((elapsed) {
       if (widget.isPlaying && _pannedCenterSec == null) {
         final now = DateTime.now();
@@ -520,17 +566,38 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
         setState(() {
           _interpolatedPositionSec += delta;
         });
+        _requestVisibleSpectrogram();
         _lastTickTime = now;
       } else {
         _lastTickTime = DateTime.now();
       }
     });
     _ticker.start();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _requestVisibleSpectrogram(force: true);
+    });
   }
 
   @override
   void didUpdateWidget(_SpectrogramStrip oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // First time we learn the true clip length, snap the view to a
+    // duration-aware default. Skipped if the user has already pinched
+    // or panned, so we never fight a deliberate zoom level. We also
+    // force a viewport request so the lazy-loader fetches chunks for
+    // the new (potentially much wider) view instead of being stuck on
+    // the 10 s request made before duration was known.
+    if (!_appliedDurationAwareDefault &&
+        widget.duration > Duration.zero &&
+        _pannedCenterSec == null &&
+        _scaleStartViewSeconds == null) {
+      _viewSeconds = _initialViewSecondsFor(widget.duration);
+      _appliedDurationAwareDefault = true;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _requestVisibleSpectrogram(force: true);
+      });
+    }
 
     // Sync interpolated position with the source of truth whenever it updates
     if (widget.position != oldWidget.position) {
@@ -539,6 +606,7 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
       if ((_interpolatedPositionSec - actualSec).abs() > 0.1) {
         _interpolatedPositionSec = actualSec;
       }
+      _requestVisibleSpectrogram();
     }
 
     if (widget.isPlaying && !oldWidget.isPlaying) {
@@ -555,6 +623,11 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
     } else if (widget.isPlaying && !oldWidget.isPlaying) {
       _pannedCenterSec = null;
     }
+
+    if (widget.timelineOffsetSec != oldWidget.timelineOffsetSec ||
+        widget.duration != oldWidget.duration) {
+      _requestVisibleSpectrogram(force: true);
+    }
   }
 
   @override
@@ -567,7 +640,9 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    if (widget.decoding || widget.spectrogramImage == null) {
+    final hasSpectrogram =
+        widget.spectrogramImage != null || widget.spectrogramChunks.isNotEmpty;
+    if (!hasSpectrogram) {
       return Container(
         height: 150,
         color: Colors.black,
@@ -591,15 +666,34 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
       child: Container(
         height: 150,
         color: Colors.black,
-        child: CustomPaint(
-          painter: _ReviewSpectrogramPainter(
-            spectrogramImage: widget.spectrogramImage!,
-            centerSec: _viewCenterSec,
-            durationSec: widget.duration.inMicroseconds / 1000000.0,
-            viewSeconds: _viewSeconds,
-            colorScheme: theme.colorScheme,
-          ),
-          size: const Size(double.infinity, 150),
+        child: Stack(
+          children: [
+            CustomPaint(
+              painter: _ReviewSpectrogramPainter(
+                spectrogramImage: widget.spectrogramImage,
+                spectrogramChunks: widget.spectrogramChunks,
+                centerSec: _viewCenterSec,
+                durationSec: widget.duration.inMicroseconds / 1000000.0,
+                timelineOffsetSec: widget.timelineOffsetSec,
+                viewSeconds: _viewSeconds,
+                colorScheme: theme.colorScheme,
+              ),
+              size: const Size(double.infinity, 150),
+            ),
+            if (widget.decoding)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white.withAlpha(210),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -618,6 +712,7 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
     );
     widget.onSeek(Duration(milliseconds: clampedMs));
     setState(() => _pannedCenterSec = null);
+    _requestVisibleSpectrogram(force: true);
   }
 
   void _handleScaleStart(ScaleStartDetails details) {
@@ -669,6 +764,37 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
       // stays put for the whole gesture (see comment above).
       _scaleStartCenterSec = newCenter;
     });
+    _requestVisibleSpectrogram();
+  }
+
+  void _requestVisibleSpectrogram({bool force = false}) {
+    final callback = widget.onViewportChanged;
+    if (callback == null) return;
+    final absoluteCenterSec = widget.timelineOffsetSec + _viewCenterSec;
+    final centerDelta =
+        _lastRequestedCenterSec == null
+            ? double.infinity
+            : (absoluteCenterSec - _lastRequestedCenterSec!).abs();
+    final viewDelta =
+        _lastRequestedViewSeconds == null
+            ? double.infinity
+            : (_viewSeconds - _lastRequestedViewSeconds!).abs();
+    // Zoom changes scale relatively, so use a ratio against the last
+    // requested view: tiny absolute deltas at high zoom should still
+    // trigger a refresh, while small jitter at coarse zoom should not.
+    final viewRatio =
+        _lastRequestedViewSeconds == null || _lastRequestedViewSeconds! <= 0
+            ? double.infinity
+            : viewDelta / _lastRequestedViewSeconds!;
+    if (!force &&
+        centerDelta < _viewSeconds / 4 &&
+        viewDelta < 0.25 &&
+        viewRatio < 0.1) {
+      return;
+    }
+    _lastRequestedCenterSec = absoluteCenterSec;
+    _lastRequestedViewSeconds = _viewSeconds;
+    callback(absoluteCenterSec, _viewSeconds);
   }
 }
 
@@ -684,15 +810,19 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
 class _ReviewSpectrogramPainter extends CustomPainter {
   _ReviewSpectrogramPainter({
     required this.spectrogramImage,
+    required this.spectrogramChunks,
     required this.centerSec,
     required this.durationSec,
+    required this.timelineOffsetSec,
     required this.viewSeconds,
     required this.colorScheme,
   });
 
-  final ui.Image spectrogramImage;
+  final ui.Image? spectrogramImage;
+  final List<_SpectrogramChunk> spectrogramChunks;
   final double centerSec;
   final double durationSec;
+  final double timelineOffsetSec;
 
   /// How many seconds of audio the widget viewport currently shows.
   /// Lives on the painter (instead of being a const) so pinch-zoom can
@@ -704,30 +834,60 @@ class _ReviewSpectrogramPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (durationSec <= 0) return;
 
-    final imgW = spectrogramImage.width.toDouble();
-    final imgH = spectrogramImage.height.toDouble();
-
-    // Derive pixel mapping from image width and player duration.
-    final pxPerSec = imgW / durationSec;
-
     final startSec = centerSec - viewSeconds / 2;
     final endSec = centerSec + viewSeconds / 2;
+    final absoluteStartSec = timelineOffsetSec + startSec;
+    final absoluteEndSec = timelineOffsetSec + endSec;
 
-    // Convert time to image pixel x.
-    final srcX1 = (startSec * pxPerSec).clamp(0.0, imgW);
-    final srcX2 = (endSec * pxPerSec).clamp(0.0, imgW);
+    final img = spectrogramImage;
+    if (img != null) {
+      final imgW = img.width.toDouble();
+      final imgH = img.height.toDouble();
 
-    // Destination x: offset when the view extends before/after the image.
-    final dstX1 = startSec < 0 ? (-startSec / viewSeconds * size.width) : 0.0;
-    final dstX2 =
-        endSec > durationSec
-            ? size.width - ((endSec - durationSec) / viewSeconds * size.width)
-            : size.width;
+      // Derive pixel mapping from image width and player duration.
+      final pxPerSec = imgW / durationSec;
 
-    if (srcX2 > srcX1 && dstX2 > dstX1) {
+      // Convert time to image pixel x.
+      final srcX1 = (startSec * pxPerSec).clamp(0.0, imgW);
+      final srcX2 = (endSec * pxPerSec).clamp(0.0, imgW);
+
+      // Destination x: offset when the view extends before/after the image.
+      final dstX1 = startSec < 0 ? (-startSec / viewSeconds * size.width) : 0.0;
+      final dstX2 =
+          endSec > durationSec
+              ? size.width - ((endSec - durationSec) / viewSeconds * size.width)
+              : size.width;
+
+      if (srcX2 > srcX1 && dstX2 > dstX1) {
+        canvas.drawImageRect(
+          img,
+          Rect.fromLTRB(srcX1, 0, srcX2, imgH),
+          Rect.fromLTRB(dstX1, 0, dstX2, size.height),
+          Paint()..filterQuality = FilterQuality.high,
+        );
+      }
+    }
+
+    for (final chunk in spectrogramChunks) {
+      final overlapStart = math.max(absoluteStartSec, chunk.startSec);
+      final overlapEnd = math.min(absoluteEndSec, chunk.endSec);
+      if (overlapEnd <= overlapStart) continue;
+
+      final chunkDuration = chunk.endSec - chunk.startSec;
+      if (chunkDuration <= 0) continue;
+      final chunkW = chunk.image.width.toDouble();
+      final chunkH = chunk.image.height.toDouble();
+      final srcX1 = ((overlapStart - chunk.startSec) / chunkDuration * chunkW)
+          .clamp(0.0, chunkW);
+      final srcX2 = ((overlapEnd - chunk.startSec) / chunkDuration * chunkW)
+          .clamp(0.0, chunkW);
+      final dstX1 =
+          (overlapStart - absoluteStartSec) / viewSeconds * size.width;
+      final dstX2 = (overlapEnd - absoluteStartSec) / viewSeconds * size.width;
+      if (srcX2 <= srcX1 || dstX2 <= dstX1) continue;
       canvas.drawImageRect(
-        spectrogramImage,
-        Rect.fromLTRB(srcX1, 0, srcX2, imgH),
+        chunk.image,
+        Rect.fromLTRB(srcX1, 0, srcX2, chunkH),
         Rect.fromLTRB(dstX1, 0, dstX2, size.height),
         Paint()..filterQuality = FilterQuality.high,
       );
@@ -788,8 +948,10 @@ class _ReviewSpectrogramPainter extends CustomPainter {
   bool shouldRepaint(covariant _ReviewSpectrogramPainter old) {
     return old.centerSec != centerSec ||
         old.durationSec != durationSec ||
+        old.timelineOffsetSec != timelineOffsetSec ||
         old.viewSeconds != viewSeconds ||
-        !identical(old.spectrogramImage, spectrogramImage);
+        !identical(old.spectrogramImage, spectrogramImage) ||
+        old.spectrogramChunks.length != spectrogramChunks.length;
   }
 }
 
@@ -2470,12 +2632,37 @@ class _TrimOverlay extends StatefulWidget {
     required this.initialStartSec,
     required this.initialEndSec,
     required this.onChanged,
-  });
+  }) : visibleStartSec = 0,
+       visibleEndSec = null;
+
+  /// Variant that operates within a sub-window of the recording.
+  ///
+  /// Used for lazy-loaded long files where the full-file spectrogram
+  /// thumbnail isn't available: the overlay is laid out on top of the
+  /// live `_SpectrogramStrip`, and `visibleStartSec`/`visibleEndSec`
+  /// describe the strip's currently painted window. Handle drags map
+  /// pixel positions to absolute seconds inside that window and are
+  /// clamped to it — to extend the trim outside the visible range the
+  /// user exits trim mode, zooms/scrolls, and re-enters.
+  const _TrimOverlay.windowed({
+    required this.visibleStartSec,
+    required double this.visibleEndSec,
+    required this.initialStartSec,
+    required this.initialEndSec,
+    required this.onChanged,
+  }) : durationSec = 0;
 
   final double durationSec;
+  final double visibleStartSec;
+  final double? visibleEndSec;
   final double initialStartSec;
   final double initialEndSec;
   final void Function(double startSec, double endSec) onChanged;
+
+  bool get isWindowed => visibleEndSec != null;
+
+  double get _windowStart => isWindowed ? visibleStartSec : 0.0;
+  double get _windowEnd => isWindowed ? visibleEndSec! : durationSec;
 
   @override
   State<_TrimOverlay> createState() => _TrimOverlayState();
@@ -2487,24 +2674,46 @@ class _TrimOverlayState extends State<_TrimOverlay> {
   bool _draggingStart = false;
   bool _draggingEnd = false;
 
+  double _secToFrac(double sec) {
+    final span = widget._windowEnd - widget._windowStart;
+    if (span <= 0) return 0.0;
+    return ((sec - widget._windowStart) / span).clamp(0.0, 1.0);
+  }
+
+  double _fracToSec(double frac) {
+    final span = widget._windowEnd - widget._windowStart;
+    return widget._windowStart + frac * span;
+  }
+
   @override
   void initState() {
     super.initState();
-    _startFrac =
-        widget.durationSec > 0
-            ? (widget.initialStartSec / widget.durationSec).clamp(0.0, 1.0)
-            : 0.0;
-    _endFrac =
-        widget.durationSec > 0
-            ? (widget.initialEndSec / widget.durationSec).clamp(0.0, 1.0)
-            : 1.0;
+    _startFrac = _secToFrac(widget.initialStartSec);
+    _endFrac = _secToFrac(widget.initialEndSec);
+  }
+
+  @override
+  void didUpdateWidget(covariant _TrimOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the underlying window shifted (e.g. user scrolled the strip
+    // before grabbing a handle), remap the handle positions so they
+    // stay anchored to the same absolute seconds.
+    if (oldWidget.visibleStartSec != widget.visibleStartSec ||
+        oldWidget.visibleEndSec != widget.visibleEndSec ||
+        oldWidget.durationSec != widget.durationSec) {
+      final span = widget._windowEnd - widget._windowStart;
+      if (span <= 0) {
+        _startFrac = 0.0;
+        _endFrac = 1.0;
+      } else {
+        _startFrac = _secToFrac(widget.initialStartSec);
+        _endFrac = _secToFrac(widget.initialEndSec);
+      }
+    }
   }
 
   void _reportChange() {
-    widget.onChanged(
-      _startFrac * widget.durationSec,
-      _endFrac * widget.durationSec,
-    );
+    widget.onChanged(_fracToSec(_startFrac), _fracToSec(_endFrac));
   }
 
   @override
