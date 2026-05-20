@@ -159,7 +159,7 @@ Cette section contrôle **quels services tiers BirdNET Live peut contacter en vo
 
 ### Autoriser les tuiles de carte
 
-Requis pour toute carte interactive (sélecteur de position, carte live de Survey, carte de la session, pré-téléchargement de tuiles). Quand actif, les widgets carte demandent des tuiles raster aux serveurs publics **OpenStreetMap** ; les requêtes de coordonnées de tuile révèlent quelle zone du monde vous regardez. Quand désactivé, tous les écrans cartographiques affichent un panneau d'attente.
+Requis pour toute carte interactive (sélecteur de position, carte live de Survey, carte de la session). Quand actif, les widgets carte demandent des tuiles raster aux serveurs publics **OpenStreetMap** ; les requêtes de coordonnées de tuile révèlent quelle zone du monde vous regardez. Quand désactivé, tous les écrans cartographiques affichent un panneau d'attente.
 
 ### Autoriser la recherche de nom de lieu
 

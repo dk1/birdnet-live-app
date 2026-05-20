@@ -15,6 +15,8 @@ import '../explore/explore_providers.dart';
 import '../spectrogram/color_maps.dart';
 import 'offline_map_download_tile.dart';
 
+bool get _showOfflineMapDownloadSetting => false;
+
 // ---------------------------------------------------------------------------
 // Settings context — determines which settings are visible
 // ---------------------------------------------------------------------------
@@ -562,7 +564,8 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ],
               if (ref.watch(useGpsProvider)) const _GpsRefreshTile(),
-              if (ref.watch(useGpsProvider)) const OfflineMapDownloadTile(),
+              if (_showOfflineMapDownloadSetting && ref.watch(useGpsProvider))
+                const OfflineMapDownloadTile(),
               _ChoiceTile<String>(
                 title: l10n.settingsSpeciesFilter,
                 helpBody: l10n.settingsHelpSpeciesFilter,

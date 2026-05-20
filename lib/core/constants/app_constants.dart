@@ -12,6 +12,14 @@ abstract final class AppConstants {
   static const String githubUrl =
       'https://github.com/birdnet-team/birdnet-live-app';
 
+  /// Mobile application package identifier.
+  static const String packageName = 'de.tu_chemnitz.mi.kahst.birdnet_live';
+
+  /// Contactable User-Agent for public web services used by the app.
+  static const String networkUserAgent =
+      'BirdNETLive (de.tu_chemnitz.mi.kahst.birdnet_live; '
+      '+https://github.com/birdnet-team/birdnet-live-app)';
+
   /// Documentation site URL.
   static const String docsUrl =
       'https://birdnet-team.github.io/birdnet-live-app';

@@ -38,15 +38,15 @@ The app may access the following external resources. Each resource is gated by a
 
 | Resource | Purpose | Gated by | Sent on each request |
 |----------|---------|----------|----------------------|
-| Map tiles (OpenStreetMap) | Base map for the location picker, the Survey live map, the session map, and the offline-tile downloader | **Settings → Privacy → Allow map tiles** | Tile coordinates `(z, x, y)` only — no PII |
-| Reverse geocoding (OpenStreetMap Nominatim) | Resolving GPS coordinates into a human-readable place name (e.g. "Berlin, Germany") for session display | **Settings → Privacy → Allow place name lookup** | The session's latitude / longitude, plus a `BirdNET-Live/<version>` user-agent string |
-| Weather snapshot (Open-Meteo) | One-shot capture of local conditions (temperature, precipitation, wind, cloud cover, WMO weather code) at the recording coordinates and end time | **Settings → Privacy → Allow weather lookup** | The session's latitude / longitude and end timestamp, plus a `BirdNET-Live/<version>` user-agent string |
+| Map tiles (OpenStreetMap) | Base map for the location picker, the Survey live map, and the session map | **Settings → Privacy → Allow map tiles** | Tile coordinates `(z, x, y)` and the BirdNET Live user-agent string — no PII |
+| Reverse geocoding (OpenStreetMap Nominatim) | Resolving GPS coordinates into a human-readable place name (e.g. "Berlin, Germany") for session display | **Settings → Privacy → Allow place name lookup** | The session's latitude / longitude, plus the BirdNET Live user-agent string |
+| Weather snapshot (Open-Meteo) | One-shot capture of local conditions (temperature, precipitation, wind, cloud cover, WMO weather code) at the recording coordinates and end time | **Settings → Privacy → Allow weather lookup** | The session's latitude / longitude and end timestamp, plus the BirdNET Live user-agent string |
 
-Map tile requests are standard HTTPS GET requests to `tile.openstreetmap.org`. Only tile coordinates are sent — no personally identifiable information.
+Map tile requests are standard HTTPS GET requests to `tile.openstreetmap.org` with a BirdNET Live user-agent string. Only tile coordinates are sent — no personally identifiable information.
 
-Reverse-geocoding requests send the session's latitude and longitude to `nominatim.openstreetmap.org` over HTTPS, together with a generic `BirdNET-Live/<version>` user-agent string as required by the [Nominatim Usage Policy](https://operations.osmfoundation.org/policies/nominatim/). The resolved place name is stored locally with the session so a session is only geocoded once. No request is made if the session has no GPS coordinates or the device is offline.
+Reverse-geocoding requests send the session's latitude and longitude to `nominatim.openstreetmap.org` over HTTPS, together with the BirdNET Live user-agent string as required by the [Nominatim Usage Policy](https://operations.osmfoundation.org/policies/nominatim/). The resolved place name is stored locally with the session so a session is only geocoded once. No request is made if the session has no GPS coordinates or the device is offline.
 
-Weather requests send the session's latitude / longitude and end timestamp to `api.open-meteo.com` over HTTPS, together with a generic `BirdNET-Live/<version>` user-agent string. [Open-Meteo](https://open-meteo.com/) is a free service and requires neither an account nor an API key. The returned weather snapshot is stored locally with the session and is also written into the JSON export, the per-session `metadata.json` block, and the HTML report.
+Weather requests send the session's latitude / longitude and end timestamp to `api.open-meteo.com` over HTTPS, together with the BirdNET Live user-agent string. [Open-Meteo](https://open-meteo.com/) is a free service and requires neither an account nor an API key. The returned weather snapshot is stored locally with the session and is also written into the JSON export, the per-session `metadata.json` block, and the HTML report.
 
 **Retention:** none of the third-party services above is contacted to *upload* or *store* user data. Returned values (place name, weather snapshot) live only inside the local session record on your device, and travel only into export files you explicitly produce.
 

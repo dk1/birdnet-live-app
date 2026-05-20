@@ -38,15 +38,15 @@ Aplikace může přistupovat k následujícím externím zdrojům. Každý zdroj
 
 | Zdroj | Účel | Přepínač | Odesíláno v každé žádosti |
 |-------|------|----------|---------------------------|
-| Mapové dlaždice (OpenStreetMap) | Základní mapa pro výběr polohy, živou mapu Survey, mapu relace a předstahování dlaždic | **Nastavení → Soukromí → Povolit mapové dlaždice** | Pouze souřadnice dlaždice `(z, x, y)` — žádné PII |
-| Reverzní geokódování (OpenStreetMap Nominatim) | Převod GPS souřadnic na název místa (např. „Berlín, Německo“) | **Nastavení → Soukromí → Povolit vyhledávání názvu místa** | Lat/lon relace plus generický `BirdNET-Live/<verze>` user-agent |
-| Snapshot počasí (Open-Meteo) | Jednorázové zachycení lokálních podmínek (teplota, srážky, vítr, oblačnost, kód počasí WMO) na souřadnicích a konečném čase | **Nastavení → Soukromí → Povolit vyhledávání počasí** | Lat/lon relace a koncový časový razítko plus generický `BirdNET-Live/<verze>` user-agent |
+| Mapové dlaždice (OpenStreetMap) | Základní mapa pro výběr polohy, živou mapu Survey a mapu relace | **Nastavení → Soukromí → Povolit mapové dlaždice** | Souřadnice dlaždice `(z, x, y)` a user-agent BirdNET Live — žádné PII |
+| Reverzní geokódování (OpenStreetMap Nominatim) | Převod GPS souřadnic na název místa (např. „Berlín, Německo“) | **Nastavení → Soukromí → Povolit vyhledávání názvu místa** | Lat/lon relace plus user-agent BirdNET Live |
+| Snapshot počasí (Open-Meteo) | Jednorázové zachycení lokálních podmínek (teplota, srážky, vítr, oblačnost, kód počasí WMO) na souřadnicích a konečném čase | **Nastavení → Soukromí → Povolit vyhledávání počasí** | Lat/lon relace a koncový časový razítko plus user-agent BirdNET Live |
 
 Požadavky na mapové dlaždice jsou standardní HTTPS GET na `tile.openstreetmap.org`. Odesílají se pouze souřadnice dlaždic.
 
-Reverzní geokódování odesílá lat/lon relace na `nominatim.openstreetmap.org` přes HTTPS spolu s generickým `BirdNET-Live/<verze>` user-agent dle [Pravidel užívání Nominatim](https://operations.osmfoundation.org/policies/nominatim/). Výsledný název místa je uložen lokálně s relací, takže se relace geokóduje pouze jednou.
+Reverzní geokódování odesílá lat/lon relace na `nominatim.openstreetmap.org` přes HTTPS spolu s user-agentem BirdNET Live dle [Pravidel užívání Nominatim](https://operations.osmfoundation.org/policies/nominatim/). Výsledný název místa je uložen lokálně s relací, takže se relace geokóduje pouze jednou.
 
-Požadavky na počasí odesílají lat/lon relace a koncový čas na `api.open-meteo.com` přes HTTPS s generickým `BirdNET-Live/<verze>` user-agent. [Open-Meteo](https://open-meteo.com/) je bezplatná služba a nevyžaduje účet ani API klíč. Výsledný snapshot počasí je uložen lokálně s relací a také zapsán do JSON exportu, bloku `metadata.json` relace a HTML reportu.
+Požadavky na počasí odesílají lat/lon relace a koncový čas na `api.open-meteo.com` přes HTTPS s user-agentem BirdNET Live. [Open-Meteo](https://open-meteo.com/) je bezplatná služba a nevyžaduje účet ani API klíč. Výsledný snapshot počasí je uložen lokálně s relací a také zapsán do JSON exportu, bloku `metadata.json` relace a HTML reportu.
 
 **Uchovávání:** žádná z výše uvedených služeb třetích stran není kontaktována, aby *nahrávala* nebo *uchovávala* uživatelská data. Vrácené hodnoty (název místa, snapshot počasí) žijí pouze v lokálním záznamu relace na vašem zařízení a putují jen do exportních souborů, které výslovně vyrobíte.
 

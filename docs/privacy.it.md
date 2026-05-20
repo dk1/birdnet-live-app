@@ -15,9 +15,9 @@ L'app può contattare i seguenti servizi esterni. Ciascuno è controllato da un 
 
 | Risorsa | Scopo | Interruttore | Inviato per ogni richiesta |
 |---------|-------|--------------|----------------------------|
-| Tile della mappa (OpenStreetMap) | Mappa di base per selettore di posizione, mappa live di Survey, mappa della sessione e prescaricamento | **Impostazioni → Privacy → Consenti tile della mappa** | Solo coordinate del tile `(z, x, y)` — nessun PII |
-| Geocoding inverso (OpenStreetMap Nominatim) | Risolvere coordinate GPS in un nome di luogo (es. “Roma, Italia”) | **Impostazioni → Privacy → Consenti ricerca nome luogo** | Lat/lon della sessione e un user-agent generico `BirdNET-Live/<versione>` |
-| Snapshot meteo (Open-Meteo) | Cattura una tantum delle condizioni (temperatura, precipitazioni, vento, nuvolosità, codice WMO) alle coordinate e all'orario di fine | **Impostazioni → Privacy → Consenti ricerca meteo** | Lat/lon della sessione e timestamp di fine, più un user-agent generico `BirdNET-Live/<versione>` |
+| Tile della mappa (OpenStreetMap) | Mappa di base per selettore di posizione, mappa live di Survey e mappa della sessione | **Impostazioni → Privacy → Consenti tile della mappa** | Coordinate del tile `(z, x, y)` e user-agent BirdNET Live — nessun PII |
+| Geocoding inverso (OpenStreetMap Nominatim) | Risolvere coordinate GPS in un nome di luogo (es. “Roma, Italia”) | **Impostazioni → Privacy → Consenti ricerca nome luogo** | Lat/lon della sessione e user-agent BirdNET Live |
+| Snapshot meteo (Open-Meteo) | Cattura una tantum delle condizioni (temperatura, precipitazioni, vento, nuvolosità, codice WMO) alle coordinate e all'orario di fine | **Impostazioni → Privacy → Consenti ricerca meteo** | Lat/lon della sessione e timestamp di fine, più user-agent BirdNET Live |
 
 Le richieste di tile sono HTTPS GET standard verso `tile.openstreetmap.org`; il geocoding inverso va a `nominatim.openstreetmap.org` secondo la [Nominatim Usage Policy](https://operations.osmfoundation.org/policies/nominatim/); le richieste meteo vanno a `api.open-meteo.com`. [Open-Meteo](https://open-meteo.com/) è un servizio gratuito e non richiede né account né chiave API.
 

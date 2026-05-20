@@ -159,7 +159,7 @@ Esta seção controla **quais serviços de terceiros o BirdNET Live pode contata
 
 ### Permitir tiles de mapa
 
-Necessário para qualquer mapa interativo (seletor de localização, mapa ao vivo do Survey, mapa da sessão, pré-download de tiles). Quando ativo, os widgets de mapa baixam tiles raster dos servidores públicos do **OpenStreetMap**; as requisições de coordenadas de tile revelam que área do mundo você está olhando. Quando desligado, todas as telas de mapa mostram um painel marcador.
+Necessário para qualquer mapa interativo (seletor de localização, mapa ao vivo do Survey, mapa da sessão). Quando ativo, os widgets de mapa baixam tiles raster dos servidores públicos do **OpenStreetMap**; as requisições de coordenadas de tile revelam que área do mundo você está olhando. Quando desligado, todas as telas de mapa mostram um painel marcador.
 
 ### Permitir busca de nome de lugar
 
