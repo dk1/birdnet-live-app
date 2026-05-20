@@ -13,6 +13,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +27,6 @@ import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/open_street_map_tile_layer.dart';
 import '../../explore/explore_providers.dart';
 import '../../live/live_session.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Live map showing GPS track and detection markers.
 ///
@@ -870,4 +870,3 @@ class _ClusterBubble extends StatelessWidget {
     );
   }
 }
-

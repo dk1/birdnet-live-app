@@ -30,6 +30,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../../core/services/reverse_geocoding_service.dart';
 import '../../l10n/app_localizations.dart';
@@ -37,7 +38,6 @@ import '../models/weather_snapshot.dart';
 import '../providers/settings_providers.dart';
 import '../services/weather_service.dart';
 import '../utils/weather_format.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 class SiteContextCard extends ConsumerStatefulWidget {
   const SiteContextCard({
@@ -332,4 +332,3 @@ class _ConsentPromptRow extends StatelessWidget {
     );
   }
 }
-

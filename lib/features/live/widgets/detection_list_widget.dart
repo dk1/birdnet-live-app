@@ -14,6 +14,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_semantic_colors.dart';
@@ -24,7 +25,6 @@ import '../../explore/explore_providers.dart';
 import '../../history/widgets/detection_actions.dart';
 import '../live_session.dart';
 import 'live_tips.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Displays a scrollable list of species detections.
 ///
@@ -385,4 +385,3 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
-

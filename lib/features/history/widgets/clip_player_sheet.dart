@@ -22,6 +22,7 @@ import 'dart:ui' as ui;
 import 'package:fftea/fftea.dart';
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
@@ -40,7 +41,6 @@ import '../../spectrogram/color_maps.dart';
 import '../services/detection_sharing_service.dart';
 import 'voice_memo_overlay.dart';
 import 'detection_actions.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Show the modal player for a [detection]'s audio clip.
 ///
@@ -804,4 +804,3 @@ class _ConfirmToggle extends StatelessWidget {
     );
   }
 }
-

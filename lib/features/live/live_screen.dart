@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/wakelock_service.dart';
@@ -26,7 +27,6 @@ import 'live_controller.dart';
 import 'live_providers.dart';
 import 'live_session.dart';
 import 'widgets/detection_list_widget.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 // =============================================================================
 // Live Mode Screen — Edge-to-Edge Layout
@@ -1029,4 +1029,3 @@ class _LiveSpectrogram extends ConsumerWidget {
     );
   }
 }
-

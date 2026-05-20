@@ -18,9 +18,9 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../models/weather_snapshot.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Symbolic keys for WMO weather code groups. The caller is expected to
 /// resolve these via `AppLocalizations` for user-facing text.
@@ -143,4 +143,3 @@ String formatWeatherOneLine(WeatherSnapshot w, WeatherLabelLookup labelFor) {
   }
   return parts.join(' · ');
 }
-

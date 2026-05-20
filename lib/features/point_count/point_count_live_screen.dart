@@ -29,6 +29,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/wakelock_service.dart';
@@ -49,7 +50,6 @@ import '../live/live_controller.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../live/widgets/detection_list_widget.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Timed point-count survey screen with countdown and auto-stop.
 class PointCountLiveScreen extends ConsumerStatefulWidget {
@@ -792,4 +792,3 @@ class _PointCountSpectrogram extends ConsumerWidget {
     );
   }
 }
-

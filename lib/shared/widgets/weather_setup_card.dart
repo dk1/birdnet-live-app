@@ -15,13 +15,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../models/weather_snapshot.dart';
 import '../providers/settings_providers.dart';
 import '../services/weather_service.dart';
 import '../utils/weather_format.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 class WeatherSetupCard extends ConsumerStatefulWidget {
   const WeatherSetupCard({
@@ -196,4 +196,3 @@ class _WeatherSetupCardState extends ConsumerState<WeatherSetupCard> {
     );
   }
 }
-

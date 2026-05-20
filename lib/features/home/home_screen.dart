@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../about/about_screen.dart';
 import '../explore/explore_screen.dart';
@@ -13,7 +14,6 @@ import '../settings/settings_screen.dart';
 import '../survey/survey_setup_screen.dart';
 import '../../shared/utils/session_type_visuals.dart';
 import 'help_screen.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 // =============================================================================
 // Home Screen — Main Menu
@@ -464,4 +464,3 @@ class _FooterButton extends StatelessWidget {
     );
   }
 }
-

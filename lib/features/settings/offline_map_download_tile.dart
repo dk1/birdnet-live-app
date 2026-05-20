@@ -33,10 +33,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/open_street_map_tile_layer.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Bounding zoom range we seed for offline use.
 const int _minZoom = 12;
@@ -364,4 +364,3 @@ class _DownloadProgressDialogState extends State<_DownloadProgressDialog> {
     );
   }
 }
-

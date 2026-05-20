@@ -9,13 +9,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/utils/session_type_visuals.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../live/live_session.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Comprehensive help screen with mode-by-mode explanations.
 class HelpScreen extends StatelessWidget {
@@ -429,4 +429,3 @@ Future<void> _launchUserGuide(BuildContext context) async {
   final basePath = localeCode == 'en' ? '' : '/$localeCode';
   await openExternalUrl(context, '${AppConstants.docsUrl}$basePath/user/');
 }
-

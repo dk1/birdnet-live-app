@@ -12,6 +12,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
@@ -19,7 +20,6 @@ import 'package:latlong2/latlong.dart';
 import '../../core/constants/app_constants.dart';
 import '../providers/app_providers.dart';
 import 'open_street_map_tile_layer.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Full-screen map for picking a location by tapping.
 ///
@@ -172,4 +172,3 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
     );
   }
 }
-

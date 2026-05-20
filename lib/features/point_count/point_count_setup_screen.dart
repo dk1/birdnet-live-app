@@ -22,6 +22,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
@@ -35,7 +36,6 @@ import '../../shared/widgets/wizard_scaffold.dart';
 import '../explore/explore_providers.dart';
 import '../settings/settings_screen.dart';
 import 'point_count_live_screen.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Location choice for the point count setup.
 enum _LocationChoice { gps, manual, skip }
@@ -970,4 +970,3 @@ class _ReadyStep extends ConsumerWidget {
     );
   }
 }
-

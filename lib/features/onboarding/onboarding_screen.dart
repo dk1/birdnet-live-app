@@ -23,6 +23,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../../core/theme/app_semantic_colors.dart';
 import 'package:geolocator/geolocator.dart';
@@ -32,7 +33,6 @@ import '../../core/constants/app_constants.dart';
 import '../../shared/providers/app_providers.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/widgets/content_width_constraint.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 // ---------------------------------------------------------------------------
 // Layout constants
@@ -783,4 +783,3 @@ class _TermsPage extends StatelessWidget {
     );
   }
 }
-

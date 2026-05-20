@@ -21,6 +21,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -42,7 +43,6 @@ import 'species_alert_notifier.dart';
 import 'survey_providers.dart';
 import 'survey_live_screen.dart';
 import 'survey_notification.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// Location choice for survey setup.
 enum _LocationChoice { gps, manual, skip }
@@ -2179,4 +2179,3 @@ class _SummaryRow extends StatelessWidget {
     );
   }
 }
-
