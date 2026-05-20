@@ -116,7 +116,7 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
               width: 40,
               height: 40,
               child: Icon(
-                AppIcons.locationOn,
+                AppIcons.locationOnFilled,
                 color: theme.colorScheme.error,
                 size: 40,
               ),

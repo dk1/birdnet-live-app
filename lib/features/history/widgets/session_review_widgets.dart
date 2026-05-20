@@ -146,7 +146,9 @@ class _SummaryHeader extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(
-                    AppIcons.locationOn,
+                    session.type == SessionType.survey
+                        ? AppIcons.flagFilled
+                        : AppIcons.locationOn,
                     size: 18,
                     color: theme.colorScheme.primary,
                   ),
@@ -164,7 +166,7 @@ class _SummaryHeader extends StatelessWidget {
                     ),
                   ),
                   Icon(
-                    AppIcons.map,
+                    AppIcons.mapSheet,
                     size: 18,
                     color: theme.colorScheme.primary.withAlpha(178),
                   ),
@@ -1645,7 +1647,7 @@ class _ClusterRow extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Icon(
-                      AppIcons.locationOn,
+                    AppIcons.map,
                     size: 24,
                     color: theme.colorScheme.onSurface.withAlpha(100),
                   ),
@@ -1662,7 +1664,9 @@ class _ClusterRow extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Icon(
-                    confirmed ? AppIcons.checkCircle : AppIcons.checkCircleOutline,
+                    confirmed
+                        ? AppIcons.checkCircle
+                        : AppIcons.checkCircleOutline,
                     size: 24,
                     color:
                         confirmed
@@ -2182,7 +2186,10 @@ class _ReplaceTargetBanner extends ConsumerWidget {
               ],
             ),
           ),
-          Icon(AppIcons.arrowDownward, color: theme.colorScheme.onSurfaceVariant),
+          Icon(
+            AppIcons.arrowDownward,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ],
       ),
     );
@@ -2278,7 +2285,10 @@ class _SearchEmptyState extends StatelessWidget {
         const SizedBox(height: 12),
         const Divider(height: 1),
         ListTile(
-          leading: Icon(AppIcons.helpOutline, color: theme.colorScheme.tertiary),
+          leading: Icon(
+            AppIcons.helpOutline,
+            color: theme.colorScheme.tertiary,
+          ),
           title: Text(l10n.sessionUnknownSpecies),
           subtitle: Text(
             DetectionRecord.unknownSpeciesName,
@@ -3174,7 +3184,10 @@ class _SessionHelpSheet extends StatelessWidget {
           body: l10n.sessionHelpAddSpecies,
         ),
         AppHelpSection(icon: AppIcons.undo, body: l10n.sessionHelpUndoRedo),
-        AppHelpSection(icon: AppIcons.contentCut, body: l10n.sessionHelpTrimming),
+        AppHelpSection(
+          icon: AppIcons.contentCut,
+          body: l10n.sessionHelpTrimming,
+        ),
         AppHelpSection(icon: AppIcons.save, body: l10n.sessionHelpSaveDiscard),
         if (showContinueSurvey)
           AppHelpSection(

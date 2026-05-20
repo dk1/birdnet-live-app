@@ -123,7 +123,7 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
                 width: 40,
                 height: 40,
                 child: Icon(
-                  AppIcons.locationOn,
+                  AppIcons.locationOnFilled,
                   color: theme.colorScheme.error,
                   size: 40,
                 ),

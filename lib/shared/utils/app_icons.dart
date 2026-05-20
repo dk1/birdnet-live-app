@@ -53,7 +53,7 @@ abstract final class AppIcons {
   static const IconData deleteOutlineRounded = Symbols.delete_outline_rounded;
   static const IconData deleteSweep = Symbols.delete_sweep;
   static const IconData directionsWalkRounded = Symbols.directions_walk_rounded;
-  static const IconData detections = Symbols.radar;
+  static const IconData detections = Symbols.list_alt_rounded;
   static const IconData downloadForOffline = Symbols.download_for_offline;
   static const IconData edit = Symbols.edit;
   static const IconData editLocationAlt = Symbols.edit_location_alt;
@@ -63,12 +63,15 @@ abstract final class AppIcons {
   static const IconData expandLess = Symbols.expand_less;
   static const IconData expandMore = Symbols.expand_more;
   static const IconData fiberManualRecord = Symbols.fiber_manual_record;
-  static const IconData fiberManualRecordRounded = Symbols.fiber_manual_record_rounded;
+  static const IconData fiberManualRecordRounded =
+      Symbols.fiber_manual_record_rounded;
   static const IconData filterAltRounded = Symbols.filter_alt_rounded;
   static const IconData filterList = Symbols.filter_list;
+  static const IconData flagFilled = Icons.flag;
   static const IconData flagRounded = Symbols.flag_rounded;
   static const IconData foggy = Symbols.foggy;
-  static const IconData formatListNumberedRounded = Symbols.format_list_numbered_rounded;
+  static const IconData formatListNumberedRounded =
+      Symbols.format_list_numbered_rounded;
   static const IconData fullscreen = Symbols.fullscreen;
   static const IconData gavel = Symbols.gavel;
   static const IconData gavelRounded = Symbols.gavel_rounded;
@@ -91,9 +94,11 @@ abstract final class AppIcons {
   static const IconData locationOff = Symbols.location_off;
   static const IconData locationOffRounded = Symbols.location_off_rounded;
   static const IconData locationOn = Symbols.location_on;
+  static const IconData locationOnFilled = Icons.location_on;
   static const IconData locationOnRounded = Symbols.location_on_rounded;
   static const IconData lockOutline = Symbols.lock;
-  static const IconData map = Symbols.map;
+  static const IconData map = Symbols.location_on;
+  static const IconData mapSheet = Symbols.map;
   static const IconData memory = Symbols.memory;
   static const IconData menuBook = Symbols.menu_book;
   static const IconData mic = Symbols.mic;
@@ -108,14 +113,17 @@ abstract final class AppIcons {
   static const IconData myLocation = Symbols.my_location;
   static const IconData noteAdd = Symbols.note_add;
   // Kept as explicit style variant for notification status icon usage.
-  static const IconData notificationsActiveOutlined = Symbols.notifications_active;
-  static const IconData notificationsActiveRounded = Symbols.notifications_active_rounded;
+  static const IconData notificationsActiveOutlined =
+      Symbols.notifications_active;
+  static const IconData notificationsActiveRounded =
+      Symbols.notifications_active_rounded;
   static const IconData openInNew = Symbols.open_in_new;
   static const IconData pause = Symbols.pause;
   static const IconData pauseRounded = Symbols.pause_rounded;
   static const IconData percent = Symbols.percent;
   static const IconData personOutline = Symbols.person;
-  static const IconData personPinCircleRounded = Symbols.person_pin_circle_rounded;
+  static const IconData personPinCircleRounded =
+      Symbols.person_pin_circle_rounded;
   static const IconData personRounded = Symbols.person_rounded;
   static const IconData playArrow = Symbols.play_arrow;
   static const IconData playArrowRounded = Symbols.play_arrow_rounded;
@@ -150,13 +158,13 @@ abstract final class AppIcons {
   static const IconData skipNextRounded = Symbols.skip_next_rounded;
   static const IconData skipPreviousRounded = Symbols.skip_previous_rounded;
   static const IconData sort = Symbols.sort;
-  static const IconData species = Symbols.category;
+  static const IconData species = Symbols.graphic_eq;
   static const IconData speciesFallback = brokenImage;
   static const IconData speedRounded = Symbols.speed_rounded;
   static const IconData stickyNote2 = Symbols.sticky_note_2;
-  static const IconData stop = Symbols.stop;
-  static const IconData stopCircle = Symbols.stop_circle;
-  static const IconData stopRounded = Symbols.stop_rounded;
+  static const IconData stop = Icons.stop;
+  static const IconData stopCircle = Icons.stop_circle;
+  static const IconData stopRounded = Icons.stop_rounded;
   static const IconData storage = Symbols.storage;
   static const IconData straighten = Symbols.straighten;
   static const IconData summaryChart = Symbols.bar_chart;

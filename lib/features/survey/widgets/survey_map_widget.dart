@@ -319,8 +319,26 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           width: 28,
           height: 28,
           child: Icon(
-            AppIcons.flagRounded,
+            AppIcons.flagFilled,
             color: AppSemanticColors.of(context).success,
+            size: 28,
+          ),
+        ),
+      );
+    }
+
+    // Add end (flag) marker when reviewing a completed survey track. During
+    // live tracking the last point is represented by the current-position
+    // marker below instead.
+    if (widget.fitAllPoints && trackPoints.length >= 2) {
+      auxMarkers.add(
+        Marker(
+          point: trackPoints.last,
+          width: 28,
+          height: 28,
+          child: Icon(
+            AppIcons.flagFilled,
+            color: theme.colorScheme.error,
             size: 28,
           ),
         ),
