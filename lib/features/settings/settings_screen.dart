@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/providers/app_providers.dart';
@@ -13,7 +14,6 @@ import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
 import '../spectrogram/color_maps.dart';
 import 'offline_map_download_tile.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 // ---------------------------------------------------------------------------
 // Settings context — determines which settings are visible
