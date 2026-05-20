@@ -215,7 +215,7 @@ This section controls **which third-party services BirdNET Live may contact on y
 
 ### Allow map tiles
 
-Required for any interactive map in the app (the location picker, the Survey live map, the session map, and the map tiles inside the offline-tile downloader). When on, map widgets fetch raster tiles from the public **OpenStreetMap** servers; tile-coordinate requests reveal which area of the world you're viewing. When off, every map screen falls back to a placeholder card so the rest of the app still works without network leakage.
+Required for any interactive map in the app (the location picker, the Survey live map, the session map, and the map tiles inside the offline-tile downloader). When on, map widgets fetch raster tiles from the public **OpenStreetMap** servers; tile-coordinate requests reveal which area of the world you're viewing. Turning this on also enables **Allow place name lookup**, because most users who load maps expect sessions to show readable place names too. You can turn place-name lookup off again separately. When map tiles are off, every map screen falls back to a placeholder card so the rest of the app still works without network leakage.
 
 ### Allow place name lookup
 

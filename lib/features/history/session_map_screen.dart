@@ -21,6 +21,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/app_providers.dart';
+import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/open_street_map_tile_layer.dart';
 
 /// Map screen showing the recording location with a pin marker.
@@ -80,8 +81,7 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
           ),
     );
     if (agreed == true) {
-      final prefs = ref.read(sharedPreferencesProvider);
-      await prefs.setBool(PrefKeys.privacyAllowMap, true);
+      await ref.read(privacyAllowMapProvider.notifier).set(true);
       setState(() => _hasConsent = true);
     }
   }
