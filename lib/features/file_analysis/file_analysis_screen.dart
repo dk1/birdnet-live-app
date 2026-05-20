@@ -617,12 +617,67 @@ class _FileStep extends StatelessWidget {
                       label: l10n.fileAnalysisSampleRate,
                       value: '${fileInfo!.sampleRate} Hz',
                     ),
+                    _MetadataRow(
+                      icon: Icons.memory,
+                      label: l10n.fileAnalysisDecodedSize,
+                      value: fileInfo!.decodedSizeText,
+                    ),
                   ],
                 ),
               ),
             ),
+            if (fileInfo!.hasLargeDecodedFootprint) ...[
+              const SizedBox(height: 12),
+              _LargeAudioWarning(fileInfo: fileInfo!),
+            ],
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _LargeAudioWarning extends StatelessWidget {
+  const _LargeAudioWarning({required this.fileInfo});
+
+  final AudioFileInfo fileInfo;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    return Card(
+      color: theme.colorScheme.tertiaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.memory, color: theme.colorScheme.onTertiaryContainer),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.fileAnalysisLargeFileTitle,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: theme.colorScheme.onTertiaryContainer,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.fileAnalysisLargeFileBody(fileInfo.decodedSizeText),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onTertiaryContainer,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1253,6 +1308,10 @@ class _AnalysisStepState extends State<_AnalysisStep> {
                   ),
                 ),
               ),
+              if (fileInfo.hasLargeDecodedFootprint) ...[
+                const SizedBox(height: 12),
+                _LargeAudioWarning(fileInfo: fileInfo),
+              ],
             ],
           ],
           if (state == FileAnalysisState.analyzing) ...[

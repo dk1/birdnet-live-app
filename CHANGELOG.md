@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.7] - 2026-05-19
+
+### Changed
+
+- Removed the Session Review on-demand-spectrogram hint banner. With lazy loading now smooth, the explanatory card is no longer needed.
+
+### Fixed
+
+- Session Review no longer gets stuck on a perpetual loading spinner after an apply-trim / undo cycle on long lazy-loaded recordings. A failing chunk load now no longer leaves its reservation pinned in the pending set, and clip changes invalidate any in-flight lazy chunk requests so the follow-up viewport request can schedule fresh loads instead of being short-circuited by a stale `_decoding=true` flag.
+- Trim mode in Session Review now works for long lazy-loaded recordings. The trim handles default to the strip's currently visible window and are clamped to it — zoom and scroll to the region of interest first, then drag the handles inward to refine. Previously the trim editor required a full-file spectrogram thumbnail that long recordings never produce, so trim mode silently rendered an empty editor.
+- Stopped Session Review from freezing for several seconds when opening a session with a very long (≥30 MB on disk) recording. Playback normalization is now skipped for large source files instead of decoding the entire file on the calling isolate.
+- Long FLAC recordings now actually show a spectrogram in Session Review. A one-time sequential FLAC → temp-WAV transcode runs in a background isolate the first time a long FLAC session is opened, after which lazy spectrogram chunks use true file-seek range reads instead of an O(N²) re-decode of the full FLAC for every chunk.
+- FLAC range and sequential-window decoding now use a buffered streaming bit reader instead of loading the entire compressed FLAC into memory before walking frames, keeping File Analysis and long-recording review paths bounded by the requested window/cache size.
+- File Analysis now refuses native compressed files whose decoded PCM would exceed the current full-decode memory guard, and also blocks large native files when the platform cannot report duration. Long recordings should be converted to WAV or FLAC so analysis can proceed in bounded chunks.
+- Session Review lazy-spectrogram cache eviction now keeps chunks nearest the active viewport instead of evicting the earliest chunk by timestamp, preventing freshly loaded visible chunks from being discarded when revisiting another part of a long recording.
+- Session Review now defers lazy spectrogram chunk scheduling until after the current frame, preventing a `setState() or markNeedsBuild() called during build` crash when the strip reports a refreshed viewport from `didUpdateWidget`.
+- iOS native audio decoding now explicitly cancels AVAssetReader work on early exit or failure so native buffers are released promptly after large decode errors.
+
+## [0.14.6] - 2026-05-19
+
+### Changed
+
+- Shortened the Session Review on-demand-spectrogram hint to a single sentence and added a close button so the banner can be dismissed.
+
+### Fixed
+
+- Hardened File Analysis and Session Review for long recordings. File inspection now reads metadata without decoding entire audio files, WAV/FLAC analysis reads bounded windows where possible, large decoded-audio footprints are surfaced before analysis, long-session spectrogram detail loads on demand during playback, panning, or zooming, and review/export metadata warns when a recording is shorter than its session events.
+- Added decoder coverage for LPC-encoded FLAC subframes and a sequential FLAC window decoder so real-world recorder files, including hour-long FLAC fixtures, can feed File Analysis without failing on the first window or restarting decoding for every window.
+- Stopped the Session Review spectrogram from getting stuck in a loading state during aggressive pinch-zoom: viewport requests now cap the number of in-flight chunks against the cache size, prioritize chunks nearest the playhead, and bail when a newer viewport supersedes them.
+- Moved on-demand spectrogram chunk decoding (FLAC/WAV range decode + STFT) onto a background isolate so pinch-zoom on long recordings no longer skips frames on the UI thread.
+- Long Session Review recordings now open at a duration-aware default zoom (≈10 % of clip length, clamped) instead of the 10 s detail view, and the on-demand spectrogram renders fewer FFT columns and caps frequency bins to what the strip can actually paint as distinct pixels. Short clips (≤ 5 min) honor your live-spectrogram duration setting as the initial view width, and the lazy loader now refreshes its viewport request the moment a long file's true duration arrives so chunks beyond the first 10 s actually start decoding.
+
 ## [0.14.5] - 2026-05-19
 
 ### Added
