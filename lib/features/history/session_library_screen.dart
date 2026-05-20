@@ -151,7 +151,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                 body: l10n.sessionLibraryHelpSearch,
               ),
               AppHelpSection(
-                icon: AppIcons.filterListOutlined,
+                icon: AppIcons.filterList,
                 body: l10n.sessionLibraryHelpView,
               ),
               AppHelpSection(
@@ -435,7 +435,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
               onPressed: _showHelp,
             ),
             IconButton(
-              icon: const Icon(AppIcons.filterListOutlined),
+              icon: const Icon(AppIcons.filterList),
               tooltip: l10n.settings,
               onPressed: _showOptionsSheet,
             ),
@@ -804,7 +804,7 @@ class _SessionTile extends ConsumerWidget {
                         Row(
                           children: [
                             Icon(
-                              AppIcons.calendarTodayOutlined,
+                              AppIcons.calendarToday,
                               size: 14,
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
@@ -822,8 +822,8 @@ class _SessionTile extends ConsumerWidget {
                           children: [
                             Icon(
                               session.latitude != null
-                                  ? AppIcons.locationOnOutlined
-                                  : AppIcons.locationOffOutlined,
+                                  ? AppIcons.locationOn
+                                  : AppIcons.locationOff,
                               size: 14,
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
@@ -904,7 +904,7 @@ class _SessionTile extends ConsumerWidget {
                     variant: StatChipVariant.badge,
                   ),
                   StatChip(
-                    icon: AppIcons.musicNoteOutlined,
+                    icon: AppIcons.musicNote,
                     value: '$detectionCount det.',
                     variant: StatChipVariant.badge,
                   ),
@@ -1544,7 +1544,7 @@ class _SessionRowMenu extends StatelessWidget {
             PopupMenuItem(
               value: _SessionRowAction.share,
               child: ListTile(
-                leading: const Icon(AppIcons.shareOutlined),
+                leading: const Icon(AppIcons.share),
                 title: Text(l10n.sessionLibraryRowShare),
                 dense: true,
                 contentPadding: EdgeInsets.zero,

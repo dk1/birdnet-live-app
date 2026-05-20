@@ -47,7 +47,6 @@ abstract final class AppIcons {
   static const IconData cloudOutlined = Symbols.cloud;
   static const IconData code = Symbols.code;
   static const IconData contentCut = Symbols.content_cut;
-  static const IconData contentCutOutlined = Symbols.content_cut;
   static const IconData deleteOutline = Symbols.delete;
   static const IconData deleteOutlineRounded = Symbols.delete_outline_rounded;
   static const IconData deleteSweepOutlined = Symbols.delete_sweep;
@@ -64,7 +63,6 @@ abstract final class AppIcons {
   static const IconData fiberManualRecordRounded = Symbols.fiber_manual_record_rounded;
   static const IconData filterAltRounded = Symbols.filter_alt_rounded;
   static const IconData filterList = Symbols.filter_list;
-  static const IconData filterListOutlined = Symbols.filter_list;
   static const IconData flagRounded = Symbols.flag_rounded;
   static const IconData foggy = Symbols.foggy;
   static const IconData formatListNumberedRounded = Symbols.format_list_numbered_rounded;
@@ -88,14 +86,11 @@ abstract final class AppIcons {
   static const IconData listAlt = Symbols.list_alt;
   static const IconData listAltRounded = Symbols.list_alt_rounded;
   static const IconData locationOff = Symbols.location_off;
-  static const IconData locationOffOutlined = Symbols.location_off;
   static const IconData locationOffRounded = Symbols.location_off_rounded;
   static const IconData locationOn = Symbols.location_on;
-  static const IconData locationOnOutlined = Symbols.location_on;
   static const IconData locationOnRounded = Symbols.location_on_rounded;
   static const IconData lockOutline = Symbols.lock;
   static const IconData map = Symbols.map;
-  static const IconData mapOutlined = Symbols.map;
   static const IconData memory = Symbols.memory;
   static const IconData menuBookOutlined = Symbols.menu_book;
   static const IconData mic = Symbols.mic;
@@ -106,7 +101,6 @@ abstract final class AppIcons {
   static const IconData micRounded = Symbols.mic_rounded;
   static const IconData moreVert = Symbols.more_vert;
   static const IconData musicNote = Symbols.music_note;
-  static const IconData musicNoteOutlined = Symbols.music_note;
   static const IconData myLocation = Symbols.my_location;
   static const IconData noteAddOutlined = Symbols.note_add;
   static const IconData notificationsActiveOutlined = Symbols.notifications_active;
@@ -145,7 +139,6 @@ abstract final class AppIcons {
   static const IconData securityRounded = Symbols.security_rounded;
   static const IconData send = Symbols.send;
   static const IconData share = Symbols.share;
-  static const IconData shareOutlined = Symbols.share;
   static const IconData shortText = Symbols.short_text;
   static const IconData skipNextRounded = Symbols.skip_next_rounded;
   static const IconData skipPreviousRounded = Symbols.skip_previous_rounded;

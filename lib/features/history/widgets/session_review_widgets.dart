@@ -146,7 +146,7 @@ class _SummaryHeader extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(
-                    AppIcons.locationOnOutlined,
+                    AppIcons.locationOn,
                     size: 18,
                     color: theme.colorScheme.primary,
                   ),
@@ -164,7 +164,7 @@ class _SummaryHeader extends StatelessWidget {
                     ),
                   ),
                   Icon(
-                    AppIcons.mapOutlined,
+                    AppIcons.map,
                     size: 18,
                     color: theme.colorScheme.primary.withAlpha(178),
                   ),
@@ -175,7 +175,7 @@ class _SummaryHeader extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  AppIcons.locationOffOutlined,
+                  AppIcons.locationOff,
                   size: 18,
                   color: theme.colorScheme.onSurface.withAlpha(120),
                 ),
@@ -1645,7 +1645,7 @@ class _ClusterRow extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Icon(
-                    AppIcons.locationOnOutlined,
+                      AppIcons.locationOn,
                     size: 24,
                     color: theme.colorScheme.onSurface.withAlpha(100),
                   ),
@@ -3185,4 +3185,3 @@ class _SessionHelpSheet extends StatelessWidget {
     );
   }
 }
-

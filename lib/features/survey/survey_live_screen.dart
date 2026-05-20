@@ -819,7 +819,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       controller: _tabController,
       tabs: [
         Tab(
-          icon: const Icon(AppIcons.mapOutlined, size: 18),
+          icon: const Icon(AppIcons.map, size: 18),
           text: l10n.surveyTabMap,
         ),
         Tab(
@@ -1352,7 +1352,7 @@ class _SurveyLiveHelpSheet extends StatelessWidget {
           icon: AppIcons.helpOutlineRounded,
           body: l10n.surveyLiveHelpTopBar,
         ),
-        AppHelpSection(icon: AppIcons.mapOutlined, body: l10n.surveyLiveHelpTabs),
+        AppHelpSection(icon: AppIcons.map, body: l10n.surveyLiveHelpTabs),
         AppHelpSection(icon: AppIcons.mic, body: l10n.surveyLiveHelpSignal),
         AppHelpSection(
           icon: AppIcons.species,

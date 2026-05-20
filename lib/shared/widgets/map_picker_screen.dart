@@ -148,7 +148,7 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              AppIcons.mapOutlined,
+              AppIcons.map,
               size: 64,
               color: theme.colorScheme.onSurface.withAlpha(100),
             ),

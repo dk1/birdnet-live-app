@@ -258,7 +258,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             icon: Stack(
               clipBehavior: Clip.none,
               children: [
-                const Icon(AppIcons.filterListOutlined),
+                const Icon(AppIcons.filterList),
                 if (_filterActive)
                   Positioned(
                     right: -2,

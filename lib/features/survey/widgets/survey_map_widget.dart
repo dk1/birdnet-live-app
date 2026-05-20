@@ -502,7 +502,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              AppIcons.mapOutlined,
+              AppIcons.map,
               size: 48,
               color: theme.colorScheme.onSurface.withAlpha(100),
             ),

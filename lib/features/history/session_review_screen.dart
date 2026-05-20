@@ -2997,7 +2997,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           if (_audioAvailable)
             IconButton(
               icon: Icon(
-                _trimMode ? AppIcons.contentCut : AppIcons.contentCutOutlined,
+                AppIcons.contentCut,
               ),
               tooltip: l10n.sessionTrimRecording,
               onPressed: _toggleTrimMode,
@@ -4392,7 +4392,7 @@ class _MapFilterChip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  isActive ? AppIcons.filterList : AppIcons.filterListOutlined,
+                  AppIcons.filterList,
                   size: 18,
                   color: fg,
                 ),

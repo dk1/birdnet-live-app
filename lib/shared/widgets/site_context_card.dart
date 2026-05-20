@@ -183,7 +183,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
     if (_locationName != null) {
       rows.add(
         _ContextRow(
-          icon: AppIcons.locationOnOutlined,
+          icon: AppIcons.locationOn,
           child: Text(
             _locationName!,
             style: theme.textTheme.bodyMedium,
@@ -195,7 +195,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
     } else if (!allowReverseGeo) {
       rows.add(
         _ConsentPromptRow(
-          icon: AppIcons.locationOnOutlined,
+          icon: AppIcons.locationOn,
           label: l10n.settingsPrivacyAllowReverseGeocoding,
           onTap: _enableLocationConsent,
         ),
