@@ -128,7 +128,7 @@ class _SummaryHeader extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               StatChip(
-                icon: MdiIcons.feather,
+                icon: AppIcons.species,
                 value: l10n.sessionSpeciesCount(species),
               ),
               const SizedBox(width: 16),

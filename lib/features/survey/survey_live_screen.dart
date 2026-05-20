@@ -24,11 +24,11 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../core/theme/score_colors.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/weather_service.dart';
+import '../../shared/utils/app_icons.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_providers.dart';
@@ -827,7 +827,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
           text: l10n.surveyTabSpectrogram,
         ),
         Tab(
-          icon: Icon(MdiIcons.chartBar, size: 18),
+          icon: Icon(AppIcons.summaryChart, size: 18),
           text: l10n.surveyTabSummary,
         ),
       ],
@@ -1355,7 +1355,7 @@ class _SurveyLiveHelpSheet extends StatelessWidget {
         AppHelpSection(icon: Icons.map_outlined, body: l10n.surveyLiveHelpTabs),
         AppHelpSection(icon: Icons.mic, body: l10n.surveyLiveHelpSignal),
         AppHelpSection(
-          icon: MdiIcons.feather,
+          icon: AppIcons.species,
           body: l10n.surveyLiveHelpDetections,
         ),
       ],

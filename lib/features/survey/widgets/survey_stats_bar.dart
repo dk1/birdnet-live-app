@@ -8,9 +8,9 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../../core/theme/app_semantic_colors.dart';
+import '../../../shared/utils/app_icons.dart';
 import '../../../shared/widgets/stat_chip.dart';
 
 enum _AudioQuality { bad, marginal, good }
@@ -104,7 +104,7 @@ class SurveyStatsBar extends StatelessWidget {
             style: style,
           ),
           StatChip(
-            icon: MdiIcons.feather,
+            icon: AppIcons.species,
             value: '$speciesCount',
             style: style,
           ),

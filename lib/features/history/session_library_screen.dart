@@ -13,7 +13,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -22,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/session_type_visuals.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
@@ -899,7 +899,7 @@ class _SessionTile extends ConsumerWidget {
                     variant: StatChipVariant.badge,
                   ),
                   StatChip(
-                    icon: MdiIcons.feather,
+                    icon: AppIcons.species,
                     value: '$speciesCount spp.',
                     variant: StatChipVariant.badge,
                   ),
@@ -1147,7 +1147,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
                             (a, b, c) => ColoredBox(
                               color: theme.colorScheme.surfaceContainerHighest,
                               child: Icon(
-                                MdiIcons.bird,
+                                AppIcons.speciesFallback,
                                 size: 18,
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -1156,7 +1156,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
                       : ColoredBox(
                         color: theme.colorScheme.surfaceContainerHighest,
                         child: Icon(
-                          MdiIcons.bird,
+                          AppIcons.speciesFallback,
                           size: 18,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),

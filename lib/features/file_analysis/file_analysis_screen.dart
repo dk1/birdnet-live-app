@@ -31,7 +31,6 @@ import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,6 +44,7 @@ import '../../shared/widgets/confirm_destructive.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/stat_chip.dart';
 import '../../shared/widgets/wizard_scaffold.dart';
+import '../../shared/utils/app_icons.dart';
 import '../explore/explore_providers.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
@@ -1314,7 +1314,7 @@ class _AnalysisStepState extends State<_AnalysisStep> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: StatChip(
-                    icon: MdiIcons.feather,
+                    icon: AppIcons.species,
                     label: l10n.fileAnalysisSpecies,
                     value: '${progress.speciesFound}',
                     variant: StatChipVariant.card,
