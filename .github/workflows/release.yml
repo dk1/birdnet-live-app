@@ -20,13 +20,14 @@ jobs:
           java-version: '17'
       - uses: subosito/flutter-action@v2 #https://github.com/subosito/flutter-action
         with:
+          flutter-version: '3.41.9'
           channel: stable
       - run: flutter --version
       - run: flutter pub get
       - run: flutter gen-l10n
       - run: flutter analyze --no-fatal-infos
       - run: flutter test
-  
+
   prepare_assets:
     name: Prepare Species Assets
     runs-on: ubuntu-latest
@@ -93,6 +94,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.41.9'
           channel: stable
 
       - name: Install Dart and Flutter packages
