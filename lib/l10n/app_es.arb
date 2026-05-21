@@ -115,6 +115,8 @@
   "exploreNoSpecies": "Sin datos de especies para esta ubicación",
   "exploreSpeciesCount": "{count} especies",
   "exploreInfoNote": "Especies que probablemente están presentes en esta ubicación según el geomodelo de BirdNET.",
+  "explorePredictionSummary": "Predicciones de especies del geomodelo para tu ubicación",
+  "exploreTapHint": "Toca una especie para obtener más información.",
   "exploreSearchHint": "Buscar especies…",
   "exploreSearchTooltip": "Buscar",
   "exploreFilterTooltip": "Ordenar y filtrar",

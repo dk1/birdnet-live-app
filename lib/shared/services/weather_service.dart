@@ -159,7 +159,10 @@ class WeatherService {
   }) async {
     try {
       final resp = await _client
-          .get(uri, headers: const {'User-Agent': 'BirdNET-Live/1.0'})
+          .get(
+            uri,
+            headers: const {'User-Agent': AppConstants.networkUserAgent},
+          )
           .timeout(const Duration(seconds: 8));
       if (resp.statusCode != 200) return null;
       final body = json.decode(resp.body) as Map<String, dynamic>;

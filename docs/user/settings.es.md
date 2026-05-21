@@ -159,7 +159,7 @@ Esta sección controla **qué servicios de terceros puede contactar BirdNET Live
 
 ### Permitir mosaicos de mapa
 
-Necesario para cualquier mapa interactivo (selector de ubicación, mapa en vivo de Survey, mapa de la sesión, descarga previa de mosaicos). Cuando está activo, los widgets de mapa solicitan mosaicos ráster a los servidores públicos de **OpenStreetMap**; las solicitudes de coordenadas de mosaico revelan qué zona del mundo está mirando. Cuando está desactivado, todas las pantallas de mapa muestran un panel de marcador de posición.
+Necesario para cualquier mapa interactivo (selector de ubicación, mapa en vivo de Survey, mapa de la sesión). Cuando está activo, los widgets de mapa solicitan mosaicos ráster a los servidores públicos de **OpenStreetMap**; las solicitudes de coordenadas de mosaico revelan qué zona del mundo está mirando. Cuando está desactivado, todas las pantallas de mapa muestran un panel de marcador de posición.
 
 ### Permitir búsqueda de nombre de lugar
 

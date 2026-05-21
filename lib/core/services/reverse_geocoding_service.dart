@@ -104,7 +104,7 @@ Future<String?> reverseGeocode({
 
   try {
     final response = await http
-        .get(uri, headers: {'User-Agent': 'BirdNET-Live/1.0'})
+        .get(uri, headers: const {'User-Agent': AppConstants.networkUserAgent})
         .timeout(const Duration(seconds: 10));
 
     if (response.statusCode != 200) return null;

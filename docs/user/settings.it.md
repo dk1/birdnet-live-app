@@ -159,7 +159,7 @@ Questa sezione controlla **quali servizi di terze parti BirdNET Live può contat
 
 ### Consenti tile della mappa
 
-Richiesto per qualsiasi mappa interattiva (selettore di posizione, mappa live di Survey, mappa della sessione, prescaricamento di tile). Quando attivo, i widget mappa scaricano tile raster dai server pubblici **OpenStreetMap**; le richieste di coordinate dei tile rivelano quale area del mondo stai guardando. Quando disattivato, tutte le schermate di mappa mostrano un pannello segnaposto.
+Richiesto per qualsiasi mappa interattiva (selettore di posizione, mappa live di Survey, mappa della sessione). Quando attivo, i widget mappa scaricano tile raster dai server pubblici **OpenStreetMap**; le richieste di coordinate dei tile rivelano quale area del mondo stai guardando. Quando disattivato, tutte le schermate di mappa mostrano un pannello segnaposto.
 
 ### Consenti ricerca nome luogo
 

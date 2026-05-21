@@ -5,13 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.14.11] - 2026-05-20
+## [0.15.0] - 2026-05-20
+
+### Changed
+
+- Hid the offline map download setting while the app uses public OpenStreetMap tiles, centralized a contactable BirdNET Live user agent for map tile, place-name, and weather requests, and extended interactive map tile caching to six months with a 6000-tile storage cap.
+
+## [0.14.12] - 2026-05-20
 
 ### Changed
 
 - Replaced the `material_design_icons_flutter` dependency with `material_symbols_icons` for the app's shared icon set.
 - Refactored feature and shared UI code to use centralized `AppIcons` mappings instead of direct package icon references, improving icon consistency across Live, Survey, Point Count, File Analysis, History, Explore, Settings, Help, and onboarding views.
 - Refined centralized app icon choices for species, detections, map actions, filled map pins, stop controls, and survey start/end flags so review and map views read more consistently.
+
+## [0.14.11] - 2026-05-20
+
+### Changed
+
+- Added a concise, scrollable Explore header explaining that the list shows BirdNET geomodel species predictions for the user's location, with a tap hint for opening species details.
+- Improved Explore list scrolling by using fixed-height lazy species rows, reducing per-card widget/provider work, and lowering bundled thumbnail decode sizes.
+- Reworked Explore species cards to keep the 48-week seasonal bars while drawing them with a lightweight painter instead of many per-week widgets.
 
 ## [0.14.10] - 2026-05-20
 
