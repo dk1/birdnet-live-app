@@ -52,6 +52,7 @@ class SurveyMapWidget extends ConsumerStatefulWidget {
     this.onMarkerTap,
     this.initialCenter,
     this.interactionOptions,
+    this.tileLayerBuilder,
   });
 
   /// GPS track points.
@@ -82,6 +83,11 @@ class SurveyMapWidget extends ConsumerStatefulWidget {
   /// Custom interaction options for controlling which gestures the map
   /// responds to.  When null, all gestures are enabled (the default).
   final InteractionOptions? interactionOptions;
+
+  /// Optional override for the base map tile layer. Tests can inject a
+  /// placeholder here to avoid network-backed tile loading while still
+  /// exercising marker and cluster semantics.
+  final WidgetBuilder? tileLayerBuilder;
 
   @override
   ConsumerState<SurveyMapWidget> createState() => _SurveyMapWidgetState();
@@ -291,12 +297,6 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
             speciesLocale,
           ) ??
           det.commonName;
-      final semanticsValue = <String>[
-        l10n.a11yConfidencePercent((det.confidence * 100).round()),
-        if (hasAudio) l10n.a11ySurveyMapMarkerAudio,
-        if (det.isConfirmed) l10n.a11ySurveyMapMarkerConfirmed,
-      ].join(', ');
-
       speciesMarkers.add(
         Marker(
           point: LatLng(det.latitude!, det.longitude!),
@@ -306,27 +306,21 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           // legible when zoomed in.
           width: isHighlighted ? 56 : 48,
           height: isHighlighted ? 56 : 48,
-          child: Semantics(
-            button: widget.onMarkerTap != null,
-            enabled: widget.onMarkerTap != null,
-            selected: isHighlighted,
+          child: SurveyMapMarkerSemantics(
             label: displayName,
-            value: semanticsValue,
-            child: GestureDetector(
-              onTap:
-                  widget.onMarkerTap != null
-                      ? () => widget.onMarkerTap!(det)
-                      : null,
-              child: ExcludeSemantics(
-                child: _SpeciesMarker(
-                  scientificName: det.scientificName,
-                  confidence: det.confidence,
-                  isHighlighted: isHighlighted,
-                  hasAudio: hasAudio,
-                  useDot: useDot,
-                  isConfirmed: det.isConfirmed,
-                ),
-              ),
+            confidence: det.confidence,
+            hasAudio: hasAudio,
+            isConfirmed: det.isConfirmed,
+            isHighlighted: isHighlighted,
+            onTap:
+                widget.onMarkerTap != null ? () => widget.onMarkerTap!(det) : null,
+            child: _SpeciesMarker(
+              scientificName: det.scientificName,
+              confidence: det.confidence,
+              isHighlighted: isHighlighted,
+              hasAudio: hasAudio,
+              useDot: useDot,
+              isConfirmed: det.isConfirmed,
             ),
           ),
         ),
@@ -490,7 +484,9 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
         },
       ),
       children: [
-        buildOpenStreetMapTileLayer(),
+        (widget.tileLayerBuilder ?? (_) => buildOpenStreetMapTileLayer())(
+          context,
+        ),
         if (trackPoints.length >= 2)
           PolylineLayer(
             polylines: [
@@ -517,7 +513,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
               borderStrokeWidth: 2,
             ),
             builder: (context, clusterMarkers) {
-              return _ClusterBubble(count: clusterMarkers.length);
+              return SurveyMapClusterBubble(count: clusterMarkers.length);
             },
           ),
         ),
@@ -614,6 +610,61 @@ bool _hasPlayableClip(DetectionRecord det) {
   final path = det.audioClipPath;
   if (path == null) return false;
   return File(path).existsSync();
+}
+
+class SurveyMapMarkerSemantics extends StatelessWidget {
+  const SurveyMapMarkerSemantics({
+    super.key,
+    required this.label,
+    required this.confidence,
+    required this.child,
+    this.hasAudio = false,
+    this.isConfirmed = false,
+    this.isHighlighted = false,
+    this.onTap,
+  });
+
+  final String label;
+  final double confidence;
+  final bool hasAudio;
+  final bool isConfirmed;
+  final bool isHighlighted;
+  final VoidCallback? onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Semantics(
+      button: onTap != null,
+      enabled: onTap != null,
+      selected: isHighlighted,
+      label: label,
+      value: buildSurveyMapMarkerSemanticsValue(
+        l10n: l10n,
+        confidence: confidence,
+        hasAudio: hasAudio,
+        isConfirmed: isConfirmed,
+      ),
+      child: GestureDetector(
+        onTap: onTap,
+        child: ExcludeSemantics(child: child),
+      ),
+    );
+  }
+}
+
+String buildSurveyMapMarkerSemanticsValue({
+  required AppLocalizations l10n,
+  required double confidence,
+  required bool hasAudio,
+  required bool isConfirmed,
+}) {
+  return <String>[
+    l10n.a11yConfidencePercent((confidence * 100).round()),
+    if (hasAudio) l10n.a11ySurveyMapMarkerAudio,
+    if (isConfirmed) l10n.a11ySurveyMapMarkerConfirmed,
+  ].join(', ');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -911,8 +962,8 @@ class _SpeciesMarker extends ConsumerWidget {
 // different at a glance.
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ClusterBubble extends StatelessWidget {
-  const _ClusterBubble({required this.count});
+class SurveyMapClusterBubble extends StatelessWidget {
+  const SurveyMapClusterBubble({super.key, required this.count});
 
   final int count;
 
