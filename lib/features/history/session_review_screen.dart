@@ -2232,16 +2232,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         action: SnackBarAction(
           label: l10n.sessionUndo,
           onPressed: () {
-            _undoSnackBarTimer?.cancel();
             if (mounted) _undo();
           },
         ),
       ),
     );
-    _undoSnackBarTimer = Timer(lifetime, () {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    });
   }
 
   void _seekToCluster(_DetectionCluster cluster) {

@@ -207,6 +207,9 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
 
   Widget _buildMap(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
+    final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
 
     // Build polyline from GPS track.
     final trackPoints =
@@ -283,6 +286,16 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           det.scientificName == widget.highlightedDetection!.scientificName &&
           det.timestamp == widget.highlightedDetection!.timestamp;
       final hasAudio = _hasPlayableClip(det);
+      final displayName =
+          taxonomy?.lookup(det.scientificName)?.commonNameForLocale(
+            speciesLocale,
+          ) ??
+          det.commonName;
+      final semanticsValue = <String>[
+        l10n.a11yConfidencePercent((det.confidence * 100).round()),
+        if (hasAudio) l10n.a11ySurveyMapMarkerAudio,
+        if (det.isConfirmed) l10n.a11ySurveyMapMarkerConfirmed,
+      ].join(', ');
 
       speciesMarkers.add(
         Marker(
@@ -291,20 +304,29 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           // the corner play badge needs a few extra pixels of padding either
           // way. Slightly larger than the pre-#33 sizes so silhouettes stay
           // legible when zoomed in.
-          width: isHighlighted ? 56 : 44,
-          height: isHighlighted ? 56 : 44,
-          child: GestureDetector(
-            onTap:
-                widget.onMarkerTap != null
-                    ? () => widget.onMarkerTap!(det)
-                    : null,
-            child: _SpeciesMarker(
-              scientificName: det.scientificName,
-              confidence: det.confidence,
-              isHighlighted: isHighlighted,
-              hasAudio: hasAudio,
-              useDot: useDot,
-              isConfirmed: det.isConfirmed,
+          width: isHighlighted ? 56 : 48,
+          height: isHighlighted ? 56 : 48,
+          child: Semantics(
+            button: widget.onMarkerTap != null,
+            enabled: widget.onMarkerTap != null,
+            selected: isHighlighted,
+            label: displayName,
+            value: semanticsValue,
+            child: GestureDetector(
+              onTap:
+                  widget.onMarkerTap != null
+                      ? () => widget.onMarkerTap!(det)
+                      : null,
+              child: ExcludeSemantics(
+                child: _SpeciesMarker(
+                  scientificName: det.scientificName,
+                  confidence: det.confidence,
+                  isHighlighted: isHighlighted,
+                  hasAudio: hasAudio,
+                  useDot: useDot,
+                  isConfirmed: det.isConfirmed,
+                ),
+              ),
             ),
           ),
         ),
@@ -318,10 +340,15 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           point: trackPoints.first,
           width: 28,
           height: 28,
-          child: Icon(
-            AppIcons.flagFilled,
-            color: AppSemanticColors.of(context).success,
-            size: 28,
+          child: Semantics(
+            label: l10n.a11ySurveyMapMarkerStart,
+            child: ExcludeSemantics(
+              child: Icon(
+                AppIcons.flagFilled,
+                color: AppSemanticColors.of(context).success,
+                size: 28,
+              ),
+            ),
           ),
         ),
       );
@@ -336,10 +363,15 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           point: trackPoints.last,
           width: 28,
           height: 28,
-          child: Icon(
-            AppIcons.flagFilled,
-            color: theme.colorScheme.error,
-            size: 28,
+          child: Semantics(
+            label: l10n.a11ySurveyMapMarkerEnd,
+            child: ExcludeSemantics(
+              child: Icon(
+                AppIcons.flagFilled,
+                color: theme.colorScheme.error,
+                size: 28,
+              ),
+            ),
           ),
         ),
       );
@@ -357,10 +389,15 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
             point: currentPosition,
             width: 28,
             height: 28,
-            child: Icon(
-              AppIcons.personPinCircleRounded,
-              color: theme.colorScheme.primary,
-              size: 28,
+            child: Semantics(
+              label: l10n.a11ySurveyMapMarkerCurrentPosition,
+              child: ExcludeSemantics(
+                child: Icon(
+                  AppIcons.personPinCircleRounded,
+                  color: theme.colorScheme.primary,
+                  size: 28,
+                ),
+              ),
             ),
           ),
         );
@@ -882,30 +919,32 @@ class _ClusterBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Scale 40 px → 64 px across log10(count) ≈ 0..3 (1 → 1000+).
-    final scale = (count > 1) ? (1 + (count.bitLength - 1) * 0.06) : 1.0;
-    final size = (40.0 * scale).clamp(40.0, 64.0);
-    return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
-        shape: BoxShape.circle,
-        border: Border.all(color: theme.colorScheme.surface, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withAlpha(70),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+    final l10n = AppLocalizations.of(context)!;
+    return Semantics(
+      label: l10n.sessionDetectionCount(count),
+      child: ExcludeSemantics(
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: theme.colorScheme.primary,
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.shadow.withAlpha(70),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Text(
-        count.toString(),
-        style: theme.textTheme.labelLarge?.copyWith(
-          color: theme.colorScheme.onPrimary,
-          fontWeight: FontWeight.w700,
+          alignment: Alignment.center,
+          child: Text(
+            count.toString(),
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: theme.colorScheme.onPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ),
     );

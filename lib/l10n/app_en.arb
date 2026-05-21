@@ -1544,6 +1544,26 @@
       "percent": { "type": "int", "example": "60" }
     }
   },
+  "a11ySurveyMapMarkerAudio": "Audio clip available",
+  "@a11ySurveyMapMarkerAudio": {
+    "description": "Screen-reader value fragment for a survey-map detection marker that has an audio clip"
+  },
+  "a11ySurveyMapMarkerConfirmed": "Confirmed",
+  "@a11ySurveyMapMarkerConfirmed": {
+    "description": "Screen-reader value fragment for a survey-map detection marker that has been confirmed by the user"
+  },
+  "a11ySurveyMapMarkerCurrentPosition": "Current position",
+  "@a11ySurveyMapMarkerCurrentPosition": {
+    "description": "Screen-reader label for the current-position marker on the survey map"
+  },
+  "a11ySurveyMapMarkerStart": "Survey start",
+  "@a11ySurveyMapMarkerStart": {
+    "description": "Screen-reader label for the start marker on the survey map"
+  },
+  "a11ySurveyMapMarkerEnd": "Survey end",
+  "@a11ySurveyMapMarkerEnd": {
+    "description": "Screen-reader label for the end marker on the survey map"
+  },
   "fileAnalysisEtaRemaining": "≈ {time} remaining",
   "@fileAnalysisEtaRemaining": {
     "description": "Estimated time remaining shown below the progress bar",

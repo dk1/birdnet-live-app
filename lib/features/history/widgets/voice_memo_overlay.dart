@@ -597,9 +597,10 @@ class _RecordButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Semantics(
       button: true,
-      label: isRecording ? 'Stop recording' : 'Start recording',
+      label: isRecording ? l10n.a11yLiveCaptureStop : l10n.a11yLiveCaptureStart,
       child: GestureDetector(
         onTap: onTap,
         child: Container(

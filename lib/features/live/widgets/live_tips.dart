@@ -145,12 +145,25 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
   late int _index;
   Timer? _timer;
   int _tipCount = 0;
+  bool _autoRotateEnabled = false;
 
   @override
   void initState() {
     super.initState();
     _index = Random().nextInt(1 << 16); // resolved against tip count on build
-    _restartTimer();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final shouldAutoRotate = !MediaQuery.accessibleNavigationOf(context);
+    if (shouldAutoRotate == _autoRotateEnabled) return;
+    _autoRotateEnabled = shouldAutoRotate;
+    if (_autoRotateEnabled) {
+      _restartTimer();
+    } else {
+      _timer?.cancel();
+    }
   }
 
   @override
@@ -161,6 +174,7 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
 
   void _restartTimer() {
     _timer?.cancel();
+    if (!_autoRotateEnabled) return;
     _timer = Timer.periodic(widget.interval, (_) {
       if (!mounted) return;
       setState(() => _index++);
@@ -183,8 +197,8 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
     // Tips use the same faint tone as the empty-state subtitle so the
     // carousel reads as supporting text and doesn't compete with the
     // "Listening…" headline above it.
-    final faint = theme.colorScheme.onSurface.withAlpha(140);
-    final fainter = theme.colorScheme.onSurface.withAlpha(115);
+    final faint = theme.colorScheme.onSurface.withAlpha(170);
+    final fainter = theme.colorScheme.onSurface.withAlpha(145);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -257,4 +271,3 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
     );
   }
 }
-
