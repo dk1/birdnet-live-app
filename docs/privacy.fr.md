@@ -19,9 +19,9 @@ L'application peut accéder aux services externes ci-dessous. Chacun est contrô
 
 | Ressource | Objectif | Interrupteur | Envoyé à chaque requête |
 |-----------|----------|--------------|--------------------------|
-| Tuiles de carte (OpenStreetMap) | Carte de base pour sélecteur de position, carte live de Survey, carte de la session et pré-téléchargement | **Réglages → Confidentialité → Autoriser les tuiles de carte** | Uniquement coordonnées de tuile `(z, x, y)` — pas de PII |
-| Géocodage inverse (OpenStreetMap Nominatim) | Résoudre les coordonnées GPS en un nom de lieu (p. ex. «Paris, France») | **Réglages → Confidentialité → Autoriser la recherche de nom de lieu** | Lat/lon de la session et un user-agent générique `BirdNET-Live/<version>` |
-| Instantané météo (Open-Meteo) | Capture ponctuelle des conditions (température, précipitations, vent, nuages, code WMO) aux coordonnées et à l'heure de fin | **Réglages → Confidentialité → Autoriser la requête météo** | Lat/lon de la session et horodatage de fin, plus un user-agent générique `BirdNET-Live/<version>` |
+| Tuiles de carte (OpenStreetMap) | Carte de base pour sélecteur de position, carte live de Survey et carte de la session | **Réglages → Confidentialité → Autoriser les tuiles de carte** | Coordonnées de tuile `(z, x, y)` et user-agent BirdNET Live — pas de PII |
+| Géocodage inverse (OpenStreetMap Nominatim) | Résoudre les coordonnées GPS en un nom de lieu (p. ex. «Paris, France») | **Réglages → Confidentialité → Autoriser la recherche de nom de lieu** | Lat/lon de la session et user-agent BirdNET Live |
+| Instantané météo (Open-Meteo) | Capture ponctuelle des conditions (température, précipitations, vent, nuages, code WMO) aux coordonnées et à l'heure de fin | **Réglages → Confidentialité → Autoriser la requête météo** | Lat/lon de la session et horodatage de fin, plus user-agent BirdNET Live |
 
 Les requêtes de tuiles sont des HTTPS GET standard vers `tile.openstreetmap.org` ; le géocodage inverse cible `nominatim.openstreetmap.org` selon la [Politique d'usage Nominatim](https://operations.osmfoundation.org/policies/nominatim/) ; les requêtes météo ciblent `api.open-meteo.com`. [Open-Meteo](https://open-meteo.com/) est un service gratuit et n'exige ni compte ni clé API.
 

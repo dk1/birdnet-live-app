@@ -159,7 +159,7 @@ Dieser Abschnitt steuert, **welche externen Dienste BirdNET Live in deinem Namen
 
 ### Kartenkacheln erlauben
 
-Erforderlich für jede interaktive Karte (Standort-Picker, Survey-Live-Karte, Sitzungskarte, Vorab-Download von Kartenkacheln). Wenn aktiv, laden Kartenansichten Rasterkacheln von den öffentlichen **OpenStreetMap**-Servern; Kachelanfragen verraten, welchen Bereich der Welt du gerade ansiehst. Wenn aus, zeigen alle Kartenbildschirme einen Platzhalter.
+Erforderlich für jede interaktive Karte (Standort-Picker, Survey-Live-Karte, Sitzungskarte). Wenn aktiv, laden Kartenansichten Rasterkacheln von den öffentlichen **OpenStreetMap**-Servern; Kachelanfragen verraten, welchen Bereich der Welt du gerade ansiehst. Wenn aus, zeigen alle Kartenbildschirme einen Platzhalter.
 
 ### Ortsnamen-Suche erlauben
 

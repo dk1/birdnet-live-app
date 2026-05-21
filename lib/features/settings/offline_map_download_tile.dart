@@ -2,11 +2,11 @@
 // Offline Map Download Tile (Settings → Location)
 // =============================================================================
 //
-// Lets users pre-download OpenStreetMap tiles for an area centered on
-// their current GPS fix. Tiles land in the same on-disk cache that
-// `OpenStreetMapTileLayer` reads from at view time, so no separate
-// store and no special map widget is needed — the next time the user
-// opens a survey at the seeded location, the basemap is already there.
+// Lets users pre-download map tiles for an area centered on their current GPS
+// fix. The implementation is currently hidden from Settings while BirdNET Live
+// uses the public OpenStreetMap tile service, because that service does not
+// allow bulk prefetching or offline map-download features. Keep this flow
+// available only for a future tile source that explicitly permits offline use.
 //
 // Pragmatic choices:
 //
@@ -14,9 +14,8 @@
 //     per area (so already cached by casual use), and 16 is the
 //     finest level the survey map hits in practice.
 //   • Radius: 1 / 5 / 10 / 25 km picker. We compute an estimate
-//     before downloading and refuse anything > 50 MB to be a polite
-//     OSM citizen — that's the upstream policy line, not just a
-//     UX guideline.
+//     before downloading and refuse anything > 50 MB so an allowed tile
+//     provider is still used gently.
 //   • Concurrency: 4 in-flight tile fetches with a 500 ms minimum
 //     spacing between *bursts* of 4, so we hold under the 2 req/s
 //     OSM tile-usage rule averaged across the whole batch.
