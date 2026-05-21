@@ -13,6 +13,20 @@ This page explains the recurring controls and symbols used across BirdNET Live. 
 | :material-information-outline: **Info / About** | Home footer, info bars, help sheets | Shows general information or summary context. |
 | :material-arrow-left: **Back** | Live Mode | Returns to the previous screen. |
 | :material-open-in-new: **Open external** | About screen, documentation links | Opens an external page such as the online User Guide. |
+| :material-volunteer-activism: **Donate** | About screen | Opens the BirdNET donation page. |
+
+## Weather Symbols
+
+| Control | Meaning |
+|---|---|
+| :material-wb-sunny: **Clear** | Clear sky. |
+| :material-partly-cloudy-day: **Partly cloudy** | Sun and cloud for mainly clear or partly cloudy weather. |
+| :material-cloudy: **Overcast** | Full cloud cover. |
+| :material-foggy: **Fog** | Fog or depositing rime fog. |
+| :material-rainy-light: **Drizzle** | Light precipitation. |
+| :material-rainy: **Rain** | Rain or rain showers. |
+| :material-weather-snowy: **Snow** | Snow or snow showers. |
+| :material-thunderstorm: **Thunderstorm** | Thunderstorm conditions. |
 
 ## Start, Stop, and Session Controls
 

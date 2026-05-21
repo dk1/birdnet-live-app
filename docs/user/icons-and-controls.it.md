@@ -13,6 +13,20 @@ Questa pagina spiega i controlli e i simboli ricorrenti utilizzati in BirdNET Li
 | :materiale-informazioni-schema: **Informazioni / Informazioni** | Piè di pagina iniziale, barre informative, fogli di aiuto | Mostra informazioni generali o contesto di riepilogo. |
 | :material-arrow-left: **Indietro** | Modalità dal vivo | Ritorna alla schermata precedente. |
 | :material-open-in-new: **Apri esterno** | Informazioni sullo schermo, collegamenti alla documentazione | Apre una pagina esterna come la Guida per l'utente in linea. |
+| :material-volunteer-activism: **Dona** | Schermata Informazioni | Apre la pagina per le donazioni a BirdNET. |
+
+## Simboli meteo
+
+| Simbolo | Significato |
+|---|---|
+| :material-wb-sunny: **Sereno** | Cielo sereno. |
+| :material-partly-cloudy-day: **Parzialmente nuvoloso** | Sole e nuvola per tempo prevalentemente sereno o parzialmente nuvoloso. |
+| :material-cloudy: **Coperto** | Copertura nuvolosa completa. |
+| :material-foggy: **Nebbia** | Nebbia o nebbia gelata. |
+| :material-rainy-light: **Pioviggine** | Precipitazione leggera. |
+| :material-rainy: **Pioggia** | Pioggia o rovesci. |
+| :material-weather-snowy: **Neve** | Neve o rovesci nevosi. |
+| :material-thunderstorm: **Temporale** | Condizioni temporalesche. |
 
 ## Controlli di avvio, arresto e sessione
 

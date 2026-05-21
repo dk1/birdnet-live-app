@@ -393,6 +393,10 @@
   "@aboutUserGuide": {
     "description": "User guide link label"
   },
+  "aboutDonate": "Donate to BirdNET",
+  "@aboutDonate": {
+    "description": "Donate link label on the About screen"
+  },
   "errorPermissionRequired": "Permission required",
   "@errorPermissionRequired": {
     "description": "Error message when permission is not granted"

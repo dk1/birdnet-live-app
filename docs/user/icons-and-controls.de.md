@@ -13,6 +13,20 @@ Auf dieser Seite werden die wiederkehrenden Steuerelemente und Symbole erläuter
 | :material-information-outline: **Info / Über** | Home-Fußzeile, Infoleisten, Hilfeblätter | Zeigt allgemeine Informationen oder einen zusammenfassenden Kontext an. |
 | :material-arrow-left: **Zurück** | Live-Modus | Kehrt zum vorherigen Bildschirm zurück. |
 | :material-open-in-new: **Extern öffnen** | Über Bildschirm, Dokumentationslinks | Öffnet eine externe Seite, beispielsweise das Online-Benutzerhandbuch. |
+| :material-volunteer-activism: **Spenden** | Über-Bildschirm | Öffnet die BirdNET-Spendenseite. |
+
+## Wettersymbole
+
+| Symbol | Bedeutung |
+|---|---|
+| :material-wb-sunny: **Klar** | Klarer Himmel. |
+| :material-partly-cloudy-day: **Teilweise bewölkt** | Sonne und Wolke für überwiegend klare oder teilweise bewölkte Bedingungen. |
+| :material-cloudy: **Bedeckt** | Vollständige Bewölkung. |
+| :material-foggy: **Nebel** | Nebel oder gefrierender Nebel. |
+| :material-rainy-light: **Nieselregen** | Leichter Niederschlag. |
+| :material-rainy: **Regen** | Regen oder Regenschauer. |
+| :material-weather-snowy: **Schnee** | Schnee oder Schneeschauer. |
+| :material-thunderstorm: **Gewitter** | Gewitterbedingungen. |
 
 ## Start-, Stopp- und Sitzungssteuerung
 

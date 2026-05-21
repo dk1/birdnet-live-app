@@ -211,6 +211,13 @@ class AboutScreen extends ConsumerWidget {
                     '${AppConstants.docsUrl}${Localizations.localeOf(context).languageCode == 'en' ? '' : '/${Localizations.localeOf(context).languageCode}'}/user/',
                   ),
             ),
+            ListTile(
+              leading: const Icon(AppIcons.volunteerActivism),
+              title: Text(l10n.aboutDonate),
+              trailing: const Icon(AppIcons.openInNew),
+              onTap:
+                  () => openExternalUrl(context, AppConstants.birdnetDonateUrl),
+            ),
 
             const SizedBox(height: 32),
           ],

@@ -13,6 +13,20 @@ Esta página explica os controles e símbolos recorrentes usados ​​no BirdNE
 | :material-information-outline: **Informações / Sobre** | Rodapé inicial, barras de informações, folhas de ajuda | Mostra informações gerais ou contexto resumido. |
 | :material-seta-esquerda: **Voltar** | Modo ao vivo | Retorna à tela anterior. |
 | :material-aberto-em-novo: **Aberto externo** | Sobre a tela, links de documentação | Abre uma página externa, como o Guia do usuário on-line. |
+| :material-volunteer-activism: **Doar** | Tela Sobre | Abre a página de doações do BirdNET. |
+
+## Símbolos de clima
+
+| Símbolo | Significado |
+|---|---|
+| :material-wb-sunny: **Limpo** | Céu limpo. |
+| :material-partly-cloudy-day: **Parcialmente nublado** | Sol e nuvem para clima majoritariamente limpo ou parcialmente nublado. |
+| :material-cloudy: **Encoberto** | Cobertura total de nuvens. |
+| :material-foggy: **Nevoeiro** | Nevoeiro ou nevoeiro congelante. |
+| :material-rainy-light: **Garoa** | Precipitação leve. |
+| :material-rainy: **Chuva** | Chuva ou pancadas de chuva. |
+| :material-weather-snowy: **Neve** | Neve ou pancadas de neve. |
+| :material-thunderstorm: **Trovoada** | Condições de trovoada. |
 
 ## Iniciar, parar e controles de sessão
 
