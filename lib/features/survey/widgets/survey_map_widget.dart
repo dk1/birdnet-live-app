@@ -10,6 +10,7 @@
 // =============================================================================
 
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
@@ -28,6 +29,19 @@ import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/widgets/open_street_map_tile_layer.dart';
 import '../../explore/explore_providers.dart';
 import '../../live/live_session.dart';
+
+const double _minClusterBubbleDiameter = 40;
+const double _maxClusterBubbleDiameter = 60;
+
+double surveyMapClusterBubbleDiameter(int count) {
+  final normalizedCount = math.max(1, count);
+  final scaledDiameter =
+      _minClusterBubbleDiameter + math.log(normalizedCount) / math.ln10 * 10;
+  return scaledDiameter.clamp(
+    _minClusterBubbleDiameter,
+    _maxClusterBubbleDiameter,
+  );
+}
 
 /// Live map showing GPS track and detection markers.
 ///
@@ -504,7 +518,10 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           options: MarkerClusterLayerOptions(
             maxClusterRadius: 80,
             disableClusteringAtZoom: _disableClusteringAtZoom.toInt(),
-            size: const Size(40, 40),
+            size: const Size(
+              _maxClusterBubbleDiameter,
+              _maxClusterBubbleDiameter,
+            ),
             padding: const EdgeInsets.all(50),
             markers: speciesMarkers,
             polygonOptions: PolygonOptions(
@@ -971,12 +988,13 @@ class SurveyMapClusterBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final diameter = surveyMapClusterBubbleDiameter(count);
     return Semantics(
       label: l10n.sessionDetectionCount(count),
       child: ExcludeSemantics(
         child: Container(
-          width: 40,
-          height: 40,
+          width: diameter,
+          height: diameter,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: theme.colorScheme.primary,
