@@ -61,17 +61,17 @@ IconData weatherConditionIcon(WeatherCondition cond) {
     case WeatherCondition.clear:
       return AppIcons.wbSunny;
     case WeatherCondition.partlyCloudy:
-      return AppIcons.wbCloudy;
+      return AppIcons.partlyCloudyDay;
     case WeatherCondition.cloudy:
-      return AppIcons.cloud;
+      return AppIcons.cloudy;
     case WeatherCondition.fog:
       return AppIcons.foggy;
     case WeatherCondition.drizzle:
-      return AppIcons.grain;
+      return AppIcons.rainyLight;
     case WeatherCondition.rain:
-      return AppIcons.waterDrop;
+      return AppIcons.rainy;
     case WeatherCondition.snow:
-      return AppIcons.acUnit;
+      return AppIcons.weatherSnowy;
     case WeatherCondition.thunder:
       return AppIcons.thunderstorm;
     case WeatherCondition.unknown:

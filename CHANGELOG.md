@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.1] - 2026-05-21
+
+### Added
+
+- Added a Donate link to the bottom of the About screen, pointing to the BirdNET donation page.
+
+### Changed
+
+- Expanded weather condition icons so partly cloudy, overcast, drizzle, rain, and snow use more specific symbols in setup and session context views.
+
 ## [0.15.0] - 2026-05-20
 
 ### Changed

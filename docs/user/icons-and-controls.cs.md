@@ -13,6 +13,20 @@ Tato stránka vysvětluje opakující se ovládací prvky a symboly používané
 | :informace-materiálu: **Info / O** | Domovská zápatí, informační lišty, pomocné listy | Zobrazuje obecné informace nebo souhrnný kontext. |
 | :material-arrow-left: **Zpět** | Živý režim | Vrátí se na předchozí obrazovku. |
 | :material-open-in-new: **Otevřít externí** | O obrazovce, odkazy na dokumentaci | Otevře externí stránku, jako je online Uživatelská příručka. |
+| :material-volunteer-activism: **Přispět** | Obrazovka O aplikaci | Otevře stránku pro příspěvky BirdNETu. |
+
+## Symboly počasí
+
+| Symbol | Význam |
+|---|---|
+| :material-wb-sunny: **Jasno** | Jasná obloha. |
+| :material-partly-cloudy-day: **Polojasno** | Slunce a mrak pro převážně jasné nebo polojasné počasí. |
+| :material-cloudy: **Zataženo** | Souvislá oblačnost. |
+| :material-foggy: **Mlha** | Mlha nebo námrazová mlha. |
+| :material-rainy-light: **Mrholení** | Lehké srážky. |
+| :material-rainy: **Déšť** | Déšť nebo dešťové přeháňky. |
+| :material-weather-snowy: **Sníh** | Sníh nebo sněhové přeháňky. |
+| :material-thunderstorm: **Bouřka** | Bouřkové podmínky. |
 
 ## Ovládací prvky pro spuštění, zastavení a relace
 

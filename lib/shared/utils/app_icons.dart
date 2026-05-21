@@ -47,6 +47,7 @@ abstract final class AppIcons {
   static const IconData closeRounded = Symbols.close_rounded;
   static const IconData cloudOff = Symbols.cloud_off;
   static const IconData cloud = Symbols.cloud;
+  static const IconData cloudy = Symbols.cloudy;
   static const IconData code = Symbols.code;
   static const IconData contentCut = Symbols.content_cut;
   static const IconData deleteOutline = Symbols.delete;
@@ -120,6 +121,7 @@ abstract final class AppIcons {
   static const IconData openInNew = Symbols.open_in_new;
   static const IconData pause = Symbols.pause;
   static const IconData pauseRounded = Symbols.pause_rounded;
+  static const IconData partlyCloudyDay = Symbols.partly_cloudy_day;
   static const IconData percent = Symbols.percent;
   static const IconData personOutline = Symbols.person;
   static const IconData personPinCircleRounded =
@@ -136,6 +138,8 @@ abstract final class AppIcons {
   static const IconData refresh = Symbols.refresh;
   static const IconData repeatRounded = Symbols.repeat_rounded;
   static const IconData reportProblem = Symbols.report_problem;
+  static const IconData rainy = Symbols.rainy;
+  static const IconData rainyLight = Symbols.rainy_light;
   // Kept as outlined to pair with routeRounded where style is intentional.
   static const IconData routeOutlined = Symbols.route;
   static const IconData routeRounded = Symbols.route_rounded;
@@ -182,6 +186,7 @@ abstract final class AppIcons {
   static const IconData uploadFileRounded = Symbols.upload_file_rounded;
   static const IconData verifiedRounded = Symbols.verified_rounded;
   static const IconData vibrationRounded = Symbols.vibration_rounded;
+  static const IconData volunteerActivism = Symbols.volunteer_activism;
   static const IconData volumeDown = Symbols.volume_down;
   static const IconData volumeMuteRounded = Symbols.volume_mute_rounded;
   static const IconData volumeOffRounded = Symbols.volume_off_rounded;
@@ -193,4 +198,5 @@ abstract final class AppIcons {
   static const IconData wbCloudy = Symbols.wb_cloudy;
   static const IconData wbSunny = Symbols.wb_sunny;
   static const IconData wbTwilightRounded = Symbols.wb_twilight_rounded;
+  static const IconData weatherSnowy = Symbols.weather_snowy;
 }

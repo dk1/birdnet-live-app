@@ -97,6 +97,7 @@
   "aboutGitHub": "Esta aplicación en GitHub",
   "aboutPrivacyPolicy": "Política de privacidad",
   "aboutTermsOfUse": "Términos de uso",
+  "aboutDonate": "Donar a BirdNET",
   "errorPermissionRequired": "Permiso requerido",
   "errorMicrophoneRequired": "Se necesita acceso al micrófono para la identificación de especies. Conceda el permiso de micrófono en los ajustes.",
   "homeSubtitle": "La aplicación de bioacústica impulsada por IA",
