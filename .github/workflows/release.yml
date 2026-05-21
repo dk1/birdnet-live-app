@@ -15,20 +15,6 @@ jobs:
         with:
           lfs: true
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install species-bundle dependencies
-        run: pip install -r tools/requirements-species-bundle.txt
-
-      - name: Download BirdNET taxonomy export
-        run: python tools/download_taxonomy_json.py
-
-      - name: Build species bundle assets
-        run: python tools/build_species_bundle.py
-
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -55,6 +41,20 @@ jobs:
 
       - name: Test
         run: flutter test
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install species-bundle dependencies
+        run: pip install -r tools/requirements-species-bundle.txt
+
+      - name: Download BirdNET taxonomy export
+        run: python tools/download_taxonomy_json.py
+
+      - name: Build species bundle assets
+        run: python tools/build_species_bundle.py
 
       - name: Check signing secrets availability
         shell: bash
