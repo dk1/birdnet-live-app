@@ -23,10 +23,10 @@ As requisições de tiles são HTTPS GET padrão para `tile.openstreetmap.org`; 
 
 **Retenção:** nenhum dos serviços acima armazena dados do usuário. Os valores retornados (nome do lugar, snapshot de clima) vivem apenas no registro local da sessão e só viajam para arquivos de exportação que você produzir explicitamente.
 
-**Revogação:** você pode desativar qualquer dos três serviços a qualquer momento em **Configurações → Privacidade**. Para apagar também os nomes de lugar e snapshots de clima históricos, exclua essas sessões na Session Library, limpe o armazenamento do app nas configurações do sistema ou desinstale o app.
+**Revogação:** você pode desativar qualquer dos três serviços a qualquer momento em **Configurações → Privacidade**. Para apagar também os nomes de lugar e snapshots de clima históricos, exclua essas sessões na Session Library ou use **Configurações → Zona de Perigo → Limpar todos os dados**.
 
 ## GPS e Exclusão Total
-Você controla as permissões de localização do celular. Em **Configurações → Exportação → Formatos**, marque qualquer combinação de formatos (Raven Selection Table, CSV, JSON, GPX); eles são agrupados em um único ZIP junto com os clipes de áudio e o relatório HTML opcional. Para apagar tudo, limpe o armazenamento do BirdNET Live nas configurações do sistema ou desinstale o app.
+Você controla as permissões de localização do celular. Em **Configurações → Exportação → Formatos**, marque qualquer combinação de formatos (Raven Selection Table, CSV, JSON, GPX); eles são agrupados em um único ZIP junto com os clipes de áudio e o relatório HTML opcional. Para apagar do app sessões locais, gravações, notas de voz, listas de espécies personalizadas, preferências e caches do BirdNET Live, use **Configurações → Zona de Perigo → Limpar todos os dados**. Você também pode limpar o armazenamento do BirdNET Live nas configurações do sistema ou desinstalar o app.
 
 ## Contato
 [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu)

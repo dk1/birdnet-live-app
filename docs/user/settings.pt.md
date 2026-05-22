@@ -181,7 +181,9 @@ Mostra a sequência de integração novamente na próxima vez que o aplicativo f
 
 ### Limpar todos os dados
 
-Esse fluxo de confirmação existe no app, mas ainda não está conectado a uma limpeza completa do armazenamento. Exclua sessões individuais na Session Library ou use os controles de armazenamento de apps do sistema operacional para remover todos os dados do BirdNET Live.
+Exclui permanentemente sessões, detecções, gravações, notas de voz, listas de espécies personalizadas, preferências salvas e dados em cache de mapas, nomes de lugares, meteorologia, reprodução, revisão e compartilhamento. O diálogo de confirmação exige digitar `DELETE` e depois fecha o app para que a próxima abertura comece de um estado local limpo.
+
+Use antes de entregar um dispositivo a outra pessoa observadora, aposentar um telefone de campo ou remover do app histórico vinculado a localização. Exporte primeiro tudo o que deseja manter; esta ação não pode ser desfeita.
 
 ## Parâmetros específicos do fluxo de trabalho fora das configurações
 

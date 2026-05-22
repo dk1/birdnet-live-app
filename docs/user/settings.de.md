@@ -181,7 +181,9 @@ Zeigt die Onboarding-Sequenz beim nächsten Start der App erneut an.
 
 ### Alle Daten löschen
 
-Dieser Bestätigungsablauf ist in der App vorhanden, ist aber noch nicht mit einer vollständigen Speicherlöschung verbunden. Löschen Sie einzelne Sitzungen in der Session Library oder entfernen Sie alle BirdNET-Live-Daten über die App-Speicherverwaltung des Betriebssystems.
+Löscht dauerhaft Sessions, Detektionen, Aufnahmen, Sprachnotizen, eigene Artenlisten, gespeicherte Einstellungen sowie zwischengespeicherte Karten-, Orts-, Wetter-, Wiedergabe-, Review- und Teilen-Daten. Der Bestätigungsdialog verlangt die Eingabe von `DELETE` und schließt danach die App, damit der nächste Start aus einem sauberen lokalen Zustand erfolgt.
+
+Verwenden Sie dies, bevor Sie ein Gerät an eine andere beobachtende Person weitergeben, ein Feldtelefon außer Dienst nehmen oder ortsbezogene Historie aus der App entfernen. Exportieren Sie zuerst alles, was Sie behalten möchten; diese Aktion kann nicht rückgängig gemacht werden.
 
 ## Workflowspezifische Parameter außerhalb der Einstellungen
 

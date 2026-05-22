@@ -50,7 +50,7 @@ Weather requests send the session's latitude / longitude and end timestamp to `a
 
 **Retention:** none of the third-party services above is contacted to *upload* or *store* user data. Returned values (place name, weather snapshot) live only inside the local session record on your device, and travel only into export files you explicitly produce.
 
-**Revocation:** you can disable any of the three services at any time under **Settings → Privacy**. Existing locally-stored place names and weather snapshots remain attached to the sessions where they were captured; delete those sessions from Session Library, clear the app's storage in system settings, or uninstall the app to remove that historical data.
+**Revocation:** you can disable any of the three services at any time under **Settings → Privacy**. Existing locally-stored place names and weather snapshots remain attached to the sessions where they were captured; delete those sessions from Session Library or use **Settings → Danger Zone → Clear All Data** to remove that historical data.
 
 **No other network requests are made.** The app functions fully offline.
 
@@ -70,7 +70,7 @@ You can export session data in multiple formats (Raven Selection Tables, CSV, JS
 
 ## Data Deletion
 
-Individual sessions and their recordings can be deleted from Session Library. To wipe all app data, clear BirdNET Live's app storage in your operating system settings or uninstall the app.
+Individual sessions and their recordings can be deleted from Session Library. To wipe BirdNET Live's local sessions, recordings, voice memos, custom species lists, preferences, and caches from inside the app, use **Settings → Danger Zone → Clear All Data**. You can also clear BirdNET Live's app storage in your operating system settings or uninstall the app.
 
 ## Contact
 

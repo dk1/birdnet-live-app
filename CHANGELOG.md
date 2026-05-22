@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.3] - 2026-05-22
+
+### Added
+
+- Enabled the Settings Danger Zone Clear All Data action to wipe sessions, recordings, voice memos, custom species lists, preferences, OpenStreetMap tile cache, and temporary playback/review/share caches, then close the app so the next launch starts clean.
+
+### Changed
+
+- Updated localized Clear All Data confirmations, user settings documentation, and privacy policy text to describe the in-app full local wipe.
+
 ## [0.15.2] - 2026-05-22
 
 ### Added

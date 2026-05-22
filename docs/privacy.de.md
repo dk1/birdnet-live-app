@@ -50,7 +50,7 @@ Wetteranfragen senden Lat/Lon der Sitzung und den Endzeitstempel über HTTPS an 
 
 **Aufbewahrung:** Keiner der oben genannten Drittanbieterdienste wird kontaktiert, um Nutzerdaten *hochzuladen* oder zu *speichern*. Rückgabewerte (Ortsname, Wetter-Snapshot) liegen ausschließlich im lokalen Sitzungsdatensatz auf Ihrem Gerät und gelangen nur in Exportdateien, die Sie ausdrücklich erzeugen.
 
-**Widerruf:** Sie können jeden der drei Dienste jederzeit unter **Einstellungen → Datenschutz** deaktivieren. Bereits lokal gespeicherte Ortsnamen und Wetter-Snapshots bleiben an den Sitzungen, in denen sie erfasst wurden. Um diese historischen Daten zu entfernen, löschen Sie die betroffenen Sitzungen in der Session Library, löschen Sie den App-Speicher in den Systemeinstellungen oder deinstallieren Sie die App.
+**Widerruf:** Sie können jeden der drei Dienste jederzeit unter **Einstellungen → Datenschutz** deaktivieren. Bereits lokal gespeicherte Ortsnamen und Wetter-Snapshots bleiben an den Sitzungen, in denen sie erfasst wurden. Um diese historischen Daten zu entfernen, löschen Sie die betroffenen Sitzungen in der Session Library oder verwenden Sie **Einstellungen → Gefahrenzone → Alle Daten löschen**.
 
 **Es werden keine weiteren Netzwerkanfragen gestellt.** Die App funktioniert vollständig offline.
 
@@ -70,7 +70,7 @@ Sie können Sitzungsdaten in verschiedenen Formaten exportieren (Raven Selection
 
 ## Datenlöschung
 
-Einzelne Sitzungen und ihre Aufnahmen können in der Session Library gelöscht werden. Um alle App-Daten zu entfernen, löschen Sie den BirdNET-Live-App-Speicher in den Systemeinstellungen oder deinstallieren Sie die App.
+Einzelne Sitzungen und ihre Aufnahmen können in der Session Library gelöscht werden. Um lokale BirdNET-Live-Sessions, Aufnahmen, Sprachnotizen, eigene Artenlisten, Einstellungen und Caches direkt in der App zu löschen, verwenden Sie **Einstellungen → Gefahrenzone → Alle Daten löschen**. Alternativ können Sie den BirdNET-Live-App-Speicher in den Systemeinstellungen löschen oder die App deinstallieren.
 
 ## Kontakt
 

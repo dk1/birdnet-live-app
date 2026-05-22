@@ -181,7 +181,9 @@ Affiche à nouveau la séquence d'intégration au prochain lancement de l'applic
 
 ### Effacer toutes les données
 
-Ce flux de confirmation existe dans l'app, mais il n'est pas encore connecté à un effacement complet du stockage. Supprimez les sessions individuelles depuis Session Library ou utilisez les réglages de stockage des apps du système pour retirer toutes les données BirdNET Live.
+Supprime définitivement les sessions, détections, enregistrements, mémos vocaux, listes d'espèces personnalisées, préférences enregistrées et données en cache de cartes, noms de lieux, météo, lecture, revue et partage. Le dialogue de confirmation exige de saisir `DELETE`, puis ferme l'app afin que le prochain lancement reparte d'un état local propre.
+
+Utilisez cette action avant de confier un appareil à une autre personne observatrice, de retirer un téléphone de terrain ou de supprimer l'historique lié aux emplacements. Exportez d'abord tout ce que vous souhaitez conserver ; cette action est irréversible.
 
 ## Paramètres spécifiques au workflow en dehors des paramètres
 

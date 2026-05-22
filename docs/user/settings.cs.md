@@ -181,7 +181,9 @@ Při příštím spuštění aplikace znovu zobrazí vstupní sekvenci.
 
 ### Vymazat všechna data
 
-Tento potvrzovací tok je v aplikaci přítomen, ale zatím není napojen na úplné vymazání úložiště. Jednotlivé relace smažte v Session Library, nebo použijte správu úložiště aplikace v operačním systému a odstraňte všechna data BirdNET Live.
+Trvale smaže relace, detekce, nahrávky, hlasové poznámky, vlastní seznamy druhů, uložená nastavení a data v mezipaměti pro mapy, názvy míst, počasí, přehrávání, revizi a sdílení. Potvrzovací dialog vyžaduje zadání `DELETE` a poté aplikaci zavře, aby další spuštění začalo s čistým místním stavem.
+
+Použijte tuto volbu před předáním zařízení jinému pozorovateli, vyřazením terénního telefonu nebo odstraněním historie navázané na polohu z aplikace. Vše, co potřebujete, nejprve exportujte; tuto akci nelze vrátit zpět.
 
 ## Parametry specifické pro pracovní postup mimo nastavení
 

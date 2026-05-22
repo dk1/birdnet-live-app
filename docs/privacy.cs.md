@@ -50,7 +50,7 @@ Požadavky na počasí odesílají lat/lon relace a koncový čas na `api.open-m
 
 **Uchovávání:** žádná z výše uvedených služeb třetích stran není kontaktována, aby *nahrávala* nebo *uchovávala* uživatelská data. Vrácené hodnoty (název místa, snapshot počasí) žijí pouze v lokálním záznamu relace na vašem zařízení a putují jen do exportních souborů, které výslovně vyrobíte.
 
-**Odvolání:** kteroukoli ze tří služeb můžete kdykoliv vypnout v **Nastavení → Soukromí**. Již uložené názvy míst a snapshoty počasí zůstávají u relací, kde byly zachyceny. Tato historická data odstraníte smazáním dotčených relací v Session Library, vymazáním úložiště aplikace v nastavení systému nebo odinstalováním aplikace.
+**Odvolání:** kteroukoli ze tří služeb můžete kdykoliv vypnout v **Nastavení → Soukromí**. Již uložené názvy míst a snapshoty počasí zůstávají u relací, kde byly zachyceny. Tato historická data odstraníte smazáním dotčených relací v Session Library nebo pomocí **Nastavení → Nebezpečná zóna → Vymazat všechna data**.
 
 **Žádné další síťové požadavky se neprovádějí.** Aplikace funguje plně offline.
 
@@ -58,7 +58,7 @@ Požadavky na počasí odesílají lat/lon relace a koncový čas na `api.open-m
 Poloha se používá pro filtrování druhů, průzkumy a bodové sčítání. Vše je lokální a lze to zakázat v nastavení systému.
 
 ## Export a Smazání dat
-Nahrávky lze exportovat vícenásobně (Raven Selection Tables, CSV, JSON, GPX) a pod **Nastavení → Export → Formáty** zaškrtněte libovolnou kombinaci formátů naraz; vybrané formáty jsou sbaleny do jediného ZIPu spolu s audio klipy a volitelným samostatným HTML reportem. Jednotlivé relace lze odstranit v Session Library; úplné vymazání provedete vymazáním úložiště aplikace v nastavení systému nebo odinstalováním aplikace.
+Nahrávky lze exportovat vícenásobně (Raven Selection Tables, CSV, JSON, GPX) a pod **Nastavení → Export → Formáty** zaškrtněte libovolnou kombinaci formátů naraz; vybrané formáty jsou sbaleny do jediného ZIPu spolu s audio klipy a volitelným samostatným HTML reportem. Jednotlivé relace lze odstranit v Session Library; úplné místní vymazání relací, nahrávek, hlasových poznámek, vlastních seznamů druhů, nastavení a mezipamětí provedete pomocí **Nastavení → Nebezpečná zóna → Vymazat všechna data**. Můžete také vymazat úložiště aplikace v nastavení systému nebo aplikaci odinstalovat.
 
 ## Kontakt
 Otázky ohledně soukromí: [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu)
