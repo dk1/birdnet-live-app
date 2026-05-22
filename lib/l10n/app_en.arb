@@ -405,7 +405,7 @@
   "@errorMicrophoneRequired": {
     "description": "Error message when microphone permission is denied"
   },
-  "homeSubtitle": "The bioacoustics companion app",
+  "homeSubtitle": "Professional bioacoustics in your pocket",
   "@homeSubtitle": {
     "description": "Subtitle shown on the main menu screen"
   },

@@ -100,7 +100,7 @@
   "aboutDonate": "Donar a BirdNET",
   "errorPermissionRequired": "Permiso requerido",
   "errorMicrophoneRequired": "Se necesita acceso al micrófono para la identificación de especies. Conceda el permiso de micrófono en los ajustes.",
-  "homeSubtitle": "La aplicación de bioacústica impulsada por IA",
+  "homeSubtitle": "Bioacústica profesional en tu bolsillo",
   "liveModeDescription": "Identificar especies en tiempo real",
   "surveyModeDescription": "Recorrer un transecto y cartografiar especies",
   "pointCountModeDescription": "Registrar especies en un punto fijo durante un tiempo definido",
