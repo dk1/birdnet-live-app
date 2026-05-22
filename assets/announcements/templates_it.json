@@ -199,7 +199,7 @@
     "common": [
       "Una specie comune da queste parti.",
       "Abbastanza presente nella tua zona in questo periodo.",
-      "Visitatore abituale della zona.",
+      "Presenza abituale in zona.",
       "Sei in buon territorio per questa specie.",
       "Piuttosto tipica della tua zona."
     ],
@@ -208,10 +208,10 @@
       "Un po' meno frequente nella tua zona.",
       "Da segnalare — non si sente tutti i giorni.",
       "Piccola sorpresa — non così frequente nella tua zona.",
-      "Non il canto quotidiano della zona."
+      "Non è una presenza quotidiana da queste parti."
     ],
     "rare": [
-      "Una vera rarità da queste parti — bel colpo!",
+      "Una vera rarità da queste parti.",
       "Specie insolita per questa zona.",
       "Piuttosto rara nella tua zona, questa.",
       "Da ricordare — molto scarsa qui.",

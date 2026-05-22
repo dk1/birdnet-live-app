@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.2] - 2026-05-22
+
+### Added
+
+- Added screen-reader labels and tooltips across key controls, detection actions, Explore score badges, wizard steps, and Survey map markers and clusters.
+- Added a screen-reader-aware default that enables spoken detection announcements for users with accessibility navigation active, while preserving explicit user choices.
+- Added widget tests covering Survey map marker and cluster semantics.
+
+### Changed
+
+- Improved localized accessibility strings for capture controls, confidence and likelihood percentages, Survey map marker states, settings help, and announcement templates.
+
 ## [0.15.1] - 2026-05-21
 
 ### Added

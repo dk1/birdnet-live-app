@@ -1013,19 +1013,21 @@ class _LiveSpectrogram extends ConsumerWidget {
     final logAmplitude = ref.watch(logAmplitudeProvider);
     final quality = ref.watch(spectrogramQualityProvider);
 
-    return SpectrogramWidget(
-      ringBuffer: ringBuffer,
-      isActive: isCapturing,
-      fftSize: fftSize,
-      colorMapName: colorMap,
-      dbFloor: dbFloor,
-      dbCeiling: dbCeiling,
-      maxColumns: maxColumns,
-      showFrequencyAxis: false,
-      showTimeAxis: false,
-      maxDisplayFrequency: maxFreq,
-      logAmplitude: logAmplitude,
-      filterQuality: spectrogramFilterQualityFromString(quality),
+    return ExcludeSemantics(
+      child: SpectrogramWidget(
+        ringBuffer: ringBuffer,
+        isActive: isCapturing,
+        fftSize: fftSize,
+        colorMapName: colorMap,
+        dbFloor: dbFloor,
+        dbCeiling: dbCeiling,
+        maxColumns: maxColumns,
+        showFrequencyAxis: false,
+        showTimeAxis: false,
+        maxDisplayFrequency: maxFreq,
+        logAmplitude: logAmplitude,
+        filterQuality: spectrogramFilterQualityFromString(quality),
+      ),
     );
   }
 }

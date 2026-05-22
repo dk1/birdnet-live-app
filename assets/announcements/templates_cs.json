@@ -26,7 +26,7 @@
         "Bezpochyby {name}.",
         "Zachyceno: {name}.",
         "{name}, bez pochyb.",
-        "Zazněl(a): {name}."
+        "Ozvalo se: {name}."
       ],
       "chatty": [
         "Rozpoznáno: {name}, signál čistý.",
@@ -51,7 +51,7 @@
       "chatty": [
         "Znovu {name}, drží se.",
         "Opět {name}, jasně slyšitelný.",
-        "{name} se vrací — zjevně se zabydlel(a).",
+        "{name} se vrací — zjevně se tu drží.",
         "Druhé kolo pro {name}.",
         "{name} už zase — má tu zřejmě svůj revír."
       ]
@@ -80,15 +80,15 @@
         "Pravděpodobně {name}.",
         "Zní jako {name}.",
         "Asi {name}.",
-        "Řekl(a) bych {name}.",
+        "Tipuju {name}.",
         "Docela jistě: {name}.",
         "Hodí se na {name}.",
         "{name}, dost pravděpodobně."
       ],
       "chatty": [
-        "Docela si jistý(á): {name}.",
+        "Docela jistě: {name}.",
         "Zní to jako {name}, slušný signál.",
-        "Řekl(a) bych {name}, vcelku s jistotou.",
+        "Tipuju {name}, docela jistě.",
         "Vede to k {name}.",
         "Pěkně sedí na {name}.",
         "Vše ukazuje na {name}."
@@ -97,13 +97,13 @@
     "E": {
       "balanced": [
         "Možná zase {name}.",
-        "Mohl(a) by to být znovu {name}.",
+        "Mohlo by to být znovu {name}.",
         "Zřejmě opět {name}.",
         "{name}, nejspíš podruhé."
       ],
       "chatty": [
         "Možná {name} znovu, těžko říct.",
-        "Mohl(a) by se vracet {name}.",
+        "Možná se vrací {name}.",
         "Vypadá to na {name} podruhé.",
         "Pravděpodobně {name}, druhé kolo."
       ]
@@ -111,7 +111,7 @@
     "F": {
       "balanced": [
         "Možná {name}.",
-        "Mohl(a) by to být {name}.",
+        "Mohlo by to být {name}.",
         "Zní trochu jako {name}.",
         "Snad {name}.",
         "{name}, snad.",
@@ -130,14 +130,14 @@
     "G": {
       "balanced": [
         "Možná zase {name}.",
-        "Mohl(a) by to být znovu {name}.",
+        "Mohlo by to být znovu {name}.",
         "Slabě, ale snad {name}.",
         "Možná se vrací {name}.",
         "Hraniční — snad {name}."
       ],
       "chatty": [
         "Možná {name} znovu, signál je tenký.",
-        "Mohl(a) by to být zase {name} — stojí za sledování.",
+        "Možná je to zase {name} — stojí za sledování.",
         "Slabá shoda, ale snad {name} podruhé.",
         "Spíš znovu {name}, jistota žádná."
       ]
