@@ -33,7 +33,7 @@
         "{name}, perfectamente claro.",
         "Sin lugar a dudas: {name}.",
         "Señal limpia: {name}.",
-        "{name}, como en el manual.",
+        "{name}, clarísimo.",
         "Llega bien claro: {name}.",
         "{name} se anuncia, alto y claro.",
         "Buena identificación: {name}.",
@@ -200,18 +200,18 @@
       "Una especie común por aquí.",
       "Bastante presente en tu zona en esta época.",
       "Visitante habitual de la zona.",
-      "Estás en buena tierra para esta especie.",
+      "Tu zona encaja muy bien con esta especie.",
       "Bastante típica de tu zona."
     ],
     "uncommon": [
       "No demasiado común por aquí.",
       "Algo menos frecuente en tu zona.",
       "Vale la pena anotarlo — no se oye cada día.",
-      "Pequeño regalo — no muy frecuente en tu zona.",
+      "No muy frecuente en tu zona, así que merece atención.",
       "No es el canto de cada día por aquí."
     ],
     "rare": [
-      "Toda una rareza por la zona — ¡buena pesca!",
+      "Toda una rareza por la zona.",
       "Especie inusual para esta zona.",
       "Bastante rara en tu zona.",
       "Para recordar — apenas se ve por aquí.",
