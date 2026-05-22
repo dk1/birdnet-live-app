@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated localized Clear All Data confirmations, user settings documentation, and privacy policy text to describe the in-app full local wipe.
+- Limited rotating empty-state hints to Live sessions so Point Count and Survey screens stay focused on their protocol-specific UI.
 
 ## [0.15.2] - 2026-05-22
 
