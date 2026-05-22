@@ -243,7 +243,7 @@ Useful when you are not sure which slider you nudged that broke something, or wh
 
 ### Clear All Data
 
-Opens a confirmation flow for permanently removing stored app data.
+This confirmation flow is present in the app but is not yet connected to a full storage wipe. Delete individual sessions from Session Library, or use your operating system's app-storage controls to remove all BirdNET Live data.
 
 ## Workflow-Specific Parameters Outside Settings
 

@@ -181,7 +181,7 @@ Muestra la secuencia de incorporación nuevamente la próxima vez que se inicie 
 
 ### Borrar todos los datos
 
-Abre un flujo de confirmación para eliminar permanentemente los datos almacenados de la aplicación.
+Este flujo de confirmación existe en la app, pero todavía no está conectado a un borrado completo del almacenamiento. Elimine sesiones individuales desde Session Library o use los controles de almacenamiento de apps del sistema operativo para borrar todos los datos de BirdNET Live.
 
 ## Parámetros específicos del flujo de trabajo fuera de la configuración
 

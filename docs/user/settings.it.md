@@ -181,7 +181,7 @@ Mostra nuovamente la sequenza di onboarding al successivo avvio dell'app.
 
 ### Cancella tutti i dati
 
-Apre un flusso di conferma per la rimozione permanente dei dati dell'app archiviati.
+Questo flusso di conferma è presente nell'app, ma non è ancora collegato a una cancellazione completa dell'archiviazione. Elimina le singole sessioni da Session Library oppure usa i controlli di archiviazione app del sistema operativo per rimuovere tutti i dati di BirdNET Live.
 
 ## Parametri specifici del flusso di lavoro esterni alle impostazioni
 

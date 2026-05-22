@@ -181,7 +181,7 @@ Mostra a sequência de integração novamente na próxima vez que o aplicativo f
 
 ### Limpar todos os dados
 
-Abre um fluxo de confirmação para remover permanentemente os dados armazenados do aplicativo.
+Esse fluxo de confirmação existe no app, mas ainda não está conectado a uma limpeza completa do armazenamento. Exclua sessões individuais na Session Library ou use os controles de armazenamento de apps do sistema operacional para remover todos os dados do BirdNET Live.
 
 ## Parâmetros específicos do fluxo de trabalho fora das configurações
 

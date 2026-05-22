@@ -181,7 +181,7 @@ Affiche à nouveau la séquence d'intégration au prochain lancement de l'applic
 
 ### Effacer toutes les données
 
-Ouvre un flux de confirmation pour supprimer définitivement les données d'application stockées.
+Ce flux de confirmation existe dans l'app, mais il n'est pas encore connecté à un effacement complet du stockage. Supprimez les sessions individuelles depuis Session Library ou utilisez les réglages de stockage des apps du système pour retirer toutes les données BirdNET Live.
 
 ## Paramètres spécifiques au workflow en dehors des paramètres
 

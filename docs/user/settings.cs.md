@@ -181,7 +181,7 @@ Při příštím spuštění aplikace znovu zobrazí vstupní sekvenci.
 
 ### Vymazat všechna data
 
-Otevře tok potvrzení pro trvalé odstranění uložených dat aplikace.
+Tento potvrzovací tok je v aplikaci přítomen, ale zatím není napojen na úplné vymazání úložiště. Jednotlivé relace smažte v Session Library, nebo použijte správu úložiště aplikace v operačním systému a odstraňte všechna data BirdNET Live.
 
 ## Parametry specifické pro pracovní postup mimo nastavení
 
