@@ -297,21 +297,21 @@ defaults to off and the feature has no UI surface in this commit.
   patterns are documented in `dev/announcements.md` §3.8.1 for
   future translators.
 
-## [0.12.3] - 2026-05-22
+## [0.12.3] - 2026-05-14
 
 ### Changed
 
 - **Inline consent prompts on the wizard site-context card.** When the place-name or weather privacy toggle is still off and you reach the "Ready" step of the survey or point-count wizard, the corresponding row now shows a tap-to-allow link instead of being hidden. Tapping flips the privacy toggle on, runs the lookup, and replaces itself with the result — no detour through Settings.
 - **Offline note when a site-context lookup fails.** If you have consent on but the network is unreachable (no signal in the field, service down), the wizard card now shows a small "Offline — you can add place name and weather later from the session review" hint instead of silently dropping the row. Both lookups already retry on session-review open, so the data isn't lost.
 
-## [0.12.2] - 2026-05-22
+## [0.12.2] - 2026-05-14
 
 ### Changed
 
 - **Setup wizard pre-fetches site context.** The "Ready" step in the survey and point-count wizards now resolves the place name and current weather as soon as GPS coordinates are known and shows them in a small card under the parameter summary, so you can confirm what will be recorded with the session before tapping Start. Both lookups go through the same persistent caches as everything else (no network spam).
 - **Weather retry on session review open.** If the original end-of-session weather fetch failed (no consent at the time, no internet, Open-Meteo unreachable), opening the session in Review now tries once more and persists the result — mirroring the existing reverse-geocode retry behavior. Already-captured snapshots are left untouched.
 
-## [0.12.1] - 2026-05-22
+## [0.12.1] - 2026-05-13
 
 ### Changed
 
@@ -320,7 +320,7 @@ defaults to off and the feature has no UI surface in this commit.
 - **6 h persistent weather cache.** Weather snapshots are now persisted across app launches and reused for any session started within 6 hours at the same 0.1° cell. Multiple short sessions at the same site no longer hit the Open-Meteo API repeatedly.
 - **Persistent reverse-geocode cache + library backfill.** Place names returned by Nominatim are cached on a 0.1° lat/lon grid (no expiry — place names don't change on a birding-trip timescale), so a second session at the same site never re-hits the network. The session library also auto-backfills its location chip from this cache on every list load and writes the resolved name back into each session's `locationName`, making the label permanent for that session.
 
-## [0.12.0] - 2026-05-21
+## [0.12.0] - 2026-05-13
 
 ### Added
 
