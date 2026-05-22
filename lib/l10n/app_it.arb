@@ -375,7 +375,7 @@
   "fileAnalysisEtaCalculating": "Stima del tempo rimanente…",
   "sessionAutoStopMaxDuration": "Arresto automatico: durata massima raggiunta",
   "sessionAutoStopLowBattery": "Arresto automatico: batteria al {percent}%",
-  "settingsHelpTooltip": "About this setting",
+  "settingsHelpTooltip": "Informazioni su questa impostazione",
   "settingsHelpShowSciNames": "When enabled, scientific names appear in grey under common names throughout the app. Useful when you want unambiguous identification or are working with field guides that use Latin names.",
   "settingsHelpTimestampDisplayMode": "Choose how per-detection times are rendered in session review. 'Relative' shows the offset from the start of the recording (00:12:34) — best for reviewing a single session and matching the spectrogram playhead. 'Absolute' shows the local clock time when the detection was captured (08:42:17) — best for cross-referencing field notes, weather logs, or other recordings. Storage and exports always use UTC instants regardless of this setting, so the choice never affects your data.",
   "settingsHelpTimestampShowSeconds": "When enabled, absolute detection times include the trailing seconds component (08:42:17). When disabled, they stop at minute precision (08:42), which can be easier to scan in long lists. Only affects absolute mode — relative offsets always show seconds for spectrogram alignment, and exported CSV and JSON files always include seconds regardless.",
