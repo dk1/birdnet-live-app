@@ -23,37 +23,26 @@ void main() {
     'name': 'Test Model',
     'version': '1.0.0',
     'description': 'A test classification model',
-    'audio': {
-      'sampleRate': 44100,
-      'channels': 1,
-    },
+    'audio': {'sampleRate': 44100, 'channels': 1},
     'onnx': {
       'modelFile': 'test_model.onnx',
       'inputName': 'audio_in',
-      'outputNames': {
-        'predictions': 'logits',
-        'embeddings': 'features',
-      },
+      'outputNames': {'predictions': 'logits', 'embeddings': 'features'},
     },
     'labels': {
       'file': 'species.csv',
       'delimiter': ',',
       'hasHeader': true,
-      'columns': {
-        'scientificName': 'species',
-        'commonName': 'common',
-      },
+      'columns': {'scientificName': 'species', 'commonName': 'common'},
     },
+    'scoreBlacklistFile': 'score_blacklist.json',
     'inference': {
       'supportedWindowSeconds': [3, 5],
       'defaultWindowSeconds': 5,
       'defaultSensitivity': 1.2,
       'defaultConfidenceThreshold': 0.25,
       'defaultTopK': 5,
-      'temporalPooling': {
-        'maxWindows': 3,
-        'alpha': 4.0,
-      },
+      'temporalPooling': {'maxWindows': 3, 'alpha': 4.0},
     },
   };
 
@@ -64,6 +53,7 @@ void main() {
       expect(config.name, 'Test Model');
       expect(config.version, '1.0.0');
       expect(config.description, 'A test classification model');
+      expect(config.scoreBlacklistFile, 'score_blacklist.json');
     });
 
     test('toJson round-trips correctly', () {
@@ -106,6 +96,7 @@ void main() {
       expect(config.onnx.embeddingsName, isNull);
       expect(config.labels.delimiter, ';');
       expect(config.labels.hasHeader, true);
+      expect(config.scoreBlacklistFile, isNull);
       expect(config.inference.defaultWindowSeconds, 3);
       expect(config.inference.defaultSensitivity, 1.0);
       expect(config.inference.defaultConfidenceThreshold, 0.15);
@@ -134,10 +125,7 @@ void main() {
       final config = OnnxConfig.fromJson({
         'modelFile': 'classifier.onnx',
         'inputName': 'waveform',
-        'outputNames': {
-          'predictions': 'output_0',
-          'embeddings': 'output_1',
-        },
+        'outputNames': {'predictions': 'output_0', 'embeddings': 'output_1'},
       });
 
       expect(config.modelFile, 'classifier.onnx');
@@ -171,9 +159,7 @@ void main() {
         'file': 'taxa.tsv',
         'delimiter': '\t',
         'hasHeader': false,
-        'columns': {
-          'scientificName': 'name',
-        },
+        'columns': {'scientificName': 'name'},
       });
 
       expect(config.file, 'taxa.tsv');
@@ -198,10 +184,7 @@ void main() {
         'defaultSensitivity': 0.8,
         'defaultConfidenceThreshold': 0.3,
         'defaultTopK': 3,
-        'temporalPooling': {
-          'maxWindows': 10,
-          'alpha': 3.0,
-        },
+        'temporalPooling': {'maxWindows': 10, 'alpha': 3.0},
       });
 
       expect(config.supportedWindowSeconds, [1, 2, 3]);
@@ -228,8 +211,10 @@ void main() {
 
   group('TemporalPoolingConfig', () {
     test('parses maxWindows and alpha', () {
-      final config =
-          TemporalPoolingConfig.fromJson({'maxWindows': 8, 'alpha': 2.5});
+      final config = TemporalPoolingConfig.fromJson({
+        'maxWindows': 8,
+        'alpha': 2.5,
+      });
 
       expect(config.maxWindows, 8);
       expect(config.alpha, 2.5);
@@ -252,8 +237,9 @@ void main() {
 
       final content = file.readAsStringSync();
       final json = jsonDecode(content) as Map<String, dynamic>;
-      final config =
-          ModelConfig.fromJson(json['audioModel'] as Map<String, dynamic>);
+      final config = ModelConfig.fromJson(
+        json['audioModel'] as Map<String, dynamic>,
+      );
 
       expect(config.name, contains('BirdNET'));
       expect(config.audio.sampleRate, 32000);
@@ -262,6 +248,7 @@ void main() {
       expect(config.onnx.predictionsName, 'predictions');
       expect(config.onnx.embeddingsName, 'embeddings');
       expect(config.labels.file, contains('Labels.csv'));
+      expect(config.scoreBlacklistFile, contains('ScoreBlacklist.json'));
       expect(config.labels.delimiter, ';');
       expect(config.inference.supportedWindowSeconds, contains(3));
       expect(config.inference.defaultConfidenceThreshold, 0.15);

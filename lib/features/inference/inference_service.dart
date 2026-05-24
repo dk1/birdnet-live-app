@@ -40,6 +40,7 @@ import 'model_config.dart';
 import 'models/detection.dart';
 import 'models/species.dart';
 import 'post_processor.dart';
+import 'score_blacklist.dart';
 
 /// High-level inference coordinator.
 ///
@@ -58,6 +59,7 @@ class InferenceService {
 
   final ClassifierModel _model = ClassifierModel();
   List<Species> _labels = const [];
+  List<double> _scoreMultipliers = const [];
   ModelConfig? _config;
 
   /// Rolling buffer of recent per-class probability vectors for temporal
@@ -136,13 +138,24 @@ class InferenceService {
   /// [labelsCsv] — full text content of the labels file.
   /// [config] — model configuration describing tensor names, label format,
   ///   and inference defaults.
+  /// [scoreBlacklistJson] — optional JSON map from English common names to
+  ///   confidence multipliers in [0, 1].
   Future<void> initialize({
     required String modelFilePath,
     required String labelsCsv,
     required ModelConfig config,
+    String? scoreBlacklistJson,
   }) async {
     _config = config;
     _labels = LabelParser.parse(labelsCsv, config: config.labels);
+    final blacklist =
+        scoreBlacklistJson == null
+            ? const <String, double>{}
+            : ScoreBlacklist.parse(scoreBlacklistJson);
+    _scoreMultipliers = ScoreBlacklist.buildMultiplierVector(
+      labels: _labels,
+      fractions: blacklist,
+    );
     await _model.loadModelFromFile(
       modelFilePath,
       inputName: config.onnx.inputName,
@@ -155,6 +168,7 @@ class InferenceService {
   Future<void> dispose() async {
     await _model.dispose();
     _labels = const [];
+    _scoreMultipliers = const [];
     _config = null;
     _recentScores.clear();
   }
@@ -250,7 +264,14 @@ class InferenceService {
     }
 
     // Sensitivity + top-K + threshold.
-    final adjusted = PostProcessor.applySensitivityAll(finalScores, sens);
+    final sensitivityAdjusted = PostProcessor.applySensitivityAll(
+      finalScores,
+      sens,
+    );
+    final adjusted = ScoreBlacklist.applyMultipliers(
+      scores: sensitivityAdjusted,
+      multipliers: _scoreMultipliers,
+    );
 
     final detections = PostProcessor.topK(
       scores: adjusted,

@@ -30,6 +30,7 @@
         "order": "order"
       }
     },
+    "scoreBlacklistFile": "BirdNET+_V3.0-preview3_Global_5K-pruned_ScoreBlacklist.json",
     "inference": {
       "supportedWindowSeconds": [
         3,
