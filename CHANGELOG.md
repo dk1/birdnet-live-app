@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In Session Review, the highest-confidence sort now also orders detections inside each species, preferring detections with playable audio clips before clipless detections.
 - Raised the default confidence threshold setting from 25% to 35%.
 
+### Fixed
+
+- Unsupported device languages now fall back to English instead of the first generated locale.
+
 ## [0.15.3] - 2026-05-22
 
 ### Added
