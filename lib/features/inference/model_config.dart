@@ -333,7 +333,15 @@ class InferenceDefaults {
 
 /// Configuration for Log-Mean-Exp temporal pooling.
 class TemporalPoolingConfig {
-  const TemporalPoolingConfig({this.maxWindows = 5, this.alpha = 5.0});
+  const TemporalPoolingConfig({
+    this.maxWindows = 5,
+    this.alpha = 5.0,
+    this.peakRetention = 0.98,
+    this.minSupportWindows = 2,
+    this.supportThresholdFraction = 0.6,
+    this.supportThresholdFloor = 0.25,
+    this.veryHighImmediateThreshold = 0.98,
+  });
 
   /// Maximum number of recent inference windows to keep for pooling.
   final int maxWindows;
@@ -341,12 +349,51 @@ class TemporalPoolingConfig {
   /// LME alpha — higher values weight peaks more heavily.
   final double alpha;
 
+  /// Fraction of the strongest recent raw score retained in LME mode.
+  final double peakRetention;
+
+  /// Number of raw recent windows required before a new LME detection appears.
+  final int minSupportWindows;
+
+  /// Fraction of the active confidence threshold used for raw-window support.
+  final double supportThresholdFraction;
+
+  /// Lower bound for the raw-window support threshold.
+  final double supportThresholdFloor;
+
+  /// Raw current-window score high enough to bypass multi-window support.
+  final double veryHighImmediateThreshold;
+
+  /// Raw-window score needed to count toward temporal support.
+  double supportThresholdFor(double confidenceThreshold) {
+    final threshold = confidenceThreshold * supportThresholdFraction;
+    if (threshold < supportThresholdFloor) return supportThresholdFloor;
+    if (threshold > 1.0) return 1.0;
+    return threshold;
+  }
+
   factory TemporalPoolingConfig.fromJson(Map<String, dynamic> json) {
     return TemporalPoolingConfig(
       maxWindows: (json['maxWindows'] as num?)?.toInt() ?? 5,
       alpha: (json['alpha'] as num?)?.toDouble() ?? 5.0,
+      peakRetention: (json['peakRetention'] as num?)?.toDouble() ?? 0.98,
+      minSupportWindows: (json['minSupportWindows'] as num?)?.toInt() ?? 2,
+      supportThresholdFraction:
+          (json['supportThresholdFraction'] as num?)?.toDouble() ?? 0.6,
+      supportThresholdFloor:
+          (json['supportThresholdFloor'] as num?)?.toDouble() ?? 0.25,
+      veryHighImmediateThreshold:
+          (json['veryHighImmediateThreshold'] as num?)?.toDouble() ?? 0.98,
     );
   }
 
-  Map<String, dynamic> toJson() => {'maxWindows': maxWindows, 'alpha': alpha};
+  Map<String, dynamic> toJson() => {
+    'maxWindows': maxWindows,
+    'alpha': alpha,
+    'peakRetention': peakRetention,
+    'minSupportWindows': minSupportWindows,
+    'supportThresholdFraction': supportThresholdFraction,
+    'supportThresholdFloor': supportThresholdFloor,
+    'veryHighImmediateThreshold': veryHighImmediateThreshold,
+  };
 }

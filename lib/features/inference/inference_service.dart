@@ -66,6 +66,9 @@ class InferenceService {
   /// pooling (newest last).
   final List<List<double>> _recentScores = [];
 
+  /// Class indexes that were emitted on the previous cycle.
+  final Set<int> _confirmedDetectionIndexes = {};
+
   /// Whether the service has been successfully initialized.
   bool get isReady => _model.isLoaded && _labels.isNotEmpty && _config != null;
 
@@ -126,6 +129,7 @@ class InferenceService {
     if (next == _poolingMode) return;
     _poolingMode = next;
     _recentScores.clear();
+    _confirmedDetectionIndexes.clear();
   }
 
   // ---------------------------------------------------------------------------
@@ -171,6 +175,7 @@ class InferenceService {
     _scoreMultipliers = const [];
     _config = null;
     _recentScores.clear();
+    _confirmedDetectionIndexes.clear();
   }
 
   // ---------------------------------------------------------------------------
@@ -259,6 +264,7 @@ class InferenceService {
           finalScores = PostProcessor.logMeanExp(
             _recentScores,
             alpha: poolingAlpha,
+            peakRetention: cfg.inference.temporalPooling.peakRetention,
           );
       }
     }
@@ -273,13 +279,33 @@ class InferenceService {
       multipliers: _scoreMultipliers,
     );
 
+    final gated =
+        _poolingMode == 'lme' && useTemporalPooling
+            ? PostProcessor.applyTemporalSupportGate(
+              scores: adjusted,
+              windowScores: _recentScores,
+              confirmedIndexes: _confirmedDetectionIndexes,
+              confidenceThreshold: thresh,
+              supportThreshold: cfg.inference.temporalPooling
+                  .supportThresholdFor(thresh),
+              minSupportWindows:
+                  cfg.inference.temporalPooling.minSupportWindows,
+              veryHighImmediateThreshold:
+                  cfg.inference.temporalPooling.veryHighImmediateThreshold,
+            )
+            : adjusted;
+
     final detections = PostProcessor.topK(
-      scores: adjusted,
+      scores: gated,
       labels: _labels,
       k: k,
       threshold: thresh,
       timestamp: now,
     );
+
+    _confirmedDetectionIndexes
+      ..clear()
+      ..addAll(detections.map((detection) => detection.species.index));
 
     return detections;
   }
@@ -289,5 +315,6 @@ class InferenceService {
   /// Call this when switching modes or resetting the analysis context.
   void resetPooling() {
     _recentScores.clear();
+    _confirmedDetectionIndexes.clear();
   }
 }

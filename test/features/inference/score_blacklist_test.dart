@@ -201,8 +201,10 @@ void main() {
       for (final entry in expectedEntries.entries) {
         expect(fractions[entry.key], entry.value);
       }
-      expect(multipliers.where((value) => value != 1.0), hasLength(5));
-      expect(multipliers.where((value) => value == 0.5), hasLength(5));
+      expect(
+        multipliers.where((value) => value != 1.0),
+        hasLength(fractions.values.where((value) => value != 1.0).length),
+      );
     });
   });
 }

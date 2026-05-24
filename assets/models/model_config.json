@@ -43,7 +43,12 @@
       "defaultTopK": 10,
       "temporalPooling": {
         "maxWindows": 5,
-        "alpha": 5.0
+        "alpha": 5.0,
+        "peakRetention": 0.98,
+        "minSupportWindows": 2,
+        "supportThresholdFraction": 0.6,
+        "supportThresholdFloor": 0.25,
+        "veryHighImmediateThreshold": 0.98
       }
     }
   },

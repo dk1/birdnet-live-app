@@ -42,7 +42,15 @@ void main() {
       'defaultSensitivity': 1.2,
       'defaultConfidenceThreshold': 0.25,
       'defaultTopK': 5,
-      'temporalPooling': {'maxWindows': 3, 'alpha': 4.0},
+      'temporalPooling': {
+        'maxWindows': 3,
+        'alpha': 4.0,
+        'peakRetention': 0.97,
+        'minSupportWindows': 2,
+        'supportThresholdFraction': 0.7,
+        'supportThresholdFloor': 0.3,
+        'veryHighImmediateThreshold': 0.96,
+      },
     },
   };
 
@@ -75,6 +83,14 @@ void main() {
         config2.inference.temporalPooling.alpha,
         config.inference.temporalPooling.alpha,
       );
+      expect(
+        config2.inference.temporalPooling.peakRetention,
+        config.inference.temporalPooling.peakRetention,
+      );
+      expect(
+        config2.inference.temporalPooling.minSupportWindows,
+        config.inference.temporalPooling.minSupportWindows,
+      );
     });
 
     test('optional fields have sensible defaults', () {
@@ -103,6 +119,11 @@ void main() {
       expect(config.inference.defaultTopK, 10);
       expect(config.inference.temporalPooling.maxWindows, 5);
       expect(config.inference.temporalPooling.alpha, 5.0);
+      expect(config.inference.temporalPooling.peakRetention, 0.98);
+      expect(config.inference.temporalPooling.minSupportWindows, 2);
+      expect(config.inference.temporalPooling.supportThresholdFraction, 0.6);
+      expect(config.inference.temporalPooling.supportThresholdFloor, 0.25);
+      expect(config.inference.temporalPooling.veryHighImmediateThreshold, 0.98);
     });
   });
 
@@ -184,7 +205,15 @@ void main() {
         'defaultSensitivity': 0.8,
         'defaultConfidenceThreshold': 0.3,
         'defaultTopK': 3,
-        'temporalPooling': {'maxWindows': 10, 'alpha': 3.0},
+        'temporalPooling': {
+          'maxWindows': 10,
+          'alpha': 3.0,
+          'peakRetention': 0.9,
+          'minSupportWindows': 3,
+          'supportThresholdFraction': 0.5,
+          'supportThresholdFloor': 0.2,
+          'veryHighImmediateThreshold': 0.98,
+        },
       });
 
       expect(config.supportedWindowSeconds, [1, 2, 3]);
@@ -194,6 +223,11 @@ void main() {
       expect(config.defaultTopK, 3);
       expect(config.temporalPooling.maxWindows, 10);
       expect(config.temporalPooling.alpha, 3.0);
+      expect(config.temporalPooling.peakRetention, 0.9);
+      expect(config.temporalPooling.minSupportWindows, 3);
+      expect(config.temporalPooling.supportThresholdFraction, 0.5);
+      expect(config.temporalPooling.supportThresholdFloor, 0.2);
+      expect(config.temporalPooling.veryHighImmediateThreshold, 0.98);
     });
 
     test('defaults all fields when JSON is empty', () {
@@ -206,18 +240,34 @@ void main() {
       expect(config.defaultTopK, 10);
       expect(config.temporalPooling.maxWindows, 5);
       expect(config.temporalPooling.alpha, 5.0);
+      expect(config.temporalPooling.peakRetention, 0.98);
+      expect(config.temporalPooling.minSupportWindows, 2);
+      expect(config.temporalPooling.supportThresholdFraction, 0.6);
+      expect(config.temporalPooling.supportThresholdFloor, 0.25);
+      expect(config.temporalPooling.veryHighImmediateThreshold, 0.98);
     });
   });
 
   group('TemporalPoolingConfig', () {
-    test('parses maxWindows and alpha', () {
+    test('parses all fields', () {
       final config = TemporalPoolingConfig.fromJson({
         'maxWindows': 8,
         'alpha': 2.5,
+        'peakRetention': 0.85,
+        'minSupportWindows': 4,
+        'supportThresholdFraction': 0.4,
+        'supportThresholdFloor': 0.35,
+        'veryHighImmediateThreshold': 0.97,
       });
 
       expect(config.maxWindows, 8);
       expect(config.alpha, 2.5);
+      expect(config.peakRetention, 0.85);
+      expect(config.minSupportWindows, 4);
+      expect(config.supportThresholdFraction, 0.4);
+      expect(config.supportThresholdFloor, 0.35);
+      expect(config.veryHighImmediateThreshold, 0.97);
+      expect(config.supportThresholdFor(0.5), 0.35);
     });
 
     test('defaults when empty', () {
@@ -225,6 +275,11 @@ void main() {
 
       expect(config.maxWindows, 5);
       expect(config.alpha, 5.0);
+      expect(config.peakRetention, 0.98);
+      expect(config.minSupportWindows, 2);
+      expect(config.supportThresholdFraction, 0.6);
+      expect(config.supportThresholdFloor, 0.25);
+      expect(config.veryHighImmediateThreshold, 0.98);
     });
   });
 
@@ -252,6 +307,11 @@ void main() {
       expect(config.labels.delimiter, ';');
       expect(config.inference.supportedWindowSeconds, contains(3));
       expect(config.inference.defaultConfidenceThreshold, 0.15);
+      expect(config.inference.temporalPooling.minSupportWindows, 2);
+      expect(config.inference.temporalPooling.peakRetention, 0.98);
+      expect(config.inference.temporalPooling.supportThresholdFraction, 0.6);
+      expect(config.inference.temporalPooling.supportThresholdFloor, 0.25);
+      expect(config.inference.temporalPooling.veryHighImmediateThreshold, 0.98);
     });
   });
 }
