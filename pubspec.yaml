@@ -43,6 +43,7 @@ dependencies:
   # Localization
   intl: any
   just_audio: ^0.10.5
+  just_audio_windows: ^0.2.3
 
   # Background service
   flutter_foreground_task: ^9.2.2
