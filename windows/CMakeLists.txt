@@ -42,6 +42,7 @@ function(APPLY_STANDARD_SETTINGS TARGET)
   target_compile_options(${TARGET} PRIVATE /W4 /WX /wd"4100")
   target_compile_options(${TARGET} PRIVATE /EHsc)
   target_compile_definitions(${TARGET} PRIVATE "_HAS_EXCEPTIONS=0")
+  target_compile_definitions(${TARGET} PRIVATE "_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS")
   target_compile_definitions(${TARGET} PRIVATE "$<$<CONFIG:Debug>:_DEBUG>")
 endfunction()
 
@@ -57,6 +58,11 @@ add_subdirectory("runner")
 # them to the application.
 include(flutter/generated_plugins.cmake)
 
+# Some plugins define targets in nested CMake without calling APPLY_STANDARD_SETTINGS.
+if(TARGET flutter_local_notifications_windows)
+  target_compile_definitions(flutter_local_notifications_windows
+    PRIVATE _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
+endif()
 
 # === Installation ===
 # Support files are copied into place next to the executable, so that it can
@@ -65,7 +71,10 @@ include(flutter/generated_plugins.cmake)
 set(BUILD_BUNDLE_DIR "$<TARGET_FILE_DIR:${BINARY_NAME}>")
 # Make the "install" step default, as it's required to run.
 set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+# Keep install output in the build tree. If CMake falls back to Program Files,
+# INSTALL.vcxproj fails without elevation.
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT
+   OR CMAKE_INSTALL_PREFIX MATCHES "^[A-Za-z]:/Program Files( \\(x86\\))?(/|$)")
   set(CMAKE_INSTALL_PREFIX "${BUILD_BUNDLE_DIR}" CACHE PATH "..." FORCE)
 endif()
 
