@@ -215,8 +215,8 @@ If you use this app in your scientific work, please cite it using the following 
 
 ```bibtex
 @software{BirdNET_Live_2026,
-  author = {Kahl, Stefan and Börner, Andy and Wilhelm-Stein, Thomas and Mauermann, Max and Eibl, Maximilian and Klinck, Holger},
-  title = {{BirdNET Live}},
+  author = {Kahl, Stefan and Börner, Andy and Wilhelm-Stein, Thomas and Mauermann, Max and Wood, Connor M. and Eibl, Maximilian and Klinck, Holger},
+  title = {{BirdNET Live app - Professional bioacoustics in your pocket}},
   url = {https://github.com/birdnet-team/birdnet-live-app},
   version = {0.15.4},
   month = {5},
