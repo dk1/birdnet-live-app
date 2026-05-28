@@ -36,6 +36,29 @@
 
 ---
 
+## Table of Contents
+
+- [Features](#features)
+- [Install on Android](#install-on-android)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+  - [Verify](#verify)
+- [Deploy to Phone](#deploy-to-phone)
+  - [Android (USB — Windows / macOS / Linux)](#android-usb--windows--macos--linux)
+  - [Android (Wireless — Windows)](#android-wireless--windows)
+  - [iOS (macOS only)](#ios-macos-only)
+  - [VS Code Tips](#vs-code-tips)
+- [Documentation](#documentation)
+- [Project Structure](#project-structure)
+- [Model Assets](#model-assets)
+- [Development](#development)
+- [License](#license)
+- [Terms of Use](#terms-of-use)
+- [Citation](#citation)
+- [Funding](#funding)
+- [Partners](#partners)
+
 ## Features
 
 - **Live Mode** — Real-time scrolling spectrogram with species identification
@@ -218,8 +241,6 @@ If you use this app in your scientific work, please cite it using the following 
   author = {Kahl, Stefan and Börner, Andy and Wilhelm-Stein, Thomas and Mauermann, Max and Wood, Connor M. and Eibl, Maximilian and Klinck, Holger},
   title = {{BirdNET Live app - Professional bioacoustics in your pocket}},
   url = {https://github.com/birdnet-team/birdnet-live-app},
-  version = {0.15.4},
-  month = {5},
   year = {2026}
 }
 ```
