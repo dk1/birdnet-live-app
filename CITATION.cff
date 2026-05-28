@@ -10,11 +10,14 @@ authors:
   - given-names: Andy
     family-names: Börner
     affiliation: 'Chemnitz University of Technology'
-  - given-names: Thomas
-    family-names: Wilhelm-Stein
-    affiliation: 'Chemnitz University of Technology'
   - given-names: Max
     family-names: Mauermann
+    affiliation: 'Chemnitz University of Technology'
+  - given-names: Raja Charlotte
+    family-names: Seifert
+    affiliation: 'Chemnitz University of Technology'
+  - given-names: Thomas
+    family-names: Wilhelm-Stein
     affiliation: 'Chemnitz University of Technology'
   - given-names: Connor M.
     family-names: Wood

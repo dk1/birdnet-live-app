@@ -1,4 +1,4 @@
-# BirdNET Live
+# BirdNET Live - Professional bioacoustics in your pocket
 
 <p align="center">
   <img src="assets/images/app-icon.png" alt="BirdNET Live" width="250">
@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/species-5%2C250-brightgreen.svg" alt="Species: 5,250">
 </p>
 
-**Professional bioacoustics in your pocket.** Built for field researchers, conservationists, and birders, BirdNET Live identifies bird species in real time using on-device BirdNET+ inference — no internet required. Built with Flutter for Android, iOS, and Windows.
+Built for field researchers, conservationists, and birders, BirdNET Live identifies bird species in real time using on-device BirdNET+ inference — no internet required. Built with Flutter for Android, iOS, and Windows.
 
 <p align="center">
   <img src="docs/assets/screenshots/live-mode.png" alt="Live Mode" width="150">
@@ -238,7 +238,7 @@ If you use this app in your scientific work, please cite it using the following 
 
 ```bibtex
 @software{BirdNET_Live_2026,
-  author = {Kahl, Stefan and Börner, Andy and Wilhelm-Stein, Thomas and Mauermann, Max and Wood, Connor M. and Eibl, Maximilian and Klinck, Holger},
+  author = {Kahl, Stefan and Börner, Andy and Mauermann, Max and Seifert, Raja Charlotte and Wilhelm-Stein, Thomas and Wood, Connor M. and Eibl, Maximilian and Klinck, Holger},
   title = {{BirdNET Live app - Professional bioacoustics in your pocket}},
   url = {https://github.com/birdnet-team/birdnet-live-app},
   year = {2026}
