@@ -41,7 +41,7 @@ void main() {
     });
 
     test('formatWeatherCompactStats uses available values only', () {
-      const snapshot = WeatherSnapshot(
+      final snapshot = WeatherSnapshot(
         fetchedAt: DateTime(2026, 1, 1),
         temperatureC: 20.12,
         windSpeedMs: 3.24,
@@ -52,7 +52,7 @@ void main() {
     });
 
     test('formatWeatherOneLine includes condition label and wind', () {
-      const snapshot = WeatherSnapshot(
+      final snapshot = WeatherSnapshot(
         fetchedAt: DateTime(2026, 1, 1),
         temperatureC: 8.2,
         weatherCode: 61,

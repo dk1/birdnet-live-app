@@ -21,12 +21,12 @@ void main() {
 
   group('sessionTypePalette', () {
     test('uses white onAccent for brand light theme', () {
-      final palette = sessionTypePalette(AppTheme.lightTheme(), SessionType.live);
+      final palette = sessionTypePalette(AppTheme.light(), SessionType.live);
       expect(palette.onAccent, Colors.white);
     });
 
     test('uses white onAccent for brand dark theme', () {
-      final palette = sessionTypePalette(AppTheme.darkTheme(), SessionType.live);
+      final palette = sessionTypePalette(AppTheme.dark(), SessionType.live);
       expect(palette.onAccent, Colors.white);
     });
 
