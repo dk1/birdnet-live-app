@@ -209,6 +209,21 @@ Please ensure you review and adhere to the specific license terms provided with 
 
 Please refer to the [TERMS OF USE](TERMS_OF_USE.md) file for detailed terms and conditions regarding the use of the BirdNET+ V3.0 preview models.
 
+## Citation
+
+If you use this app in your scientific work, please cite it using the following BibTeX entry:
+
+```bibtex
+@software{BirdNET_Live_2026,
+  author = {Kahl, Stefan and Börner, Andy and Wilhelm-Stein, Thomas and Mauermann, Max and Eibl, Maximilian and Klinck, Holger},
+  title = {{BirdNET Live}},
+  url = {https://github.com/birdnet-team/birdnet-live-app},
+  version = {0.15.4},
+  month = {5},
+  year = {2026}
+}
+```
+
 ## Funding
 
 Our work in the Cornell K. Lisa Yang Center for Conservation Bioacoustics is made possible by the generosity of K. Lisa Yang to advance innovative conservation technologies to inspire and inform the conservation of wildlife and habitats.
