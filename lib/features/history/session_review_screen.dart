@@ -2386,6 +2386,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final isEdit = editingIndex != null;
     final existing = isEdit ? _annotations[editingIndex] : null;
 
+    await _pausePlayersForVoiceMemo();
+
     String? memoPath;
     if (isEdit) {
       memoPath = existing!.voiceMemoPath;
@@ -2474,6 +2476,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                             icon: const Icon(AppIcons.mic, size: 18),
                             label: Text(l10n.detectionReplaceVoiceMemo),
                             onPressed: () async {
+                              await _pausePlayersForVoiceMemo();
                               final result = await showVoiceMemoDialog(
                                 context: ctx,
                                 sessionId: widget.session.id,
@@ -2720,6 +2723,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   Future<void> _editClusterVoiceMemo(_DetectionCluster cluster) async {
     final l10n = AppLocalizations.of(context)!;
     final target = cluster.records.first;
+    await _pausePlayersForVoiceMemo();
     final result = await showVoiceMemoDialog(
       context: context,
       sessionId: widget.session.id,
@@ -2748,6 +2752,26 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           duration: const Duration(seconds: 2),
         ),
       );
+    }
+  }
+
+  Future<void> _pausePlayersForVoiceMemo() async {
+    try {
+      if (_player.playing) {
+        await _player.pause();
+      }
+    } catch (_) {
+      // Best-effort: keep memo flow moving even if pause throws.
+    }
+    try {
+      if (_clipPlayer.playing) {
+        await _clipPlayer.pause();
+      }
+    } catch (_) {
+      // Best-effort.
+    }
+    if (mounted && _isPlaying) {
+      setState(() => _isPlaying = false);
     }
   }
 

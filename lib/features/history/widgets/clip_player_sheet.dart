@@ -364,6 +364,13 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
     final det = widget.detection;
     final session = widget.session;
     if (session == null) return;
+    try {
+      if (_player.playing) {
+        await _player.pause();
+      }
+    } catch (_) {
+      // Best-effort: if pausing fails, still allow the memo dialog.
+    }
     final result = await showVoiceMemoDialog(
       context: context,
       sessionId: session.id,
