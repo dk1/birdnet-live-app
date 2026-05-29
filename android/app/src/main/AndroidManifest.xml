@@ -40,6 +40,11 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Work around rare Adreno Vulkan driver crashes in Flutter Impeller
+             during offscreen image cleanup by using Skia on Android. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
         <!-- Notification small-icon for the survey foreground service.
              Referenced by NotificationIcon(metaDataName: ...) in
              lib/features/survey/survey_notification.dart. -->

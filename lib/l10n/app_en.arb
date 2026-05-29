@@ -256,6 +256,14 @@
   "@settingsThemeSystem": {
     "description": "System theme option"
   },
+  "settingsDynamicColor": "Dynamic Color",
+  "@settingsDynamicColor": {
+    "description": "Dynamic color toggle label"
+  },
+  "settingsDynamicColorDescription": "Use your Android device's color palette when available. No effect on iPhone or iPad.",
+  "@settingsDynamicColorDescription": {
+    "description": "Dynamic color toggle description"
+  },
   "settingsResetOnboarding": "Reset Onboarding",
   "@settingsResetOnboarding": {
     "description": "Reset onboarding setting"
@@ -268,7 +276,7 @@
   "@settingsClearDataConfirmTitle": {
     "description": "Clear data confirmation dialog title"
   },
-  "settingsClearDataConfirmMessage": "This will permanently delete all detections, sessions, and recordings. This action cannot be undone.",
+  "settingsClearDataConfirmMessage": "This will permanently delete sessions, detections, recordings, voice memos, custom species lists, settings, and cached map, place, and weather data. The app will close when the wipe finishes. This action cannot be undone.",
   "@settingsClearDataConfirmMessage": {
     "description": "Clear data confirmation message"
   },
@@ -288,9 +296,13 @@
   "@settingsOnboardingReset": {
     "description": "Snackbar message after reset onboarding"
   },
-  "settingsDataCleared": "All data cleared",
+  "settingsDataCleared": "All data cleared — please reopen the app",
   "@settingsDataCleared": {
     "description": "Snackbar message after clearing all data"
+  },
+  "settingsDataClearFailed": "Some data could not be cleared. Please close BirdNET Live and try again.",
+  "@settingsDataClearFailed": {
+    "description": "Snackbar message when clearing all data fails"
   },
   "settingsResetAll": "Reset All Settings",
   "@settingsResetAll": {
@@ -385,6 +397,10 @@
   "@aboutUserGuide": {
     "description": "User guide link label"
   },
+  "aboutDonate": "Donate to BirdNET",
+  "@aboutDonate": {
+    "description": "Donate link label on the About screen"
+  },
   "errorPermissionRequired": "Permission required",
   "@errorPermissionRequired": {
     "description": "Error message when permission is not granted"
@@ -393,7 +409,7 @@
   "@errorMicrophoneRequired": {
     "description": "Error message when microphone permission is denied"
   },
-  "homeSubtitle": "The bioacoustics companion app",
+  "homeSubtitle": "Professional bioacoustics in your pocket",
   "@homeSubtitle": {
     "description": "Subtitle shown on the main menu screen"
   },
@@ -461,6 +477,14 @@
   "exploreInfoNote": "Species predicted to occur at this location, based on BirdNET's geo-model.",
   "@exploreInfoNote": {
     "description": "Short note explaining what the explore species list shows"
+  },
+  "explorePredictionSummary": "Geomodel species predictions for your location",
+  "@explorePredictionSummary": {
+    "description": "Short explore header summary explaining that the list is based on geomodel predictions at the current location"
+  },
+  "exploreTapHint": "Tap a species to learn more.",
+  "@exploreTapHint": {
+    "description": "Short explore header hint telling users that species cards are tappable"
   },
   "exploreSearchHint": "Search species…",
   "@exploreSearchHint": {
@@ -1141,7 +1165,7 @@
   "@mapTileConsentTitle": {
     "description": "Title for the map tile consent dialog"
   },
-  "mapTileConsentBody": "Loading the map connects to OpenStreetMap tile servers. Your IP address and approximate location will be visible to the tile server.\n\nDo you agree to load map tiles?",
+  "mapTileConsentBody": "Loading the map connects to OpenStreetMap tile servers. Your IP address and approximate location will be visible to the tile server. This also enables place-name lookup, which you can turn off separately in Settings.\n\nDo you agree to load map tiles?",
   "@mapTileConsentBody": {
     "description": "Body text for the map tile consent dialog"
   },
@@ -1528,6 +1552,26 @@
       "percent": { "type": "int", "example": "60" }
     }
   },
+  "a11ySurveyMapMarkerAudio": "Audio clip available",
+  "@a11ySurveyMapMarkerAudio": {
+    "description": "Screen-reader value fragment for a survey-map detection marker that has an audio clip"
+  },
+  "a11ySurveyMapMarkerConfirmed": "Confirmed",
+  "@a11ySurveyMapMarkerConfirmed": {
+    "description": "Screen-reader value fragment for a survey-map detection marker that has been confirmed by the user"
+  },
+  "a11ySurveyMapMarkerCurrentPosition": "Current position",
+  "@a11ySurveyMapMarkerCurrentPosition": {
+    "description": "Screen-reader label for the current-position marker on the survey map"
+  },
+  "a11ySurveyMapMarkerStart": "Survey start",
+  "@a11ySurveyMapMarkerStart": {
+    "description": "Screen-reader label for the start marker on the survey map"
+  },
+  "a11ySurveyMapMarkerEnd": "Survey end",
+  "@a11ySurveyMapMarkerEnd": {
+    "description": "Screen-reader label for the end marker on the survey map"
+  },
   "fileAnalysisEtaRemaining": "≈ {time} remaining",
   "@fileAnalysisEtaRemaining": {
     "description": "Estimated time remaining shown below the progress bar",
@@ -1560,10 +1604,10 @@
   "settingsHelpGain": "Multiplies the microphone signal in the app. Use values above 1.0 only for very quiet recordings — high gain amplifies noise too and can cause clipping. Most built-in mics work best at 1.0.",
   "settingsHelpHighPassFilter": "Removes low-frequency content (wind, traffic, handling noise) before inference. Most species vocalize above 1 kHz, so a 100–200 Hz cut-off is usually safe and improves detection in noisy conditions.",
   "settingsHelpWindowDuration": "How many seconds of audio BirdNET analyzes at once. Shorter windows react faster and give finer time resolution; longer windows average more context per pass for steadier scores at the cost of slower reaction time.",
-  "settingsHelpConfidenceThreshold": "Detections below this score are hidden. Lower values surface more uncertain detections (good for rare species or quiet recordings); higher values reduce false positives but may miss faint or distant calls.",
+  "settingsHelpConfidenceThreshold": "Detections below this score are hidden. Default is 35%. Lower values surface more uncertain detections (good for rare species or quiet recordings); higher values reduce false positives but may miss faint or distant calls.",
   "settingsHelpSensitivity": "Logistic sigmoid steepness applied to model logits. Higher values push uncertain scores toward extremes (more high-confidence detections plus more false positives). Leave at 1.0 unless you know what you're doing.",
   "settingsHelpInferenceRate": "How often BirdNET runs inference per second. Higher rates catch brief calls but use more battery and CPU; lower rates are gentler on the device but may miss short vocalizations.",
-  "settingsHelpScorePooling": "How scores from overlapping analysis windows are combined. 'Max' is most reactive; 'average' smooths flickering; 'LME' (logit-mean-exp) is a soft maximum that balances both.",
+  "settingsHelpScorePooling": "How scores from overlapping analysis windows are combined. 'Max' is most reactive; 'average' smooths flickering; 'LME' (log-mean-exp) is a soft maximum that balances both, requires repeated raw-window support before a new species first appears, and keeps supported high scores close to their strongest recent raw score.",
   "settingsHelpScorePoolingWindows": "Number of consecutive inference windows that contribute to the pooled score. Larger values smooth detections over a longer time horizon — better for steady, distant calls but slower to react to brief vocalizations. Smaller values are more responsive but noisier.",
   "settingsHelpFftSize": "Resolution of the spectrogram. Larger sizes give finer frequency detail but coarser timing; smaller sizes show transient calls more sharply but blur frequencies. 1024–2048 works well for most species.",
   "settingsHelpColorMap": "Color palette used to render spectrogram intensity. Viridis and Magma are perceptually uniform; Grayscale is print-friendly and emphasizes structure over hue.",
@@ -1807,9 +1851,9 @@
   "@surveyLocationSkip": {
     "description": "No GPS tracking option"
   },
-  "surveyLocationUnavailable": "Location permission not granted",
+  "surveyLocationUnavailable": "Location unavailable",
   "@surveyLocationUnavailable": {
-    "description": "Warning when location permission is not available"
+    "description": "Shown when GPS is not available"
   },
   "surveyManualGpsWarning": "Manual mode captures GPS only when you open the app. Detection locations will be interpolated between captures.",
   "@surveyManualGpsWarning": {
@@ -2996,6 +3040,14 @@
   "@liveTipBatteryTitle": {},
   "liveTipBatteryBody": "Long surveys with the screen on and GPS active drain the battery quickly. Pack a power bank for anything longer than an hour.",
   "@liveTipBatteryBody": {},
+  "liveTipScoresTitle": "Scores aren't probabilities",
+  "@liveTipScoresTitle": {},
+  "liveTipScoresBody": "Confidence scores show how well the audio matched the model's pattern, not the statistical chance that a species is actually present.",
+  "@liveTipScoresBody": {},
+  "liveTipDistanceTitle": "Distance matters",
+  "@liveTipDistanceTitle": {},
+  "liveTipDistanceBody": "Distant calls lose high frequencies over long ranges and might not trigger a detection, even if human ears can pick them out.",
+  "@liveTipDistanceBody": {},
   "settingsGain": "Gain",
   "@settingsGain": {
     "description": "Audio gain slider label"
@@ -3012,6 +3064,37 @@
   "fileAnalysisModelError": "Model error",
   "@fileAnalysisModelError": {
     "description": "Fallback error shown when file analysis model loading fails"
+  },
+  "fileAnalysisDecodedSize": "Decoded audio",
+  "@fileAnalysisDecodedSize": {
+    "description": "Metadata row label for estimated decoded PCM size"
+  },
+  "fileAnalysisLargeFileTitle": "Large audio file",
+  "@fileAnalysisLargeFileTitle": {
+    "description": "Warning title shown when selected audio expands to a large decoded PCM buffer"
+  },
+  "fileAnalysisLargeFileBody": "This file expands to about {size} of decoded audio. Analysis uses windowed reads where possible, but review may limit the spectrogram on memory-constrained devices.",
+  "@fileAnalysisLargeFileBody": {
+    "description": "Warning body shown when selected audio has a large decoded PCM footprint",
+    "placeholders": {
+      "size": { "type": "String" }
+    }
+  },
+  "sessionReviewAudioShortTitle": "Audio is shorter than the session",
+  "@sessionReviewAudioShortTitle": {
+    "description": "Warning title shown when recording duration is shorter than session events"
+  },
+  "sessionReviewAudioShortBody": "The recording ends before the latest session event. Playback and exports may stop early, but detections remain available.",
+  "@sessionReviewAudioShortBody": {
+    "description": "Warning body shown when recording duration is shorter than session events"
+  },
+  "sessionReviewSpectrogramLimitedTitle": "",
+  "@sessionReviewSpectrogramLimitedTitle": {
+    "description": "Warning title shown when the review spectrogram is downsampled for memory (empty to keep the warning to a single sentence)"
+  },
+  "sessionReviewSpectrogramLimitedBody": "Spectrogram detail loads as you play, pan, or zoom.",
+  "@sessionReviewSpectrogramLimitedBody": {
+    "description": "Warning body shown when the review spectrogram is downsampled for memory"
   },
   "speciesChartLoadFailed": "Failed to load chart",
   "@speciesChartLoadFailed": {

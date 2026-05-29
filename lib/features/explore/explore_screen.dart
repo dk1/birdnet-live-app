@@ -26,6 +26,7 @@ import '../../core/services/reverse_geocoding_service.dart';
 import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/link_launcher.dart';
+import '../../shared/utils/app_icons.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/empty_view.dart';
@@ -257,7 +258,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             icon: Stack(
               clipBehavior: Clip.none,
               children: [
-                const Icon(Icons.filter_list_outlined),
+                const Icon(AppIcons.filterList),
                 if (_filterActive)
                   Positioned(
                     right: -2,
@@ -278,7 +279,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           ),
           // Search toggle.
           IconButton(
-            icon: Icon(_searchVisible ? Icons.close : Icons.search),
+            icon: Icon(_searchVisible ? AppIcons.close : AppIcons.search),
             tooltip:
                 _searchVisible
                     ? l10n.tooltipClearSearch
@@ -289,7 +290,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           // location header next to the location indicator since that's
           // what it actually re-queries).
           IconButton(
-            icon: const Icon(Icons.help_outline_rounded),
+            icon: const Icon(AppIcons.helpOutlineRounded),
             tooltip: l10n.exploreHelpTitle,
             onPressed: _showHelp,
           ),
@@ -308,13 +309,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           data: (localSpecies) {
             return Column(
               children: [
-                // ── Location & count header ─────────────────
-                _LocationHeader(
-                  speciesCount: localSpecies.length,
-                  onRefresh: _refresh,
-                ),
-                const Divider(height: 1),
-
                 // ── Collapsible search field ────────────────
                 AnimatedSize(
                   duration: const Duration(milliseconds: 180),
@@ -334,7 +328,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               textInputAction: TextInputAction.search,
                               decoration: InputDecoration(
                                 hintText: l10n.exploreSearchHint,
-                                prefixIcon: const Icon(Icons.search, size: 20),
+                                prefixIcon: const Icon(AppIcons.search, size: 20),
                                 isDense: true,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -347,7 +341,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                     _query.isNotEmpty
                                         ? IconButton(
                                           icon: const Icon(
-                                            Icons.clear,
+                                            AppIcons.clear,
                                             size: 20,
                                           ),
                                           tooltip: l10n.tooltipClearSearch,
@@ -372,8 +366,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             groups: _groups,
                             sortMode: _sortMode,
                             detectionFilter: _detectionFilter,
-                            locationAvailable:
-                                locationAsync.valueOrNull != null,
+                            locationAvailable: locationAsync.value != null,
+                            onRefresh: _refresh,
                           )
                           : _SearchResults(
                             query: _query,
@@ -381,6 +375,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             sortMode: _sortMode,
                             detectionFilter: _detectionFilter,
                             localSpecies: localSpecies,
+                            onRefresh: _refresh,
                           ),
                 ),
               ],
@@ -497,6 +492,7 @@ class _GeoList extends ConsumerWidget {
     required this.sortMode,
     required this.detectionFilter,
     required this.locationAvailable,
+    required this.onRefresh,
   });
 
   final List<ExploreSpecies> species;
@@ -504,11 +500,13 @@ class _GeoList extends ConsumerWidget {
   final _SortMode sortMode;
   final _DetectionFilter detectionFilter;
   final bool locationAvailable;
+  final VoidCallback onRefresh;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final detected = ref.watch(detectedSpeciesSetProvider);
+    final showScientificName = ref.watch(showSciNamesProvider);
 
     final filtered =
         species.where((s) {
@@ -546,32 +544,57 @@ class _GeoList extends ConsumerWidget {
 
     if (filtered.isEmpty) {
       return EmptyView(
-        icon: locationAvailable ? Icons.search_off : Icons.location_off,
+        icon: locationAvailable ? AppIcons.searchOff : AppIcons.locationOff,
         title:
             locationAvailable ? l10n.exploreNoSpecies : l10n.exploreNoLocation,
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      itemCount: filtered.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 6),
-      itemBuilder: (context, index) {
-        final s = filtered[index];
-        return SpeciesCard(
-          scientificName: s.scientificName,
-          commonName: s.commonName,
-          geoScore: s.geoScore,
-          weeklyScores: s.weeklyScores,
-          onTap:
-              () => SpeciesInfoOverlay.show(
-                context,
-                ref,
-                scientificName: s.scientificName,
-                commonName: s.commonName,
-              ),
-        );
-      },
+    // Card height is deterministic in the geo list because every entry has
+    // weekly scores. Fixed itemExtent lets Flutter skip per-item layout
+    // measurement and compute scroll metrics in O(1), which is a noticeable
+    // win when scrolling thousands of species.
+    final cardHeight = showScientificName ? 96.0 : 88.0;
+    const gap = 6.0;
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: _LocationHeader(onRefresh: onRefresh)),
+        const SliverToBoxAdapter(child: Divider(height: 1)),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          sliver: SliverFixedExtentList(
+            itemExtent: cardHeight + gap,
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final s = filtered[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: gap),
+                  child: SpeciesCard(
+                    key: ValueKey(s.scientificName),
+                    scientificName: s.scientificName,
+                    commonName: s.commonName,
+                    showScientificName: showScientificName,
+                    detected: detected.contains(s.scientificName),
+                    assetImagePath: s.taxonomy?.assetImagePath,
+                    geoScore: s.geoScore,
+                    weeklyScores: s.weeklyScores,
+                    onTap:
+                        () => SpeciesInfoOverlay.show(
+                          context,
+                          ref,
+                          scientificName: s.scientificName,
+                          commonName: s.commonName,
+                        ),
+                  ),
+                );
+              },
+              childCount: filtered.length,
+              addAutomaticKeepAlives: false,
+              addSemanticIndexes: false,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -587,6 +610,7 @@ class _SearchResults extends ConsumerWidget {
     required this.sortMode,
     required this.detectionFilter,
     required this.localSpecies,
+    required this.onRefresh,
   });
 
   final String query;
@@ -594,6 +618,7 @@ class _SearchResults extends ConsumerWidget {
   final _SortMode sortMode;
   final _DetectionFilter detectionFilter;
   final List<ExploreSpecies> localSpecies;
+  final VoidCallback onRefresh;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -602,9 +627,10 @@ class _SearchResults extends ConsumerWidget {
     final audioLabelsAsync = ref.watch(audioLabelsSetProvider);
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final detected = ref.watch(detectedSpeciesSetProvider);
+    final showScientificName = ref.watch(showSciNamesProvider);
 
-    final taxonomy = taxonomyAsync.valueOrNull;
-    final audioLabels = audioLabelsAsync.valueOrNull;
+    final taxonomy = taxonomyAsync.value;
+    final audioLabels = audioLabelsAsync.value;
     if (taxonomy == null || audioLabels == null) {
       return const LoadingView();
     }
@@ -695,7 +721,7 @@ class _SearchResults extends ConsumerWidget {
       items.add(
         _ListEntry.header(
           l10n.exploreSectionAtLocation(atLocation.length),
-          Icons.location_on,
+          AppIcons.locationOn,
         ),
       );
       items.addAll(atLocation.map(_ListEntry.hit));
@@ -704,34 +730,65 @@ class _SearchResults extends ConsumerWidget {
       items.add(
         _ListEntry.header(
           l10n.exploreSectionElsewhere(elsewhere.length),
-          Icons.public,
+          AppIcons.public,
         ),
       );
       items.addAll(elsewhere.map(_ListEntry.hit));
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      itemCount: items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 6),
+      padding: EdgeInsets.zero,
+      itemCount: items.length + 2,
+      addAutomaticKeepAlives: false,
+      addSemanticIndexes: false,
+      separatorBuilder:
+          (context, index) => switch (index) {
+            0 => const SizedBox.shrink(),
+            1 => const SizedBox(height: 8),
+            _ => const SizedBox(height: 6),
+          },
       itemBuilder: (context, index) {
-        final entry = items[index];
-        if (entry.isHeader) {
-          return _SectionHeader(label: entry.label!, icon: entry.icon!);
+        if (index == 0) {
+          return _LocationHeader(onRefresh: onRefresh);
         }
-        final hit = entry.hit!;
-        return SpeciesCard(
-          scientificName: hit.species.scientificName,
-          commonName: hit.displayName,
-          geoScore: hit.local?.geoScore,
-          weeklyScores: hit.local?.weeklyScores,
-          onTap:
-              () => SpeciesInfoOverlay.show(
-                context,
-                ref,
-                scientificName: hit.species.scientificName,
-                commonName: hit.species.commonName,
-              ),
+        if (index == 1) {
+          return const Divider(height: 1);
+        }
+
+        final itemIndex = index - 2;
+        final entry = items[itemIndex];
+        Widget child;
+        if (entry.isHeader) {
+          child = _SectionHeader(label: entry.label!, icon: entry.icon!);
+        } else {
+          final hit = entry.hit!;
+          child = SpeciesCard(
+            key: ValueKey(hit.species.scientificName),
+            scientificName: hit.species.scientificName,
+            commonName: hit.displayName,
+            showScientificName: showScientificName,
+            detected: detected.contains(hit.species.scientificName),
+            assetImagePath: hit.species.assetImagePath,
+            geoScore: hit.local?.geoScore,
+            weeklyScores: hit.local?.weeklyScores,
+            onTap:
+                () => SpeciesInfoOverlay.show(
+                  context,
+                  ref,
+                  scientificName: hit.species.scientificName,
+                  commonName: hit.species.commonName,
+                ),
+          );
+        }
+
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            12,
+            0,
+            12,
+            itemIndex == items.length - 1 ? 8 : 0,
+          ),
+          child: child,
         );
       },
     );
@@ -795,9 +852,8 @@ class _SectionHeader extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _LocationHeader extends ConsumerStatefulWidget {
-  const _LocationHeader({required this.speciesCount, required this.onRefresh});
+  const _LocationHeader({required this.onRefresh});
 
-  final int speciesCount;
   final VoidCallback onRefresh;
 
   @override
@@ -815,7 +871,7 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
   }
 
   Future<void> _tryGeocode() async {
-    final loc = ref.read(currentLocationProvider).valueOrNull;
+    final loc = ref.read(currentLocationProvider).value;
     if (loc == null || _geocoded) return;
     _geocoded = true;
     final name = await reverseGeocode(
@@ -832,16 +888,29 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final locationAsync = ref.watch(currentLocationProvider);
+    final subtleStyle = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurface.withAlpha(150),
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            l10n.explorePredictionSummary,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(l10n.exploreTapHint, style: subtleStyle),
+          const SizedBox(height: 6),
           Row(
             children: [
               Icon(
-                Icons.location_on,
+                AppIcons.locationOn,
                 size: 18,
                 color: theme.colorScheme.primary,
               ),
@@ -850,12 +919,7 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
                 child: locationAsync.when(
                   data: (loc) {
                     if (loc == null) {
-                      return Text(
-                        l10n.exploreNoLocation,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withAlpha(150),
-                        ),
-                      );
+                      return Text(l10n.exploreNoLocation, style: subtleStyle);
                     }
                     // Prefer the reverse-geocoded place name; fall back to
                     // raw lat/lon so we don't waste a second row showing
@@ -864,22 +928,11 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
                         _locationName ??
                         '${loc.latitude.toStringAsFixed(4)}, '
                             '${loc.longitude.toStringAsFixed(4)}';
-                    return Text(
-                      label,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withAlpha(150),
-                      ),
-                    );
+                    return Text(label, style: subtleStyle);
                   },
-                  loading:
-                      () => Text(
-                        l10n.exploreLocating,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withAlpha(150),
-                        ),
-                      ),
+                  loading: () => Text(l10n.exploreLocating, style: subtleStyle),
                   error:
-                      (_, __) => Text(
+                      (a, b) => Text(
                         l10n.exploreLocationError,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.error,
@@ -890,7 +943,7 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
               IconButton(
                 onPressed: widget.onRefresh,
                 icon: Icon(
-                  Icons.refresh,
+                  AppIcons.refresh,
                   size: 22,
                   color: theme.colorScheme.onSurface.withAlpha(160),
                 ),
@@ -919,13 +972,13 @@ class _ExploreHelpSheet extends StatelessWidget {
       title: l10n.exploreHelpTitle,
       initialChildSize: 0.62,
       sections: [
-        AppHelpSection(icon: Icons.info_outline, body: l10n.exploreHelpBody),
-        AppHelpSection(icon: Icons.refresh, body: l10n.exploreHelpRefresh),
+        AppHelpSection(icon: AppIcons.infoOutline, body: l10n.exploreHelpBody),
+        AppHelpSection(icon: AppIcons.refresh, body: l10n.exploreHelpRefresh),
         AppHelpSection(
-          icon: Icons.help_outline_rounded,
+          icon: AppIcons.helpOutlineRounded,
           body: l10n.exploreHelpLocation,
         ),
-        AppHelpSection(icon: Icons.search_rounded, body: l10n.exploreHelpCards),
+        AppHelpSection(icon: AppIcons.searchRounded, body: l10n.exploreHelpCards),
       ],
       footer: _ExploreHelpLink(label: l10n.exploreHelpLearnMore),
     );
@@ -949,7 +1002,7 @@ class _ExploreHelpLink extends StatelessWidget {
           ),
       child: Row(
         children: [
-          Icon(Icons.open_in_new, size: 18, color: theme.colorScheme.primary),
+          Icon(AppIcons.openInNew, size: 18, color: theme.colorScheme.primary),
           const SizedBox(width: 8),
           Flexible(
             child: Text(

@@ -5,6 +5,165 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.4] - 2026-05-24
+
+### Changed
+
+- Tuned LME score pooling to require repeated raw-window support before a new species appears while keeping supported high-confidence calls close to their strongest recent raw score.
+- Made highest confidence the default species sort in Session Review so review starts with the strongest detections first.
+- In Session Review, the highest-confidence sort now also orders detections inside each species, preferring detections with playable audio clips before clipless detections.
+- Raised the default confidence threshold setting from 25% to 35%.
+
+### Fixed
+
+- Unsupported device languages now fall back to English instead of the first generated locale.
+
+## [0.15.3] - 2026-05-22
+
+### Added
+
+- Enabled the Settings Danger Zone Clear All Data action to wipe sessions, recordings, voice memos, custom species lists, preferences, OpenStreetMap tile cache, and temporary playback/review/share caches, then close the app so the next launch starts clean.
+
+### Changed
+
+- Updated localized Clear All Data confirmations, user settings documentation, and privacy policy text to describe the in-app full local wipe.
+- Limited rotating empty-state hints to Live sessions so Point Count and Survey screens stay focused on their protocol-specific UI.
+
+## [0.15.2] - 2026-05-22
+
+### Added
+
+- Added screen-reader labels and tooltips across key controls, detection actions, Explore score badges, wizard steps, and Survey map markers and clusters.
+- Added a screen-reader-aware default that enables spoken detection announcements for users with accessibility navigation active, while preserving explicit user choices.
+- Added widget tests covering Survey map marker and cluster semantics.
+
+### Changed
+
+- Improved localized accessibility strings for capture controls, confidence and likelihood percentages, Survey map marker states, settings help, and announcement templates.
+
+## [0.15.1] - 2026-05-21
+
+### Added
+
+- Added a Donate link to the bottom of the About screen, pointing to the BirdNET donation page.
+
+### Changed
+
+- Expanded weather condition icons so partly cloudy, overcast, drizzle, rain, and snow use more specific symbols in setup and session context views.
+
+## [0.15.0] - 2026-05-20
+
+### Changed
+
+- Hid the offline map download setting while the app uses public OpenStreetMap tiles, centralized a contactable BirdNET Live user agent for map tile, place-name, and weather requests, and extended interactive map tile caching to six months with a 6000-tile storage cap.
+
+## [0.14.12] - 2026-05-20
+
+### Changed
+
+- Replaced the `material_design_icons_flutter` dependency with `material_symbols_icons` for the app's shared icon set.
+- Refactored feature and shared UI code to use centralized `AppIcons` mappings instead of direct package icon references, improving icon consistency across Live, Survey, Point Count, File Analysis, History, Explore, Settings, Help, and onboarding views.
+- Refined centralized app icon choices for species, detections, map actions, filled map pins, stop controls, and survey start/end flags so review and map views read more consistently.
+
+## [0.14.11] - 2026-05-20
+
+### Changed
+
+- Added a concise, scrollable Explore header explaining that the list shows BirdNET geomodel species predictions for the user's location, with a tap hint for opening species details.
+- Improved Explore list scrolling by using fixed-height lazy species rows, reducing per-card widget/provider work, and lowering bundled thumbnail decode sizes.
+- Reworked Explore species cards to keep the 48-week seasonal bars while drawing them with a lightweight painter instead of many per-week widgets.
+
+## [0.14.10] - 2026-05-20
+
+### Changed
+
+- Allowing OpenStreetMap map tiles now also enables place-name lookup automatically, while keeping the place-name lookup setting separately revocable from Settings.
+
+### Fixed
+
+- Prevented the Survey map consent placeholder from overflowing in short embedded map previews by switching to a compact layout when space is limited.
+
+## [0.14.9] - 2026-05-20
+
+### Fixed
+
+- Disabled Flutter Impeller on Android so devices affected by rare Adreno Vulkan driver crashes during offscreen image cleanup fall back to the Skia renderer.
+
+## [0.14.8] - 2026-05-20
+
+### Changed
+
+- Updated Flutter package constraints for improved stability and compatibility, including Riverpod, recording, permissions, foreground tasks, notifications, location, map, sharing, package-info, and ONNX runtime dependencies.
+
+### Fixed
+
+- Verified the updated dependency set with static analysis, the full Flutter test suite, and Android integration tests covering ONNX model output, geo-model soundscape behavior, and memory stress scenarios.
+
+## [0.14.7] - 2026-05-19
+
+### Changed
+
+- Removed the Session Review on-demand-spectrogram hint banner. With lazy loading now smooth, the explanatory card is no longer needed.
+
+### Fixed
+
+- Session Review no longer gets stuck on a perpetual loading spinner after an apply-trim / undo cycle on long lazy-loaded recordings. A failing chunk load now no longer leaves its reservation pinned in the pending set, and clip changes invalidate any in-flight lazy chunk requests so the follow-up viewport request can schedule fresh loads instead of being short-circuited by a stale `_decoding=true` flag.
+- Trim mode in Session Review now works for long lazy-loaded recordings. The trim handles default to the strip's currently visible window and are clamped to it — zoom and scroll to the region of interest first, then drag the handles inward to refine. Previously the trim editor required a full-file spectrogram thumbnail that long recordings never produce, so trim mode silently rendered an empty editor.
+- Stopped Session Review from freezing for several seconds when opening a session with a very long (≥30 MB on disk) recording. Playback normalization is now skipped for large source files instead of decoding the entire file on the calling isolate.
+- Long FLAC recordings now actually show a spectrogram in Session Review. A one-time sequential FLAC → temp-WAV transcode runs in a background isolate the first time a long FLAC session is opened, after which lazy spectrogram chunks use true file-seek range reads instead of an O(N²) re-decode of the full FLAC for every chunk.
+- FLAC range and sequential-window decoding now use a buffered streaming bit reader instead of loading the entire compressed FLAC into memory before walking frames, keeping File Analysis and long-recording review paths bounded by the requested window/cache size.
+- File Analysis now refuses native compressed files whose decoded PCM would exceed the current full-decode memory guard, and also blocks large native files when the platform cannot report duration. Long recordings should be converted to WAV or FLAC so analysis can proceed in bounded chunks.
+- Session Review lazy-spectrogram cache eviction now keeps chunks nearest the active viewport instead of evicting the earliest chunk by timestamp, preventing freshly loaded visible chunks from being discarded when revisiting another part of a long recording.
+- Session Review now defers lazy spectrogram chunk scheduling until after the current frame, preventing a `setState() or markNeedsBuild() called during build` crash when the strip reports a refreshed viewport from `didUpdateWidget`.
+- iOS native audio decoding now explicitly cancels AVAssetReader work on early exit or failure so native buffers are released promptly after large decode errors.
+
+## [0.14.6] - 2026-05-19
+
+### Changed
+
+- Shortened the Session Review on-demand-spectrogram hint to a single sentence and added a close button so the banner can be dismissed.
+
+### Fixed
+
+- Hardened File Analysis and Session Review for long recordings. File inspection now reads metadata without decoding entire audio files, WAV/FLAC analysis reads bounded windows where possible, large decoded-audio footprints are surfaced before analysis, long-session spectrogram detail loads on demand during playback, panning, or zooming, and review/export metadata warns when a recording is shorter than its session events.
+- Added decoder coverage for LPC-encoded FLAC subframes and a sequential FLAC window decoder so real-world recorder files, including hour-long FLAC fixtures, can feed File Analysis without failing on the first window or restarting decoding for every window.
+- Stopped the Session Review spectrogram from getting stuck in a loading state during aggressive pinch-zoom: viewport requests now cap the number of in-flight chunks against the cache size, prioritize chunks nearest the playhead, and bail when a newer viewport supersedes them.
+- Moved on-demand spectrogram chunk decoding (FLAC/WAV range decode + STFT) onto a background isolate so pinch-zoom on long recordings no longer skips frames on the UI thread.
+- Long Session Review recordings now open at a duration-aware default zoom (≈10 % of clip length, clamped) instead of the 10 s detail view, and the on-demand spectrogram renders fewer FFT columns and caps frequency bins to what the strip can actually paint as distinct pixels. Short clips (≤ 5 min) honor your live-spectrogram duration setting as the initial view width, and the lazy loader now refreshes its viewport request the moment a long file's true duration arrives so chunks beyond the first 10 s actually start decoding.
+
+## [0.14.5] - 2026-05-19
+
+### Added
+
+- Added two new hints to the Live Mode carousel explaining that confidence scores are not probabilities and that distance affects detection.
+- Implemented an auto-retry mechanism for GPS location fetching to improve resilience on devices with spotty location reception.
+
+## [0.14.4] - 2026-05-18
+
+### Added
+
+- **Weather lookup can now be enabled from setup.** Point Count and Survey setup both show a compact weather card near the location controls. If weather access is off, the card asks for **Allow weather lookup** consent; once enabled, it previews the selected site with the same condition icon used in Session Review plus temperature and wind only. The lookup uses the same weather cache as session saving, so setup preview, ready preview, and the eventual session save reuse one fetch instead of repeatedly calling Open-Meteo.
+- **Dynamic Color translations completed for all locales.** The Dynamic Color setting added in 0.14.3 is now translated in Czech, Spanish, French, Italian, and Portuguese as well as English and German.
+
+### Changed
+
+- **Live hints now live before recording starts.** The idle Live detection panel now shows the rotating hint carousel instead of the old “Detections / Start a session…” placeholder. Once recording starts, the panel keeps the calmer “Listening… / Species will appear here” empty state until detections arrive.
+- **Setup GPS refresh is more forgiving.** Point Count and Survey setup refresh the GPS fix when the app resumes, so newly granted location permission or a recovered GPS signal can update the coordinates without restarting the wizard. Survey’s unavailable-location copy is now neutral (“Location unavailable”) instead of implying permission is missing when the real issue may be a stale or unavailable fix.
+
+### Documentation
+
+- Documented setup-screen weather consent, setup GPS refresh behavior, and the four-step Point Count setup flow.
+
+## [0.14.3] - 2026-05-18
+
+### Added
+
+- **Dynamic Color (Material You) toggle in Settings.** A new switch under Settings → Appearance lets you opt into your Android device's dynamic color palette instead of the BirdNET brand theme. On Android 12+ the app's surfaces, primary accents, and chrome rebuild against the wallpaper-derived palette so BirdNET visually matches the rest of your launcher. No effect on iPhone or iPad (kept off by default everywhere so first-launch users still see the brand theme).
+
+### Changed
+
+- **Semantic UI colors routed through the theme.** Success greens, the "confirmed" checkmark, and the four session-mode accents (Live red, Point Count blue, Survey green, File Analysis orange) are no longer hardcoded across widgets. They now live in a single `AppSemanticColors` theme extension that provides the brand hues under the default theme and harmonizes them against the active palette in dynamic-color mode. Survey map markers, the audio-quality bars, the onboarding permission checks, the live and clip-player confirmed toggles, and the session review cluster checkmarks all read from this token set, so the same widgets stay legible whether you're on the brand theme, a light dynamic palette, or a dark one. No behavioral changes — purely a visual consistency pass.
+
 ## [0.14.2] - 2026-05-15
 
 ### Changed
@@ -162,21 +321,21 @@ defaults to off and the feature has no UI surface in this commit.
   patterns are documented in `dev/announcements.md` §3.8.1 for
   future translators.
 
-## [0.12.3] - 2026-05-22
+## [0.12.3] - 2026-05-14
 
 ### Changed
 
 - **Inline consent prompts on the wizard site-context card.** When the place-name or weather privacy toggle is still off and you reach the "Ready" step of the survey or point-count wizard, the corresponding row now shows a tap-to-allow link instead of being hidden. Tapping flips the privacy toggle on, runs the lookup, and replaces itself with the result — no detour through Settings.
 - **Offline note when a site-context lookup fails.** If you have consent on but the network is unreachable (no signal in the field, service down), the wizard card now shows a small "Offline — you can add place name and weather later from the session review" hint instead of silently dropping the row. Both lookups already retry on session-review open, so the data isn't lost.
 
-## [0.12.2] - 2026-05-22
+## [0.12.2] - 2026-05-14
 
 ### Changed
 
 - **Setup wizard pre-fetches site context.** The "Ready" step in the survey and point-count wizards now resolves the place name and current weather as soon as GPS coordinates are known and shows them in a small card under the parameter summary, so you can confirm what will be recorded with the session before tapping Start. Both lookups go through the same persistent caches as everything else (no network spam).
 - **Weather retry on session review open.** If the original end-of-session weather fetch failed (no consent at the time, no internet, Open-Meteo unreachable), opening the session in Review now tries once more and persists the result — mirroring the existing reverse-geocode retry behavior. Already-captured snapshots are left untouched.
 
-## [0.12.1] - 2026-05-22
+## [0.12.1] - 2026-05-13
 
 ### Changed
 
@@ -185,7 +344,7 @@ defaults to off and the feature has no UI surface in this commit.
 - **6 h persistent weather cache.** Weather snapshots are now persisted across app launches and reused for any session started within 6 hours at the same 0.1° cell. Multiple short sessions at the same site no longer hit the Open-Meteo API repeatedly.
 - **Persistent reverse-geocode cache + library backfill.** Place names returned by Nominatim are cached on a 0.1° lat/lon grid (no expiry — place names don't change on a birding-trip timescale), so a second session at the same site never re-hits the network. The session library also auto-backfills its location chip from this cache on every list load and writes the resolved name back into each session's `locationName`, making the label permanent for that session.
 
-## [0.12.0] - 2026-05-21
+## [0.12.0] - 2026-05-13
 
 ### Added
 

@@ -102,7 +102,8 @@ class AnnouncementsAlertSink {
   List<AnnouncementDetection> _localizeNames(
     List<AnnouncementDetection> batch,
   ) {
-    final taxonomy = _ref.read(taxonomyServiceProvider).valueOrNull;
+    // Riverpod 2.x: valueOrNull removed, use .value or .when/.maybeWhen
+    final taxonomy = _ref.read(taxonomyServiceProvider).value;
     if (taxonomy == null) return batch;
     final speciesLocale = _ref.read(effectiveSpeciesLocaleProvider);
     return [
@@ -128,7 +129,7 @@ class AnnouncementsAlertSink {
   /// Attach geo-model commonness/season metadata to each detection in
   /// the batch when available. Reads the cached
   /// [geoCommonnessProvider] value non-blockingly via
-  /// `valueOrNull` — if the geo data isn't ready yet we just hand the
+  /// `value` — if the geo data isn't ready yet we just hand the
   /// batch through unchanged and the engine will skip the Chatty
   /// addendum (the bucket templates still render normally). Detections
   /// that already carry a non-null `commonness` (e.g. from tests) are
@@ -136,7 +137,8 @@ class AnnouncementsAlertSink {
   List<AnnouncementDetection> _enrichWithCommonness(
     List<AnnouncementDetection> batch,
   ) {
-    final map = _ref.read(geoCommonnessProvider).valueOrNull;
+    // Riverpod 2.x: valueOrNull removed, use .value or .when/.maybeWhen
+    final map = _ref.read(geoCommonnessProvider).value;
     if (map == null || map.isEmpty) return batch;
     return [
       for (final d in batch)

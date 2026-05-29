@@ -12,6 +12,14 @@ abstract final class AppConstants {
   static const String githubUrl =
       'https://github.com/birdnet-team/birdnet-live-app';
 
+  /// Mobile application package identifier.
+  static const String packageName = 'de.tu_chemnitz.mi.kahst.birdnet_live';
+
+  /// Contactable User-Agent for public web services used by the app.
+  static const String networkUserAgent =
+      'BirdNETLive (de.tu_chemnitz.mi.kahst.birdnet_live; '
+      '+https://github.com/birdnet-team/birdnet-live-app)';
+
   /// Documentation site URL.
   static const String docsUrl =
       'https://birdnet-team.github.io/birdnet-live-app';
@@ -21,6 +29,9 @@ abstract final class AppConstants {
 
   /// BirdNET website URL.
   static const String birdnetUrl = 'https://birdnet.cornell.edu';
+
+  /// BirdNET donation page URL.
+  static const String birdnetDonateUrl = 'https://birdnet.cornell.edu/donate/';
 
   /// Path to the model configuration JSON asset.
   ///
@@ -49,6 +60,7 @@ abstract final class PrefKeys {
   static const String onboardingComplete = 'onboarding_complete';
   static const String termsAccepted = 'terms_accepted';
   static const String themeMode = 'theme_mode';
+  static const String dynamicColor = 'dynamic_color';
   static const String locale = 'locale';
   static const String speciesLanguage = 'species_language';
 
@@ -216,9 +228,8 @@ abstract final class PrefKeys {
 
   /// Persisted sort order for the species list on the Session Review
   /// screen (one of `SpeciesSortMode.name`: alphabetical, count,
-  /// confidence, firstSeen). Default `alphabetical` — once a session
-  /// has 50+ species, finding one by detection-time order becomes
-  /// painful; alphabetical is the predictable fallback.
+  /// confidence, firstSeen). Default `confidence` so review starts with
+  /// the most likely identifications.
   static const String sessionReviewSpeciesSort = 'session_review_species_sort';
 
   // --- Announcements (spoken detections, post-v1.0) ---------------------

@@ -113,7 +113,7 @@ class SpeciesAlertNotifier {
       macOS: initSettingsDarwin,
     );
     try {
-      await _plugin.initialize(initSettings);
+      await _plugin.initialize(settings: initSettings);
     } catch (e) {
       debugPrint('[SpeciesAlertNotifier] init failed: $e');
       _initialized = false;
@@ -168,7 +168,7 @@ class SpeciesAlertNotifier {
       );
       try {
         await _plugin.initialize(
-          const InitializationSettings(
+          settings: const InitializationSettings(
             android: initSettingsAndroid,
             iOS: initSettingsDarwin,
             macOS: initSettingsDarwin,
@@ -270,7 +270,12 @@ class SpeciesAlertNotifier {
       macOS: darwinDetails,
     );
     try {
-      await _plugin.show(_nextId++, title, body, details);
+      await _plugin.show(
+        id: _nextId++,
+        title: title,
+        body: body,
+        notificationDetails: details,
+      );
     } catch (e) {
       // Notification permission denied or platform unavailable — never let
       // this take down the survey.

@@ -25,6 +25,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 /// One tip entry — icon + short title + one-sentence body. All localized.
 class LiveTip {
@@ -40,79 +41,89 @@ class LiveTip {
 /// see the same tip first.
 List<LiveTip> buildLiveTips(AppLocalizations l10n) => <LiveTip>[
   LiveTip(
-    icon: Icons.campaign_outlined,
+    icon: AppIcons.campaign,
     title: l10n.liveTipAnnouncementsTitle,
     body: l10n.liveTipAnnouncementsBody,
   ),
   LiveTip(
-    icon: Icons.air,
+    icon: AppIcons.air,
     title: l10n.liveTipWindTitle,
     body: l10n.liveTipWindBody,
   ),
   LiveTip(
-    icon: Icons.volume_up_outlined,
+    icon: AppIcons.volumeUpOutlined,
     title: l10n.liveTipQuietPlaybackTitle,
     body: l10n.liveTipQuietPlaybackBody,
   ),
   LiveTip(
-    icon: Icons.public,
+    icon: AppIcons.public,
     title: l10n.liveTipGeoFilterTitle,
     body: l10n.liveTipGeoFilterBody,
   ),
   LiveTip(
-    icon: Icons.save_alt,
+    icon: AppIcons.saveAlt,
     title: l10n.liveTipSaveClipsTitle,
     body: l10n.liveTipSaveClipsBody,
   ),
   LiveTip(
-    icon: Icons.edit_note,
+    icon: AppIcons.editNote,
     title: l10n.liveTipNotesTitle,
     body: l10n.liveTipNotesBody,
   ),
   LiveTip(
-    icon: Icons.graphic_eq,
+    icon: AppIcons.graphicEq,
     title: l10n.liveTipSpectrogramTitle,
     body: l10n.liveTipSpectrogramBody,
   ),
   LiveTip(
-    icon: Icons.tune,
+    icon: AppIcons.tune,
     title: l10n.liveTipThresholdTitle,
     body: l10n.liveTipThresholdBody,
   ),
   LiveTip(
-    icon: Icons.bookmark_added_outlined,
+    icon: AppIcons.bookmarkAdded,
     title: l10n.liveTipWatchlistTitle,
     body: l10n.liveTipWatchlistBody,
   ),
   LiveTip(
-    icon: Icons.audio_file_outlined,
+    icon: AppIcons.audioFileOutlined,
     title: l10n.liveTipFileAnalysisTitle,
     body: l10n.liveTipFileAnalysisBody,
   ),
   LiveTip(
-    icon: Icons.bluetooth_audio,
+    icon: AppIcons.bluetoothAudio,
     title: l10n.liveTipBluetoothMicTitle,
     body: l10n.liveTipBluetoothMicBody,
   ),
   LiveTip(
-    icon: Icons.notifications_active_outlined,
+    icon: AppIcons.notificationsActiveOutlined,
     title: l10n.liveTipSurveyNotificationsTitle,
     body: l10n.liveTipSurveyNotificationsBody,
   ),
   LiveTip(
-    icon: Icons.science_outlined,
+    icon: AppIcons.scienceOutlined,
     title: l10n.liveTipStudyDesignTitle,
     body: l10n.liveTipStudyDesignBody,
   ),
   LiveTip(
-    icon: Icons.report_problem_outlined,
+    icon: AppIcons.reportProblem,
     title: l10n.liveTipAiMistakesTitle,
     body: l10n.liveTipAiMistakesBody,
   ),
   LiveTip(
-    icon: Icons.battery_charging_full,
+    icon: AppIcons.batteryChargingFull,
     title: l10n.liveTipBatteryTitle,
     body: l10n.liveTipBatteryBody,
+  ),
+  LiveTip(
+    icon: AppIcons.percent,
+    title: l10n.liveTipScoresTitle,
+    body: l10n.liveTipScoresBody,
+  ),
+  LiveTip(
+    icon: AppIcons.volumeDown,
+    title: l10n.liveTipDistanceTitle,
+    body: l10n.liveTipDistanceBody,
   ),
 ];
 
@@ -134,12 +145,25 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
   late int _index;
   Timer? _timer;
   int _tipCount = 0;
+  bool _autoRotateEnabled = false;
 
   @override
   void initState() {
     super.initState();
     _index = Random().nextInt(1 << 16); // resolved against tip count on build
-    _restartTimer();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final shouldAutoRotate = !MediaQuery.accessibleNavigationOf(context);
+    if (shouldAutoRotate == _autoRotateEnabled) return;
+    _autoRotateEnabled = shouldAutoRotate;
+    if (_autoRotateEnabled) {
+      _restartTimer();
+    } else {
+      _timer?.cancel();
+    }
   }
 
   @override
@@ -150,6 +174,7 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
 
   void _restartTimer() {
     _timer?.cancel();
+    if (!_autoRotateEnabled) return;
     _timer = Timer.periodic(widget.interval, (_) {
       if (!mounted) return;
       setState(() => _index++);
@@ -172,8 +197,8 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
     // Tips use the same faint tone as the empty-state subtitle so the
     // carousel reads as supporting text and doesn't compete with the
     // "Listening…" headline above it.
-    final faint = theme.colorScheme.onSurface.withAlpha(140);
-    final fainter = theme.colorScheme.onSurface.withAlpha(115);
+    final faint = theme.colorScheme.onSurface.withAlpha(170);
+    final fainter = theme.colorScheme.onSurface.withAlpha(145);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -223,6 +248,8 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
                                   color: faint,
                                   fontWeight: FontWeight.w600,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -230,6 +257,8 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: fainter,
                                 ),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),

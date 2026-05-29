@@ -2,11 +2,13 @@
 // Unit tests for DecodedAudio — resampleTo and readFloat32
 // =============================================================================
 
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:birdnet_live/features/recording/audio_decoder.dart';
+import 'package:birdnet_live/features/recording/flac_encoder.dart';
 
 void main() {
   // ═══════════════════════════════════════════════════════════════════════
@@ -104,4 +106,122 @@ void main() {
       expect(floats[4], 0.0);
     });
   });
+
+  group('AudioDecoder WAV metadata and ranges', () {
+    test('inspectFile reads metadata without full decode', () async {
+      final dir = await Directory.systemTemp.createTemp('birdnet_audio_test_');
+      try {
+        final file = File('${dir.path}${Platform.pathSeparator}test.wav');
+        await file.writeAsBytes(_buildPcm16Wav([100, 200, 300, 400]));
+
+        final metadata = await AudioDecoder.inspectFile(file.path);
+
+        expect(metadata.format, 'WAV');
+        expect(metadata.sampleRate, 32000);
+        expect(metadata.totalSamples, 4);
+        expect(metadata.decodedPcmBytes, 8);
+      } finally {
+        await dir.delete(recursive: true);
+      }
+    });
+
+    test('decodeRange returns only the requested WAV samples', () async {
+      final dir = await Directory.systemTemp.createTemp('birdnet_audio_test_');
+      try {
+        final file = File('${dir.path}${Platform.pathSeparator}test.wav');
+        await file.writeAsBytes(_buildPcm16Wav([100, 200, 300, 400]));
+
+        final decoded = await AudioDecoder.decodeRange(
+          file.path,
+          startSample: 1,
+          count: 2,
+        );
+
+        expect(decoded.sampleRate, 32000);
+        expect(decoded.samples, [200, 300]);
+      } finally {
+        await dir.delete(recursive: true);
+      }
+    });
+  });
+
+  group('AudioDecoder streaming FLAC ranges and windows', () {
+    test(
+      'match full decode without requiring callers to load FLAC bytes',
+      () async {
+        final dir = await Directory.systemTemp.createTemp('birdnet_flac_test_');
+        try {
+          final file = File('${dir.path}${Platform.pathSeparator}test.flac');
+          final samples = Float32List(4096 * 4);
+          for (var i = 0; i < samples.length; i++) {
+            samples[i] = ((i % 257) - 128) / 256.0;
+          }
+          await FlacEncoder.writeFile(filePath: file.path, samples: samples);
+
+          final full = await AudioDecoder.decodeFile(file.path);
+          final ranged = await AudioDecoder.decodeRange(
+            file.path,
+            startSample: 1234,
+            count: 4321,
+          );
+
+          expect(ranged.sampleRate, full.sampleRate);
+          expect(ranged.samples, full.samples.sublist(1234, 1234 + 4321));
+
+          final starts = <int>[];
+          await AudioDecoder.decodeFlacWindows(
+            file.path,
+            windowSamples: 2048,
+            stepSamples: 1024,
+            maxWindows: 4,
+            onWindow: (windowIndex, startSample, window) async {
+              starts.add(startSample);
+              expect(windowIndex, starts.length - 1);
+              expect(window.sampleRate, full.sampleRate);
+              expect(
+                window.samples,
+                full.samples.sublist(startSample, startSample + 2048),
+              );
+              return true;
+            },
+          );
+
+          expect(starts, [0, 1024, 2048, 3072]);
+        } finally {
+          await dir.delete(recursive: true);
+        }
+      },
+    );
+  });
+}
+
+Uint8List _buildPcm16Wav(List<int> samples) {
+  final dataSize = samples.length * 2;
+  final bytes = Uint8List(44 + dataSize);
+  final data = ByteData.sublistView(bytes);
+
+  void writeAscii(int offset, String value) {
+    for (var i = 0; i < value.length; i++) {
+      bytes[offset + i] = value.codeUnitAt(i);
+    }
+  }
+
+  writeAscii(0, 'RIFF');
+  data.setUint32(4, 36 + dataSize, Endian.little);
+  writeAscii(8, 'WAVE');
+  writeAscii(12, 'fmt ');
+  data.setUint32(16, 16, Endian.little);
+  data.setUint16(20, 1, Endian.little);
+  data.setUint16(22, 1, Endian.little);
+  data.setUint32(24, 32000, Endian.little);
+  data.setUint32(28, 32000 * 2, Endian.little);
+  data.setUint16(32, 2, Endian.little);
+  data.setUint16(34, 16, Endian.little);
+  writeAscii(36, 'data');
+  data.setUint32(40, dataSize, Endian.little);
+  for (var i = 0; i < samples.length; i++) {
+    data.setInt16(44 + i * 2, samples[i], Endian.little);
+  }
+
+  return bytes;
 }

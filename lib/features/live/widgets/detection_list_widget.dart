@@ -14,8 +14,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/score_colors.dart';
 import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/services/taxonomy_service.dart';
@@ -34,6 +36,7 @@ class DetectionList extends StatelessWidget {
     required this.isActive,
     this.onDetectionTap,
     this.actionsBuilder,
+    this.showTips = false,
   });
 
   /// Detections to display (newest first).
@@ -44,6 +47,9 @@ class DetectionList extends StatelessWidget {
 
   /// Called when a detection tile is tapped.
   final void Function(DetectionRecord detection)? onDetectionTap;
+
+  /// Whether the empty detection panel may show rotating Live-mode tips.
+  final bool showTips;
 
   /// Optional per-detection action contract. When non-null and
   /// non-empty, each tile gets an inline confirm checkmark (if
@@ -56,7 +62,7 @@ class DetectionList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (detections.isEmpty) {
-      return _EmptyState(isActive: isActive);
+      return _EmptyState(isActive: isActive, showTips: showTips);
     }
 
     return ListView.builder(
@@ -103,7 +109,7 @@ class DetectionList extends StatelessWidget {
       alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       color: theme.colorScheme.error.withAlpha(40),
-      child: Icon(Icons.delete_outline, color: theme.colorScheme.error),
+      child: Icon(AppIcons.deleteOutline, color: theme.colorScheme.error),
     );
   }
 }
@@ -135,7 +141,7 @@ class DetectionTile extends ConsumerWidget {
 
     // Resolve localized common name, falling back to English inference name.
     final displayName =
-        taxonomyAsync.valueOrNull
+        taxonomyAsync.value
             ?.lookup(detection.scientificName)
             ?.commonNameForLocale(speciesLocale) ??
         detection.commonName;
@@ -186,7 +192,7 @@ class DetectionTile extends ConsumerWidget {
                           detection.source ==
                               DetectionSource.userSpecified) ...[
                         Icon(
-                          Icons.edit_note,
+                          AppIcons.editNote,
                           size: 14,
                           color: theme.colorScheme.primary,
                         ),
@@ -263,7 +269,7 @@ class DetectionTile extends ConsumerWidget {
               ..._trailingActions(context, theme, actions!)
             else
               Icon(
-                Icons.chevron_right,
+                AppIcons.chevronRight,
                 size: 20,
                 color: theme.colorScheme.onSurface.withAlpha(80),
               ),
@@ -293,12 +299,12 @@ class DetectionTile extends ConsumerWidget {
               padding: const EdgeInsets.all(8),
               child: Icon(
                 actions.isConfirmed
-                    ? Icons.check_circle
-                    : Icons.check_circle_outline,
+                    ? AppIcons.checkCircle
+                    : AppIcons.checkCircleOutline,
                 size: 24,
                 color:
                     actions.isConfirmed
-                        ? Colors.green.shade600
+                        ? AppSemanticColors.of(context).success
                         : theme.colorScheme.onSurface.withAlpha(120),
               ),
             ),
@@ -320,13 +326,13 @@ class DetectionTile extends ConsumerWidget {
 
   Widget _buildSpeciesImage(AsyncValue<TaxonomyService> taxonomyAsync) {
     final path =
-        taxonomyAsync.valueOrNull?.assetImagePath(detection.scientificName) ??
+        taxonomyAsync.value?.assetImagePath(detection.scientificName) ??
         'assets/images/dummy_species.png';
     return Image.asset(
       path,
       fit: BoxFit.cover,
       errorBuilder:
-          (_, __, ___) =>
+          (a, b, c) =>
               Image.asset('assets/images/dummy_species.png', fit: BoxFit.cover),
     );
   }
@@ -334,12 +340,22 @@ class DetectionTile extends ConsumerWidget {
 
 /// Empty state shown when no detections are available.
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.isActive});
+  const _EmptyState({required this.isActive, required this.showTips});
 
   final bool isActive;
+  final bool showTips;
 
   @override
   Widget build(BuildContext context) {
+    if (showTips && !isActive) {
+      return const Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: LiveTipsCarousel(),
+        ),
+      );
+    }
+
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
@@ -350,28 +366,24 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isActive ? Icons.hearing : Icons.list_alt,
+              isActive ? AppIcons.hearing : AppIcons.micOff,
               size: 40,
               color: theme.colorScheme.onSurface.withAlpha(77),
             ),
             const SizedBox(height: 8),
             Text(
-              isActive ? l10n.liveListening : l10n.liveDetections,
+              l10n.liveListening,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurface.withAlpha(128),
               ),
             ),
             Text(
-              isActive ? l10n.liveSpeciesWillAppear : l10n.liveStartSession,
+              l10n.liveSpeciesWillAppear,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withAlpha(77),
               ),
               textAlign: TextAlign.center,
             ),
-            if (isActive) ...[
-              const SizedBox(height: 44),
-              const LiveTipsCarousel(),
-            ],
           ],
         ),
       ),

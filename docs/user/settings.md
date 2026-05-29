@@ -13,6 +13,8 @@ BirdNET Live reuses one Settings screen across multiple workflows. The :material
 
 Choose **Dark**, **Light**, or **System**.
 
+If **Dynamic Color** is enabled, BirdNET Live also tries to use your Android device's system palette. This only does something on supported Android devices; on iPhone and iPad the app keeps using the normal BirdNET Live theme, so turning the toggle on there changes nothing.
+
 ### App Language
 
 Sets the interface language.
@@ -62,7 +64,7 @@ Controls the length of the analysis window.
 
 ### Confidence threshold
 
-Sets how conservative detections should be.
+Sets how conservative detections should be. The default is **35%**, which keeps the live list focused on stronger matches while still leaving room for distant or partially masked calls. Lower it if you are surveying rare or quiet species and plan to review more candidates later; raise it when background noise or common false positives are crowding the session.
 
 ### Sensitivity
 
@@ -74,7 +76,7 @@ Controls how frequently BirdNET runs inference.
 
 ### Score pooling
 
-Combines scores across recent inference windows so a single noisy window doesn't dominate the result. **Off** uses each window's raw probability — most reactive, noisiest. **Average** arithmetic-means the recent windows for the smoothest output. **Max** keeps the loudest peak per species, which is the most reactive smoothing mode and good for brief, sharp calls. **LME** (log-mean-exp, the default) is BirdNET's reference soft-maximum: it behaves like *max* when one window dominates and like *average* when several windows agree, which is usually what you want. Switching modes mid-session clears the rolling buffer so old logits don't leak into the new mode.
+Combines scores across recent inference windows so a single noisy window doesn't dominate the result. **Off** uses each window's raw probability — most reactive, noisiest. **Average** arithmetic-means the recent windows for the smoothest output. **Max** keeps the loudest peak per species, which is the most reactive smoothing mode and good for brief, sharp calls. **LME** (log-mean-exp, the default) is BirdNET's reference soft-maximum: it behaves like *max* when one window dominates and like *average* when several windows agree. In LME mode, a new species also needs repeated raw-window support before it first appears, while supported detections keep most of their strongest recent raw score and already-visible species continue until their pooled score falls below the confidence threshold. Switching modes mid-session clears the rolling buffer so old scores don't leak into the new mode.
 
 ### Pooling window count
 
@@ -172,9 +174,9 @@ Manual coordinates used when GPS is disabled.
 
 Forces a fresh location fix instead of reusing the last value the app cached. The intuition: GPS lookups are cached per-screen so a setup screen does not block waiting for a satellite fix on every open, but that cache can be miles out of date if you have driven to a new spot since the last session. Tap this when you have moved and want the geo-filter to use *here*, not where you started the morning. The current cached coordinates are shown in the subtitle so you can verify what the app thinks your location is. If GPS cannot get a fix within ~10 seconds, the app falls back to the OS-provided last-known location and warns you with a snackbar so you know the value is stale.
 
-### Download offline maps
+### Offline map downloads
 
-Pre-caches OpenStreetMap tiles around your current GPS fix so the Survey live map and the exported HTML report still render a basemap when you're out of signal. The intuition: map tiles are streamed on demand by default, which is fine in town but useless in a forest valley with no cell service. Pick a radius (1, 5, 10, or 25 km) and the app downloads every tile in that square at zoom levels 12 through 16 — coarse enough to navigate, fine enough to read trails. The dialog shows an estimate (typically about 30 KB per tile) before you commit, and the request is rejected if it would exceed 50 MB to keep us a polite OpenStreetMap citizen. Downloads are paced under the 2 req/s tile-usage policy, and you can cancel mid-batch. Tiles land in the same on-disk cache that every map widget reads from, so a download done here is immediately visible everywhere — no extra wiring per feature.
+Offline map downloads are currently hidden while BirdNET Live uses the public OpenStreetMap tile service. OpenStreetMap supports normal interactive map browsing with attribution, a clear user agent, and local caching, but it does not allow bulk prefetching or offline map-download features from `tile.openstreetmap.org`. The downloader implementation is kept for a future tile source that explicitly permits offline packs.
 
 ### Species filter
 
@@ -213,7 +215,7 @@ This section controls **which third-party services BirdNET Live may contact on y
 
 ### Allow map tiles
 
-Required for any interactive map in the app (the location picker, the Survey live map, the session map, and the map tiles inside the offline-tile downloader). When on, map widgets fetch raster tiles from the public **OpenStreetMap** servers; tile-coordinate requests reveal which area of the world you're viewing. When off, every map screen falls back to a placeholder card so the rest of the app still works without network leakage.
+Required for any interactive map in the app (the location picker, the Survey live map, and the session map). When on, map widgets fetch raster tiles from the public **OpenStreetMap** servers; tile-coordinate requests reveal which area of the world you're viewing. Tiles are cached locally for up to six months, capped at 6000 tiles so repeated map views stay efficient without growing unbounded. Turning this on also enables **Allow place name lookup**, because most users who load maps expect sessions to show readable place names too. You can turn place-name lookup off again separately. When map tiles are off, every map screen falls back to a placeholder card so the rest of the app still works without network leakage.
 
 ### Allow place name lookup
 
@@ -221,7 +223,7 @@ When on, the app sends your recorded coordinates to **OpenStreetMap's Nominatim*
 
 ### Allow weather lookup
 
-When on, every saved session captures a one-shot snapshot of local conditions (temperature, precipitation, wind, cloud cover) at the recording coordinates and end time via **Open-Meteo**. The snapshot lands in Session Review under the location row and is mirrored into the JSON export, the per-session metadata block, and the HTML report. The intuition: weather is one of the strongest predictors of bird activity, and capturing it automatically — without you having to remember to check a separate app — turns every session into a more complete record. Open-Meteo is a free service and requires neither an account nor an API key. When off, no weather data is fetched or stored.
+When on, every saved session captures a one-shot snapshot of local conditions (temperature, precipitation, wind, cloud cover) at the recording coordinates and end time via **Open-Meteo**. The snapshot lands in Session Review under the location row and is mirrored into the JSON export, the per-session metadata block, and the HTML report. The intuition: weather is one of the strongest predictors of bird activity, and capturing it automatically — without you having to remember to check a separate app — turns every session into a more complete record. Open-Meteo is a free service and requires neither an account nor an API key. When off, no weather data is fetched or stored. Point Count and Survey setup also show a compact weather card near their location controls: it asks for this consent only when needed, previews the result as icon + temperature + wind once enabled, and reuses the same cached snapshot when the session is saved.
 
 ## About
 
@@ -235,13 +237,15 @@ Shows the onboarding sequence again the next time the app launches.
 
 ### Reset All Settings
 
-Restores every preference on this screen to its default value. Sessions, recordings, voice memos, exports and downloaded map tiles are kept untouched — only the saved preferences (sliders, switches, picker choices) get wiped. The app closes after confirmation so the new defaults take effect on next launch.
+Restores every preference on this screen to its default value. Sessions, recordings, voice memos, exports, and cached map tiles are kept untouched — only the saved preferences (sliders, switches, picker choices) get wiped. The app closes after confirmation so the new defaults take effect on next launch.
 
 Useful when you are not sure which slider you nudged that broke something, or when handing the device to someone else and you want a clean configuration without losing the data you collected.
 
 ### Clear All Data
 
-Opens a confirmation flow for permanently removing stored app data.
+Permanently deletes sessions, detections, recordings, voice memos, custom species lists, saved preferences, and cached map, place-name, weather, playback, review, and share data. The confirmation dialog requires typing `DELETE`, then closes the app so the next launch starts from a clean local state.
+
+Use this before handing a device to another observer, retiring a field phone, or removing location-linked history from the app. Export anything you need first; this action cannot be undone.
 
 ## Workflow-Specific Parameters Outside Settings
 

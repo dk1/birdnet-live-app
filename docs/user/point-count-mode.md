@@ -8,7 +8,7 @@ From Home, tap the **Point Count Mode** card with the :material-map-marker: icon
 
 ## Setup Flow
 
-Point Count setup uses three steps.
+Point Count setup uses four steps.
 
 ### 1. Duration and location
 
@@ -20,11 +20,25 @@ Choose:
 - no location with :material-map-marker-off:
 - map picker with :material-map:
 
-### 2. Field tips
+The setup screen refreshes GPS when you return from the system permission
+dialog or app settings, so a newly granted location permission should update
+the coordinates without restarting the wizard. The same section also includes
+a weather card. If weather access is off, the card asks for **Allow weather
+lookup** consent; once enabled, it previews the site with a weather icon,
+temperature, and wind only. The same cached Open-Meteo snapshot is reused when
+the point count is saved.
+
+### 2. Inference parameters
+
+Choose per-session analysis settings such as window duration, inference rate,
+confidence threshold, and species-filter mode. These start from the global
+settings but can be adjusted for this count without changing your defaults.
+
+### 3. Field tips
 
 This screen provides a short in-app checklist before starting.
 
-### 3. Ready
+### 4. Ready
 
 The ready screen summarizes the selected duration and lets you start with :material-play:.
 

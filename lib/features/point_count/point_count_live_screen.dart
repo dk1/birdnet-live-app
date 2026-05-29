@@ -29,6 +29,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/wakelock_service.dart';
@@ -298,7 +299,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
           PageRouteBuilder<void>(
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
-            pageBuilder: (_, __, ___) => const SessionLibraryScreen(),
+            pageBuilder: (a, b, c) => const SessionLibraryScreen(),
           ),
         );
         navigator.push(
@@ -530,7 +531,7 @@ class _CountdownStatusBar extends StatelessWidget {
         children: [
           // Stop button (replaces back arrow).
           IconButton(
-            icon: const Icon(Icons.stop_rounded, size: 22),
+            icon: const Icon(AppIcons.stopRounded, size: 22),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             onPressed: isActive ? onStop : () => Navigator.of(context).pop(),
@@ -567,7 +568,7 @@ class _CountdownStatusBar extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            Icons.timer_rounded,
+                            AppIcons.timerRounded,
                             size: 18,
                             color:
                                 remaining.inSeconds <= 30
@@ -593,7 +594,7 @@ class _CountdownStatusBar extends StatelessWidget {
 
           IconButton(
             icon: Icon(
-              Icons.help_outline_rounded,
+              AppIcons.helpOutlineRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -606,7 +607,7 @@ class _CountdownStatusBar extends StatelessWidget {
           // Settings gear.
           IconButton(
             icon: Icon(
-              Icons.tune_rounded,
+              AppIcons.tuneRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -642,15 +643,15 @@ void _showPointCountLiveHelp(BuildContext context) {
           title: l10n.pointCountLiveHelpTitle,
           sections: [
             AppHelpSection(
-              icon: Icons.timer_rounded,
+              icon: AppIcons.timerRounded,
               body: l10n.pointCountLiveHelpTimer,
             ),
             AppHelpSection(
-              icon: Icons.info_outline,
+              icon: AppIcons.infoOutline,
               body: l10n.pointCountLiveHelpDetections,
             ),
             AppHelpSection(
-              icon: Icons.stop_rounded,
+              icon: AppIcons.stopRounded,
               body: l10n.pointCountLiveHelpFinish,
             ),
           ],
@@ -736,7 +737,7 @@ class _PointCountInfoBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.info_outline, size: 14, color: theme.colorScheme.primary),
+          Icon(AppIcons.infoOutline, size: 14, color: theme.colorScheme.primary),
           const SizedBox(width: 4),
           Text(
             parts.join(' · '),

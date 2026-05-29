@@ -39,7 +39,7 @@
         "{name}, ganz klar erkannt.",
         "Ich höre {name} — kein Zweifel.",
         "Erkannt: {name}, deutlich und sauber.",
-        "{name} — wie aus dem Lehrbuch.",
+        "{name} — glasklar zu hören.",
         "Da meldet sich {name} — top Signal.",
         "Klar und deutlich: {name}.",
         "{name} ruft — gut zu hören.",
@@ -110,7 +110,7 @@
         "{name}, vermutlich noch einmal."
       ],
       "chatty": [
-        "Klingt, als wäre {name} wieder dabei.",
+        "Klingt nach {name} — schon wieder.",
         "Vermutlich noch einmal {name}.",
         "Könnte zurückkommen: {name}.",
         "Tippe auf {name}, jetzt zum zweiten Mal.",
@@ -200,7 +200,7 @@
   "commonness": {
     "abundant": [
       "Eine sehr häufige Art in deiner Region.",
-      "Den hört man hier wirklich oft.",
+      "Hier ist die Art wirklich oft zu hören.",
       "Sehr verbreitet bei euch um diese Jahreszeit.",
       "Gehört hier zum festen Inventar.",
       "Einer der Klassiker in deiner Gegend."
@@ -222,7 +222,7 @@
     "rare": [
       "Eine ziemliche Rarität bei euch — gut gehört!",
       "Eine ungewöhnliche Art für deine Region.",
-      "Sehr selten in deiner Gegend, der da.",
+      "In deiner Gegend wirklich selten.",
       "Den merkt man sich — kommt hier kaum vor.",
       "Klare Besonderheit für deine Region."
     ],

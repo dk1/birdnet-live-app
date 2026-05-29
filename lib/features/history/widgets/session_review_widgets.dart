@@ -123,17 +123,17 @@ class _SummaryHeader extends StatelessWidget {
           Row(
             children: [
               StatChip(
-                icon: Icons.timer_outlined,
+                icon: AppIcons.timerOutlined,
                 value: _formatDuration(duration),
               ),
               const SizedBox(width: 16),
               StatChip(
-                icon: MdiIcons.feather,
+                icon: AppIcons.species,
                 value: l10n.sessionSpeciesCount(species),
               ),
               const SizedBox(width: 16),
               StatChip(
-                icon: Icons.graphic_eq,
+                icon: AppIcons.detections,
                 value: l10n.sessionDetectionCount(detectionCount),
               ),
             ],
@@ -146,7 +146,9 @@ class _SummaryHeader extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(
-                    Icons.location_on_outlined,
+                    session.type == SessionType.survey
+                        ? AppIcons.flagFilled
+                        : AppIcons.locationOn,
                     size: 18,
                     color: theme.colorScheme.primary,
                   ),
@@ -164,7 +166,7 @@ class _SummaryHeader extends StatelessWidget {
                     ),
                   ),
                   Icon(
-                    Icons.map_outlined,
+                    AppIcons.mapSheet,
                     size: 18,
                     color: theme.colorScheme.primary.withAlpha(178),
                   ),
@@ -175,7 +177,7 @@ class _SummaryHeader extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  Icons.location_off_outlined,
+                  AppIcons.locationOff,
                   size: 18,
                   color: theme.colorScheme.onSurface.withAlpha(120),
                 ),
@@ -206,7 +208,7 @@ class _SummaryHeader extends StatelessWidget {
                   if (session.distanceMeters != null &&
                       session.distanceMeters! > 0) ...[
                     StatChip(
-                      icon: Icons.straighten_outlined,
+                      icon: AppIcons.straighten,
                       value:
                           session.distanceMeters! >= 1000
                               ? '${(session.distanceMeters! / 1000).toStringAsFixed(1)} km'
@@ -217,7 +219,7 @@ class _SummaryHeader extends StatelessWidget {
                   if (session.observerName != null &&
                       session.observerName!.isNotEmpty) ...[
                     StatChip(
-                      icon: Icons.person_outline,
+                      icon: AppIcons.personOutline,
                       value: session.observerName!,
                     ),
                     const SizedBox(width: 16),
@@ -225,7 +227,7 @@ class _SummaryHeader extends StatelessWidget {
                   if (session.transectId != null &&
                       session.transectId!.isNotEmpty) ...[
                     StatChip(
-                      icon: Icons.route_outlined,
+                      icon: AppIcons.routeOutlined,
                       value: session.transectId!,
                     ),
                   ],
@@ -275,11 +277,11 @@ class _StopReasonBanner extends StatelessWidget {
     final String text;
     switch (reason) {
       case SessionStopReason.maxDuration:
-        icon = Icons.timer_off_outlined;
+        icon = AppIcons.timerOff;
         text = l10n.sessionAutoStopMaxDuration;
         break;
       case SessionStopReason.lowBattery:
-        icon = Icons.battery_alert_outlined;
+        icon = AppIcons.batteryAlert;
         text = l10n.sessionAutoStopLowBattery((value ?? 0).round());
         break;
       case SessionStopReason.manual:
@@ -350,13 +352,7 @@ class _WeatherRow extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final cond = weatherConditionFromCode(weather.weatherCode);
-    final tempLabel = formatTemperature(weather.temperatureC);
-    final windLabel =
-        weather.windSpeedMs != null
-            ? formatWind(weather.windSpeedMs, weather.windDirectionDeg)
-            : null;
-    final inlineLabel =
-        windLabel == null ? tempLabel : '$tempLabel · $windLabel';
+    final inlineLabel = formatWeatherCompactStats(weather);
 
     return InkWell(
       onTap: () => _showDetails(context, l10n, cond),
@@ -469,18 +465,32 @@ class _WeatherRow extends StatelessWidget {
 class _SpectrogramStrip extends StatefulWidget {
   const _SpectrogramStrip({
     required this.spectrogramImage,
+    required this.spectrogramChunks,
     required this.decoding,
     required this.position,
     required this.duration,
+    required this.timelineOffsetSec,
+    required this.onViewportChanged,
     required this.onSeek,
     required this.onPause,
     required this.isPlaying,
+    required this.userDefaultViewSeconds,
   });
 
+  /// Initial / preferred view width for short clips, sourced from the
+  /// user's live-spectrogram duration setting. Long files override this
+  /// with a duration-aware default so users don't have to pinch out
+  /// dozens of times to see any context.
+  final double userDefaultViewSeconds;
+
   final ui.Image? spectrogramImage;
+  final List<_SpectrogramChunk> spectrogramChunks;
   final bool decoding;
   final Duration position;
   final Duration duration;
+  final double timelineOffsetSec;
+  final void Function(double absoluteCenterSec, double viewSeconds)?
+  onViewportChanged;
   final ValueChanged<Duration> onSeek;
   final VoidCallback onPause;
   final bool isPlaying;
@@ -507,18 +517,50 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
   /// to render a sub-sample slice or more than the whole clip.
   double _viewSeconds = _defaultViewSeconds;
 
+  /// True once we've snapped [_viewSeconds] to a duration-aware default
+  /// for the current clip. Stops the auto-pick from clobbering a manual
+  /// pinch-zoom every time `widget.duration` jitters.
+  bool _appliedDurationAwareDefault = false;
+
   /// Captured at the start of a scale gesture so single-finger pans and
   /// two-finger pinches both compose smoothly without integrating drift.
   double? _scaleStartViewSeconds;
   double? _scaleStartCenterSec;
+  double? _lastRequestedCenterSec;
+  double? _lastRequestedViewSeconds;
 
   static const double _defaultViewSeconds = 10.0;
   static const double _minViewSeconds = 1.0;
+  static const double _maxInitialViewSeconds = 180.0;
+
+  /// Pick an initial view width that scales with clip length: short
+  /// recordings (≤ 5 min) open at the user's preferred live-spectrogram
+  /// duration; longer ones start showing roughly the first 10 % so users
+  /// don't have to pinch-out a dozen times to see context on a one-hour
+  /// file.
+  double _initialViewSecondsFor(Duration duration) {
+    final totalSec = duration.inMicroseconds / 1000000.0;
+    final userPref = widget.userDefaultViewSeconds.clamp(
+      _minViewSeconds,
+      _maxInitialViewSeconds,
+    );
+    if (totalSec <= 0) return userPref;
+    if (totalSec <= 300.0) {
+      // Never propose a view wider than the clip itself.
+      return math.min(userPref, totalSec);
+    }
+    final tenPercent = totalSec * 0.1;
+    return tenPercent.clamp(userPref, _maxInitialViewSeconds).toDouble();
+  }
 
   @override
   void initState() {
     super.initState();
     _interpolatedPositionSec = widget.position.inMicroseconds / 1000000.0;
+    if (widget.duration > Duration.zero) {
+      _viewSeconds = _initialViewSecondsFor(widget.duration);
+      _appliedDurationAwareDefault = true;
+    }
     _ticker = createTicker((elapsed) {
       if (widget.isPlaying && _pannedCenterSec == null) {
         final now = DateTime.now();
@@ -526,17 +568,38 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
         setState(() {
           _interpolatedPositionSec += delta;
         });
+        _requestVisibleSpectrogram();
         _lastTickTime = now;
       } else {
         _lastTickTime = DateTime.now();
       }
     });
     _ticker.start();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _requestVisibleSpectrogram(force: true);
+    });
   }
 
   @override
   void didUpdateWidget(_SpectrogramStrip oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // First time we learn the true clip length, snap the view to a
+    // duration-aware default. Skipped if the user has already pinched
+    // or panned, so we never fight a deliberate zoom level. We also
+    // force a viewport request so the lazy-loader fetches chunks for
+    // the new (potentially much wider) view instead of being stuck on
+    // the 10 s request made before duration was known.
+    if (!_appliedDurationAwareDefault &&
+        widget.duration > Duration.zero &&
+        _pannedCenterSec == null &&
+        _scaleStartViewSeconds == null) {
+      _viewSeconds = _initialViewSecondsFor(widget.duration);
+      _appliedDurationAwareDefault = true;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _requestVisibleSpectrogram(force: true);
+      });
+    }
 
     // Sync interpolated position with the source of truth whenever it updates
     if (widget.position != oldWidget.position) {
@@ -545,6 +608,7 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
       if ((_interpolatedPositionSec - actualSec).abs() > 0.1) {
         _interpolatedPositionSec = actualSec;
       }
+      _requestVisibleSpectrogram();
     }
 
     if (widget.isPlaying && !oldWidget.isPlaying) {
@@ -561,6 +625,11 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
     } else if (widget.isPlaying && !oldWidget.isPlaying) {
       _pannedCenterSec = null;
     }
+
+    if (widget.timelineOffsetSec != oldWidget.timelineOffsetSec ||
+        widget.duration != oldWidget.duration) {
+      _requestVisibleSpectrogram(force: true);
+    }
   }
 
   @override
@@ -573,7 +642,9 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    if (widget.decoding || widget.spectrogramImage == null) {
+    final hasSpectrogram =
+        widget.spectrogramImage != null || widget.spectrogramChunks.isNotEmpty;
+    if (!hasSpectrogram) {
       return Container(
         height: 150,
         color: Colors.black,
@@ -597,15 +668,34 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
       child: Container(
         height: 150,
         color: Colors.black,
-        child: CustomPaint(
-          painter: _ReviewSpectrogramPainter(
-            spectrogramImage: widget.spectrogramImage!,
-            centerSec: _viewCenterSec,
-            durationSec: widget.duration.inMicroseconds / 1000000.0,
-            viewSeconds: _viewSeconds,
-            colorScheme: theme.colorScheme,
-          ),
-          size: const Size(double.infinity, 150),
+        child: Stack(
+          children: [
+            CustomPaint(
+              painter: _ReviewSpectrogramPainter(
+                spectrogramImage: widget.spectrogramImage,
+                spectrogramChunks: widget.spectrogramChunks,
+                centerSec: _viewCenterSec,
+                durationSec: widget.duration.inMicroseconds / 1000000.0,
+                timelineOffsetSec: widget.timelineOffsetSec,
+                viewSeconds: _viewSeconds,
+                colorScheme: theme.colorScheme,
+              ),
+              size: const Size(double.infinity, 150),
+            ),
+            if (widget.decoding)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white.withAlpha(210),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -624,6 +714,7 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
     );
     widget.onSeek(Duration(milliseconds: clampedMs));
     setState(() => _pannedCenterSec = null);
+    _requestVisibleSpectrogram(force: true);
   }
 
   void _handleScaleStart(ScaleStartDetails details) {
@@ -675,6 +766,37 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
       // stays put for the whole gesture (see comment above).
       _scaleStartCenterSec = newCenter;
     });
+    _requestVisibleSpectrogram();
+  }
+
+  void _requestVisibleSpectrogram({bool force = false}) {
+    final callback = widget.onViewportChanged;
+    if (callback == null) return;
+    final absoluteCenterSec = widget.timelineOffsetSec + _viewCenterSec;
+    final centerDelta =
+        _lastRequestedCenterSec == null
+            ? double.infinity
+            : (absoluteCenterSec - _lastRequestedCenterSec!).abs();
+    final viewDelta =
+        _lastRequestedViewSeconds == null
+            ? double.infinity
+            : (_viewSeconds - _lastRequestedViewSeconds!).abs();
+    // Zoom changes scale relatively, so use a ratio against the last
+    // requested view: tiny absolute deltas at high zoom should still
+    // trigger a refresh, while small jitter at coarse zoom should not.
+    final viewRatio =
+        _lastRequestedViewSeconds == null || _lastRequestedViewSeconds! <= 0
+            ? double.infinity
+            : viewDelta / _lastRequestedViewSeconds!;
+    if (!force &&
+        centerDelta < _viewSeconds / 4 &&
+        viewDelta < 0.25 &&
+        viewRatio < 0.1) {
+      return;
+    }
+    _lastRequestedCenterSec = absoluteCenterSec;
+    _lastRequestedViewSeconds = _viewSeconds;
+    callback(absoluteCenterSec, _viewSeconds);
   }
 }
 
@@ -690,15 +812,19 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
 class _ReviewSpectrogramPainter extends CustomPainter {
   _ReviewSpectrogramPainter({
     required this.spectrogramImage,
+    required this.spectrogramChunks,
     required this.centerSec,
     required this.durationSec,
+    required this.timelineOffsetSec,
     required this.viewSeconds,
     required this.colorScheme,
   });
 
-  final ui.Image spectrogramImage;
+  final ui.Image? spectrogramImage;
+  final List<_SpectrogramChunk> spectrogramChunks;
   final double centerSec;
   final double durationSec;
+  final double timelineOffsetSec;
 
   /// How many seconds of audio the widget viewport currently shows.
   /// Lives on the painter (instead of being a const) so pinch-zoom can
@@ -710,30 +836,60 @@ class _ReviewSpectrogramPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (durationSec <= 0) return;
 
-    final imgW = spectrogramImage.width.toDouble();
-    final imgH = spectrogramImage.height.toDouble();
-
-    // Derive pixel mapping from image width and player duration.
-    final pxPerSec = imgW / durationSec;
-
     final startSec = centerSec - viewSeconds / 2;
     final endSec = centerSec + viewSeconds / 2;
+    final absoluteStartSec = timelineOffsetSec + startSec;
+    final absoluteEndSec = timelineOffsetSec + endSec;
 
-    // Convert time to image pixel x.
-    final srcX1 = (startSec * pxPerSec).clamp(0.0, imgW);
-    final srcX2 = (endSec * pxPerSec).clamp(0.0, imgW);
+    final img = spectrogramImage;
+    if (img != null) {
+      final imgW = img.width.toDouble();
+      final imgH = img.height.toDouble();
 
-    // Destination x: offset when the view extends before/after the image.
-    final dstX1 = startSec < 0 ? (-startSec / viewSeconds * size.width) : 0.0;
-    final dstX2 =
-        endSec > durationSec
-            ? size.width - ((endSec - durationSec) / viewSeconds * size.width)
-            : size.width;
+      // Derive pixel mapping from image width and player duration.
+      final pxPerSec = imgW / durationSec;
 
-    if (srcX2 > srcX1 && dstX2 > dstX1) {
+      // Convert time to image pixel x.
+      final srcX1 = (startSec * pxPerSec).clamp(0.0, imgW);
+      final srcX2 = (endSec * pxPerSec).clamp(0.0, imgW);
+
+      // Destination x: offset when the view extends before/after the image.
+      final dstX1 = startSec < 0 ? (-startSec / viewSeconds * size.width) : 0.0;
+      final dstX2 =
+          endSec > durationSec
+              ? size.width - ((endSec - durationSec) / viewSeconds * size.width)
+              : size.width;
+
+      if (srcX2 > srcX1 && dstX2 > dstX1) {
+        canvas.drawImageRect(
+          img,
+          Rect.fromLTRB(srcX1, 0, srcX2, imgH),
+          Rect.fromLTRB(dstX1, 0, dstX2, size.height),
+          Paint()..filterQuality = FilterQuality.high,
+        );
+      }
+    }
+
+    for (final chunk in spectrogramChunks) {
+      final overlapStart = math.max(absoluteStartSec, chunk.startSec);
+      final overlapEnd = math.min(absoluteEndSec, chunk.endSec);
+      if (overlapEnd <= overlapStart) continue;
+
+      final chunkDuration = chunk.endSec - chunk.startSec;
+      if (chunkDuration <= 0) continue;
+      final chunkW = chunk.image.width.toDouble();
+      final chunkH = chunk.image.height.toDouble();
+      final srcX1 = ((overlapStart - chunk.startSec) / chunkDuration * chunkW)
+          .clamp(0.0, chunkW);
+      final srcX2 = ((overlapEnd - chunk.startSec) / chunkDuration * chunkW)
+          .clamp(0.0, chunkW);
+      final dstX1 =
+          (overlapStart - absoluteStartSec) / viewSeconds * size.width;
+      final dstX2 = (overlapEnd - absoluteStartSec) / viewSeconds * size.width;
+      if (srcX2 <= srcX1 || dstX2 <= dstX1) continue;
       canvas.drawImageRect(
-        spectrogramImage,
-        Rect.fromLTRB(srcX1, 0, srcX2, imgH),
+        chunk.image,
+        Rect.fromLTRB(srcX1, 0, srcX2, chunkH),
         Rect.fromLTRB(dstX1, 0, dstX2, size.height),
         Paint()..filterQuality = FilterQuality.high,
       );
@@ -794,8 +950,10 @@ class _ReviewSpectrogramPainter extends CustomPainter {
   bool shouldRepaint(covariant _ReviewSpectrogramPainter old) {
     return old.centerSec != centerSec ||
         old.durationSec != durationSec ||
+        old.timelineOffsetSec != timelineOffsetSec ||
         old.viewSeconds != viewSeconds ||
-        !identical(old.spectrogramImage, spectrogramImage);
+        !identical(old.spectrogramImage, spectrogramImage) ||
+        old.spectrogramChunks.length != spectrogramChunks.length;
   }
 }
 
@@ -821,7 +979,7 @@ class _PlayPauseButton extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Icon(
-            isPlaying ? Icons.pause : Icons.play_arrow,
+            isPlaying ? AppIcons.pause : AppIcons.playArrow,
             color: Colors.white,
             size: 24,
           ),
@@ -933,7 +1091,7 @@ class _SpeciesTile extends ConsumerWidget {
     final tsShowSeconds = ref.watch(timestampShowSecondsProvider);
 
     final displayName =
-        taxonomyAsync.valueOrNull
+        taxonomyAsync.value
             ?.lookup(group.scientificName)
             ?.commonNameForLocale(speciesLocale) ??
         group.commonName;
@@ -1021,8 +1179,8 @@ class _SpeciesTile extends ConsumerWidget {
                             children: [
                               Icon(
                                 isActive && onPause != null
-                                    ? Icons.pause_rounded
-                                    : Icons.play_arrow_rounded,
+                                    ? AppIcons.pauseRounded
+                                    : AppIcons.playArrowRounded,
                                 size: 24,
                                 color: theme.colorScheme.primary,
                               ),
@@ -1064,13 +1222,13 @@ class _SpeciesTile extends ConsumerWidget {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(6),
                           child: Image.asset(
-                            taxonomyAsync.valueOrNull?.assetImagePath(
+                            taxonomyAsync.value?.assetImagePath(
                                   group.scientificName,
                                 ) ??
                                 'assets/images/dummy_species.png',
                             fit: BoxFit.cover,
                             errorBuilder:
-                                (_, __, ___) => Image.asset(
+                                (a, b, c) => Image.asset(
                                   'assets/images/dummy_species.png',
                                   fit: BoxFit.cover,
                                 ),
@@ -1101,9 +1259,10 @@ class _SpeciesTile extends ConsumerWidget {
                                 Padding(
                                   padding: const EdgeInsets.only(left: 4),
                                   child: Icon(
-                                    Icons.check_circle,
+                                    AppIcons.checkCircle,
                                     size: 14,
-                                    color: Colors.green.shade600,
+                                    color:
+                                        AppSemanticColors.of(context).success,
                                   ),
                                 ),
                               if (group.allRecords.any(
@@ -1120,7 +1279,7 @@ class _SpeciesTile extends ConsumerWidget {
                                           context,
                                         )!.detectionSourceManual,
                                     child: Icon(
-                                      Icons.edit_note,
+                                      AppIcons.editNote,
                                       size: 16,
                                       color: theme.colorScheme.primary,
                                     ),
@@ -1187,7 +1346,7 @@ class _SpeciesTile extends ConsumerWidget {
                       turns: isExpanded ? 0.5 : 0.0,
                       duration: const Duration(milliseconds: 200),
                       child: Icon(
-                        Icons.expand_more,
+                        AppIcons.expandMore,
                         size: 24,
                         color: theme.colorScheme.onSurface.withAlpha(120),
                       ),
@@ -1290,7 +1449,7 @@ class _SpeciesTile extends ConsumerWidget {
       alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(color: color.withAlpha(40)),
-      child: Icon(Icons.delete_sweep_outlined, color: color),
+      child: Icon(AppIcons.deleteSweep, color: color),
     );
   }
 }
@@ -1425,7 +1584,7 @@ class _ClusterRow extends ConsumerWidget {
                 child: Tooltip(
                   message: l10n.detectionSourceManual,
                   child: Icon(
-                    Icons.edit_note,
+                    AppIcons.editNote,
                     size: 24,
                     color: theme.colorScheme.primary,
                   ),
@@ -1440,9 +1599,9 @@ class _ClusterRow extends ConsumerWidget {
                   child: Icon(
                     isActive
                         ? (onPause != null
-                            ? Icons.pause_rounded
-                            : Icons.graphic_eq)
-                        : Icons.play_arrow_rounded,
+                            ? AppIcons.pauseRounded
+                            : AppIcons.graphicEq)
+                        : AppIcons.playArrowRounded,
                     size: 24,
                     color: theme.colorScheme.primary,
                   ),
@@ -1488,7 +1647,7 @@ class _ClusterRow extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Icon(
-                    Icons.location_on_outlined,
+                    AppIcons.map,
                     size: 24,
                     color: theme.colorScheme.onSurface.withAlpha(100),
                   ),
@@ -1505,11 +1664,13 @@ class _ClusterRow extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Icon(
-                    confirmed ? Icons.check_circle : Icons.check_circle_outline,
+                    confirmed
+                        ? AppIcons.checkCircle
+                        : AppIcons.checkCircleOutline,
                     size: 24,
                     color:
                         confirmed
-                            ? Colors.green.shade600
+                            ? AppSemanticColors.of(context).success
                             : theme.colorScheme.onSurface.withAlpha(100),
                   ),
                 ),
@@ -1525,7 +1686,7 @@ class _ClusterRow extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Icon(
-                      Icons.sticky_note_2_outlined,
+                      AppIcons.stickyNote2,
                       size: 22,
                       color: theme.colorScheme.primary.withAlpha(180),
                     ),
@@ -1541,7 +1702,7 @@ class _ClusterRow extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Icon(
-                      Icons.mic,
+                      AppIcons.mic,
                       size: 22,
                       color: theme.colorScheme.primary.withAlpha(180),
                     ),
@@ -1584,13 +1745,13 @@ class _ClusterRow extends ConsumerWidget {
       background: _swipeBackground(
         theme,
         alignLeft: true,
-        icon: Icons.delete_outline,
+        icon: AppIcons.deleteOutline,
         color: theme.colorScheme.error,
       ),
       secondaryBackground: _swipeBackground(
         theme,
         alignLeft: false,
-        icon: Icons.swap_horiz,
+        icon: AppIcons.swapHoriz,
         color: theme.colorScheme.primary,
       ),
       confirmDismiss: (direction) async {
@@ -1732,9 +1893,9 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
   }
 
   void _onSearchChanged(String query) {
-    final svc = ref.read(taxonomyServiceProvider).valueOrNull;
+    final svc = ref.read(taxonomyServiceProvider).value;
     if (svc == null) return;
-    final geoScores = ref.read(geoScoresProvider).valueOrNull;
+    final geoScores = ref.read(geoScoresProvider).value;
     setState(() {
       if (query.trim().isEmpty) {
         _results = [];
@@ -1841,7 +2002,7 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
                   : l10n.sessionAddSpecies),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(AppIcons.close),
           tooltip: l10n.tooltipClose,
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -1853,7 +2014,7 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
             _ReplaceTargetBanner(
               target: _replaceTarget!,
               speciesLocale: speciesLocale,
-              taxonomy: taxonomyAsync.valueOrNull,
+              taxonomy: taxonomyAsync.value,
             ),
 
           // ── Insert mode selector (add mode only) ──────────
@@ -1865,12 +2026,12 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
                   ButtonSegment(
                     value: AddSpeciesInsertMode.atTimestamp,
                     label: Text(l10n.sessionInsertAtTimestamp),
-                    icon: const Icon(Icons.schedule, size: 18),
+                    icon: const Icon(AppIcons.schedule, size: 18),
                   ),
                   ButtonSegment(
                     value: AddSpeciesInsertMode.global,
                     label: Text(l10n.sessionInsertGlobally),
-                    icon: const Icon(Icons.public, size: 18),
+                    icon: const Icon(AppIcons.public, size: 18),
                   ),
                 ],
                 selected: {_mode},
@@ -1890,14 +2051,14 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: l10n.sessionSearchSpecies,
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(AppIcons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 suffixIcon:
                     _searchController.text.isNotEmpty
                         ? IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: const Icon(AppIcons.clear),
                           tooltip: l10n.tooltipClearSearch,
                           onPressed: () {
                             _searchController.clear();
@@ -1927,7 +2088,7 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
                     : ListView.separated(
                       itemCount: _results.length,
                       separatorBuilder:
-                          (_, __) =>
+                          (a, b) =>
                               Divider(height: 1, color: theme.dividerColor),
                       itemBuilder: (context, index) {
                         final sp = _results[index];
@@ -1987,7 +2148,7 @@ class _ReplaceTargetBanner extends ConsumerWidget {
               height: 56,
               fit: BoxFit.cover,
               errorBuilder:
-                  (_, __, ___) => Container(
+                  (a, b, c) => Container(
                     width: 56,
                     height: 56,
                     color: theme.colorScheme.surfaceContainerHigh,
@@ -2025,7 +2186,10 @@ class _ReplaceTargetBanner extends ConsumerWidget {
               ],
             ),
           ),
-          Icon(Icons.arrow_downward, color: theme.colorScheme.onSurfaceVariant),
+          Icon(
+            AppIcons.arrowDownward,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ],
       ),
     );
@@ -2058,12 +2222,12 @@ class _SpeciesResultTile extends ConsumerWidget {
           height: 48,
           fit: BoxFit.cover,
           errorBuilder:
-              (_, __, ___) => Container(
+              (a, b, c) => Container(
                 width: 48,
                 height: 48,
                 color: theme.colorScheme.surfaceContainerHighest,
                 child: Icon(
-                  Icons.image_not_supported_outlined,
+                  AppIcons.imageNotSupported,
                   size: 20,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -2121,7 +2285,10 @@ class _SearchEmptyState extends StatelessWidget {
         const SizedBox(height: 12),
         const Divider(height: 1),
         ListTile(
-          leading: Icon(Icons.help_outline, color: theme.colorScheme.tertiary),
+          leading: Icon(
+            AppIcons.helpOutline,
+            color: theme.colorScheme.tertiary,
+          ),
           title: Text(l10n.sessionUnknownSpecies),
           subtitle: Text(
             DetectionRecord.unknownSpeciesName,
@@ -2132,7 +2299,7 @@ class _SearchEmptyState extends StatelessWidget {
           onTap: onPickUnknown,
         ),
         ListTile(
-          leading: Icon(Icons.edit_note, color: theme.colorScheme.tertiary),
+          leading: Icon(AppIcons.editNote, color: theme.colorScheme.tertiary),
           title: Text(l10n.sessionOtherSpecies),
           subtitle: Text(
             l10n.sessionOtherSpeciesHint,
@@ -2164,7 +2331,7 @@ class _NoResultsState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.search_off,
+              AppIcons.searchOff,
               size: 48,
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -2286,7 +2453,7 @@ class _AnnotationsSectionState extends State<_AnnotationsSection> {
                 children: [
                   IconButton(
                     icon: Icon(
-                      _atTimestamp ? Icons.schedule : Icons.public,
+                      _atTimestamp ? AppIcons.schedule : AppIcons.public,
                       size: 20,
                       color:
                           _atTimestamp
@@ -2307,7 +2474,7 @@ class _AnnotationsSectionState extends State<_AnnotationsSection> {
                   ),
                   IconButton(
                     icon: Icon(
-                      Icons.send,
+                      AppIcons.send,
                       size: 20,
                       color: theme.colorScheme.primary,
                     ),
@@ -2436,7 +2603,7 @@ class _AnnotationRowState extends State<_AnnotationRow> {
               child: Padding(
                 padding: const EdgeInsets.all(4),
                 child: Icon(
-                  _isPlaying ? Icons.stop_circle : Icons.play_circle_outline,
+                  _isPlaying ? AppIcons.stopCircle : AppIcons.playCircleOutline,
                   size: 18,
                   color: theme.colorScheme.primary,
                 ),
@@ -2449,7 +2616,7 @@ class _AnnotationRowState extends State<_AnnotationRow> {
             child: Padding(
               padding: const EdgeInsets.all(4),
               child: Icon(
-                Icons.delete_outline,
+                AppIcons.deleteOutline,
                 size: 16,
                 color: theme.colorScheme.onSurface.withAlpha(100),
               ),
@@ -2475,12 +2642,37 @@ class _TrimOverlay extends StatefulWidget {
     required this.initialStartSec,
     required this.initialEndSec,
     required this.onChanged,
-  });
+  }) : visibleStartSec = 0,
+       visibleEndSec = null;
+
+  /// Variant that operates within a sub-window of the recording.
+  ///
+  /// Used for lazy-loaded long files where the full-file spectrogram
+  /// thumbnail isn't available: the overlay is laid out on top of the
+  /// live `_SpectrogramStrip`, and `visibleStartSec`/`visibleEndSec`
+  /// describe the strip's currently painted window. Handle drags map
+  /// pixel positions to absolute seconds inside that window and are
+  /// clamped to it — to extend the trim outside the visible range the
+  /// user exits trim mode, zooms/scrolls, and re-enters.
+  const _TrimOverlay.windowed({
+    required this.visibleStartSec,
+    required double this.visibleEndSec,
+    required this.initialStartSec,
+    required this.initialEndSec,
+    required this.onChanged,
+  }) : durationSec = 0;
 
   final double durationSec;
+  final double visibleStartSec;
+  final double? visibleEndSec;
   final double initialStartSec;
   final double initialEndSec;
   final void Function(double startSec, double endSec) onChanged;
+
+  bool get isWindowed => visibleEndSec != null;
+
+  double get _windowStart => isWindowed ? visibleStartSec : 0.0;
+  double get _windowEnd => isWindowed ? visibleEndSec! : durationSec;
 
   @override
   State<_TrimOverlay> createState() => _TrimOverlayState();
@@ -2492,24 +2684,46 @@ class _TrimOverlayState extends State<_TrimOverlay> {
   bool _draggingStart = false;
   bool _draggingEnd = false;
 
+  double _secToFrac(double sec) {
+    final span = widget._windowEnd - widget._windowStart;
+    if (span <= 0) return 0.0;
+    return ((sec - widget._windowStart) / span).clamp(0.0, 1.0);
+  }
+
+  double _fracToSec(double frac) {
+    final span = widget._windowEnd - widget._windowStart;
+    return widget._windowStart + frac * span;
+  }
+
   @override
   void initState() {
     super.initState();
-    _startFrac =
-        widget.durationSec > 0
-            ? (widget.initialStartSec / widget.durationSec).clamp(0.0, 1.0)
-            : 0.0;
-    _endFrac =
-        widget.durationSec > 0
-            ? (widget.initialEndSec / widget.durationSec).clamp(0.0, 1.0)
-            : 1.0;
+    _startFrac = _secToFrac(widget.initialStartSec);
+    _endFrac = _secToFrac(widget.initialEndSec);
+  }
+
+  @override
+  void didUpdateWidget(covariant _TrimOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the underlying window shifted (e.g. user scrolled the strip
+    // before grabbing a handle), remap the handle positions so they
+    // stay anchored to the same absolute seconds.
+    if (oldWidget.visibleStartSec != widget.visibleStartSec ||
+        oldWidget.visibleEndSec != widget.visibleEndSec ||
+        oldWidget.durationSec != widget.durationSec) {
+      final span = widget._windowEnd - widget._windowStart;
+      if (span <= 0) {
+        _startFrac = 0.0;
+        _endFrac = 1.0;
+      } else {
+        _startFrac = _secToFrac(widget.initialStartSec);
+        _endFrac = _secToFrac(widget.initialEndSec);
+      }
+    }
   }
 
   void _reportChange() {
-    widget.onChanged(
-      _startFrac * widget.durationSec,
-      _endFrac * widget.durationSec,
-    );
+    widget.onChanged(_fracToSec(_startFrac), _fracToSec(_endFrac));
   }
 
   @override
@@ -2961,20 +3175,23 @@ class _SessionHelpSheet extends StatelessWidget {
       initialChildSize: 0.72,
       sections: [
         AppHelpSection(
-          icon: Icons.info_outline,
+          icon: AppIcons.infoOutline,
           body: l10n.sessionHelpOverview,
         ),
-        AppHelpSection(icon: Icons.close, body: l10n.sessionHelpTopBar),
+        AppHelpSection(icon: AppIcons.close, body: l10n.sessionHelpTopBar),
         AppHelpSection(
-          icon: Icons.add_circle_outline,
+          icon: AppIcons.addCircleOutline,
           body: l10n.sessionHelpAddSpecies,
         ),
-        AppHelpSection(icon: Icons.undo, body: l10n.sessionHelpUndoRedo),
-        AppHelpSection(icon: Icons.content_cut, body: l10n.sessionHelpTrimming),
-        AppHelpSection(icon: Icons.save, body: l10n.sessionHelpSaveDiscard),
+        AppHelpSection(icon: AppIcons.undo, body: l10n.sessionHelpUndoRedo),
+        AppHelpSection(
+          icon: AppIcons.contentCut,
+          body: l10n.sessionHelpTrimming,
+        ),
+        AppHelpSection(icon: AppIcons.save, body: l10n.sessionHelpSaveDiscard),
         if (showContinueSurvey)
           AppHelpSection(
-            icon: Icons.play_arrow_rounded,
+            icon: AppIcons.playArrowRounded,
             body: l10n.sessionHelpContinueSurvey,
           ),
       ],

@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/services/link_launcher.dart';
+import '../../shared/utils/app_icons.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 
 /// Provider for app package info.
@@ -60,7 +61,7 @@ class AboutScreen extends ConsumerWidget {
                           ),
                         ),
                     loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
+                    error: (a, b) => const SizedBox.shrink(),
                   ),
                 ],
               ),
@@ -171,19 +172,19 @@ class AboutScreen extends ConsumerWidget {
                 ),
               ),
               title: Text(l10n.aboutWebsite),
-              trailing: const Icon(Icons.open_in_new),
+              trailing: const Icon(AppIcons.openInNew),
               onTap: () => openExternalUrl(context, AppConstants.birdnetUrl),
             ),
             ListTile(
-              leading: const Icon(Icons.code),
+              leading: const Icon(AppIcons.code),
               title: Text(l10n.aboutGitHub),
-              trailing: const Icon(Icons.open_in_new),
+              trailing: const Icon(AppIcons.openInNew),
               onTap: () => openExternalUrl(context, AppConstants.githubUrl),
             ),
             ListTile(
-              leading: const Icon(Icons.privacy_tip_outlined),
+              leading: const Icon(AppIcons.privacyTip),
               title: Text(l10n.aboutPrivacyPolicy),
-              trailing: const Icon(Icons.open_in_new),
+              trailing: const Icon(AppIcons.openInNew),
               onTap:
                   () => openExternalUrl(
                     context,
@@ -191,9 +192,9 @@ class AboutScreen extends ConsumerWidget {
                   ),
             ),
             ListTile(
-              leading: const Icon(Icons.gavel),
+              leading: const Icon(AppIcons.gavel),
               title: Text(l10n.aboutTermsOfUse),
-              trailing: const Icon(Icons.open_in_new),
+              trailing: const Icon(AppIcons.openInNew),
               onTap:
                   () => openExternalUrl(
                     context,
@@ -201,14 +202,21 @@ class AboutScreen extends ConsumerWidget {
                   ),
             ),
             ListTile(
-              leading: const Icon(Icons.menu_book_outlined),
+              leading: const Icon(AppIcons.menuBook),
               title: Text(l10n.aboutUserGuide),
-              trailing: const Icon(Icons.open_in_new),
+              trailing: const Icon(AppIcons.openInNew),
               onTap:
                   () => openExternalUrl(
                     context,
                     '${AppConstants.docsUrl}${Localizations.localeOf(context).languageCode == 'en' ? '' : '/${Localizations.localeOf(context).languageCode}'}/user/',
                   ),
+            ),
+            ListTile(
+              leading: const Icon(AppIcons.volunteerActivism),
+              title: Text(l10n.aboutDonate),
+              trailing: const Icon(AppIcons.openInNew),
+              onTap:
+                  () => openExternalUrl(context, AppConstants.birdnetDonateUrl),
             ),
 
             const SizedBox(height: 32),

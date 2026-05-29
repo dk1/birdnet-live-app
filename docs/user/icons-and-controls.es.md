@@ -13,6 +13,20 @@ Esta página explica los controles y símbolos recurrentes utilizados en BirdNET
 | :material-information-outline: **Información / Acerca de** | Pie de página de inicio, barras de información, hojas de ayuda | Muestra información general o contexto resumido. |
 | :material-flecha-izquierda: **Volver** | Modo en vivo | Vuelve a la pantalla anterior. |
 | :material-open-in-new: **Abrir externo** | Acerca de la pantalla, enlaces de documentación | Abre una página externa como la Guía del usuario en línea. |
+| :material-volunteer-activism: **Donar** | Pantalla Acerca de | Abre la página de donaciones de BirdNET. |
+
+## Símbolos del tiempo
+
+| Símbolo | Significado |
+|---|---|
+| :material-wb-sunny: **Despejado** | Cielo despejado. |
+| :material-partly-cloudy-day: **Parcialmente nublado** | Sol y nube para tiempo mayormente despejado o parcialmente nublado. |
+| :material-cloudy: **Cubierto** | Cobertura nubosa completa. |
+| :material-foggy: **Niebla** | Niebla o niebla escarchada. |
+| :material-rainy-light: **Llovizna** | Precipitación ligera. |
+| :material-rainy: **Lluvia** | Lluvia o chubascos. |
+| :material-weather-snowy: **Nieve** | Nieve o chubascos de nieve. |
+| :material-thunderstorm: **Tormenta** | Condiciones de tormenta. |
 
 ## Controles de inicio, parada y sesión
 

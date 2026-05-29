@@ -12,12 +12,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../providers/app_providers.dart';
+import '../providers/settings_providers.dart';
 import 'open_street_map_tile_layer.dart';
 
 /// Full-screen map for picking a location by tapping.
@@ -75,8 +77,7 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
           ),
     );
     if (agreed == true) {
-      final prefs = ref.read(sharedPreferencesProvider);
-      await prefs.setBool(PrefKeys.privacyAllowMap, true);
+      await ref.read(privacyAllowMapProvider.notifier).set(true);
       setState(() => _hasConsent = true);
     }
   }
@@ -122,7 +123,7 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
                 width: 40,
                 height: 40,
                 child: Icon(
-                  Icons.location_on,
+                  AppIcons.locationOnFilled,
                   color: theme.colorScheme.error,
                   size: 40,
                 ),
@@ -147,14 +148,14 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.map_outlined,
+              AppIcons.map,
               size: 64,
               color: theme.colorScheme.onSurface.withAlpha(100),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _requestConsent,
-              icon: const Icon(Icons.map),
+              icon: const Icon(AppIcons.map),
               label: Text(l10n.mapLoadButton),
             ),
             const SizedBox(height: 8),

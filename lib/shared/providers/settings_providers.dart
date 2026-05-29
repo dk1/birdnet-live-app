@@ -1,6 +1,7 @@
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -37,11 +38,11 @@ final windowDurationProvider = StateNotifierProvider<IntSettingNotifier, int>((
   return IntSettingNotifier(prefs, PrefKeys.windowDuration, 3);
 });
 
-/// Confidence threshold (0 – 100, default 25).
+/// Confidence threshold (0 – 100, default 35).
 final confidenceThresholdProvider =
     StateNotifierProvider<IntSettingNotifier, int>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return IntSettingNotifier(prefs, PrefKeys.confidenceThreshold, 25);
+      return IntSettingNotifier(prefs, PrefKeys.confidenceThreshold, 35);
     });
 
 /// Inference rate in Hz (0.25, 0.5, 1.0, 2.0 — default 1.0).
@@ -311,13 +312,6 @@ final useGpsProvider = StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
 // in `main()`. Consumer code reads these providers and short-circuits
 // every network call when the corresponding gate is off.
 
-/// Allow OSM map tile fetches (tile.openstreetmap.org).
-final privacyAllowMapProvider =
-    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
-      final prefs = ref.watch(sharedPreferencesProvider);
-      return BoolSettingNotifier(prefs, PrefKeys.privacyAllowMap, false);
-    });
-
 /// Allow reverse geocoding via Nominatim (nominatim.openstreetmap.org).
 final privacyAllowReverseGeocodingProvider =
     StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
@@ -327,6 +321,16 @@ final privacyAllowReverseGeocodingProvider =
         PrefKeys.privacyAllowReverseGeocoding,
         false,
       );
+    });
+
+/// Allow OSM map tile fetches (tile.openstreetmap.org).
+final privacyAllowMapProvider =
+    StateNotifierProvider<MapPrivacySettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      final reverseGeocodingNotifier = ref.watch(
+        privacyAllowReverseGeocodingProvider.notifier,
+      );
+      return MapPrivacySettingNotifier(prefs, reverseGeocodingNotifier);
     });
 
 /// Allow weather snapshot fetches via Open-Meteo (api.open-meteo.com).
@@ -682,5 +686,25 @@ class BoolSettingNotifier extends StateNotifier<bool> {
   Future<void> set(bool value) async {
     state = value;
     await _prefs.setBool(_key, value);
+  }
+}
+
+/// Map tile consent also grants city-name lookup as a convenience, while the
+/// reverse-geocoding toggle remains independently revocable in Settings.
+class MapPrivacySettingNotifier extends BoolSettingNotifier {
+  MapPrivacySettingNotifier(
+    SharedPreferences prefs,
+    this._reverseGeocodingNotifier,
+  ) : super(prefs, PrefKeys.privacyAllowMap, false);
+
+  final BoolSettingNotifier _reverseGeocodingNotifier;
+
+  @override
+  Future<void> set(bool value) async {
+    final wasAllowed = state;
+    await super.set(value);
+    if (value && !wasAllowed) {
+      await _reverseGeocodingNotifier.set(true);
+    }
   }
 }

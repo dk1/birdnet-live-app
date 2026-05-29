@@ -23,6 +23,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
+
+import '../../core/theme/app_semantic_colors.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:record/record.dart';
 
@@ -194,13 +197,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 children: [
                   _WelcomePage(l10n: l10n, theme: theme),
                   _InfoPage(
-                    icon: Icons.graphic_eq_rounded,
+                    icon: AppIcons.graphicEqRounded,
                     title: l10n.onboardingHowItWorksTitle,
                     body: l10n.onboardingHowItWorksBody,
                     theme: theme,
                   ),
                   _InfoPage(
-                    icon: Icons.grid_view_rounded,
+                    icon: AppIcons.gridViewRounded,
                     title: l10n.onboardingFeaturesTitle,
                     body: l10n.onboardingFeaturesBody,
                     theme: theme,
@@ -513,7 +516,7 @@ class _PermissionsPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(
-                Icons.security_rounded,
+                AppIcons.securityRounded,
                 size: _kHeroIconSize * 0.6,
                 color: theme.colorScheme.onPrimaryContainer,
               ),
@@ -539,7 +542,7 @@ class _PermissionsPage extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 children: [
                   _PermissionTile(
-                    icon: Icons.mic_rounded,
+                    icon: AppIcons.micRounded,
                     title: l10n.permissionMicrophoneTitle,
                     description: l10n.permissionMicrophoneDescription,
                     granted: micGranted,
@@ -550,7 +553,7 @@ class _PermissionsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   _PermissionTile(
-                    icon: Icons.location_on_rounded,
+                    icon: AppIcons.locationOnRounded,
                     title: l10n.permissionLocationTitle,
                     description: l10n.permissionLocationDescription,
                     granted: locGranted,
@@ -639,8 +642,8 @@ class _PermissionTile extends StatelessWidget {
           const SizedBox(width: 8),
           if (granted)
             Icon(
-              Icons.check_circle_rounded,
-              color: Colors.green.shade600,
+              AppIcons.checkCircleRounded,
+              color: AppSemanticColors.of(context).success,
               size: 28,
             )
           else
@@ -713,7 +716,7 @@ class _TermsPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(
-                Icons.gavel_rounded,
+                AppIcons.gavelRounded,
                 size: _kHeroIconSize * 0.6,
                 color: theme.colorScheme.onPrimaryContainer,
               ),
@@ -743,12 +746,12 @@ class _TermsPage extends StatelessWidget {
               children: [
                 TextButton.icon(
                   onPressed: () => _open(context, '/terms/'),
-                  icon: const Icon(Icons.gavel_rounded, size: 18),
+                  icon: const Icon(AppIcons.gavelRounded, size: 18),
                   label: Text(l10n.onboardingTermsLink),
                 ),
                 TextButton.icon(
                   onPressed: () => _open(context, '/privacy/'),
-                  icon: const Icon(Icons.privacy_tip_outlined, size: 18),
+                  icon: const Icon(AppIcons.privacyTip, size: 18),
                   label: Text(l10n.onboardingPrivacyLink),
                 ),
               ],

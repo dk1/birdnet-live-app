@@ -159,7 +159,7 @@ Esta sección controla **qué servicios de terceros puede contactar BirdNET Live
 
 ### Permitir mosaicos de mapa
 
-Necesario para cualquier mapa interactivo (selector de ubicación, mapa en vivo de Survey, mapa de la sesión, descarga previa de mosaicos). Cuando está activo, los widgets de mapa solicitan mosaicos ráster a los servidores públicos de **OpenStreetMap**; las solicitudes de coordenadas de mosaico revelan qué zona del mundo está mirando. Cuando está desactivado, todas las pantallas de mapa muestran un panel de marcador de posición.
+Necesario para cualquier mapa interactivo (selector de ubicación, mapa en vivo de Survey, mapa de la sesión). Cuando está activo, los widgets de mapa solicitan mosaicos ráster a los servidores públicos de **OpenStreetMap**; las solicitudes de coordenadas de mosaico revelan qué zona del mundo está mirando. Cuando está desactivado, todas las pantallas de mapa muestran un panel de marcador de posición.
 
 ### Permitir búsqueda de nombre de lugar
 
@@ -181,7 +181,9 @@ Muestra la secuencia de incorporación nuevamente la próxima vez que se inicie 
 
 ### Borrar todos los datos
 
-Abre un flujo de confirmación para eliminar permanentemente los datos almacenados de la aplicación.
+Elimina permanentemente sesiones, detecciones, grabaciones, notas de voz, listas de especies personalizadas, preferencias guardadas y datos en caché de mapas, nombres de lugar, clima, reproducción, revisión y uso compartido. El diálogo de confirmación exige escribir `DELETE` y luego cierra la app para que el próximo inicio parta de un estado local limpio.
+
+Úselo antes de entregar un dispositivo a otra persona observadora, retirar un teléfono de campo o quitar del app historial vinculado a ubicaciones. Exporte primero todo lo que quiera conservar; esta acción no se puede deshacer.
 
 ## Parámetros específicos del flujo de trabajo fuera de la configuración
 

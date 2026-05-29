@@ -159,7 +159,7 @@ Esta seção controla **quais serviços de terceiros o BirdNET Live pode contata
 
 ### Permitir tiles de mapa
 
-Necessário para qualquer mapa interativo (seletor de localização, mapa ao vivo do Survey, mapa da sessão, pré-download de tiles). Quando ativo, os widgets de mapa baixam tiles raster dos servidores públicos do **OpenStreetMap**; as requisições de coordenadas de tile revelam que área do mundo você está olhando. Quando desligado, todas as telas de mapa mostram um painel marcador.
+Necessário para qualquer mapa interativo (seletor de localização, mapa ao vivo do Survey, mapa da sessão). Quando ativo, os widgets de mapa baixam tiles raster dos servidores públicos do **OpenStreetMap**; as requisições de coordenadas de tile revelam que área do mundo você está olhando. Quando desligado, todas as telas de mapa mostram um painel marcador.
 
 ### Permitir busca de nome de lugar
 
@@ -181,7 +181,9 @@ Mostra a sequência de integração novamente na próxima vez que o aplicativo f
 
 ### Limpar todos os dados
 
-Abre um fluxo de confirmação para remover permanentemente os dados armazenados do aplicativo.
+Exclui permanentemente sessões, detecções, gravações, notas de voz, listas de espécies personalizadas, preferências salvas e dados em cache de mapas, nomes de lugares, meteorologia, reprodução, revisão e compartilhamento. O diálogo de confirmação exige digitar `DELETE` e depois fecha o app para que a próxima abertura comece de um estado local limpo.
+
+Use antes de entregar um dispositivo a outra pessoa observadora, aposentar um telefone de campo ou remover do app histórico vinculado a localização. Exporte primeiro tudo o que deseja manter; esta ação não pode ser desfeita.
 
 ## Parâmetros específicos do fluxo de trabalho fora das configurações
 

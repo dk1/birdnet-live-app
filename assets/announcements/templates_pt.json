@@ -33,7 +33,7 @@
         "{name}, perfeitamente claro.",
         "Sem margem para dúvidas: {name}.",
         "Sinal limpo: {name}.",
-        "{name}, como nos manuais.",
+        "{name}, bem nítido.",
         "Chega bem nítido: {name}.",
         "{name} faz-se ouvir — sinal ótimo.",
         "Boa identificação: {name}.",
@@ -207,7 +207,7 @@
       "Não muito comum por aqui.",
       "Algo menos frequente na tua zona.",
       "De assinalar — não se ouve todos os dias.",
-      "Pequeno mimo — não muito frequente na tua zona.",
+      "Vale a pena registar — não é muito frequente na tua zona.",
       "Não é o canto do dia a dia por aqui."
     ],
     "rare": [

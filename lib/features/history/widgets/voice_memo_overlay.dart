@@ -51,6 +51,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -524,7 +525,7 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
         Row(
           children: [
             IconButton.filled(
-              icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+              icon: Icon(_isPlaying ? AppIcons.pause : AppIcons.playArrow),
               tooltip: l10n.detectionVoiceMemoTooltip,
               onPressed: _togglePlay,
             ),
@@ -569,7 +570,7 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
         Center(
           child: OutlinedButton.icon(
             onPressed: _startRecording,
-            icon: const Icon(Icons.fiber_manual_record, size: 16),
+            icon: const Icon(AppIcons.fiberManualRecord, size: 16),
             label: Text(l10n.detectionReplaceVoiceMemo),
           ),
         ),
@@ -596,9 +597,10 @@ class _RecordButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Semantics(
       button: true,
-      label: isRecording ? 'Stop recording' : 'Start recording',
+      label: isRecording ? l10n.a11yLiveCaptureStop : l10n.a11yLiveCaptureStart,
       child: GestureDetector(
         onTap: onTap,
         child: Container(
@@ -622,7 +624,7 @@ class _RecordButton extends StatelessWidget {
                     : null,
           ),
           child: Icon(
-            isRecording ? Icons.stop : Icons.mic,
+            isRecording ? AppIcons.stop : AppIcons.mic,
             size: 40,
             color:
                 isRecording

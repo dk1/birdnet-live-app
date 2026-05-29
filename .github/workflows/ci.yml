@@ -16,13 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          lfs: true
+          lfs: false
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
       - uses: subosito/flutter-action@v2 #https://github.com/subosito/flutter-action
         with:
+          flutter-version: '3.41.9'
           channel: stable
 
       - run: flutter --version
@@ -30,3 +31,12 @@ jobs:
       - run: flutter gen-l10n
       - run: flutter analyze --no-fatal-infos
       - run: flutter test
+
+      - name: Build Android APK (Debug)
+        run: flutter build apk --debug --target-platform android-arm64
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error

@@ -159,7 +159,7 @@ Cette section contrôle **quels services tiers BirdNET Live peut contacter en vo
 
 ### Autoriser les tuiles de carte
 
-Requis pour toute carte interactive (sélecteur de position, carte live de Survey, carte de la session, pré-téléchargement de tuiles). Quand actif, les widgets carte demandent des tuiles raster aux serveurs publics **OpenStreetMap** ; les requêtes de coordonnées de tuile révèlent quelle zone du monde vous regardez. Quand désactivé, tous les écrans cartographiques affichent un panneau d'attente.
+Requis pour toute carte interactive (sélecteur de position, carte live de Survey, carte de la session). Quand actif, les widgets carte demandent des tuiles raster aux serveurs publics **OpenStreetMap** ; les requêtes de coordonnées de tuile révèlent quelle zone du monde vous regardez. Quand désactivé, tous les écrans cartographiques affichent un panneau d'attente.
 
 ### Autoriser la recherche de nom de lieu
 
@@ -181,7 +181,9 @@ Affiche à nouveau la séquence d'intégration au prochain lancement de l'applic
 
 ### Effacer toutes les données
 
-Ouvre un flux de confirmation pour supprimer définitivement les données d'application stockées.
+Supprime définitivement les sessions, détections, enregistrements, mémos vocaux, listes d'espèces personnalisées, préférences enregistrées et données en cache de cartes, noms de lieux, météo, lecture, revue et partage. Le dialogue de confirmation exige de saisir `DELETE`, puis ferme l'app afin que le prochain lancement reparte d'un état local propre.
+
+Utilisez cette action avant de confier un appareil à une autre personne observatrice, de retirer un téléphone de terrain ou de supprimer l'historique lié aux emplacements. Exportez d'abord tout ce que vous souhaitez conserver ; cette action est irréversible.
 
 ## Paramètres spécifiques au workflow en dehors des paramètres
 

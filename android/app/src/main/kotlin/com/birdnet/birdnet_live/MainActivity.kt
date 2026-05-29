@@ -36,6 +36,25 @@ class MainActivity: FlutterActivity() {
         // Audio decoder channel — decode compressed audio to PCM via MediaCodec.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, AUDIO_DECODER_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
+                "inspect" -> {
+                    val path = call.argument<String>("path")
+                    if (path == null) {
+                        result.error("INVALID_ARG", "Missing 'path' argument", null)
+                        return@setMethodCallHandler
+                    }
+                    scope.launch {
+                        try {
+                            val metadata = NativeAudioDecoder.inspect(path)
+                            withContext(Dispatchers.Main) {
+                                result.success(metadata)
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                result.error("INSPECT_ERROR", e.message, null)
+                            }
+                        }
+                    }
+                }
                 "decode" -> {
                     val path = call.argument<String>("path")
                     if (path == null) {

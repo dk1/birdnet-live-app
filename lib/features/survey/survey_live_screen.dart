@@ -24,11 +24,11 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../core/theme/score_colors.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/weather_service.dart';
+import '../../shared/utils/app_icons.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
@@ -240,12 +240,12 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.add_circle_outline),
+                  leading: const Icon(AppIcons.addCircleOutline),
                   title: Text(l10n.sessionAddSpecies),
                   onTap: () => Navigator.of(ctx).pop('species'),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.note_add_outlined),
+                  leading: const Icon(AppIcons.noteAdd),
                   title: Text(l10n.sessionAddAnnotationOption),
                   onTap: () => Navigator.of(ctx).pop('annotation'),
                 ),
@@ -452,7 +452,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   /// *after* survey start).
   String Function(String, String) _buildNameLocalizer() {
     return (sciName, fallback) {
-      final taxonomy = ref.read(taxonomyServiceProvider).valueOrNull;
+      final taxonomy = ref.read(taxonomyServiceProvider).value;
       final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
       return taxonomy?.lookup(sciName)?.commonNameForLocale(speciesLocale) ??
           fallback;
@@ -476,9 +476,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       SnackBar(
         content: Row(
           children: [
-            const Icon(
-              Icons.notifications_active_rounded,
-              color: Colors.white,
+            Icon(
+              AppIcons.notificationsActiveRounded,
+              color: Theme.of(context).colorScheme.onInverseSurface,
               size: 18,
             ),
             const SizedBox(width: 8),
@@ -696,7 +696,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
             PageRouteBuilder<void>(
               transitionDuration: Duration.zero,
               reverseTransitionDuration: Duration.zero,
-              pageBuilder: (_, __, ___) => const SessionLibraryScreen(),
+              pageBuilder: (a, b, c) => const SessionLibraryScreen(),
             ),
           );
           navigator.push(
@@ -818,7 +818,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                 ? FloatingActionButton.small(
                   onPressed: _showAddMenu,
                   tooltip: l10n.surveyAddMenuTitle,
-                  child: const Icon(Icons.add),
+                  child: const Icon(AppIcons.add),
                 )
                 : null,
       ),
@@ -847,15 +847,15 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       controller: _tabController,
       tabs: [
         Tab(
-          icon: const Icon(Icons.map_outlined, size: 18),
+          icon: const Icon(AppIcons.map, size: 18),
           text: l10n.surveyTabMap,
         ),
         Tab(
-          icon: const Icon(Icons.graphic_eq, size: 18),
+          icon: const Icon(AppIcons.graphicEq, size: 18),
           text: l10n.surveyTabSpectrogram,
         ),
         Tab(
-          icon: Icon(MdiIcons.chartBar, size: 18),
+          icon: Icon(AppIcons.summaryChart, size: 18),
           text: l10n.surveyTabSummary,
         ),
       ],
@@ -1005,7 +1005,7 @@ class _SurveyStatusBar extends StatelessWidget {
         children: [
           // Stop button (matches point count).
           IconButton(
-            icon: const Icon(Icons.stop_rounded, size: 22),
+            icon: const Icon(AppIcons.stopRounded, size: 22),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             onPressed: isActive ? onStop : () => Navigator.of(context).pop(),
@@ -1020,7 +1020,7 @@ class _SurveyStatusBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.timer_rounded,
+                    AppIcons.timerRounded,
                     size: 18,
                     color: theme.colorScheme.primary,
                   ),
@@ -1041,7 +1041,7 @@ class _SurveyStatusBar extends StatelessWidget {
           // Help button.
           IconButton(
             icon: Icon(
-              Icons.help_outline_rounded,
+              AppIcons.helpOutlineRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -1058,7 +1058,7 @@ class _SurveyStatusBar extends StatelessWidget {
               child: Tooltip(
                 message: l10n.surveyAlertsTitle,
                 child: Icon(
-                  Icons.notifications_active_rounded,
+                  AppIcons.notificationsActiveRounded,
                   size: 18,
                   color: theme.colorScheme.primary,
                 ),
@@ -1068,7 +1068,7 @@ class _SurveyStatusBar extends StatelessWidget {
           // Settings gear (matches point count).
           IconButton(
             icon: Icon(
-              Icons.tune_rounded,
+              AppIcons.tuneRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -1148,7 +1148,7 @@ class _SurveySummaryTab extends ConsumerWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
-    final taxonomy = ref.watch(taxonomyServiceProvider).valueOrNull;
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
     final showSciNames = ref.watch(showSciNamesProvider);
 
     if (session == null) {
@@ -1373,17 +1373,17 @@ class _SurveyLiveHelpSheet extends StatelessWidget {
       title: l10n.surveyLiveHelpTitle,
       sections: [
         AppHelpSection(
-          icon: Icons.info_outline,
+          icon: AppIcons.infoOutline,
           body: l10n.surveyLiveHelpOverview,
         ),
         AppHelpSection(
-          icon: Icons.help_outline_rounded,
+          icon: AppIcons.helpOutlineRounded,
           body: l10n.surveyLiveHelpTopBar,
         ),
-        AppHelpSection(icon: Icons.map_outlined, body: l10n.surveyLiveHelpTabs),
-        AppHelpSection(icon: Icons.mic, body: l10n.surveyLiveHelpSignal),
+        AppHelpSection(icon: AppIcons.map, body: l10n.surveyLiveHelpTabs),
+        AppHelpSection(icon: AppIcons.mic, body: l10n.surveyLiveHelpSignal),
         AppHelpSection(
-          icon: MdiIcons.feather,
+          icon: AppIcons.species,
           body: l10n.surveyLiveHelpDetections,
         ),
       ],

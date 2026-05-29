@@ -27,6 +27,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
@@ -35,6 +36,8 @@ import 'package:path/path.dart' as p;
 
 import '../../shared/services/taxonomy_service.dart';
 import '../live/live_session.dart';
+import '../recording/audio_decoder.dart';
+import '../recording/native_audio_decoder.dart';
 import 'html_report.dart';
 
 /// Upper frequency bound for Raven annotations (Nyquist of 32 kHz).
@@ -542,6 +545,67 @@ String buildJsonExport(LiveSession session, {Map<String, dynamic>? metadata}) {
   return const JsonEncoder.withIndent('  ').convert(map);
 }
 
+Future<Map<String, dynamic>?> _withAudioIntegrityMetadata(
+  LiveSession session,
+  Map<String, dynamic>? metadata,
+  String? audioPath,
+) async {
+  if (audioPath == null) return metadata;
+
+  try {
+    final canDart = await AudioDecoder.canDecodeDart(audioPath);
+    final audio =
+        canDart
+            ? await AudioDecoder.inspectFile(audioPath)
+            : await NativeAudioDecoder.inspectFile(
+              audioPath,
+              _formatLabelForPath(audioPath),
+            );
+    final audioSec = audio.duration.inMicroseconds / 1e6;
+    var expectedSec = 0.0;
+    final end = session.endTime;
+    if (end != null) {
+      expectedSec = math.max(
+        expectedSec,
+        end.difference(session.startTime).inMicroseconds / 1e6,
+      );
+    }
+    for (final detection in session.detections) {
+      final eventEnd = detection.endTimestamp ?? detection.timestamp;
+      expectedSec = math.max(
+        expectedSec,
+        eventEnd.difference(session.startTime).inMicroseconds / 1e6,
+      );
+    }
+    if (expectedSec <= 0 || audioSec + 5 >= expectedSec) return metadata;
+
+    final enriched = <String, dynamic>{...?metadata};
+    enriched['audioIntegrity'] = {
+      'warning': 'recording_shorter_than_session',
+      'audioDurationSeconds': audioSec,
+      'expectedSessionSeconds': expectedSec,
+      'message':
+          'The audio file ends before the latest session event. Detection rows '
+          'may refer to timestamps beyond the available recording.',
+    };
+    return enriched;
+  } catch (_) {
+    return metadata;
+  }
+}
+
+String _formatLabelForPath(String path) {
+  final lower = path.toLowerCase();
+  if (lower.endsWith('.mp3')) return 'MP3';
+  if (lower.endsWith('.ogg') || lower.endsWith('.oga')) return 'OGG';
+  if (lower.endsWith('.opus')) return 'OPUS';
+  if (lower.endsWith('.m4a') || lower.endsWith('.aac')) return 'AAC';
+  if (lower.endsWith('.mp4')) return 'AAC';
+  if (lower.endsWith('.wma')) return 'WMA';
+  if (lower.endsWith('.amr')) return 'AMR';
+  return 'AUDIO';
+}
+
 /// Creates an export bundle containing the session data and optionally audio.
 ///
 /// All exported files use the `BirdNET_Live_…` prefix regardless of the
@@ -578,6 +642,11 @@ Future<String?> buildSessionExport(
 
   // Full recording: single file at recordingPath.
   final hasFullRecording = audioPath != null && File(audioPath).existsSync();
+  final exportMetadata = await _withAudioIntegrityMetadata(
+    session,
+    metadata,
+    hasFullRecording ? audioPath : null,
+  );
 
   // Detection clips: collect per-detection audio files that exist on disk,
   // indexed by detection position so we can build a clip-file map.
@@ -649,7 +718,7 @@ Future<String?> buildSessionExport(
       case 'json':
         docs[fmt] = (
           extension: '.json',
-          content: buildJsonExport(session, metadata: metadata),
+          content: buildJsonExport(session, metadata: exportMetadata),
         );
         break;
       case 'gpx':
@@ -673,21 +742,22 @@ Future<String?> buildSessionExport(
     }
   }
 
+  final hasAudioIntegrityMetadata =
+      exportMetadata?.containsKey('audioIntegrity') ?? false;
+
   // Decide whether to ZIP. We zip when any of:
   //   • the user wants audio bundled and audio exists,
   //   • more than one format is selected (multiple docs need a container),
   //   • the user enabled the HTML report,
-  //   • we have provenance metadata to ship and the user didn't pick the
-  //     JSON format (which already embeds the metadata block). Forcing a
-  //     ZIP in that last case is what carries the weather snapshot and
-  //     prefs/model context out alongside an otherwise plain CSV/Raven
-  //     selection — without it, those fields would silently disappear.
+  //   • we have non-JSON metadata that would otherwise be lost. Forcing a
+  //     ZIP in that last case is what carries the weather snapshot or audio
+  //     integrity warning alongside an otherwise plain CSV/Raven selection.
   final mustZip =
       (includeAudio && hasAnyAudio) ||
       docs.length > 1 ||
       includeHtmlReport ||
-      (metadata != null &&
-          session.weather != null &&
+      (exportMetadata != null &&
+          (session.weather != null || hasAudioIntegrityMetadata) &&
           !selected.contains('json'));
 
   // ── Bundle into ZIP ───────────────────────────────────────────────
@@ -759,8 +829,10 @@ Future<String?> buildSessionExport(
     // Always drop a metadata side-file when the caller provided one, so
     // the provenance information travels with the bundle regardless of
     // which document format the user picked.
-    if (metadata != null) {
-      final metaJson = const JsonEncoder.withIndent('  ').convert(metadata);
+    if (exportMetadata != null) {
+      final metaJson = const JsonEncoder.withIndent(
+        '  ',
+      ).convert(exportMetadata);
       final metaBytes = Uint8List.fromList(utf8.encode(metaJson));
       archive.addFile(
         ArchiveFile('$prefix.metadata.json', metaBytes.length, metaBytes),

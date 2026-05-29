@@ -13,6 +13,20 @@ Auf dieser Seite werden die wiederkehrenden Steuerelemente und Symbole erläuter
 | :material-information-outline: **Info / Über** | Home-Fußzeile, Infoleisten, Hilfeblätter | Zeigt allgemeine Informationen oder einen zusammenfassenden Kontext an. |
 | :material-arrow-left: **Zurück** | Live-Modus | Kehrt zum vorherigen Bildschirm zurück. |
 | :material-open-in-new: **Extern öffnen** | Über Bildschirm, Dokumentationslinks | Öffnet eine externe Seite, beispielsweise das Online-Benutzerhandbuch. |
+| :material-volunteer-activism: **Spenden** | Über-Bildschirm | Öffnet die BirdNET-Spendenseite. |
+
+## Wettersymbole
+
+| Symbol | Bedeutung |
+|---|---|
+| :material-wb-sunny: **Klar** | Klarer Himmel. |
+| :material-partly-cloudy-day: **Teilweise bewölkt** | Sonne und Wolke für überwiegend klare oder teilweise bewölkte Bedingungen. |
+| :material-cloudy: **Bedeckt** | Vollständige Bewölkung. |
+| :material-foggy: **Nebel** | Nebel oder gefrierender Nebel. |
+| :material-rainy-light: **Nieselregen** | Leichter Niederschlag. |
+| :material-rainy: **Regen** | Regen oder Regenschauer. |
+| :material-weather-snowy: **Schnee** | Schnee oder Schneeschauer. |
+| :material-thunderstorm: **Gewitter** | Gewitterbedingungen. |
 
 ## Start-, Stopp- und Sitzungssteuerung
 
@@ -66,9 +80,9 @@ Diese Steuerelemente werden auf dem Bildschirm „Sitzungsüberprüfung“ verwe
 
 Die Live-Infoleiste verwendet :material-information-outline: gefolgt von kompakten Beschriftungen wie:
 
-- „Jetzt“ – Erkennungen, die derzeit in der Live-Liste sichtbar sind
+- „Jetzt“ – Detektionen, die derzeit in der Live-Liste sichtbar sind
 - „spp“ – einzigartige Artenzahl
-- „det“ – Gesamtzahl der Erkennungen
+- „det“ – Gesamtzahl der Detektionen
 - Dauer und geschätzte Aufnahmegröße, wenn die Aufnahme aktiv ist
 
 ### Punkteanzahl

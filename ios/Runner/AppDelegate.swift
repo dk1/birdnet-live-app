@@ -34,7 +34,7 @@ import UIKit
       binaryMessenger: controller.binaryMessenger
     )
     audioChannel.setMethodCallHandler { (call, result) in
-      guard call.method == "decode" else {
+      guard call.method == "decode" || call.method == "inspect" else {
         result(FlutterMethodNotImplemented)
         return
       }
@@ -45,13 +45,16 @@ import UIKit
       }
       DispatchQueue.global(qos: .userInitiated).async {
         do {
-          let decoded = try NativeAudioDecoder.decode(path: path)
+          let decoded = call.method == "inspect"
+            ? try NativeAudioDecoder.inspect(path: path)
+            : try NativeAudioDecoder.decode(path: path)
           DispatchQueue.main.async {
             result(decoded)
           }
         } catch {
           DispatchQueue.main.async {
-            result(FlutterError(code: "DECODE_ERROR", message: error.localizedDescription, details: nil))
+            let code = call.method == "inspect" ? "INSPECT_ERROR" : "DECODE_ERROR"
+            result(FlutterError(code: code, message: error.localizedDescription, details: nil))
           }
         }
       }

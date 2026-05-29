@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/services/app_data_clear_service.dart';
 import '../../shared/providers/app_providers.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/content_width_constraint.dart';
@@ -13,6 +15,8 @@ import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
 import '../spectrogram/color_maps.dart';
 import 'offline_map_download_tile.dart';
+
+bool get _showOfflineMapDownloadSetting => false;
 
 // ---------------------------------------------------------------------------
 // Settings context — determines which settings are visible
@@ -125,6 +129,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
@@ -138,6 +143,13 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: l10n.settingsGeneralDescription,
               ),
               _ThemeTile(l10n: l10n),
+              SwitchListTile(
+                title: Text(l10n.settingsDynamicColor),
+                subtitle: Text(l10n.settingsDynamicColorDescription),
+                value: ref.watch(dynamicColorProvider),
+                onChanged:
+                    (v) => ref.read(dynamicColorProvider.notifier).set(v),
+              ),
               _LanguageTile(l10n: l10n),
               _SpeciesLanguageTile(l10n: l10n),
               SwitchListTile(
@@ -553,7 +565,8 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ],
               if (ref.watch(useGpsProvider)) const _GpsRefreshTile(),
-              if (ref.watch(useGpsProvider)) const OfflineMapDownloadTile(),
+              if (_showOfflineMapDownloadSetting && ref.watch(useGpsProvider))
+                const OfflineMapDownloadTile(),
               _ChoiceTile<String>(
                 title: l10n.settingsSpeciesFilter,
                 helpBody: l10n.settingsHelpSpeciesFilter,
@@ -663,7 +676,7 @@ class SettingsScreen extends ConsumerWidget {
             if (_showSection('about'))
               ListTile(
                 title: Text(l10n.about),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: const Icon(AppIcons.chevronRight),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
@@ -692,9 +705,9 @@ class SettingsScreen extends ConsumerWidget {
               ListTile(
                 title: Text(
                   l10n.settingsClearData,
-                  style: const TextStyle(color: Colors.red),
+                  style: TextStyle(color: theme.colorScheme.error),
                 ),
-                onTap: () => _showClearDataDialog(context, ref, l10n),
+                onTap: () => _showClearDataDialog(context, l10n),
               ),
             ],
 
@@ -742,53 +755,56 @@ class SettingsScreen extends ConsumerWidget {
   ) {
     showDialog<void>(
       context: context,
-      builder:
-          (dialogContext) => AlertDialog(
-            title: Text(l10n.settingsResetAllConfirmTitle),
-            content: Text(l10n.settingsResetAllConfirmMessage),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: Text(l10n.cancel),
+      builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
+        return AlertDialog(
+          title: Text(l10n.settingsResetAllConfirmTitle),
+          content: Text(l10n.settingsResetAllConfirmMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton.tonal(
+              style: FilledButton.styleFrom(
+                backgroundColor: theme.colorScheme.errorContainer,
+                foregroundColor: theme.colorScheme.onErrorContainer,
               ),
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                onPressed: () async {
-                  final messenger = ScaffoldMessenger.of(context);
-                  Navigator.of(dialogContext).pop();
-                  // Clear every persisted preference. Sessions, recordings,
-                  // voice memos and downloaded map tiles live outside of
-                  // SharedPreferences and are intentionally untouched.
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.clear();
-                  messenger.showSnackBar(
-                    SnackBar(content: Text(l10n.settingsResetAllDone)),
-                  );
-                  // On Android we close the app so the next launch boots
-                  // with the freshly-reset defaults applied to every
-                  // provider. Other platforms leave the app running and
-                  // rely on the user to relaunch manually.
-                  await Future<void>.delayed(const Duration(milliseconds: 800));
-                  await SystemNavigator.pop();
-                },
-                child: Text(l10n.confirm),
-              ),
-            ],
-          ),
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                Navigator.of(dialogContext).pop();
+                // Clear every persisted preference. Sessions, recordings,
+                // voice memos and downloaded map tiles live outside of
+                // SharedPreferences and are intentionally untouched.
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
+                messenger.showSnackBar(
+                  SnackBar(content: Text(l10n.settingsResetAllDone)),
+                );
+                // On Android we close the app so the next launch boots
+                // with the freshly-reset defaults applied to every
+                // provider. Other platforms leave the app running and
+                // rely on the user to relaunch manually.
+                await Future<void>.delayed(const Duration(milliseconds: 800));
+                await SystemNavigator.pop();
+              },
+              child: Text(l10n.confirm),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  void _showClearDataDialog(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations l10n,
-  ) {
+  void _showClearDataDialog(BuildContext context, AppLocalizations l10n) {
     showDialog<void>(
       context: context,
       builder: (context) {
         final controller = TextEditingController();
+        var isClearing = false;
         return StatefulBuilder(
           builder: (context, setState) {
+            final theme = Theme.of(context);
             final typed = controller.text.trim().toUpperCase() == 'DELETE';
             return AlertDialog(
               title: Text(l10n.settingsClearDataConfirmTitle),
@@ -801,6 +817,7 @@ class SettingsScreen extends ConsumerWidget {
                   TextField(
                     controller: controller,
                     onChanged: (_) => setState(() {}),
+                    enabled: !isClearing,
                     decoration: InputDecoration(
                       labelText: l10n.settingsClearDataTypeConfirm,
                       border: const OutlineInputBorder(),
@@ -810,22 +827,51 @@ class SettingsScreen extends ConsumerWidget {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed:
+                      isClearing ? null : () => Navigator.of(context).pop(),
                   child: Text(l10n.cancel),
                 ),
-                TextButton(
+                FilledButton.tonal(
                   onPressed:
-                      typed
-                          ? () {
-                            // TODO: Clear session database and recordings
-                            Navigator.of(context).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(l10n.settingsDataCleared)),
-                            );
+                      typed && !isClearing
+                          ? () async {
+                            final navigator = Navigator.of(context);
+                            final messenger = ScaffoldMessenger.of(context);
+                            setState(() => isClearing = true);
+                            try {
+                              await const AppDataClearService().clearAllData();
+                              navigator.pop();
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.settingsDataCleared),
+                                ),
+                              );
+                              await Future<void>.delayed(
+                                const Duration(milliseconds: 800),
+                              );
+                              await SystemNavigator.pop();
+                            } catch (_) {
+                              if (!context.mounted) return;
+                              setState(() => isClearing = false);
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.settingsDataClearFailed),
+                                ),
+                              );
+                            }
                           }
                           : null,
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  child: Text(l10n.confirm),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: theme.colorScheme.errorContainer,
+                    foregroundColor: theme.colorScheme.onErrorContainer,
+                  ),
+                  child:
+                      isClearing
+                          ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : Text(l10n.confirm),
                 ),
               ],
             );
@@ -911,7 +957,7 @@ class _HelpIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return IconButton(
-      icon: const Icon(Icons.help_outline, size: 18),
+      icon: const Icon(AppIcons.helpOutline, size: 18),
       visualDensity: VisualDensity.compact,
       tooltip: l10n.settingsHelpTooltip,
       padding: EdgeInsets.zero,
@@ -1272,7 +1318,7 @@ class _MicInputTile extends ConsumerWidget {
             ),
           ),
       error:
-          (_, __) => ListTile(
+          (a, b) => ListTile(
             title: Text(l10n.settingsMicrophone),
             trailing: Text(l10n.statusError),
           ),
@@ -1442,7 +1488,7 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final loc = ref.watch(currentLocationProvider).valueOrNull;
+    final loc = ref.watch(currentLocationProvider).value;
     final subtitle =
         _refreshing
             ? l10n.settingsGpsRefreshing
@@ -1450,7 +1496,7 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
             ? l10n.settingsGpsRefreshSubtitle
             : '${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)}';
     return ListTile(
-      leading: const Icon(Icons.my_location),
+      leading: const Icon(AppIcons.myLocation),
       title: Text(l10n.settingsGpsRefresh),
       subtitle: Text(subtitle),
       trailing:
@@ -1460,7 +1506,7 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
                 height: 24,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-              : const Icon(Icons.refresh),
+              : const Icon(AppIcons.refresh),
       onTap: _refreshing ? null : _refresh,
     );
   }
