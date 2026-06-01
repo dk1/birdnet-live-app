@@ -394,6 +394,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           detectionFilter: _detectionFilter,
                           locationAvailable: locationAsync.value != null,
                           onRefresh: _refresh,
+                          isEmbedded: widget.isEmbedded,
                         )
                         : _SearchResults(
                           query: _query,
@@ -402,6 +403,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           detectionFilter: _detectionFilter,
                           localSpecies: localSpecies,
                           onRefresh: _refresh,
+                          isEmbedded: widget.isEmbedded,
                         ),
               ),
             ],
@@ -534,6 +536,7 @@ class _GeoList extends ConsumerWidget {
     required this.detectionFilter,
     required this.locationAvailable,
     required this.onRefresh,
+    this.isEmbedded = false,
   });
 
   final List<ExploreSpecies> species;
@@ -542,6 +545,7 @@ class _GeoList extends ConsumerWidget {
   final _DetectionFilter detectionFilter;
   final bool locationAvailable;
   final VoidCallback onRefresh;
+  final bool isEmbedded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -599,8 +603,10 @@ class _GeoList extends ConsumerWidget {
     const gap = 6.0;
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(child: _LocationHeader(onRefresh: onRefresh)),
-        const SliverToBoxAdapter(child: Divider(height: 1)),
+        if (!isEmbedded) ...[
+          SliverToBoxAdapter(child: _LocationHeader(onRefresh: onRefresh)),
+          const SliverToBoxAdapter(child: Divider(height: 1)),
+        ],
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           sliver: SliverFixedExtentList(
@@ -652,6 +658,7 @@ class _SearchResults extends ConsumerWidget {
     required this.detectionFilter,
     required this.localSpecies,
     required this.onRefresh,
+    this.isEmbedded = false,
   });
 
   final String query;
@@ -660,6 +667,7 @@ class _SearchResults extends ConsumerWidget {
   final _DetectionFilter detectionFilter;
   final List<ExploreSpecies> localSpecies;
   final VoidCallback onRefresh;
+  final bool isEmbedded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -779,24 +787,26 @@ class _SearchResults extends ConsumerWidget {
 
     return ListView.separated(
       padding: EdgeInsets.zero,
-      itemCount: items.length + 2,
+      itemCount: items.length + (isEmbedded ? 0 : 2),
       addAutomaticKeepAlives: false,
       addSemanticIndexes: false,
       separatorBuilder:
-          (context, index) => switch (index) {
+          (context, index) => switch (isEmbedded ? index + 2 : index) {
             0 => const SizedBox.shrink(),
             1 => const SizedBox(height: 8),
             _ => const SizedBox(height: 6),
           },
       itemBuilder: (context, index) {
-        if (index == 0) {
-          return _LocationHeader(onRefresh: onRefresh);
-        }
-        if (index == 1) {
-          return const Divider(height: 1);
+        if (!isEmbedded) {
+          if (index == 0) {
+            return _LocationHeader(onRefresh: onRefresh);
+          }
+          if (index == 1) {
+            return const Divider(height: 1);
+          }
         }
 
-        final itemIndex = index - 2;
+        final itemIndex = isEmbedded ? index : index - 2;
         final entry = items[itemIndex];
         Widget child;
         if (entry.isHeader) {
