@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Separated opening species information from expanding detections in Session Review. A normal click or tap on the species row now consistently opens the species information overlay, matching live sessions.
 - Replaced the species card's compact chevron icon with a generous, accessible touch target spanning the entire right side of the card, improving discoverability and ease of use for expanding or collapsing detections on mobile devices.
+- Redesigned on-map review clip playback panel to remove bulky slider bars, duration readouts, and close buttons in favor of an interactive, seekable spectrogram.
+- Added lightweight tick marks with numbered seconds directly beneath the map reviewer spectrogram to indicate the exact length of the playback clip.
 
 ## [0.15.4] - 2026-05-24
 
