@@ -34,6 +34,7 @@ import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_providers.dart';
 import '../audio/ring_buffer.dart';
 import '../explore/explore_providers.dart';
+import '../explore/explore_screen.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
@@ -98,7 +99,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     WidgetsBinding.instance.addObserver(this);
 
     _surveyController = ref.read(surveyControllerProvider);
@@ -830,6 +831,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
           icon: Icon(AppIcons.summaryChart, size: 18),
           text: l10n.surveyTabSummary,
         ),
+        Tab(
+          icon: const Icon(AppIcons.search, size: 18),
+          text: l10n.exploreTitle,
+        ),
       ],
       labelPadding: const EdgeInsets.symmetric(horizontal: 8),
       indicatorWeight: 2,
@@ -862,6 +867,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         ),
         _SurveySpectrogram(ringBuffer: ringBuffer, isActive: isActive),
         _SurveySummaryTab(session: session),
+        const ExploreScreen(isEmbedded: true),
       ],
     );
     final statsBar = SurveyStatsBar(
