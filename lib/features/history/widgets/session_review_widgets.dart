@@ -1082,6 +1082,7 @@ class _SpeciesTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
     final showSciNames = ref.watch(showSciNamesProvider);
@@ -1138,8 +1139,7 @@ class _SpeciesTile extends ConsumerWidget {
             ),
             onDismissed: (_) => onDeleteSpecies(),
             child: InkWell(
-              onTap: onToggleExpand,
-              onLongPress: onSpeciesInfo,
+              onTap: onSpeciesInfo,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -1210,29 +1210,25 @@ class _SpeciesTile extends ConsumerWidget {
                       ),
                     const SizedBox(width: 8),
 
-                    // Species thumbnail. Tappable shortcut to the species
-                    // info overlay; uses the bundled image's 3:2 ratio so
-                    // BoxFit.cover never has to crop the photo.
-                    InkWell(
-                      onTap: onSpeciesInfo,
-                      borderRadius: BorderRadius.circular(6),
-                      child: SizedBox(
-                        width: 48,
-                        height: 32,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Image.asset(
-                            taxonomyAsync.value?.assetImagePath(
-                                  group.scientificName,
-                                ) ??
+                    // Species thumbnail. Uses the bundled image's 3:2 ratio
+                    // so BoxFit.cover never has to crop the photo. Shortcut
+                    // is now handled by tapping the entire row.
+                    SizedBox(
+                      width: 48,
+                      height: 32,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.asset(
+                          taxonomyAsync.value?.assetImagePath(
+                                group.scientificName,
+                              ) ??
+                              'assets/images/dummy_species.png',
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (a, b, c) => Image.asset(
                                 'assets/images/dummy_species.png',
-                            fit: BoxFit.cover,
-                            errorBuilder:
-                                (a, b, c) => Image.asset(
-                                  'assets/images/dummy_species.png',
-                                  fit: BoxFit.cover,
-                                ),
-                          ),
+                                fit: BoxFit.cover,
+                              ),
                         ),
                       ),
                     ),
@@ -1341,14 +1337,32 @@ class _SpeciesTile extends ConsumerWidget {
                       ),
                     ),
 
-                    // Expand chevron.
-                    AnimatedRotation(
-                      turns: isExpanded ? 0.5 : 0.0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        AppIcons.expandMore,
-                        size: 24,
-                        color: theme.colorScheme.onSurface.withAlpha(120),
+                    // Expand chevron interactive area. Covering the entire
+                    // right portion of the card with a generous tap target.
+                    Tooltip(
+                      message:
+                          isExpanded
+                              ? l10n.sessionLibraryCollapse
+                              : l10n.sessionLibraryExpand,
+                      child: InkWell(
+                        onTap: onToggleExpand,
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            minWidth: 56,
+                            minHeight: 48,
+                          ),
+                          alignment: Alignment.center,
+                          child: AnimatedRotation(
+                            turns: isExpanded ? 0.5 : 0.0,
+                            duration: const Duration(milliseconds: 200),
+                            child: Icon(
+                              AppIcons.expandMore,
+                              size: 24,
+                              color: theme.colorScheme.onSurface.withAlpha(120),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.5] - 2026-06-01
+
+### Changed
+
+- Separated opening species information from expanding detections in Session Review. A normal click or tap on the species row now consistently opens the species information overlay, matching live sessions.
+- Replaced the species card's compact chevron icon with a generous, accessible touch target spanning the entire right side of the card, improving discoverability and ease of use for expanding or collapsing detections on mobile devices.
+
 ## [0.15.4] - 2026-05-24
 
 ### Changed
