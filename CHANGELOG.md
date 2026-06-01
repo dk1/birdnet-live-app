@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Embedded the Explore screen tool inside the active Survey dashboard as a fourth tab, allowing real-time species discovery in the field.
 
+### Changed
+
+- Expanded both the Explore and Summary tabs to utilize full vertical screenspace when focused in active surveys, hiding the running stats and recent detections lists.
+- Disabled horizontal swiping on the active survey dashboard's TabBarView to prevent interaction conflicts with the nested map, spectrogram, and list views.
+- Reordered external links on the About screen to place documentation, privacy, and terms higher, keeping developer resources, the BirdNET website, and donation links below them.
+
 ## [0.15.6] - 2026-06-01
 
 ### Added
