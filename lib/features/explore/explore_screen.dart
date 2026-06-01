@@ -75,10 +75,7 @@ enum _DetectionFilter { all, detected, undetected }
 /// The Explore screen — browse species expected in your area, with optional
 /// search across the full species list.
 class ExploreScreen extends ConsumerStatefulWidget {
-  const ExploreScreen({
-    super.key,
-    this.isEmbedded = false,
-  });
+  const ExploreScreen({super.key, this.isEmbedded = false});
 
   /// Whether the screen is locked inside another view (e.g., active Survey).
   final bool isEmbedded;
@@ -277,9 +274,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return IconButton(
       icon: Icon(_searchVisible ? AppIcons.close : AppIcons.search),
       tooltip:
-          _searchVisible
-              ? l10n.tooltipClearSearch
-              : l10n.exploreSearchTooltip,
+          _searchVisible ? l10n.tooltipClearSearch : l10n.exploreSearchTooltip,
       onPressed: _toggleSearch,
     );
   }
@@ -1029,7 +1024,10 @@ class _ExploreHelpSheet extends StatelessWidget {
           icon: AppIcons.helpOutlineRounded,
           body: l10n.exploreHelpLocation,
         ),
-        AppHelpSection(icon: AppIcons.searchRounded, body: l10n.exploreHelpCards),
+        AppHelpSection(
+          icon: AppIcons.searchRounded,
+          body: l10n.exploreHelpCards,
+        ),
       ],
       footer: _ExploreHelpLink(label: l10n.exploreHelpLearnMore),
     );

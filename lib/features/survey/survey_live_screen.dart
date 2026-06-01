@@ -100,6 +100,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
     WidgetsBinding.instance.addObserver(this);
 
     _surveyController = ref.read(surveyControllerProvider);
@@ -819,10 +822,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final tabBar = TabBar(
       controller: _tabController,
       tabs: [
-        Tab(
-          icon: const Icon(AppIcons.map, size: 18),
-          text: l10n.surveyTabMap,
-        ),
+        Tab(icon: const Icon(AppIcons.map, size: 18), text: l10n.surveyTabMap),
         Tab(
           icon: const Icon(AppIcons.graphicEq, size: 18),
           text: l10n.surveyTabSpectrogram,
@@ -913,6 +913,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       ),
     );
 
+    final showFullExplore = _tabController.index == 3;
+
     if (isLandscape) {
       return Column(
         children: [
@@ -924,11 +926,15 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                 Expanded(
                   flex: 1,
                   child: Column(
-                    children: [tabBar, Expanded(child: tabContent), statsBar],
+                    children: [
+                      tabBar,
+                      Expanded(child: tabContent),
+                      if (!showFullExplore) statsBar,
+                    ],
                   ),
                 ),
                 // Right: detection list
-                Expanded(flex: 1, child: detectionList),
+                if (!showFullExplore) Expanded(flex: 1, child: detectionList),
               ],
             ),
           ),
@@ -942,9 +948,14 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       children: [
         statusBar,
         tabBar,
-        Expanded(flex: 2, child: tabContent),
-        statsBar,
-        Expanded(flex: 3, child: detectionList),
+        Expanded(
+          flex: showFullExplore ? 1 : 2,
+          child: tabContent,
+        ),
+        if (!showFullExplore) ...[
+          statsBar,
+          Expanded(flex: 3, child: detectionList),
+        ],
         const SizedBox(height: 16),
       ],
     );
