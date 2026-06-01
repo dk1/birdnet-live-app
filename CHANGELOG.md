@@ -5,12 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.6] - 2026-06-01
+
+### Added
+
+- Added a 10-second timeout gate to all temporal score pooling modes (including Log-Mean-Exp) to discard context older than 10 seconds.
+
+### Changed
+
+- Aligned offline file analysis to adhere to user-configured temporal pooling settings and use window-based timestamps.
+
 ## [0.15.5] - 2026-06-01
 
 ### Changed
 
 - Separated opening species information from expanding detections in Session Review. A normal click or tap on the species row now consistently opens the species information overlay, matching live sessions.
 - Replaced the species card's compact chevron icon with a generous, accessible touch target spanning the entire right side of the card, improving discoverability and ease of use for expanding or collapsing detections on mobile devices.
+- Redesigned on-map review clip playback panel to remove bulky slider bars, duration readouts, and close buttons in favor of an interactive, seekable spectrogram.
+- Added lightweight tick marks with numbered seconds directly beneath the map reviewer spectrogram to indicate the exact length of the playback clip.
 
 ## [0.15.4] - 2026-05-24
 
