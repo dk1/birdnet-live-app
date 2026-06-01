@@ -842,6 +842,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     );
     final tabContent = TabBarView(
       controller: _tabController,
+      physics: const NeverScrollableScrollPhysics(),
       children: [
         SurveyMapWidget(
           gpsTrack: controller.gpsTracker?.track ?? [],
