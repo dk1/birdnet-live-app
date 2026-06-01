@@ -995,6 +995,7 @@ class _PlayPauseButton extends StatelessWidget {
 
 class _SpeciesTile extends ConsumerWidget {
   const _SpeciesTile({
+    super.key,
     required this.group,
     required this.sessionStart,
     required this.isExpanded,

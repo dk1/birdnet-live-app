@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Disabled horizontal swiping on the active survey dashboard's TabBarView to prevent interaction conflicts with the nested map, spectrogram, and list views.
 - Reordered external links on the About screen to place documentation, privacy, and terms higher, keeping developer resources, the BirdNET website, and donation links below them.
 
+### Fixed
+
+- Resolved an issue on devices with active background accessibility services (such as password managers, live caption, or custom search gesture services on Pixel devices) where undo SnackBars containing actions could remain on screen indefinitely, by adding a timer-backed safety dismiss fallback on all interactive SnackBar overlays.
+
 ## [0.15.6] - 2026-06-01
 
 ### Added

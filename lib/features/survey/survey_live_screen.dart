@@ -159,9 +159,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
+    const lifetime = Duration(seconds: 4);
+    final snackBarController = messenger.showSnackBar(
       SnackBar(
         content: Text(l10n.sessionDetectionRemoved),
+        duration: lifetime,
         action: SnackBarAction(
           label: l10n.sessionUndo,
           onPressed: () {
@@ -174,6 +176,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         ),
       ),
     );
+    Future.delayed(lifetime, () {
+      try {
+        snackBarController.close();
+      } catch (_) {}
+    });
   }
 
   /// Open the species picker and, on confirm, log a manual observation.
