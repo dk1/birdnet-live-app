@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.7] - 2026-06-01
+
+### Added
+
+- Embedded the Explore screen tool inside the active Survey dashboard as a fourth tab, allowing real-time species discovery in the field.
+
+### Changed
+
+- Expanded both the Explore and Summary tabs to utilize full vertical screenspace when focused in active surveys, hiding the running stats and recent detections lists.
+- Disabled horizontal swiping on the active survey dashboard's TabBarView to prevent interaction conflicts with the nested map, spectrogram, and list views.
+- Reordered external links on the About screen to place documentation, privacy, and terms higher, keeping developer resources, the BirdNET website, and donation links below them.
+
+### Fixed
+
+- Resolved an issue on devices with active background accessibility services (such as password managers, live caption, or custom search gesture services on Pixel devices) where undo SnackBars containing actions could remain on screen indefinitely, by adding a timer-backed safety dismiss fallback on all interactive SnackBar overlays.
+
+## [0.15.6] - 2026-06-01
+
+### Added
+
+- Added a 10-second timeout gate to all temporal score pooling modes (including Log-Mean-Exp) to discard context older than 10 seconds.
+
+### Changed
+
+- Aligned offline file analysis to adhere to user-configured temporal pooling settings and use window-based timestamps.
+
+## [0.15.5] - 2026-06-01
+
+### Changed
+
+- Separated opening species information from expanding detections in Session Review. A normal click or tap on the species row now consistently opens the species information overlay, matching live sessions.
+- Replaced the species card's compact chevron icon with a generous, accessible touch target spanning the entire right side of the card, improving discoverability and ease of use for expanding or collapsing detections on mobile devices.
+- Redesigned on-map review clip playback panel to remove bulky slider bars, duration readouts, and close buttons in favor of an interactive, seekable spectrogram.
+- Added lightweight tick marks with numbered seconds directly beneath the map reviewer spectrogram to indicate the exact length of the playback clip.
+
 ## [0.15.4] - 2026-05-24
 
 ### Changed

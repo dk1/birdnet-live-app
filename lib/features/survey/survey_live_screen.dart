@@ -34,6 +34,7 @@ import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_providers.dart';
 import '../audio/ring_buffer.dart';
 import '../explore/explore_providers.dart';
+import '../explore/explore_screen.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
@@ -98,7 +99,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
     WidgetsBinding.instance.addObserver(this);
 
     _surveyController = ref.read(surveyControllerProvider);
@@ -155,9 +159,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
+    const lifetime = Duration(seconds: 4);
+    final snackBarController = messenger.showSnackBar(
       SnackBar(
         content: Text(l10n.sessionDetectionRemoved),
+        duration: lifetime,
         action: SnackBarAction(
           label: l10n.sessionUndo,
           onPressed: () {
@@ -170,6 +176,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         ),
       ),
     );
+    Future.delayed(lifetime, () {
+      try {
+        snackBarController.close();
+      } catch (_) {}
+    });
   }
 
   /// Open the species picker and, on confirm, log a manual observation.
@@ -818,10 +829,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final tabBar = TabBar(
       controller: _tabController,
       tabs: [
-        Tab(
-          icon: const Icon(AppIcons.map, size: 18),
-          text: l10n.surveyTabMap,
-        ),
+        Tab(icon: const Icon(AppIcons.map, size: 18), text: l10n.surveyTabMap),
         Tab(
           icon: const Icon(AppIcons.graphicEq, size: 18),
           text: l10n.surveyTabSpectrogram,
@@ -830,6 +838,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
           icon: Icon(AppIcons.summaryChart, size: 18),
           text: l10n.surveyTabSummary,
         ),
+        Tab(
+          icon: const Icon(AppIcons.search, size: 18),
+          text: l10n.exploreTitle,
+        ),
       ],
       labelPadding: const EdgeInsets.symmetric(horizontal: 8),
       indicatorWeight: 2,
@@ -837,6 +849,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     );
     final tabContent = TabBarView(
       controller: _tabController,
+      physics: const NeverScrollableScrollPhysics(),
       children: [
         SurveyMapWidget(
           gpsTrack: controller.gpsTracker?.track ?? [],
@@ -862,6 +875,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         ),
         _SurveySpectrogram(ringBuffer: ringBuffer, isActive: isActive),
         _SurveySummaryTab(session: session),
+        const ExploreScreen(isEmbedded: true),
       ],
     );
     final statsBar = SurveyStatsBar(
@@ -907,6 +921,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       ),
     );
 
+    final showFullPageTab =
+        _tabController.index == 2 || _tabController.index == 3;
+
     if (isLandscape) {
       return Column(
         children: [
@@ -918,11 +935,15 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                 Expanded(
                   flex: 1,
                   child: Column(
-                    children: [tabBar, Expanded(child: tabContent), statsBar],
+                    children: [
+                      tabBar,
+                      Expanded(child: tabContent),
+                      if (!showFullPageTab) statsBar,
+                    ],
                   ),
                 ),
                 // Right: detection list
-                Expanded(flex: 1, child: detectionList),
+                if (!showFullPageTab) Expanded(flex: 1, child: detectionList),
               ],
             ),
           ),
@@ -936,9 +957,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       children: [
         statusBar,
         tabBar,
-        Expanded(flex: 2, child: tabContent),
-        statsBar,
-        Expanded(flex: 3, child: detectionList),
+        Expanded(flex: showFullPageTab ? 1 : 2, child: tabContent),
+        if (!showFullPageTab) ...[
+          statsBar,
+          Expanded(flex: 3, child: detectionList),
+        ],
         const SizedBox(height: 16),
       ],
     );
