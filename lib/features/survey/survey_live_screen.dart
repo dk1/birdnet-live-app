@@ -914,7 +914,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       ),
     );
 
-    final showFullExplore = _tabController.index == 3;
+    final showFullPageTab =
+        _tabController.index == 2 || _tabController.index == 3;
 
     if (isLandscape) {
       return Column(
@@ -930,12 +931,12 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                     children: [
                       tabBar,
                       Expanded(child: tabContent),
-                      if (!showFullExplore) statsBar,
+                      if (!showFullPageTab) statsBar,
                     ],
                   ),
                 ),
                 // Right: detection list
-                if (!showFullExplore) Expanded(flex: 1, child: detectionList),
+                if (!showFullPageTab) Expanded(flex: 1, child: detectionList),
               ],
             ),
           ),
@@ -949,11 +950,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       children: [
         statusBar,
         tabBar,
-        Expanded(
-          flex: showFullExplore ? 1 : 2,
-          child: tabContent,
-        ),
-        if (!showFullExplore) ...[
+        Expanded(flex: showFullPageTab ? 1 : 2, child: tabContent),
+        if (!showFullPageTab) ...[
           statsBar,
           Expanded(flex: 3, child: detectionList),
         ],
