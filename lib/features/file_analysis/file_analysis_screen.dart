@@ -304,6 +304,9 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       }
     }
 
+    final poolingMode = ref.read(scorePoolingProvider);
+    final maxPoolWindows = ref.read(scorePoolingWindowsProvider);
+
     final session = await controller.analyze(
       filePath: _filePath!,
       windowDuration: _windowDuration,
@@ -311,6 +314,8 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       sensitivity: _sensitivity,
       confidenceThreshold: _confidenceThreshold,
       speciesFilterMode: _speciesFilterMode,
+      poolingMode: poolingMode,
+      maxPoolWindows: maxPoolWindows,
       geoScores: geoScores,
       geoThreshold: ref.read(geoThresholdProvider),
       geoModelSpeciesNames: geoSpeciesNames,

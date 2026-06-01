@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.6] - 2026-06-01
+
+### Added
+
+- Added a 10-second timeout gate to all temporal score pooling modes (including Log-Mean-Exp) to discard context older than 10 seconds.
+
+### Changed
+
+- Aligned offline file analysis to adhere to user-configured temporal pooling settings and use window-based timestamps.
+
 ## [0.15.5] - 2026-06-01
 
 ### Changed
