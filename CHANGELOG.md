@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] - 2026-06-02
+
+### Added
+
+- Introduced comprehensive iOS platform support configurations and configurations.
+- Integrated standard Darwin-specific local notifications and alert configurations into active survey sequences.
+- Added adaptive fallback to standard PCM16 WAV (.wav) voice memo recording formats specifically on iOS, overcoming Apple CoreAudio AAC compression collisions while maintaining full file-sharing and packaging compatibility.
+
+### Changed
+
+- Reconstructed custom on-device custom FLAC audio encoder stream headers to explicitly restrict min and max block sizes to match nominal values exactly, preventing freezing/stalling bugs with strict decoders like Apple CoreAudio and external soundscape systems (e.g. Raven Pro).
+- Paused active audio playbacks dynamically when launching recording panels to prevent speaker acoustic feedback loops.
+- Avoided cross-thread UI hangs on async dialogue overlays by reinforcing BuildContext safety gates.
+
 ## [0.15.9] - 2026-06-02
 
 ### Added
