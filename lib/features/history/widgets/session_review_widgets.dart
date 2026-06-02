@@ -69,21 +69,23 @@ class _SpeciesGroup {
 // Summary Header
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _SummaryHeader extends StatelessWidget {
+class _SummaryHeader extends ConsumerWidget {
   const _SummaryHeader({
     required this.session,
     required this.detectionCount,
     this.locationName,
     this.onShowMap,
+    this.onFetchWeather,
   });
 
   final LiveSession session;
   final int detectionCount;
   final String? locationName;
   final VoidCallback? onShowMap;
+  final Future<void> Function()? onFetchWeather;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final duration = session.duration;
@@ -116,6 +118,39 @@ class _SummaryHeader extends StatelessWidget {
               if (session.weather != null) ...[
                 const SizedBox(width: 8),
                 _WeatherRow(weather: session.weather!),
+              ] else if (session.latitude != null &&
+                  session.longitude != null &&
+                  !ref.watch(privacyAllowWeatherProvider)) ...[
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: () async {
+                    await ref.read(privacyAllowWeatherProvider.notifier).set(true);
+                    onFetchWeather?.call();
+                  },
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          AppIcons.cloudOff,
+                          size: 18,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          l10n.sessionWeatherTapToLoad,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.primary,
+                            decoration: TextDecoration.underline,
+                            decorationColor: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ],
           ),

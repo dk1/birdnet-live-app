@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "cs",
   "appTitle": "BirdNET Live",
   "liveMode": "Live",
@@ -754,6 +754,7 @@
   "announcementsSampleSpecies2": "Sojka",
   "announcementsSampleSpecies3": "Sýkora koňadra",
   "siteContextOfflineNote": "Offline — název místa a počasí můžete doplnit později v přehledu relace.",
+  "sessionWeatherTapToLoad": "Načíst",
   "settingsOfflineMapDownload": "Download offline maps",
   "settingsOfflineMapDownloadSubtitle": "Pre-cache map tiles around your current location",
   "settingsOfflineMapRadiusLabel": "Radius around current location",

@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "en",
   "appTitle": "BirdNET Live",
   "@appTitle": {
@@ -2875,6 +2875,10 @@
   "siteContextOfflineNote": "Offline — you can add place name and weather later from the session review.",
   "@siteContextOfflineNote": {
     "description": "Note shown on the site-context card when reverse-geocoding or weather lookup failed (typically no internet). Tells the user the data can be filled in later from the session review screen, which retries both services on open."
+  },
+  "sessionWeatherTapToLoad": "Tap to load",
+  "@sessionWeatherTapToLoad": {
+    "description": "Brief label next to the cloud-off icon suggesting the user tap to authorize and fetch weather data"
   },
   "settingsMicrophone": "Microphone",
   "@settingsMicrophone": {

@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "pt",
   "appTitle": "BirdNET Live",
   "liveMode": "Live",
@@ -754,6 +754,7 @@
   "announcementsSampleSpecies2": "Gaio",
   "announcementsSampleSpecies3": "Chapim-real",
   "siteContextOfflineNote": "Sem conexão — você pode adicionar o nome do local e o clima mais tarde na revisão da sessão.",
+  "sessionWeatherTapToLoad": "Carregar",
   "settingsOfflineMapDownload": "Transferir mapas offline",
   "settingsOfflineMapDownloadSubtitle": "Pré-armazena os mosaicos do mapa à volta da localização atual",
   "settingsOfflineMapRadiusLabel": "Raio em torno da localização atual",

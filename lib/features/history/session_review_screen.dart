@@ -3067,6 +3067,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   ),
                 )
                 : null,
+        onFetchWeather: _resolveWeather,
       ),
       if (widget.session.type == SessionType.survey &&
           (widget.session.gpsTrack.isNotEmpty ||
