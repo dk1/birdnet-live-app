@@ -38,7 +38,6 @@ import 'package:latlong2/latlong.dart';
 
 import '../../core/services/reverse_geocoding_service.dart';
 import '../../shared/providers/settings_providers.dart';
-import '../../shared/services/weather_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../../shared/widgets/map_picker_screen.dart';
@@ -304,6 +303,9 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       }
     }
 
+    final poolingMode = ref.read(scorePoolingProvider);
+    final maxPoolWindows = ref.read(scorePoolingWindowsProvider);
+
     final session = await controller.analyze(
       filePath: _filePath!,
       windowDuration: _windowDuration,
@@ -311,6 +313,8 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       sensitivity: _sensitivity,
       confidenceThreshold: _confidenceThreshold,
       speciesFilterMode: _speciesFilterMode,
+      poolingMode: poolingMode,
+      maxPoolWindows: maxPoolWindows,
       geoScores: geoScores,
       geoThreshold: ref.read(geoThresholdProvider),
       geoModelSpeciesNames: geoSpeciesNames,
@@ -324,16 +328,6 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       // Save session and navigate to review.
       final repo = ref.read(sessionRepositoryProvider);
       session.sessionNumber = await repo.nextSessionNumber(session.type);
-      if (session.latitude != null && session.longitude != null) {
-        try {
-          final svc = ref.read(weatherServiceProvider);
-          session.weather = await svc.fetch(
-            latitude: session.latitude!,
-            longitude: session.longitude!,
-            observedAt: session.endTime ?? DateTime.now(),
-          );
-        } catch (_) {}
-      }
       await repo.save(session);
       ref.invalidate(sessionListProvider);
 

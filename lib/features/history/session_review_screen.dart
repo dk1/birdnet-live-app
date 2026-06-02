@@ -2222,18 +2222,16 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _showUndoSnackBar(l10n.sessionSpeciesRemoved);
   }
 
-  /// Shows an undo SnackBar using Flutter's built-in accessibility behavior.
-  ///
-  /// When `MediaQuery.accessibleNavigation` is true and an action is
-  /// present, Flutter keeps the SnackBar visible instead of auto-dismissing
-  /// it. That gives assistive-technology users enough time to discover and
-  /// activate the undo action.
+  /// Shows an undo SnackBar using Flutter's built-in accessibility behavior,
+  /// but with an explicit safety timeout to prevent snackbars from staying
+  /// open indefinitely on devices with active accessibility services (such as
+  /// Android password managers or custom gestures on Pixel devices).
   void _showUndoSnackBar(String text) {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
-    const lifetime = Duration(seconds: 6);
-    messenger.showSnackBar(
+    const lifetime = Duration(seconds: 5);
+    final controller = messenger.showSnackBar(
       SnackBar(
         content: Text(text),
         duration: lifetime,
@@ -2245,6 +2243,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         ),
       ),
     );
+    Future.delayed(lifetime, () {
+      try {
+        controller.close();
+      } catch (_) {}
+    });
   }
 
   void _seekToCluster(_DetectionCluster cluster) {
@@ -3088,6 +3091,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   ),
                 )
                 : null,
+        onFetchWeather: _resolveWeather,
       ),
       if (widget.session.type == SessionType.survey &&
           (widget.session.gpsTrack.isNotEmpty ||
@@ -3425,6 +3429,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               (_activeClipCluster != null &&
                   group.clusters.contains(_activeClipCluster));
           return _SpeciesTile(
+            key: ValueKey('species-tile-${group.scientificName}'),
             group: group,
             sessionStart: widget.session.startTime,
             isExpanded: isExpanded,

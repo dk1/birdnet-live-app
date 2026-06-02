@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "fr",
   "appTitle": "BirdNET Live",
   "liveMode": "En direct",
@@ -176,6 +176,12 @@
   "sessionLibraryRowOpen": "Ouvrir",
   "sessionLibraryRowShare": "Partager",
   "sessionLibraryRowDelete": "Supprimer",
+  "sessionLibrarySelectedCount": "{count, plural, =1{1 sélectionné} other{{count} sélectionnés}}",
+  "sessionLibrarySelectAll": "Tout sélectionner",
+  "sessionLibraryDeselectAll": "Désélectionner tout",
+  "sessionLibraryDeleteSelectedTitle": "Supprimer les sessions sélectionnées ?",
+  "sessionLibraryDeleteSelectedMessage": "Supprimer définitivement {count} sessions sélectionnées et leurs enregistrements ?",
+  "sessionLibraryPreparingExport": "Préparation de l'exportation…",
   "sessionDeleteDetectionTitle": "Supprimer la détection ?",
   "sessionDeleteDetectionMessage": "Supprimer cette détection de la session ? Enregistrez pour appliquer.",
   "sessionRemove": "Supprimer",
@@ -748,6 +754,7 @@
   "announcementsSampleSpecies2": "Geai des chênes",
   "announcementsSampleSpecies3": "Mésange charbonnière",
   "siteContextOfflineNote": "Hors ligne — vous pourrez ajouter le nom du lieu et la météo plus tard depuis la revue de session.",
+  "sessionWeatherTapToLoad": "Charger",
   "settingsOfflineMapDownload": "Télécharger les cartes hors-ligne",
   "settingsOfflineMapDownloadSubtitle": "Pré-charge les tuiles autour de la position actuelle",
   "settingsOfflineMapRadiusLabel": "Rayon autour de la position actuelle",

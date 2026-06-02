@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "es",
   "appTitle": "BirdNET Live",
   "liveMode": "Live",
@@ -176,6 +176,12 @@
   "sessionLibraryRowOpen": "Abrir",
   "sessionLibraryRowShare": "Compartir",
   "sessionLibraryRowDelete": "Eliminar",
+  "sessionLibrarySelectedCount": "{count, plural, =1{1 seleccionado} other{{count} seleccionados}}",
+  "sessionLibrarySelectAll": "Seleccionar todo",
+  "sessionLibraryDeselectAll": "Deselectionar todo",
+  "sessionLibraryDeleteSelectedTitle": "¿Eliminar sesiones seleccionadas?",
+  "sessionLibraryDeleteSelectedMessage": "¿Eliminar permanentemente {count} sesiones seleccionadas y sus grabaciones?",
+  "sessionLibraryPreparingExport": "Preparando exportación…",
   "sessionDeleteDetectionTitle": "¿Eliminar detección?",
   "sessionDeleteDetectionMessage": "¿Eliminar esta detección de la sesión? Guarde para aplicar.",
   "sessionRemove": "Eliminar",
@@ -748,6 +754,7 @@
   "announcementsSampleSpecies2": "Arrendajo",
   "announcementsSampleSpecies3": "Carbonero común",
   "siteContextOfflineNote": "Sin conexión: puedes añadir el nombre del lugar y el clima más tarde desde la revisión de la sesión.",
+  "sessionWeatherTapToLoad": "Cargar",
   "settingsOfflineMapDownload": "Descargar mapas sin conexión",
   "settingsOfflineMapDownloadSubtitle": "Precarga las teselas del mapa alrededor de tu ubicación actual",
   "settingsOfflineMapRadiusLabel": "Radio alrededor de la ubicación actual",

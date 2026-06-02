@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "cs",
   "appTitle": "BirdNET Live",
   "liveMode": "Live",
@@ -176,6 +176,12 @@
   "sessionLibraryRowOpen": "Otevřít",
   "sessionLibraryRowShare": "Sdílet",
   "sessionLibraryRowDelete": "Smazat",
+  "sessionLibrarySelectedCount": "{count, plural, =1{1 vybráno} other{{count} vybráno}}",
+  "sessionLibrarySelectAll": "Vybrat vše",
+  "sessionLibraryDeselectAll": "Zrušit výběr",
+  "sessionLibraryDeleteSelectedTitle": "Smazat vybrané relace?",
+  "sessionLibraryDeleteSelectedMessage": "Trvale smazat {count} vybraných relací a jejich nahrávek?",
+  "sessionLibraryPreparingExport": "Příprava exportu…",
   "sessionDeleteDetectionTitle": "Odstranit detekci?",
   "sessionDeleteDetectionMessage": "Odstranit tuto detekci z relace? Uložte pro potvrzení.",
   "sessionRemove": "Odstranit",
@@ -748,6 +754,7 @@
   "announcementsSampleSpecies2": "Sojka",
   "announcementsSampleSpecies3": "Sýkora koňadra",
   "siteContextOfflineNote": "Offline — název místa a počasí můžete doplnit později v přehledu relace.",
+  "sessionWeatherTapToLoad": "Načíst",
   "settingsOfflineMapDownload": "Download offline maps",
   "settingsOfflineMapDownloadSubtitle": "Pre-cache map tiles around your current location",
   "settingsOfflineMapRadiusLabel": "Radius around current location",
