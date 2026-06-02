@@ -365,6 +365,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
     } catch (_) {
       // Best-effort: if pausing fails, still allow the memo dialog.
     }
+    if (!mounted) return;
     final result = await showVoiceMemoDialog(
       context: context,
       sessionId: session.id,

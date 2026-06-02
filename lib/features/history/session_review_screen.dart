@@ -2390,6 +2390,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final existing = isEdit ? _annotations[editingIndex] : null;
 
     await _pausePlayersForVoiceMemo();
+    if (!mounted) return;
 
     String? memoPath;
     if (isEdit) {
@@ -2480,6 +2481,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                             label: Text(l10n.detectionReplaceVoiceMemo),
                             onPressed: () async {
                               await _pausePlayersForVoiceMemo();
+                              if (!ctx.mounted) return;
                               final result = await showVoiceMemoDialog(
                                 context: ctx,
                                 sessionId: widget.session.id,
@@ -2727,6 +2729,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final l10n = AppLocalizations.of(context)!;
     final target = cluster.records.first;
     await _pausePlayersForVoiceMemo();
+    if (!mounted) return;
     final result = await showVoiceMemoDialog(
       context: context,
       sessionId: widget.session.id,
