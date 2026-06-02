@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "it",
   "appTitle": "BirdNET Live",
   "liveMode": "Live",
@@ -754,6 +754,7 @@
   "announcementsSampleSpecies2": "Ghiandaia",
   "announcementsSampleSpecies3": "Cinciallegra",
   "siteContextOfflineNote": "Offline — puoi aggiungere il nome del luogo e il meteo più tardi dalla revisione della sessione.",
+  "sessionWeatherTapToLoad": "Carica",
   "settingsOfflineMapDownload": "Scarica mappe offline",
   "settingsOfflineMapDownloadSubtitle": "Pre-carica le tile della mappa intorno alla posizione attuale",
   "settingsOfflineMapRadiusLabel": "Raggio intorno alla posizione attuale",

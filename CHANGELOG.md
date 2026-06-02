@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.9] - 2026-06-02
+
+### Added
+
+- Added manual tap-to-load weather fetching to the Session Review / Summary headers, gated on privacy preferences, and localized for all seven languages.
+
+### Changed
+
+- Optimized session list numbering with a header-only JSON stream parser that scans only the first 1024 bytes of saved files, preventing UI blocking and high memory overhead when dealing with very large recording session files.
+- Deferred weather pre-fetching away from saving/closing processes into localized, user-initiated visual action.
+- Retained startup geographic coordinates correctly during active Live and Point Count session launches.
+
 ## [0.15.8] - 2026-06-02
 
 ### Added
