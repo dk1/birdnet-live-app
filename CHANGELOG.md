@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.8] - 2026-06-02
+
+### Added
+
+- Implemented comprehensive multi-session selection, packaging, sharing, and deletion capabilities to resolve Issue #81 in the Session Library.
+- Added multi-session bulk export to aggregate, package, and compress selected sessions into a standalone ZIP archive (`BirdNET_Live_Bulk_Export_<timestamp>.zip`).
+- Added robust multi-selection state, adaptive tile checkboxes, select-all toggles, and contextual actions (share and delete bulk buttons) to the Session Library.
+- Included full multi-lingual localization for all bulk-selection messages and counts across seven supported locales.
+
+### Changed
+
+- Automatically deselect all selected sessions after sharing complete.
+
 ## [0.15.7] - 2026-06-01
 
 ### Added
