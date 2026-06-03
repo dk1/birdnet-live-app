@@ -550,7 +550,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<PlayerState>? _clipPlayerStateSubscription;
-  Duration _position = Duration.zero;
+  final ValueNotifier<Duration> _positionNotifier = ValueNotifier(Duration.zero);
+  Duration get _position => _positionNotifier.value;
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
   bool _audioAvailable = false;
@@ -731,8 +732,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         setState(() {
           _clipOffsetSec = snapshotClipOffset;
           _duration = clippedDur ?? (endDur - startDur);
-          _position = Duration.zero;
         });
+        _positionNotifier.value = Duration.zero;
         _invalidateLazySpectrogramPipeline();
       }
     } else {
@@ -743,13 +744,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         setState(() {
           _clipOffsetSec = 0.0;
           _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
-          _position = Duration.zero;
           if (_spectrogramImage != null &&
               !identical(_spectrogramImage, _fullSpectrogramImage)) {
             _spectrogramImage!.dispose();
           }
           _spectrogramImage = _fullSpectrogramImage;
         });
+        _positionNotifier.value = Duration.zero;
         // The strip's own didUpdateWidget will fire a viewport request
         // for the actual visible window once the duration/clip changes
         // propagate; just make sure any stale lazy state (pending chunk
@@ -840,8 +841,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           // Snap to the exact stop position so the playhead doesn't
           // visually overshoot the end of the cluster.
           _player.seek(stopAt);
+          _positionNotifier.value = stopAt;
+          return;
         }
-        setState(() => _position = pos);
+
+        _positionNotifier.value = pos;
       });
       _playerStateSubscription = _player.playerStateStream.listen((state) {
         if (mounted) {
@@ -932,8 +936,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       setState(() {
         _clipOffsetSec = start;
         _duration = clippedDur ?? (endDur - startDur);
-        _position = Duration.zero;
       });
+      _positionNotifier.value = Duration.zero;
     }
   }
 
@@ -1541,6 +1545,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   @override
   void dispose() {
+    _positionNotifier.dispose();
     _positionSubscription?.cancel();
     _playerStateSubscription?.cancel();
     _clipPlayerStateSubscription?.cancel();
@@ -2092,8 +2097,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       setState(() {
         _clipOffsetSec = start;
         _duration = clippedDur ?? (endDur - startDur);
-        _position = Duration.zero;
       });
+      _positionNotifier.value = Duration.zero;
       // Drop any in-flight lazy chunk loads from the pre-trim viewport
       // so the strip's follow-up viewport request for the new clip
       // range can schedule freshly instead of getting stuck behind a
@@ -2114,7 +2119,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _trimEndSec = null;
       _clipOffsetSec = 0.0;
       _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
-      _position = Duration.zero;
       // Restore the full-recording spectrogram.
       if (_spectrogramImage != null &&
           !identical(_spectrogramImage, _fullSpectrogramImage)) {
@@ -2124,6 +2128,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _isDirty = true;
       _trimMode = false;
     });
+    _positionNotifier.value = Duration.zero;
     if (_spectrogramLazy) {
       _requestSpectrogramViewport(0, 10);
     }
@@ -3211,7 +3216,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 spectrogramImage: _spectrogramImage,
                 spectrogramChunks: List.unmodifiable(_spectrogramChunks),
                 decoding: _decoding,
-                position: _position,
+                positionNotifier: _positionNotifier,
                 duration: _duration,
                 timelineOffsetSec: _clipOffsetSec,
                 onViewportChanged: _requestSpectrogramViewport,
@@ -3464,18 +3469,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         itemBuilder: (context, index) {
           final group = displayGroup(sorted[index]);
           final isExpanded = _expandedSpecies.contains(group.scientificName);
-          final isActive =
-              _isSpeciesActive(group) ||
-              (_activeClipCluster != null &&
-                  group.clusters.contains(_activeClipCluster));
           return _SpeciesTile(
             key: ValueKey('species-tile-${group.scientificName}'),
             group: group,
             sessionStart: widget.session.startTime,
             isExpanded: isExpanded,
-            isActive: isActive,
-            activePositionSec:
-                _isPlaying ? _position.inMicroseconds / 1e6 : null,
+            positionNotifier: _positionNotifier,
+            isPlaying: _isPlaying,
             activeCluster: _activeClipCluster,
             clipOffsetSec: _clipOffsetSec,
             windowSec: widget.session.settings.windowDuration,
@@ -3603,30 +3603,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     );
   }
 
-  /// Whether any detection in [group] spans the current playback position.
-  bool _isSpeciesActive(_SpeciesGroup group) {
-    // Only highlight while audio is actually playing — a paused player
-    // (whether by the user or by the cluster auto-stop) should leave the
-    // species list in its idle styling.
-    if (!_isPlaying) return false;
-    final windowSec = widget.session.settings.windowDuration;
-    final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
-    for (final r in group.allRecords) {
-      final offset = r.timestamp.difference(widget.session.startTime);
-      // Map the absolute offset into clip-relative coordinates.
-      final rel = offset - clipOffset;
-      // Honour the recorded continuous-detection duration when present;
-      // otherwise fall back to a single inference window starting at the
-      // detection timestamp.
-      final detEnd =
-          r.endTimestamp != null
-              ? r.endTimestamp!.difference(widget.session.startTime) -
-                  clipOffset
-              : rel + Duration(seconds: windowSec);
-      if (_position >= rel && _position <= detEnd) return true;
-    }
-    return false;
-  }
+
 
   // ── Grouping Logic ──────────────────────────────────────────────────
 
