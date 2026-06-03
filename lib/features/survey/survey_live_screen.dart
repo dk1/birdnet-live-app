@@ -1142,6 +1142,7 @@ class _SurveySpectrogram extends ConsumerWidget {
       maxDisplayFrequency: maxFreq,
       logAmplitude: logAmplitude,
       filterQuality: spectrogramFilterQualityFromString(quality),
+      quality: quality,
     );
   }
 }

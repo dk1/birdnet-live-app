@@ -510,6 +510,7 @@ class _SpectrogramStrip extends StatefulWidget {
     required this.onPause,
     required this.isPlaying,
     required this.userDefaultViewSeconds,
+    this.quality = 'medium',
   });
 
   /// Initial / preferred view width for short clips, sourced from the
@@ -529,6 +530,7 @@ class _SpectrogramStrip extends StatefulWidget {
   final ValueChanged<Duration> onSeek;
   final VoidCallback onPause;
   final bool isPlaying;
+  final String quality;
 
   @override
   State<_SpectrogramStrip> createState() => _SpectrogramStripState();
@@ -714,6 +716,7 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
                 timelineOffsetSec: widget.timelineOffsetSec,
                 viewSeconds: _viewSeconds,
                 colorScheme: theme.colorScheme,
+                filterQuality: spectrogramFilterQualityFromString(widget.quality),
               ),
               size: const Size(double.infinity, 150),
             ),
@@ -853,6 +856,7 @@ class _ReviewSpectrogramPainter extends CustomPainter {
     required this.timelineOffsetSec,
     required this.viewSeconds,
     required this.colorScheme,
+    required this.filterQuality,
   });
 
   final ui.Image? spectrogramImage;
@@ -866,6 +870,7 @@ class _ReviewSpectrogramPainter extends CustomPainter {
   /// drive it from the parent state.
   final double viewSeconds;
   final ColorScheme colorScheme;
+  final FilterQuality filterQuality;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -900,7 +905,7 @@ class _ReviewSpectrogramPainter extends CustomPainter {
           img,
           Rect.fromLTRB(srcX1, 0, srcX2, imgH),
           Rect.fromLTRB(dstX1, 0, dstX2, size.height),
-          Paint()..filterQuality = FilterQuality.high,
+          Paint()..filterQuality = filterQuality,
         );
       }
     }
@@ -926,7 +931,7 @@ class _ReviewSpectrogramPainter extends CustomPainter {
         chunk.image,
         Rect.fromLTRB(srcX1, 0, srcX2, chunkH),
         Rect.fromLTRB(dstX1, 0, dstX2, size.height),
-        Paint()..filterQuality = FilterQuality.high,
+        Paint()..filterQuality = filterQuality,
       );
     }
 
@@ -2931,6 +2936,7 @@ class _TrimSpectrogramView extends StatefulWidget {
     required this.initialStartSec,
     required this.initialEndSec,
     required this.onChanged,
+    this.quality = 'medium',
   });
 
   final ui.Image spectrogramImage;
@@ -2938,6 +2944,7 @@ class _TrimSpectrogramView extends StatefulWidget {
   final double initialStartSec;
   final double initialEndSec;
   final void Function(double startSec, double endSec) onChanged;
+  final String quality;
 
   @override
   State<_TrimSpectrogramView> createState() => _TrimSpectrogramViewState();
@@ -3054,6 +3061,7 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
             trimStartSec: _startSec,
             trimEndSec: _endSec,
             accentColor: theme.colorScheme.primary,
+            filterQuality: spectrogramFilterQualityFromString(widget.quality),
           ),
           size: const Size(double.infinity, 150),
         ),
@@ -3071,6 +3079,7 @@ class _TrimSpectrogramPainter extends CustomPainter {
     required this.trimStartSec,
     required this.trimEndSec,
     required this.accentColor,
+    required this.filterQuality,
   });
 
   final ui.Image spectrogramImage;
@@ -3080,6 +3089,7 @@ class _TrimSpectrogramPainter extends CustomPainter {
   final double trimStartSec;
   final double trimEndSec;
   final Color accentColor;
+  final FilterQuality filterQuality;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -3096,7 +3106,7 @@ class _TrimSpectrogramPainter extends CustomPainter {
         spectrogramImage,
         Rect.fromLTRB(srcX1, 0, srcX2, imgH),
         Rect.fromLTRB(0, 0, size.width, size.height),
-        Paint()..filterQuality = FilterQuality.high,
+        Paint()..filterQuality = filterQuality,
       );
     }
 
