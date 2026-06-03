@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.1] - 2026-06-03
+
+### Added
+
+- Integrated dynamic privacy consent toggles (Map, Reverse Geocoding, Weather) directly into the interactive Permissions onboarding page to let users opt into capabilities upfront.
+- Embedded mandatory photo library and camera description purpose strings into iOS `Info.plist` to satisfy Apple App Store submission conditions (`ITMS-90683`).
+- Added native iPad screenshot layout support (`2048 x 2732px`) to the automated mockup workspace in `dev/mockups/` using `empty_ipad_frame.png` as a container backdrop.
+
+### Changed
+
+- Enhanced onboarding screens with responsive maximum-width boundaries (`ContentWidthConstraint`) to prevent horizontal layout stretching, significantly improving native tablet/iPad readability.
+- Enhanced the on-device HTML/CSS mockup canvas scaling rules to render tablet screens using proportional, undistorted top-alignment instead of stretching them.
+- Updated the export filename configuration to prefix all iPad mockups and screenshots with `ipad_` (e.g., `ipad_en-01-menu.png`) and generated them across all localizations.
+
 ## [0.16.0] - 2026-06-02
 
 ### Added

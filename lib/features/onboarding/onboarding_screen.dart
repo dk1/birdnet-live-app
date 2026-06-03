@@ -31,6 +31,7 @@ import 'package:record/record.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/app_providers.dart';
+import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 
@@ -472,7 +473,7 @@ class _InfoPage extends StatelessWidget {
 // Page: Permissions (interactive)
 // ---------------------------------------------------------------------------
 
-class _PermissionsPage extends StatelessWidget {
+class _PermissionsPage extends ConsumerWidget {
   const _PermissionsPage({
     required this.l10n,
     required this.theme,
@@ -494,7 +495,7 @@ class _PermissionsPage extends StatelessWidget {
   final Future<void> Function() onRequestLocation;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ContentWidthConstraint(
       maxWidth: _kOnboardingMaxWidth,
       child: Padding(
@@ -561,6 +562,39 @@ class _PermissionsPage extends StatelessWidget {
                     onGrant: onRequestLocation,
                     theme: theme,
                     l10n: l10n,
+                  ),
+                  const SizedBox(height: 14),
+                  _ConsentTile(
+                    icon: AppIcons.mapSheet,
+                    title: l10n.settingsPrivacyAllowMap,
+                    description: l10n.settingsPrivacyAllowMapSubtitle,
+                    value: ref.watch(privacyAllowMapProvider),
+                    onChanged: (val) =>
+                        ref.read(privacyAllowMapProvider.notifier).set(val),
+                    theme: theme,
+                  ),
+                  const SizedBox(height: 14),
+                  _ConsentTile(
+                    icon: AppIcons.public,
+                    title: l10n.settingsPrivacyAllowReverseGeocoding,
+                    description:
+                        l10n.settingsPrivacyAllowReverseGeocodingSubtitle,
+                    value: ref.watch(privacyAllowReverseGeocodingProvider),
+                    onChanged: (val) =>
+                        ref
+                            .read(privacyAllowReverseGeocodingProvider.notifier)
+                            .set(val),
+                    theme: theme,
+                  ),
+                  const SizedBox(height: 14),
+                  _ConsentTile(
+                    icon: AppIcons.cloud,
+                    title: l10n.settingsPrivacyAllowWeather,
+                    description: l10n.settingsPrivacyAllowWeatherSubtitle,
+                    value: ref.watch(privacyAllowWeatherProvider),
+                    onChanged: (val) =>
+                        ref.read(privacyAllowWeatherProvider.notifier).set(val),
+                    theme: theme,
                   ),
                 ],
               ),
@@ -664,6 +698,80 @@ class _PermissionTile extends StatelessWidget {
                         : Text(l10n.permissionRequest),
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConsentTile extends StatelessWidget {
+  const _ConsentTile({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.value,
+    required this.onChanged,
+    required this.theme,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withAlpha(120),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: theme.colorScheme.outlineVariant, width: 1),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              size: 22,
+              color: theme.colorScheme.onPrimaryContainer,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withAlpha(170),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+          ),
         ],
       ),
     );
