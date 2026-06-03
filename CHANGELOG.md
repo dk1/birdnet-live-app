@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -10,10 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Wired the spectrogram quality setting ('low', 'medium', 'high') to all screens displaying spectrograms, including Live Mode, Point Count Mode, Survey Mode, and Session Review components (Timeline player and Trim editor).
-
-### Changed
-
-- Reverted previous UI/UX and non-spectrogram optimizations for budget devices, ensuring standard GPS interval rates, default inference rates, and standard map rendering/marker overlays behave exactly as configured without behavioral overrides.
 
 ### Optimized
 
