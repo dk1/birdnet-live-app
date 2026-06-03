@@ -88,6 +88,8 @@ flutter:
   assets:
     - assets/images/
     - assets/models/
+    - assets/species_images/
+    - assets/species_data/
     - assets/announcements/
 
 flutter_launcher_icons:
