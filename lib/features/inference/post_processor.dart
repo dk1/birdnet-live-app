@@ -84,17 +84,7 @@ abstract final class PostProcessor {
     double sensitivity,
   ) {
     if (sensitivity == 1.0) return probs;
-    final result = List<double>.of(probs);
-    for (var i = 0; i < probs.length; i++) {
-      final p = probs[i];
-      if (p < 1e-4) {
-        // Skip log/exp calculation for values that are guaranteed to remain
-        // far below any meaningful threshold.
-        continue;
-      }
-      result[i] = applySensitivity(p, sensitivity);
-    }
-    return result;
+    return probs.map((p) => applySensitivity(p, sensitivity)).toList();
   }
 
   // ---------------------------------------------------------------------------
@@ -207,23 +197,12 @@ abstract final class PostProcessor {
 
     for (var c = 0; c < numClasses; c++) {
       // Collect scores for this class across all windows.
+      var sumExp = 0.0;
       var peak = 0.0;
       for (final window in windowScores) {
         final score = window[c];
+        sumExp += math.exp(alpha * score);
         if (score > peak) peak = score;
-      }
-
-      // If the maximum score across all windows is extremely small,
-      // the LME pooled score is mathematically bound to remain extremely small.
-      // Skipping exp/log loops for these classes saves ~30,000 math function calls per cycle.
-      if (peak < 1e-3) {
-        pooled[c] = peak * retention;
-        continue;
-      }
-
-      var sumExp = 0.0;
-      for (final window in windowScores) {
-        sumExp += math.exp(alpha * window[c]);
       }
       final meanExp = sumExp / windowScores.length;
       final lme = math.log(meanExp) / alpha;
