@@ -138,14 +138,19 @@ class ClassifierModel {
     }
 
     // Prepare input: pad or truncate to exactly [windowSamples].
-    final input = Float32List(windowSamples);
-    final copyLen = audioSamples.length < windowSamples
-        ? audioSamples.length
-        : windowSamples;
-    for (var i = 0; i < copyLen; i++) {
-      input[i] = audioSamples[i].clamp(-1.0, 1.0);
+    // Avoid allocating a new buffer and looping over elements if the audio samples
+    // are already of the exact correct length (which is the case during live capture).
+    final Float32List input;
+    if (audioSamples.length == windowSamples) {
+      input = audioSamples;
+    } else {
+      input = Float32List(windowSamples);
+      final copyLen = audioSamples.length < windowSamples
+          ? audioSamples.length
+          : windowSamples;
+      input.setRange(0, copyLen, audioSamples);
+      // Remaining elements are already 0.0 (zero-padding).
     }
-    // Remaining elements are already 0.0 (zero-padding).
 
     // Create input tensor: shape [1, windowSamples].
     final inputTensor = await OrtValue.fromList(input, [1, windowSamples]);
@@ -210,7 +215,7 @@ class ClassifierModel {
   static Future<List<double>> _toDoubleList(OrtValue tensor) async {
     final raw = await tensor.asFlattenedList();
     if (raw is List<double>) return raw;
-    if (raw is Float32List) return raw.toList();
+    if (raw is Float32List) return raw;
     return raw.map((e) => (e as num).toDouble()).toList(growable: false);
   }
 }
