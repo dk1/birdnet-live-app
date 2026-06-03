@@ -15,7 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Enhanced onboarding screens with responsive maximum-width boundaries (`ContentWidthConstraint`) to prevent horizontal layout stretching, significantly improving native tablet/iPad readability.
 - Enhanced the on-device HTML/CSS mockup canvas scaling rules to render tablet screens using proportional, undistorted top-alignment instead of stretching them.
 - Updated the export filename configuration to prefix all iPad mockups and screenshots with `ipad_` (e.g., `ipad_en-01-menu.png`) and generated them across all localizations.
 
