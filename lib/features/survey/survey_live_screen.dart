@@ -27,10 +27,10 @@ import 'package:latlong2/latlong.dart';
 
 import '../../core/theme/score_colors.dart';
 import '../../shared/providers/settings_providers.dart';
-import '../../shared/services/weather_service.dart';
 import '../../shared/utils/app_icons.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
+import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../audio/ring_buffer.dart';
 import '../explore/explore_providers.dart';
@@ -505,6 +505,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     if (_started) return;
     final controller = ref.read(surveyControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
+    final captureService = ref.read(audioCaptureServiceProvider);
     final deviceId = ref.read(selectedDeviceProvider);
     // Capture localizations now — the rest of this method awaits multiple
     // futures and we want to wire foreground-notification strings without
@@ -512,12 +513,19 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final l10n = AppLocalizations.of(context)!;
 
     // Apply user-tunable DSP (gain + high-pass) before capture starts.
-    final captureService = ref.read(audioCaptureServiceProvider);
     captureService.setGain(ref.read(audioGainProvider));
     captureService.setHighPassCutoff(ref.read(highPassFilterProvider));
 
     // Start audio capture.
     await captureNotifier.start(deviceId: deviceId);
+    if (captureService.state != CaptureState.capturing) {
+      _showStartError(
+        captureService.lastError == 'Microphone permission not granted'
+            ? l10n.errorMicrophoneRequired
+            : captureService.lastError ?? l10n.statusError,
+      );
+      return;
+    }
 
     // Read settings.
     final windowDuration = ref.read(windowDurationProvider);
@@ -612,6 +620,13 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       );
     }
 
+    if (controller.state == SurveyState.error) {
+      await captureNotifier.stop();
+      _showStartError(controller.errorMessage ?? l10n.statusError);
+      _onControllerStateChanged();
+      return;
+    }
+
     _started = true;
     _onControllerStateChanged();
 
@@ -619,6 +634,18 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     _uiUpdateTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
+  }
+
+  void _showStartError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 4),
+        ),
+      );
   }
 
   Future<void> _confirmStop() async {
@@ -660,16 +687,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       if (session != null && mounted) {
         final repo = ref.read(sessionRepositoryProvider);
         session.sessionNumber = await repo.nextSessionNumber(session.type);
-        if (session.latitude != null && session.longitude != null) {
-          try {
-            final svc = ref.read(weatherServiceProvider);
-            session.weather = await svc.fetch(
-              latitude: session.latitude!,
-              longitude: session.longitude!,
-              observedAt: session.endTime ?? DateTime.now(),
-            );
-          } catch (_) {}
-        }
         await repo.save(session);
         ref.invalidate(sessionListProvider);
 

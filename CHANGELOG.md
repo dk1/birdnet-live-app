@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] - 2026-06-02
+
+### Added
+
+- Introduced comprehensive iOS platform support configurations and configurations.
+- Integrated standard Darwin-specific local notifications and alert configurations into active survey sequences.
+- Added adaptive fallback to standard PCM16 WAV (.wav) voice memo recording formats specifically on iOS, overcoming Apple CoreAudio AAC compression collisions while maintaining full file-sharing and packaging compatibility.
+
+### Changed
+
+- Reconstructed custom on-device custom FLAC audio encoder stream headers to explicitly restrict min and max block sizes to match nominal values exactly, preventing freezing/stalling bugs with strict decoders like Apple CoreAudio and external soundscape systems (e.g. Raven Pro).
+- Paused active audio playbacks dynamically when launching recording panels to prevent speaker acoustic feedback loops.
+- Avoided cross-thread UI hangs on async dialogue overlays by reinforcing BuildContext safety gates.
+
+## [0.15.9] - 2026-06-02
+
+### Added
+
+- Added manual tap-to-load weather fetching to the Session Review / Summary headers, gated on privacy preferences, and localized for all seven languages.
+
+### Changed
+
+- Optimized session list numbering with a header-only JSON stream parser that scans only the first 1024 bytes of saved files, preventing UI blocking and high memory overhead when dealing with very large recording session files.
+- Deferred weather pre-fetching away from saving/closing processes into localized, user-initiated visual action.
+- Retained startup geographic coordinates correctly during active Live and Point Count session launches.
+
+## [0.15.8] - 2026-06-02
+
+### Added
+
+- Implemented comprehensive multi-session selection, packaging, sharing, and deletion capabilities to resolve Issue #81 in the Session Library.
+- Added multi-session bulk export to aggregate, package, and compress selected sessions into a standalone ZIP archive (`BirdNET_Live_Bulk_Export_<timestamp>.zip`).
+- Added robust multi-selection state, adaptive tile checkboxes, select-all toggles, and contextual actions (share and delete bulk buttons) to the Session Library.
+- Included full multi-lingual localization for all bulk-selection messages and counts across seven supported locales.
+
+### Changed
+
+- Automatically deselect all selected sessions after sharing complete.
+
 ## [0.15.7] - 2026-06-01
 
 ### Added
