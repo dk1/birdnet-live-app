@@ -96,3 +96,15 @@ During the Android build job:
 - Limit who can edit repository secrets.
 - Store a secure offline backup of your keystore.
 - If this key is lost, app update publishing can be blocked.
+
+## Windows MSIX Signing in CI
+
+The Windows release job in [release.yml](release.yml) signs the `.msix` package using repository secrets.
+
+### Secrets Required
+
+- `WINDOWS_MSIX_CERTIFICATE_BASE64`: Base64-encoded `.pfx` certificate file (single line, no extra whitespace).
+- `WINDOWS_MSIX_CERTIFICATE_PASSWORD`: Password for that `.pfx` certificate.
+- `WINDOWS_MSIX_PUBLISHER`: Publisher subject string used for signing (for example: `CN=Contoso Software, O=Contoso Corporation, C=US`).
+
+These names must match [release.yml](release.yml) exactly.
