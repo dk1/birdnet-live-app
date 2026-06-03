@@ -39,6 +39,8 @@ class HomeScreen extends ConsumerWidget {
 
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
+    final shortestSide = MediaQuery.of(context).size.shortestSide;
+    final isTablet = shortestSide >= 600;
 
     return Scaffold(
       body: SafeArea(
@@ -46,15 +48,25 @@ class HomeScreen extends ConsumerWidget {
           builder: (context, constraints) {
             return SingleChildScrollView(
               padding: EdgeInsets.symmetric(
-                horizontal: isLandscape ? 48 : 24,
+                horizontal: isLandscape ? (isTablet ? 64 : 48) : (isTablet ? 40 : 24),
                 vertical: isLandscape ? 12 : 0,
               ),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child:
-                    isLandscape
-                        ? _LandscapeHomeLayout(l10n: l10n, theme: theme)
-                        : _PortraitHomeLayout(l10n: l10n, theme: theme),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child:
+                      isLandscape
+                          ? _LandscapeHomeLayout(
+                            l10n: l10n,
+                            theme: theme,
+                            isTablet: isTablet,
+                          )
+                          : _PortraitHomeLayout(
+                            l10n: l10n,
+                            theme: theme,
+                            isTablet: isTablet,
+                          ),
+                ),
               ),
             );
           },
@@ -69,9 +81,14 @@ class HomeScreen extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _PortraitHomeLayout extends ConsumerWidget {
-  const _PortraitHomeLayout({required this.l10n, required this.theme});
+  const _PortraitHomeLayout({
+    required this.l10n,
+    required this.theme,
+    this.isTablet = false,
+  });
   final AppLocalizations l10n;
   final ThemeData theme;
+  final bool isTablet;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -79,11 +96,11 @@ class _PortraitHomeLayout extends ConsumerWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         const SizedBox(height: 32),
-        _LogoHeader(l10n: l10n, theme: theme),
+        _LogoHeader(l10n: l10n, theme: theme, isTablet: isTablet),
         const SizedBox(height: 24),
-        _ModeGrid(l10n: l10n, theme: theme),
+        _ModeGrid(l10n: l10n, theme: theme, isTablet: isTablet),
         const SizedBox(height: 24),
-        _Footer(l10n: l10n, theme: theme),
+        _Footer(l10n: l10n, theme: theme, isTablet: isTablet),
         const SizedBox(height: 16),
       ],
     );
@@ -95,9 +112,14 @@ class _PortraitHomeLayout extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _LandscapeHomeLayout extends ConsumerWidget {
-  const _LandscapeHomeLayout({required this.l10n, required this.theme});
+  const _LandscapeHomeLayout({
+    required this.l10n,
+    required this.theme,
+    this.isTablet = false,
+  });
   final AppLocalizations l10n;
   final ThemeData theme;
+  final bool isTablet;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -106,19 +128,29 @@ class _LandscapeHomeLayout extends ConsumerWidget {
       children: [
         // ── Left: compact logo + title ────────────────────────
         Expanded(
-          flex: 2,
-          child: _LogoHeader(l10n: l10n, theme: theme, compact: true),
+          flex: isTablet ? 3 : 2,
+          child: _LogoHeader(
+            l10n: l10n,
+            theme: theme,
+            compact: true,
+            isTablet: isTablet,
+          ),
         ),
         const SizedBox(width: 32),
         // ── Right: mode grid + footer ─────────────────────────
         Expanded(
-          flex: 3,
+          flex: isTablet ? 4 : 3,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _ModeGrid(l10n: l10n, theme: theme, landscape: true),
+              _ModeGrid(
+                l10n: l10n,
+                theme: theme,
+                landscape: true,
+                isTablet: isTablet,
+              ),
               const SizedBox(height: 16),
-              _Footer(l10n: l10n, theme: theme),
+              _Footer(l10n: l10n, theme: theme, isTablet: isTablet),
             ],
           ),
         ),
@@ -136,14 +168,16 @@ class _LogoHeader extends ConsumerWidget {
     required this.l10n,
     required this.theme,
     this.compact = false,
+    this.isTablet = false,
   });
   final AppLocalizations l10n;
   final ThemeData theme;
   final bool compact;
+  final bool isTablet;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final logoSize = compact ? 72.0 : 120.0;
+    final logoSize = compact ? (isTablet ? 96.0 : 72.0) : (isTablet ? 160.0 : 120.0);
     return Column(
       children: [
         // Circular logo with subtle glow.
@@ -169,20 +203,24 @@ class _LogoHeader extends ConsumerWidget {
             ),
           ),
         ),
-        SizedBox(height: compact ? 12 : 20),
+        SizedBox(height: compact ? (isTablet ? 16 : 12) : (isTablet ? 28 : 20)),
         Text(
           l10n.appTitle,
-          style: theme.textTheme.headlineMedium?.copyWith(
+          style: (compact ? theme.textTheme.headlineSmall : theme.textTheme.headlineMedium)?.copyWith(
             fontWeight: FontWeight.w700,
             letterSpacing: -0.5,
+            fontSize: !compact && isTablet ? 32 : null,
           ),
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 6),
         Text(
           l10n.homeSubtitle,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurface.withAlpha(153),
+            fontSize: isTablet ? 16 : null,
           ),
+          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -198,28 +236,34 @@ class _ModeGrid extends StatelessWidget {
     required this.l10n,
     required this.theme,
     this.landscape = false,
+    this.isTablet = false,
   });
   final AppLocalizations l10n;
   final ThemeData theme;
   final bool landscape;
+  final bool isTablet;
 
   @override
   Widget build(BuildContext context) {
+    final double maxWidth = isTablet ? (landscape ? 650 : 550) : (landscape ? 500 : 400);
+    final double aspectRatio = landscape ? (isTablet ? 1.3 : 1.6) : (isTablet ? 1.2 : 1.0);
+
     return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: landscape ? 500 : 400),
+      constraints: BoxConstraints(maxWidth: maxWidth),
       child: GridView.count(
         crossAxisCount: 2,
         crossAxisSpacing: landscape ? 12 : 16,
         mainAxisSpacing: landscape ? 12 : 16,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        childAspectRatio: landscape ? 1.6 : 1.0,
+        childAspectRatio: aspectRatio,
         children: [
           _ModeCard(
             icon: sessionTypeIcon(SessionType.live),
             label: l10n.liveMode,
             description: l10n.liveModeDescription,
             accentColor: sessionTypeAccentColor(theme, SessionType.live),
+            isTablet: isTablet,
             onTap: () => _openLive(context),
           ),
           _ModeCard(
@@ -227,6 +271,7 @@ class _ModeGrid extends StatelessWidget {
             label: l10n.pointCountMode,
             description: l10n.pointCountModeDescription,
             accentColor: sessionTypeAccentColor(theme, SessionType.pointCount),
+            isTablet: isTablet,
             onTap: () => _openPointCount(context),
           ),
           _ModeCard(
@@ -234,6 +279,7 @@ class _ModeGrid extends StatelessWidget {
             label: l10n.surveyMode,
             description: l10n.surveyModeDescription,
             accentColor: sessionTypeAccentColor(theme, SessionType.survey),
+            isTablet: isTablet,
             onTap: () => _openSurvey(context),
           ),
           _ModeCard(
@@ -241,6 +287,7 @@ class _ModeGrid extends StatelessWidget {
             label: l10n.fileAnalysisMode,
             description: l10n.fileAnalysisModeDescription,
             accentColor: sessionTypeAccentColor(theme, SessionType.fileUpload),
+            isTablet: isTablet,
             onTap: () => _openFileAnalysis(context),
           ),
         ],
@@ -283,6 +330,7 @@ class _ModeCard extends StatelessWidget {
     required this.label,
     required this.description,
     required this.accentColor,
+    this.isTablet = false,
     this.onTap,
   });
 
@@ -290,6 +338,7 @@ class _ModeCard extends StatelessWidget {
   final String label;
   final String description;
   final Color accentColor;
+  final bool isTablet;
   final VoidCallback? onTap;
 
   @override
@@ -306,7 +355,7 @@ class _ModeCard extends StatelessWidget {
                 ? theme.colorScheme.surfaceContainerHighest
                 : theme.colorScheme.surfaceContainerHigh);
     final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(isTablet ? 24 : 20),
       side:
           isBrandTheme
               ? BorderSide.none
@@ -323,22 +372,22 @@ class _ModeCard extends StatelessWidget {
         customBorder: shape,
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(isTablet ? 20 : 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Icon in a tinted circle.
               Container(
-                width: 44,
-                height: 44,
+                width: isTablet ? 52 : 44,
+                height: isTablet ? 52 : 44,
                 decoration: BoxDecoration(
                   color:
                       isBrandTheme
                           ? accentColor.withAlpha(isDark ? 50 : 30)
                           : accentColor.withAlpha(36),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(isTablet ? 16 : 14),
                 ),
-                child: Icon(icon, color: accentColor, size: 24),
+                child: Icon(icon, color: accentColor, size: isTablet ? 28 : 24),
               ),
               const Spacer(),
               Text(
@@ -346,6 +395,7 @@ class _ModeCard extends StatelessWidget {
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: theme.colorScheme.onSurface,
+                  fontSize: isTablet ? 14 : null,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -356,9 +406,9 @@ class _ModeCard extends StatelessWidget {
                   description,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurface.withAlpha(100),
-                    fontSize: 11,
+                    fontSize: isTablet ? 12 : 11,
                   ),
-                  maxLines: 2,
+                  maxLines: isTablet ? 3 : 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -375,16 +425,22 @@ class _ModeCard extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _Footer extends StatelessWidget {
-  const _Footer({required this.l10n, required this.theme});
+  const _Footer({
+    required this.l10n,
+    required this.theme,
+    this.isTablet = false,
+  });
   final AppLocalizations l10n;
   final ThemeData theme;
+  final bool isTablet;
 
   @override
   Widget build(BuildContext context) {
     final color = theme.colorScheme.onSurface.withAlpha(153);
     return Wrap(
       alignment: WrapAlignment.center,
-      spacing: 12,
+      spacing: isTablet ? 24 : 12,
+      runSpacing: isTablet ? 12 : 8,
       children: [
         // Sessions first — it's the more frequently used destination
         // (every recording produces one) so it deserves the leftmost
@@ -394,6 +450,7 @@ class _Footer extends StatelessWidget {
           icon: AppIcons.libraryMusic,
           label: l10n.sessionLibraryTitle,
           color: color,
+          isTablet: isTablet,
           onPressed:
               () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -405,6 +462,7 @@ class _Footer extends StatelessWidget {
           icon: AppIcons.searchRounded,
           label: l10n.exploreMode,
           color: color,
+          isTablet: isTablet,
           onPressed:
               () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const ExploreScreen()),
@@ -414,6 +472,7 @@ class _Footer extends StatelessWidget {
           icon: AppIcons.tuneRounded,
           label: l10n.settings,
           color: color,
+          isTablet: isTablet,
           onPressed:
               () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
@@ -423,6 +482,7 @@ class _Footer extends StatelessWidget {
           icon: AppIcons.helpOutlineRounded,
           label: l10n.helpTitle,
           color: color,
+          isTablet: isTablet,
           onPressed:
               () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const HelpScreen()),
@@ -432,6 +492,7 @@ class _Footer extends StatelessWidget {
           icon: AppIcons.infoOutline,
           label: l10n.about,
           color: color,
+          isTablet: isTablet,
           onPressed:
               () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
@@ -448,19 +509,32 @@ class _FooterButton extends StatelessWidget {
     required this.label,
     required this.color,
     required this.onPressed,
+    this.isTablet = false,
   });
 
   final IconData icon;
   final String label;
   final Color color;
   final VoidCallback onPressed;
+  final bool isTablet;
 
   @override
   Widget build(BuildContext context) {
     return TextButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon, size: 18, color: color),
-      label: Text(label, style: TextStyle(color: color)),
+      icon: Icon(icon, size: isTablet ? 22 : 18, color: color),
+      label: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: isTablet ? 14 : 12,
+        ),
+      ),
+      style: TextButton.styleFrom(
+        padding: isTablet
+            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
+            : null,
+      ),
     );
   }
 }
