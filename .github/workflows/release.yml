@@ -141,7 +141,7 @@ jobs:
           rm -f android/key.properties android/app/upload-keystore.jks
 
   build_windows:
-    name: Build Windows Release ZIP
+    name: Build Windows Release Artifacts
     runs-on: windows-latest
     needs: prepare_source
     steps:
@@ -200,7 +200,14 @@ jobs:
           }
           Compress-Archive -Path $releaseDir -DestinationPath $zipPath
 
-      - name: Attach Windows ZIP to GitHub Release
+      - name: Build MSIX package
+        shell: pwsh
+        run: |
+          dart run msix:create --build-windows false --output-path build/windows/x64/runner --output-name BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64
+
+      - name: Attach Windows artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/windows/x64/runner/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64.zip
+          files: |
+            build/windows/x64/runner/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64.zip
+            build/windows/x64/runner/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64.msix
