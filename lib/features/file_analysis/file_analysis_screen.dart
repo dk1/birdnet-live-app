@@ -183,7 +183,6 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
         'm4a', 'aac', 'mp4', // AAC containers
         'wma', 'amr', // Other
       ],
-      allowMultiple: false,
     );
 
     if (result == null || result.files.isEmpty) return;
