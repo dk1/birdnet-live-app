@@ -56,6 +56,7 @@ class FftProcessor {
             'fftSize must be a positive power of two'),
         _fft = FFT(fftSize),
         _window = Float64List(fftSize),
+        _windowedBuffer = Float64List(fftSize),
         _binCount = fftSize ~/ 2 + 1 {
     _buildHannWindow();
   }
@@ -82,6 +83,9 @@ class FftProcessor {
 
   /// Pre-computed Hann window coefficients (length = [fftSize]).
   final Float64List _window;
+
+  /// Pre-allocated scratch buffer for windowed samples.
+  final Float64List _windowedBuffer;
 
   /// Number of positive-frequency bins: `fftSize / 2 + 1`.
   final int _binCount;
@@ -116,13 +120,12 @@ class FftProcessor {
         'Need at least $fftSize samples, got ${samples.length}');
 
     // 1. Apply Hann window.
-    final windowed = Float64List(fftSize);
     for (var i = 0; i < fftSize; i++) {
-      windowed[i] = samples[i] * _window[i];
+      _windowedBuffer[i] = samples[i] * _window[i];
     }
 
     // 2. Run FFT — returns interleaved [re0, im0, re1, im1, …].
-    final spectrum = _fft.realFft(windowed);
+    final spectrum = _fft.realFft(_windowedBuffer);
 
     // 3. Convert to normalized dB magnitudes.
     return _spectrumToNormalizedDb(spectrum);
@@ -134,12 +137,11 @@ class FftProcessor {
   Float64List processRawDb(Float32List samples) {
     assert(samples.length >= fftSize);
 
-    final windowed = Float64List(fftSize);
     for (var i = 0; i < fftSize; i++) {
-      windowed[i] = samples[i] * _window[i];
+      _windowedBuffer[i] = samples[i] * _window[i];
     }
 
-    final spectrum = _fft.realFft(windowed);
+    final spectrum = _fft.realFft(_windowedBuffer);
     return _spectrumToDb(spectrum);
   }
 
