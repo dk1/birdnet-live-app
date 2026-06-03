@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -11,9 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Wired the spectrogram quality setting ('low', 'medium', 'high') to all screens displaying spectrograms, including Live Mode, Point Count Mode, Survey Mode, and Session Review components (Timeline player and Trim editor).
 
+### Changed
+
+- Reverted all non-spectrogram overrides, restoring original UI/UX behaviors (such as inline maps, map markers, and unmounted map overlays) and default/user configured background settings.
+
 ### Optimized
 
 - Pre-allocated the Hann window scratch buffer inside `FftProcessor` to prevent repetitive 16KB array heap allocations on every single FFT window calculation, drastically reducing garbage collection overhead and stuttering on budget devices (such as the Samsung A17).
+- Optimized input preparation and output array parsing in `ClassifierModel` by reusing the time-domain sample buffer directly when lengths match (bypassing a redundant 96,000-iteration clamp copy loop and 384KB list allocation) and returning native `Float32List` instances directly without copying to a new list, preventing UI thread stutters when inference runs.
 
 ## [0.16.1] - 2026-06-03
 
