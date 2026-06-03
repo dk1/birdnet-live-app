@@ -85,6 +85,7 @@ import '../recording/audio_decoder.dart';
 import '../recording/native_audio_decoder.dart';
 import '../recording/playback_normalizer.dart';
 import '../spectrogram/color_maps.dart';
+import '../spectrogram/spectrogram_widget.dart';
 import 'export_metadata_helper.dart';
 import 'session_export.dart';
 import 'session_map_screen.dart';
@@ -1138,14 +1139,27 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     DecodedAudio audio, {
     int maxColumns = 6000,
   }) async {
-    // Larger FFT (2048) gives ~12 Hz/bin resolution which renders
-    // formants and harmonic structure much more clearly than the
-    // previous 1024-point FFT (~23 Hz/bin). The hop is increased to
-    // 1024 so the per-second column count stays similar — keeping the
-    // total spectrogram-image memory comparable for long sessions while
-    // doubling the vertical (frequency) resolution.
+    final String quality = ref.read(spectrogramQualityProvider);
+    int maxDisplayBins;
+    int hop;
+
+    switch (quality.toLowerCase()) {
+      case 'low':
+        maxDisplayBins = 128;
+        hop = 2048;
+        break;
+      case 'medium':
+        maxDisplayBins = 256;
+        hop = 1024;
+        break;
+      case 'high':
+      default:
+        maxDisplayBins = 512;
+        hop = 512;
+        break;
+    }
+
     const fftSize = 2048;
-    const hop = 1024;
     const maxFreqHz = 16000;
     const dbFloor = -80.0;
     const dbCeiling = 0.0;
@@ -1160,10 +1174,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     final nyquist = audio.sampleRate / 2;
     final binCount = fftSize ~/ 2 + 1;
-    final displayBins = (maxFreqHz / nyquist * binCount).round().clamp(
+    final visibleBins = (maxFreqHz / nyquist * binCount).round().clamp(
       1,
       binCount,
     );
+    final binStride = (visibleBins / maxDisplayBins).ceil().clamp(1, visibleBins);
+    final displayBins = (visibleBins / binStride).ceil();
 
     final lut = SpectrogramColorMap.lut('viridis');
     final pixels = Uint8List(numCols * displayBins * 4);
@@ -1190,14 +1206,20 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       }
       final spectrum = fft.realFft(input);
 
-      for (var bin = 0; bin < displayBins; bin++) {
-        final re = spectrum[bin].x;
-        final im = spectrum[bin].y;
-        final power = re * re + im * im;
+      for (var row = 0; row < displayBins; row++) {
+        final binStart = row * binStride;
+        final binEnd = (binStart + binStride).clamp(0, visibleBins);
+        var power = 0.0;
+        for (var bin = binStart; bin < binEnd; bin++) {
+          final re = spectrum[bin].x;
+          final im = spectrum[bin].y;
+          power += re * re + im * im;
+        }
+        power /= (binEnd - binStart);
         final db = 10 * math.log(power + 1e-10) / math.ln10;
         final norm = ((db - dbFloor) / (dbCeiling - dbFloor)).clamp(0.0, 1.0);
 
-        final y = displayBins - 1 - bin;
+        final y = displayBins - 1 - row;
         final pxOffset = (y * numCols + c) * 4;
         final lutIdx = (norm * 255).round().clamp(0, 255);
         final color = lut[lutIdx];
@@ -1388,14 +1410,27 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       final count =
           ((chunkEndSec - chunkStartSec) * metadata.sampleRate).ceil();
 
-      // Pick lower-detail STFT params for long recordings so each chunk
-      // costs less CPU. The spectrogram strip is only ~150 logical px
-      // tall, so frequency bins above that count are squashed into
-      // sub-pixel rows anyway — `maxDisplayBins` caps that waste.
+      final String quality = ref.read(spectrogramQualityProvider);
       final long = totalSec > 600.0;
       final fftSize = 2048;
-      final hop = long ? 2048 : 1024;
-      const maxDisplayBins = 256;
+
+      int maxDisplayBins;
+      int hop;
+      switch (quality.toLowerCase()) {
+        case 'low':
+          maxDisplayBins = 128;
+          hop = long ? 3072 : 2048;
+          break;
+        case 'medium':
+          maxDisplayBins = 256;
+          hop = long ? 2048 : 1024;
+          break;
+        case 'high':
+        default:
+          maxDisplayBins = 512;
+          hop = long ? 1024 : 512;
+          break;
+      }
 
       // Decode + STFT in a background isolate so pinch-zoom never stalls
       // the UI thread. Only the cheap GPU upload happens on main.
@@ -3115,9 +3150,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                       widget.session.latitude != null &&
                               widget.session.longitude != null
                           ? LatLng(
-                            widget.session.latitude!,
-                            widget.session.longitude!,
-                          )
+                              widget.session.latitude!,
+                              widget.session.longitude!,
+                            )
                           : null,
                 ),
               ),
@@ -3167,6 +3202,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                     ? _fullDurationSec
                     : _duration.inMicroseconds / 1000000.0),
             onChanged: _onTrimChanged,
+            quality: ref.watch(spectrogramQualityProvider),
           )
         else
           Stack(
@@ -3184,6 +3220,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 isPlaying: _isPlaying,
                 userDefaultViewSeconds:
                     ref.watch(spectrogramDurationProvider).toDouble(),
+                quality: ref.watch(spectrogramQualityProvider),
               ),
               // Lazy trim editor: no full-file spectrogram thumbnail is
               // available, so we overlay trim handles directly on the

@@ -52,6 +52,7 @@ final inferenceRateProvider =
       return DoubleSettingNotifier(prefs, PrefKeys.inferenceRate, 1.0);
     });
 
+
 /// Sensitivity (0.5 – 1.5, default 1.0).
 ///
 /// Shifts the sigmoid curve: >1 boosts weak signals (more detections),
@@ -157,7 +158,7 @@ final logAmplitudeProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
 final spectrogramQualityProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return StringSettingNotifier(prefs, PrefKeys.spectrogramQuality, 'high');
+      return StringSettingNotifier(prefs, PrefKeys.spectrogramQuality, 'medium');
     });
 
 // ---------------------------------------------------------------------------
@@ -455,6 +456,7 @@ final surveyGpsIntervalProvider =
       final prefs = ref.watch(sharedPreferencesProvider);
       return IntSettingNotifier(prefs, PrefKeys.surveyGpsInterval, 10);
     });
+
 
 /// Maximum survey duration in hours (default 12).
 final surveyMaxDurationProvider =
