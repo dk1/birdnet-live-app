@@ -1,9 +1,23 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.16.2] - 2026-06-03
+
+### Added
+
+- Wired the spectrogram quality setting ('low', 'medium', 'high') to all screens displaying spectrograms, including Live Mode, Point Count Mode, Survey Mode, and Session Review components (Timeline player and Trim editor).
+
+### Changed
+
+- Reverted previous UI/UX and non-spectrogram optimizations for budget devices, ensuring standard GPS interval rates, default inference rates, and standard map rendering/marker overlays behave exactly as configured without behavioral overrides.
+
+### Optimized
+
+- Pre-allocated the Hann window scratch buffer inside `FftProcessor` to prevent repetitive 16KB array heap allocations on every single FFT window calculation, drastically reducing garbage collection overhead and stuttering on budget devices (such as the Samsung A17).
 
 ## [0.16.1] - 2026-06-03
 
