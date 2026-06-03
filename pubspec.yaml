@@ -105,8 +105,8 @@ flutter_launcher_icons:
 
 msix_config:
   display_name: BirdNET Live
-  publisher_display_name: TU Chemnitz
-  identity_name: de.tu_chemnitz.mi.kahst.birdnet_live
+  publisher_display_name: BirdNET
+  identity_name: de.tu-chemnitz.mi.kahst.birdnet-live
   msix_version: 0.16.0.168
   logo_path: assets/images/app-icon.png
   architecture: x64

@@ -108,3 +108,30 @@ The Windows release job in [release.yml](release.yml) signs the `.msix` package 
 - `WINDOWS_MSIX_PUBLISHER`: Publisher subject string used for signing (for example: `CN=Contoso Software, O=Contoso Corporation, C=US`).
 
 These names must match [release.yml](release.yml) exactly.
+
+### Local Install for Self-Signed MSIX (Windows)
+
+If the MSIX is signed with a self-signed certificate, Windows can show an unknown publisher and fail with `0x800B010A` until the signer certificate is trusted.
+
+Use PowerShell on the target machine:
+
+```powershell
+$msix = "C:\Path\To\BirdNET_Live_v0.16.0_windows_x64.msix"
+$sig = Get-AuthenticodeSignature $msix
+$cert = $sig.SignerCertificate
+
+$tp = New-Object System.Security.Cryptography.X509Certificates.X509Store("TrustedPeople","CurrentUser")
+$tp.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
+$tp.Add($cert)
+$tp.Close()
+
+$root = New-Object System.Security.Cryptography.X509Certificates.X509Store("Root","CurrentUser")
+$root.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
+$root.Add($cert)
+$root.Close()
+
+Get-AuthenticodeSignature $msix | Format-List Status,StatusMessage
+Add-AppxPackage -Path $msix
+```
+
+This trust step is intended for internal testing and private distribution. For public end-user distribution, use a certificate chain trusted by Windows by default.
