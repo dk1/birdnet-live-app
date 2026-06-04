@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.4] - 2026-06-04
+
+### Fixed
+
+- Made File Analysis keep an app-managed copy of the uploaded audio in its original format, avoiding unnecessary MP3/AAC-to-WAV/FLAC conversion before Session Review.
+- Enabled Session Review spectrograms for copied compressed uploads by loading long review audio through native range decoding instead of hiding the spectrogram when full PCM would be too large.
+
+### Optimized
+
+- Reworked compressed File Analysis inputs such as long MP3, AAC, and OGG recordings to inspect metadata without full decode, analyze bounded native decode chunks, and cancel active native decoding promptly instead of expanding the whole file into memory.
+- Reduced the initial lazy spectrogram bootstrap window for long recordings to keep first review paint responsive while additional chunks load on demand.
+
 ## [0.16.3] - 2026-06-03
 
 ### Fixed

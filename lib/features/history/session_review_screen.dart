@@ -57,8 +57,6 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -252,14 +250,24 @@ class _SpectrogramChunkPixels {
 Future<_SpectrogramChunkPixels?> _decodeAndRenderSpectrogramChunk(
   _SpectrogramChunkRequest req,
 ) async {
-  var audio = await AudioDecoder.decodeRange(
-    req.path,
-    startSample: req.startSample,
-    count: req.count,
-  );
-  audio = audio.resampleTo(req.targetSampleRate);
+  final isWav = await AudioDecoder.isWav(req.path);
+  final DecodedAudio audio;
+  if (isWav) {
+    audio = await AudioDecoder.decodeRange(
+      req.path,
+      startSample: req.startSample,
+      count: req.count,
+    );
+  } else {
+    audio = await NativeAudioDecoder.decodeRange(
+      req.path,
+      startSample: req.startSample,
+      count: req.count,
+    );
+  }
+  final resampled = audio.resampleTo(req.targetSampleRate);
   return _renderSpectrogramChunkPixels(
-    audio,
+    resampled,
     fftSize: req.fftSize,
     hop: req.hop,
     maxDisplayBins: req.maxDisplayBins,
@@ -354,169 +362,21 @@ _SpectrogramChunkPixels? _renderSpectrogramChunkPixels(
 /// `BehaviorSubject` is not sendable, so the spawn fails with
 /// "object is unsendable". By keeping this wrapper top-level, the
 /// closure only captures the two `String` parameters.
-Future<String?> _runFlacTranscodeIsolate(String flacPath, String wavPath) {
-  return Isolate.run(
-    () => _transcodeFlacToWav(flacPath: flacPath, wavPath: wavPath),
-  );
-}
-
 /// Run the spectrogram chunk decode+render in a fresh background isolate.
 ///
-/// Top-level for the same reason as [_runFlacTranscodeIsolate]: closures
-/// constructed inside a `State` method capture `this`, which pulls in
-/// just_audio's [AudioPlayer] → rxdart `BehaviorSubject` (unsendable)
-/// and aborts the spawn with "object is unsendable".
+/// Top-level closures constructed inside a `State` method capture `this`,
+/// which pulls in just_audio's [AudioPlayer] → rxdart `BehaviorSubject`
+/// (unsendable) and aborts the spawn with "object is unsendable".
 Future<_SpectrogramChunkPixels?> _runSpectrogramChunkIsolate(
   _SpectrogramChunkRequest request,
 ) {
-  return Isolate.run(() => _decodeAndRenderSpectrogramChunk(request));
-}
-
-/// Transcode a FLAC source to a 16-bit PCM WAV at [wavPath] in a single
-/// sequential pass. Designed to run inside `Isolate.run` so the heavy
-/// per-frame FLAC decode never touches the UI thread.
-///
-/// This buys us cheap random access for the on-demand spectrogram
-/// loader: FLAC has no built-in seek table so per-chunk range decodes
-/// scale as O(N²) (every chunk re-reads the full file and re-walks all
-/// preceding frames). After this one-pass transcode, chunk loads use
-/// the WAV range path, which is a true file seek.
-///
-/// Returns the absolute WAV path on success, or `null` if the source
-/// can't be decoded.
-Future<String?> _transcodeFlacToWav({
-  required String flacPath,
-  required String wavPath,
-}) async {
-  RandomAccessFile? raf;
-  try {
-    // Probe header for sample rate / total samples without decoding.
-    final meta = await AudioDecoder.inspectFile(flacPath);
-    final sampleRate = meta.sampleRate;
-    final totalSamples = meta.totalSamples;
-    if (sampleRate <= 0) {
-      // ignore: avoid_print
-      print('[spec-transcode] bad sample rate for $flacPath');
-      return null;
+  final token = RootIsolateToken.instance;
+  return Isolate.run(() {
+    if (token != null) {
+      BackgroundIsolateBinaryMessenger.ensureInitialized(token);
     }
-
-    final file = File(wavPath);
-    await file.parent.create(recursive: true);
-    raf = await file.open(mode: FileMode.write);
-
-    // Write a placeholder 44-byte header; sizes are patched at the end.
-    final header = ByteData(44);
-    header
-      ..setUint8(0, 0x52) // R
-      ..setUint8(1, 0x49) // I
-      ..setUint8(2, 0x46) // F
-      ..setUint8(3, 0x46) // F
-      ..setUint32(4, 0, Endian.little) // riff size (patched)
-      ..setUint8(8, 0x57) // W
-      ..setUint8(9, 0x41) // A
-      ..setUint8(10, 0x56) // V
-      ..setUint8(11, 0x45) // E
-      ..setUint8(12, 0x66) // f
-      ..setUint8(13, 0x6D) // m
-      ..setUint8(14, 0x74) // t
-      ..setUint8(15, 0x20) // (space)
-      ..setUint32(16, 16, Endian.little) // fmt size
-      ..setUint16(20, 1, Endian.little) // PCM
-      ..setUint16(22, 1, Endian.little) // mono
-      ..setUint32(24, sampleRate, Endian.little)
-      ..setUint32(28, sampleRate * 2, Endian.little) // byte rate
-      ..setUint16(32, 2, Endian.little) // block align
-      ..setUint16(34, 16, Endian.little) // bits per sample
-      ..setUint8(36, 0x64) // d
-      ..setUint8(37, 0x61) // a
-      ..setUint8(38, 0x74) // t
-      ..setUint8(39, 0x61) // a
-      ..setUint32(40, 0, Endian.little); // data size (patched)
-    await raf.writeFrom(header.buffer.asUint8List());
-
-    // Stream 5-second non-overlapping windows straight to disk so we
-    // never hold the full decoded buffer in RAM (a 1 h FLAC would be
-    // ~330 MB of Int16 otherwise).
-    const windowSec = 5;
-    final windowSamples = sampleRate * windowSec;
-    final totalSec =
-        totalSamples > 0
-            ? (totalSamples / sampleRate).ceil()
-            : 60 * 60 * 24; // unknown → cap at 24 h
-    final maxWindows = (totalSec / windowSec).ceil() + 1;
-
-    var bytesWritten = 0;
-    final swatch = Stopwatch()..start();
-    await AudioDecoder.decodeFlacWindows(
-      flacPath,
-      windowSamples: windowSamples,
-      stepSamples: windowSamples,
-      maxWindows: maxWindows,
-      onWindow: (windowIndex, startSample, window) async {
-        final samples = window.samples;
-        if (samples.isEmpty) return true;
-        // Trim trailing zero-padding on the final window if we know the
-        // total sample count.
-        var writeCount = samples.length;
-        if (totalSamples > 0) {
-          final remaining = totalSamples - startSample;
-          if (remaining < writeCount) writeCount = remaining;
-        }
-        if (writeCount <= 0) return false;
-        await raf!.writeFrom(
-          samples.buffer.asUint8List(samples.offsetInBytes, writeCount * 2),
-        );
-        bytesWritten += writeCount * 2;
-        // Progress log every ~60 s of decoded audio so a long decode
-        // doesn't look frozen.
-        if (windowIndex % 12 == 0) {
-          // ignore: avoid_print
-          print(
-            '[spec-transcode] window $windowIndex / $maxWindows '
-            '(${(startSample / sampleRate).round()}s decoded, '
-            '${swatch.elapsedMilliseconds}ms elapsed)',
-          );
-        }
-        return true;
-      },
-    );
-
-    // Patch RIFF size + data size now that we know how much we wrote.
-    await raf.setPosition(4);
-    final riffSize = ByteData(4)
-      ..setUint32(0, 36 + bytesWritten, Endian.little);
-    await raf.writeFrom(riffSize.buffer.asUint8List());
-    await raf.setPosition(40);
-    final dataSize = ByteData(4)..setUint32(0, bytesWritten, Endian.little);
-    await raf.writeFrom(dataSize.buffer.asUint8List());
-    await raf.close();
-    raf = null;
-
-    if (bytesWritten <= 0) {
-      // ignore: avoid_print
-      print('[spec-transcode] no samples decoded from $flacPath');
-      try {
-        await File(wavPath).delete();
-      } catch (_) {}
-      return null;
-    }
-    // ignore: avoid_print
-    print(
-      '[spec-transcode] wrote ${bytesWritten ~/ 1024} KiB to $wavPath '
-      '(sr=$sampleRate, totalSamples=$totalSamples)',
-    );
-    return wavPath;
-  } catch (e, st) {
-    // ignore: avoid_print
-    print('[spec-transcode] failed for $flacPath: $e\n$st');
-    try {
-      await raf?.close();
-    } catch (_) {}
-    try {
-      await File(wavPath).delete();
-    } catch (_) {}
-    return null;
-  }
+    return _decodeAndRenderSpectrogramChunk(request);
+  });
 }
 
 class _SpectrogramImageResult {
@@ -550,7 +410,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<PlayerState>? _clipPlayerStateSubscription;
-  final ValueNotifier<Duration> _positionNotifier = ValueNotifier(Duration.zero);
+  final ValueNotifier<Duration> _positionNotifier = ValueNotifier(
+    Duration.zero,
+  );
   Duration get _position => _positionNotifier.value;
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
@@ -625,13 +487,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// Source path/metadata for range-decoded spectrogram chunks.
   String? _spectrogramAudioPath;
   AudioMetadata? _spectrogramAudioMetadata;
-
-  /// Temporary WAV transcoded from a long FLAC source so chunk loads
-  /// can use [_decodeWavRange]'s real file-seek path instead of
-  /// re-reading and re-decoding the entire FLAC for every chunk
-  /// (which made the spectrogram never appear on 1 h recordings).
-  /// Deleted in [dispose].
-  String? _tempSpectrogramWavPath;
 
   /// Detailed spectrogram chunks keyed by absolute recording seconds.
   final List<_SpectrogramChunk> _spectrogramChunks = [];
@@ -1017,46 +872,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 path,
                 _formatLabelForPath(path),
               );
-      final shouldLazyLoad =
-          canDart && metadata.decodedPcmBytes >= 128 * 1024 * 1024;
-
-      // For long FLAC sources, transcode once to a temp WAV so chunk
-      // loads can use real file-seek range reads instead of re-reading
-      // and re-decoding the entire FLAC for every chunk (O(N²)).
-      // The transcode itself is one sequential pass and runs in an
-      // isolate so the UI never blocks.
+      final shouldLazyLoad = metadata.decodedPcmBytes >= 128 * 1024 * 1024;
       var sourcePath = path;
       var sourceMetadata = metadata;
-      if (shouldLazyLoad && metadata.format == 'FLAC') {
-        final wavPath = await _temporaryWavPathFor(path);
-        final existing = File(wavPath);
-        String? transcoded;
-        if (await existing.exists() && (await existing.length()) > 44) {
-          // Cached transcode from a previous open of this exact file.
-          // ignore: avoid_print
-          print('[spec-transcode] reusing cached WAV $wavPath');
-          transcoded = wavPath;
-        } else {
-          // ignore: avoid_print
-          print('[spec-transcode] starting FLAC→WAV transcode for $path');
-          transcoded = await _runFlacTranscodeIsolate(path, wavPath);
-          if (!mounted || generation != _spectrogramGeneration) return;
-        }
-        if (transcoded != null) {
-          // Remember the temp file so dispose() can delete it, and
-          // delete any previous one (session-scoped, not shared).
-          await _disposeTempSpectrogramWav();
-          _tempSpectrogramWavPath = transcoded;
-          sourcePath = transcoded;
-          // Re-inspect so totalSamples / sampleRate reflect the WAV
-          // (they should match the FLAC, but be defensive).
-          try {
-            sourceMetadata = await AudioDecoder.inspectFile(transcoded);
-          } catch (_) {
-            // Keep FLAC metadata as a fallback.
-          }
-        }
-      }
 
       if (mounted) {
         setState(() {
@@ -1075,14 +893,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       }
 
       if (shouldLazyLoad) {
-        // Match the strip's own _initialViewSecondsFor() logic so the
-        // initial chunk batch covers the same range the user will
-        // actually see on first paint. The strip *also* fires a
-        // viewport request via addPostFrameCallback, but that callback
-        // runs before `_spectrogramLazy` flips on (transcode is still
-        // running), so it no-ops. Without a generous bootstrap view
-        // here the user lands on a wide overview with only the first
-        // 30 s chunk filled.
         final totalSec = sourceMetadata.duration.inMicroseconds / 1000000.0;
         final userPref = ref.read(spectrogramDurationProvider).toDouble();
         final bootstrapView =
@@ -1090,18 +900,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 ? userPref
                 : totalSec <= 300.0
                 ? math.min(userPref, totalSec)
-                : (totalSec * 0.1).clamp(userPref, 180.0).toDouble();
+                : (totalSec * 0.1).clamp(userPref, 60.0).toDouble();
         await _ensureSpectrogramForViewport(
           absoluteCenterSec: bootstrapView / 2,
           viewSeconds: bootstrapView,
           generation: generation,
         );
-        return;
-      }
-
-      if (!canDart && metadata.decodedPcmBytes >= 128 * 1024 * 1024) {
-        // Native range decoding is not available yet. Keep playback usable
-        // instead of risking a full decoded PCM allocation for the review image.
         return;
       }
 
@@ -1182,7 +986,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       1,
       binCount,
     );
-    final binStride = (visibleBins / maxDisplayBins).ceil().clamp(1, visibleBins);
+    final binStride = (visibleBins / maxDisplayBins).ceil().clamp(
+      1,
+      visibleBins,
+    );
     final displayBins = (visibleBins / binStride).ceil();
 
     final lut = SpectrogramColorMap.lut('viridis');
@@ -1554,45 +1361,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
     _fullSpectrogramImage?.dispose();
     _clearSpectrogramChunks();
-    // Fire-and-forget temp-WAV cleanup; we can't await in dispose.
-    final tempPath = _tempSpectrogramWavPath;
-    if (tempPath != null) {
-      unawaited(File(tempPath).delete().catchError((_) => File(tempPath)));
-    }
-    _tempSpectrogramWavPath = null;
     _player.dispose();
     _clipPlayer.dispose();
     _speciesSearchController.dispose();
     super.dispose();
-  }
-
-  /// Build a stable temp-WAV destination for [flacPath]. Reusing the
-  /// same name across re-opens lets a previous transcode be reused if
-  /// it still exists, but we still treat it as session-scoped and
-  /// delete it on dispose to keep temp clean.
-  Future<String> _temporaryWavPathFor(String flacPath) async {
-    final temp = await getTemporaryDirectory();
-    final dir = Directory(p.join(temp.path, 'birdnet_spec_wav'));
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
-    }
-    final stat = await File(flacPath).stat();
-    final keyInput =
-        '${flacPath}_${stat.size}_${stat.modified.millisecondsSinceEpoch}';
-    final key = keyInput.hashCode.toUnsigned(32).toRadixString(16);
-    return p.join(dir.path, 'spec_$key.wav');
-  }
-
-  Future<void> _disposeTempSpectrogramWav() async {
-    final tempPath = _tempSpectrogramWavPath;
-    if (tempPath == null) return;
-    try {
-      final f = File(tempPath);
-      if (await f.exists()) await f.delete();
-    } catch (_) {
-      // Best-effort.
-    }
-    _tempSpectrogramWavPath = null;
   }
 
   // ── Actions ─────────────────────────────────────────────────────────
@@ -3155,9 +2927,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                       widget.session.latitude != null &&
                               widget.session.longitude != null
                           ? LatLng(
-                              widget.session.latitude!,
-                              widget.session.longitude!,
-                            )
+                            widget.session.latitude!,
+                            widget.session.longitude!,
+                          )
                           : null,
                 ),
               ),
@@ -3602,8 +3374,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       ),
     );
   }
-
-
 
   // ── Grouping Logic ──────────────────────────────────────────────────
 
