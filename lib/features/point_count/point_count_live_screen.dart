@@ -95,7 +95,7 @@ class PointCountLiveScreen extends ConsumerStatefulWidget {
 class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     with WidgetsBindingObserver {
   /// Remaining time in the countdown (updated every second).
-  late Duration _remaining;
+  late final ValueNotifier<Duration> _remainingNotifier;
 
   /// Periodic timer that ticks every second to update the countdown.
   Timer? _countdownTimer;
@@ -110,7 +110,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _remaining = Duration(minutes: widget.durationMinutes);
+    _remainingNotifier = ValueNotifier(
+      Duration(minutes: widget.durationMinutes),
+    );
 
     final controller = ref.read(liveControllerProvider);
     controller.onStateChanged = _onControllerStateChanged;
@@ -203,13 +205,12 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     _onControllerStateChanged();
 
     // Start the countdown.
-    _remaining = Duration(minutes: widget.durationMinutes);
+    _remainingNotifier.value = Duration(minutes: widget.durationMinutes);
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() {
-        _remaining -= const Duration(seconds: 1);
-      });
-      if (_remaining <= Duration.zero) {
+      final next = _remainingNotifier.value - const Duration(seconds: 1);
+      _remainingNotifier.value = next;
+      if (next <= Duration.zero) {
         _countdownTimer?.cancel();
         _onCountdownComplete();
       }
@@ -352,6 +353,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _countdownTimer?.cancel();
+    _remainingNotifier.dispose();
     WakelockService.disable();
     super.dispose();
   }
@@ -424,15 +426,23 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
-    final statusBar = _CountdownStatusBar(
-      remaining: _remaining,
-      totalDuration: Duration(minutes: widget.durationMinutes),
-      liveState: liveState,
-      onStop: _confirmStopEarly,
+    final statusBar = ValueListenableBuilder<Duration>(
+      valueListenable: _remainingNotifier,
+      builder:
+          (context, remaining, _) => _CountdownStatusBar(
+            remaining: remaining,
+            totalDuration: Duration(minutes: widget.durationMinutes),
+            liveState: liveState,
+            onStop: _confirmStopEarly,
+          ),
     );
-    final progressBar = _CountdownProgressBar(
-      remaining: _remaining,
-      totalDuration: Duration(minutes: widget.durationMinutes),
+    final progressBar = ValueListenableBuilder<Duration>(
+      valueListenable: _remainingNotifier,
+      builder:
+          (context, remaining, _) => _CountdownProgressBar(
+            remaining: remaining,
+            totalDuration: Duration(minutes: widget.durationMinutes),
+          ),
     );
     final spectrogram = Container(
       color: theme.colorScheme.surfaceContainerLowest,
@@ -741,7 +751,11 @@ class _PointCountInfoBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(AppIcons.infoOutline, size: 14, color: theme.colorScheme.primary),
+          Icon(
+            AppIcons.infoOutline,
+            size: 14,
+            color: theme.colorScheme.primary,
+          ),
           const SizedBox(width: 4),
           Text(
             parts.join(' · '),

@@ -144,8 +144,9 @@ FilterQuality spectrogramFilterQualityFromString(String value) {
     case 'medium':
       return FilterQuality.medium;
     case 'high':
-    default:
       return FilterQuality.high;
+    default:
+      return FilterQuality.medium;
   }
 }
 
@@ -193,12 +194,16 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
     if (widget.hopSize != null) return widget.hopSize!;
     switch (widget.quality.toLowerCase()) {
       case 'low':
-        return widget.fftSize; // 0% overlap, 2x fewer FFTs/columns, 50% CPU savings
+        // 0% overlap, 2x fewer FFTs/columns, roughly 50% CPU savings.
+        return widget.fftSize;
       case 'medium':
-        return widget.fftSize ~/ 2; // 50% overlap, standard behavior
+        // 50% overlap, standard behavior.
+        return widget.fftSize ~/ 2;
       case 'high':
+        // 75% overlap, smoother scrolling, more CPU.
+        return widget.fftSize ~/ 4;
       default:
-        return widget.fftSize ~/ 4; // 75% overlap, ultra smooth, more CPU
+        return widget.fftSize ~/ 2;
     }
   }
 
@@ -211,7 +216,8 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
 
   /// Resolves the GPU scaling quality filter.
   FilterQuality get _effectiveFilterQuality =>
-      widget.filterQuality ?? spectrogramFilterQualityFromString(widget.quality);
+      widget.filterQuality ??
+      spectrogramFilterQualityFromString(widget.quality);
 
   /// Duration each column represents — used for time axis labels.
   Duration get _hopDuration =>
@@ -376,10 +382,7 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: CustomPaint(
-        painter: _painter,
-        size: Size.infinite,
-      ),
+      child: CustomPaint(painter: _painter, size: Size.infinite),
     );
   }
 }

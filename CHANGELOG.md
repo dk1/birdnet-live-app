@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Optimized
 
 - Decoupled real-time audio playback position tracking from parent state updates in the Session Review screen by introducing a `ValueNotifier<Duration>` listener interface for spectrogram scrolling and local active status updates on `_SpeciesTile` widgets, completely eliminating full-screen and map component redraw stutters.
+- Localized Point Count countdown updates and active Survey elapsed-time/stat updates into small listenable widgets, preventing full dashboard rebuilds once per second during recording.
 
 ## [0.16.2] - 2026-06-03
 
@@ -36,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Enhanced onboarding screens with responsive maximum-width boundaries (`ContentWidthConstraint`) to prevent horizontal layout stretching, significantly improving native tablet/iPad readability.
 - Enhanced the on-device HTML/CSS mockup canvas scaling rules to render tablet screens using proportional, undistorted top-alignment instead of stretching them.
 - Updated the export filename configuration to prefix all iPad mockups and screenshots with `ipad_` (e.g., `ipad_en-01-menu.png`) and generated them across all localizations.
 
