@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.5] - 2026-06-04
+
+### Added
+
+- Added support for compiling experimental Windows builds.
+- Added Windows support for app launcher icons.
+- Implemented Windows Inno Setup installer and Windows MSIX signing support.
+- Configured CI workflows to automatically generate Windows MSIX packages, Inno Setup installers, and Winget manifests.
+
 ## [0.16.4] - 2026-06-04
 
 ### Fixed
