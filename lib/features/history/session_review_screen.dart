@@ -85,6 +85,7 @@ import '../recording/audio_decoder.dart';
 import '../recording/native_audio_decoder.dart';
 import '../recording/playback_normalizer.dart';
 import '../spectrogram/color_maps.dart';
+import '../spectrogram/spectrogram_widget.dart';
 import 'export_metadata_helper.dart';
 import 'session_export.dart';
 import 'session_map_screen.dart';
@@ -549,7 +550,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<PlayerState>? _clipPlayerStateSubscription;
-  Duration _position = Duration.zero;
+  final ValueNotifier<Duration> _positionNotifier = ValueNotifier(Duration.zero);
+  Duration get _position => _positionNotifier.value;
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
   bool _audioAvailable = false;
@@ -730,8 +732,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         setState(() {
           _clipOffsetSec = snapshotClipOffset;
           _duration = clippedDur ?? (endDur - startDur);
-          _position = Duration.zero;
         });
+        _positionNotifier.value = Duration.zero;
         _invalidateLazySpectrogramPipeline();
       }
     } else {
@@ -742,13 +744,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         setState(() {
           _clipOffsetSec = 0.0;
           _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
-          _position = Duration.zero;
           if (_spectrogramImage != null &&
               !identical(_spectrogramImage, _fullSpectrogramImage)) {
             _spectrogramImage!.dispose();
           }
           _spectrogramImage = _fullSpectrogramImage;
         });
+        _positionNotifier.value = Duration.zero;
         // The strip's own didUpdateWidget will fire a viewport request
         // for the actual visible window once the duration/clip changes
         // propagate; just make sure any stale lazy state (pending chunk
@@ -839,8 +841,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           // Snap to the exact stop position so the playhead doesn't
           // visually overshoot the end of the cluster.
           _player.seek(stopAt);
+          _positionNotifier.value = stopAt;
+          return;
         }
-        setState(() => _position = pos);
+
+        _positionNotifier.value = pos;
       });
       _playerStateSubscription = _player.playerStateStream.listen((state) {
         if (mounted) {
@@ -931,8 +936,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       setState(() {
         _clipOffsetSec = start;
         _duration = clippedDur ?? (endDur - startDur);
-        _position = Duration.zero;
       });
+      _positionNotifier.value = Duration.zero;
     }
   }
 
@@ -1138,14 +1143,27 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     DecodedAudio audio, {
     int maxColumns = 6000,
   }) async {
-    // Larger FFT (2048) gives ~12 Hz/bin resolution which renders
-    // formants and harmonic structure much more clearly than the
-    // previous 1024-point FFT (~23 Hz/bin). The hop is increased to
-    // 1024 so the per-second column count stays similar — keeping the
-    // total spectrogram-image memory comparable for long sessions while
-    // doubling the vertical (frequency) resolution.
+    final String quality = ref.read(spectrogramQualityProvider);
+    int maxDisplayBins;
+    int hop;
+
+    switch (quality.toLowerCase()) {
+      case 'low':
+        maxDisplayBins = 128;
+        hop = 2048;
+        break;
+      case 'medium':
+        maxDisplayBins = 256;
+        hop = 1024;
+        break;
+      case 'high':
+      default:
+        maxDisplayBins = 512;
+        hop = 512;
+        break;
+    }
+
     const fftSize = 2048;
-    const hop = 1024;
     const maxFreqHz = 16000;
     const dbFloor = -80.0;
     const dbCeiling = 0.0;
@@ -1160,10 +1178,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     final nyquist = audio.sampleRate / 2;
     final binCount = fftSize ~/ 2 + 1;
-    final displayBins = (maxFreqHz / nyquist * binCount).round().clamp(
+    final visibleBins = (maxFreqHz / nyquist * binCount).round().clamp(
       1,
       binCount,
     );
+    final binStride = (visibleBins / maxDisplayBins).ceil().clamp(1, visibleBins);
+    final displayBins = (visibleBins / binStride).ceil();
 
     final lut = SpectrogramColorMap.lut('viridis');
     final pixels = Uint8List(numCols * displayBins * 4);
@@ -1190,14 +1210,20 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       }
       final spectrum = fft.realFft(input);
 
-      for (var bin = 0; bin < displayBins; bin++) {
-        final re = spectrum[bin].x;
-        final im = spectrum[bin].y;
-        final power = re * re + im * im;
+      for (var row = 0; row < displayBins; row++) {
+        final binStart = row * binStride;
+        final binEnd = (binStart + binStride).clamp(0, visibleBins);
+        var power = 0.0;
+        for (var bin = binStart; bin < binEnd; bin++) {
+          final re = spectrum[bin].x;
+          final im = spectrum[bin].y;
+          power += re * re + im * im;
+        }
+        power /= (binEnd - binStart);
         final db = 10 * math.log(power + 1e-10) / math.ln10;
         final norm = ((db - dbFloor) / (dbCeiling - dbFloor)).clamp(0.0, 1.0);
 
-        final y = displayBins - 1 - bin;
+        final y = displayBins - 1 - row;
         final pxOffset = (y * numCols + c) * 4;
         final lutIdx = (norm * 255).round().clamp(0, 255);
         final color = lut[lutIdx];
@@ -1388,14 +1414,27 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       final count =
           ((chunkEndSec - chunkStartSec) * metadata.sampleRate).ceil();
 
-      // Pick lower-detail STFT params for long recordings so each chunk
-      // costs less CPU. The spectrogram strip is only ~150 logical px
-      // tall, so frequency bins above that count are squashed into
-      // sub-pixel rows anyway — `maxDisplayBins` caps that waste.
+      final String quality = ref.read(spectrogramQualityProvider);
       final long = totalSec > 600.0;
       final fftSize = 2048;
-      final hop = long ? 2048 : 1024;
-      const maxDisplayBins = 256;
+
+      int maxDisplayBins;
+      int hop;
+      switch (quality.toLowerCase()) {
+        case 'low':
+          maxDisplayBins = 128;
+          hop = long ? 3072 : 2048;
+          break;
+        case 'medium':
+          maxDisplayBins = 256;
+          hop = long ? 2048 : 1024;
+          break;
+        case 'high':
+        default:
+          maxDisplayBins = 512;
+          hop = long ? 1024 : 512;
+          break;
+      }
 
       // Decode + STFT in a background isolate so pinch-zoom never stalls
       // the UI thread. Only the cheap GPU upload happens on main.
@@ -1506,6 +1545,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   @override
   void dispose() {
+    _positionNotifier.dispose();
     _positionSubscription?.cancel();
     _playerStateSubscription?.cancel();
     _clipPlayerStateSubscription?.cancel();
@@ -2057,8 +2097,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       setState(() {
         _clipOffsetSec = start;
         _duration = clippedDur ?? (endDur - startDur);
-        _position = Duration.zero;
       });
+      _positionNotifier.value = Duration.zero;
       // Drop any in-flight lazy chunk loads from the pre-trim viewport
       // so the strip's follow-up viewport request for the new clip
       // range can schedule freshly instead of getting stuck behind a
@@ -2079,7 +2119,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _trimEndSec = null;
       _clipOffsetSec = 0.0;
       _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
-      _position = Duration.zero;
       // Restore the full-recording spectrogram.
       if (_spectrogramImage != null &&
           !identical(_spectrogramImage, _fullSpectrogramImage)) {
@@ -2089,6 +2128,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _isDirty = true;
       _trimMode = false;
     });
+    _positionNotifier.value = Duration.zero;
     if (_spectrogramLazy) {
       _requestSpectrogramViewport(0, 10);
     }
@@ -3115,9 +3155,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                       widget.session.latitude != null &&
                               widget.session.longitude != null
                           ? LatLng(
-                            widget.session.latitude!,
-                            widget.session.longitude!,
-                          )
+                              widget.session.latitude!,
+                              widget.session.longitude!,
+                            )
                           : null,
                 ),
               ),
@@ -3167,6 +3207,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                     ? _fullDurationSec
                     : _duration.inMicroseconds / 1000000.0),
             onChanged: _onTrimChanged,
+            quality: ref.watch(spectrogramQualityProvider),
           )
         else
           Stack(
@@ -3175,7 +3216,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 spectrogramImage: _spectrogramImage,
                 spectrogramChunks: List.unmodifiable(_spectrogramChunks),
                 decoding: _decoding,
-                position: _position,
+                positionNotifier: _positionNotifier,
                 duration: _duration,
                 timelineOffsetSec: _clipOffsetSec,
                 onViewportChanged: _requestSpectrogramViewport,
@@ -3184,6 +3225,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 isPlaying: _isPlaying,
                 userDefaultViewSeconds:
                     ref.watch(spectrogramDurationProvider).toDouble(),
+                quality: ref.watch(spectrogramQualityProvider),
               ),
               // Lazy trim editor: no full-file spectrogram thumbnail is
               // available, so we overlay trim handles directly on the
@@ -3427,18 +3469,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         itemBuilder: (context, index) {
           final group = displayGroup(sorted[index]);
           final isExpanded = _expandedSpecies.contains(group.scientificName);
-          final isActive =
-              _isSpeciesActive(group) ||
-              (_activeClipCluster != null &&
-                  group.clusters.contains(_activeClipCluster));
           return _SpeciesTile(
             key: ValueKey('species-tile-${group.scientificName}'),
             group: group,
             sessionStart: widget.session.startTime,
             isExpanded: isExpanded,
-            isActive: isActive,
-            activePositionSec:
-                _isPlaying ? _position.inMicroseconds / 1e6 : null,
+            positionNotifier: _positionNotifier,
+            isPlaying: _isPlaying,
             activeCluster: _activeClipCluster,
             clipOffsetSec: _clipOffsetSec,
             windowSec: widget.session.settings.windowDuration,
@@ -3566,30 +3603,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     );
   }
 
-  /// Whether any detection in [group] spans the current playback position.
-  bool _isSpeciesActive(_SpeciesGroup group) {
-    // Only highlight while audio is actually playing — a paused player
-    // (whether by the user or by the cluster auto-stop) should leave the
-    // species list in its idle styling.
-    if (!_isPlaying) return false;
-    final windowSec = widget.session.settings.windowDuration;
-    final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
-    for (final r in group.allRecords) {
-      final offset = r.timestamp.difference(widget.session.startTime);
-      // Map the absolute offset into clip-relative coordinates.
-      final rel = offset - clipOffset;
-      // Honour the recorded continuous-detection duration when present;
-      // otherwise fall back to a single inference window starting at the
-      // detection timestamp.
-      final detEnd =
-          r.endTimestamp != null
-              ? r.endTimestamp!.difference(widget.session.startTime) -
-                  clipOffset
-              : rel + Duration(seconds: windowSec);
-      if (_position >= rel && _position <= detEnd) return true;
-    }
-    return false;
-  }
+
 
   // ── Grouping Logic ──────────────────────────────────────────────────
 

@@ -1031,6 +1031,7 @@ class _LiveSpectrogram extends ConsumerWidget {
         maxDisplayFrequency: maxFreq,
         logAmplitude: logAmplitude,
         filterQuality: spectrogramFilterQualityFromString(quality),
+        quality: quality,
       ),
     );
   }
