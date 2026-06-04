@@ -212,3 +212,67 @@ jobs:
           files: |
             build/windows/x64/runner/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64.zip
             build/windows/x64/runner/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64_setup.exe
+
+  prepare_winget:
+    name: Prepare Winget Manifests
+    runs-on: windows-latest
+    needs:
+      - build_windows
+    steps:
+      - name: Download source snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: repo-source
+          path: .
+
+      - name: Resolve app version metadata
+        shell: pwsh
+        run: |
+          $pubspecVersion = (Select-String -Path pubspec.yaml -Pattern '^version:\s*(.+)$').Matches[0].Groups[1].Value.Trim()
+          $appVersion = $pubspecVersion.Split('+')[0]
+          "APP_VERSION=$appVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Generate Winget manifests
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          $installerUrl = "https://github.com/$env:REPOSITORY/releases/download/$env:RELEASE_TAG/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64_setup.exe"
+          $releaseNotesUrl = "https://github.com/$env:REPOSITORY/releases/tag/$env:RELEASE_TAG"
+
+          .\tools\generate_winget_manifests.ps1 `
+            -PackageIdentifier 'BirdNET.BirdNETLive' `
+            -PackageVersion "${{ env.APP_VERSION }}" `
+            -InstallerUrl $installerUrl `
+            -Publisher 'BirdNET' `
+            -PackageName 'BirdNET Live' `
+            -Moniker 'birdnet-live' `
+            -License 'MIT' `
+            -ShortDescription 'Real-time bird species identification using on-device BirdNET+ inference.' `
+            -PublisherUrl 'https://github.com/birdnet-team' `
+            -PackageUrl 'https://github.com/birdnet-team/birdnet-live-app' `
+            -PublisherSupportUrl 'https://github.com/birdnet-team/birdnet-live-app/issues' `
+            -ReleaseNotesUrl $releaseNotesUrl `
+            -OutputRoot 'release/winget'
+
+      - name: Upload Winget manifests artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: winget-manifests-v${{ env.APP_VERSION }}
+          path: release/winget/manifests
+          if-no-files-found: error
+
+      - name: Create Winget manifests zip
+        shell: pwsh
+        run: |
+          $zipPath = "release/winget/winget-manifests-v${{ env.APP_VERSION }}.zip"
+          if (Test-Path $zipPath) {
+            Remove-Item $zipPath -Force
+          }
+          Compress-Archive -Path release/winget/manifests -DestinationPath $zipPath
+
+      - name: Attach Winget manifests to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/winget/winget-manifests-v${{ env.APP_VERSION }}.zip

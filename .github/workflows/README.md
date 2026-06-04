@@ -143,3 +143,34 @@ The workflow now publishes two Windows artifacts:
 
 - `BirdNET_Live_v<version>_windows_x64.zip` for portable use
 - `BirdNET_Live_v<version>_windows_x64_setup.exe` for guided installation
+
+## Winget Manifest Preparation
+
+The release workflow generates Winget-compatible manifest files from the Windows installer for every published release.
+
+### What Is Produced
+
+- Workflow artifact: `winget-manifests-v<version>`
+- Release asset: `winget-manifests-v<version>.zip`
+- Manifest root: `release/winget/manifests/`
+- Files generated for `BirdNET.BirdNETLive`:
+  - `BirdNET.BirdNETLive.yaml`
+  - `BirdNET.BirdNETLive.installer.yaml`
+  - `BirdNET.BirdNETLive.locale.en-US.yaml`
+
+### How To Publish To Winget
+
+1. Download `winget-manifests-v<version>.zip` from the GitHub release (or the workflow artifact).
+2. Copy the generated manifest directory into your `winget-pkgs` fork using the same path structure.
+3. Open a PR from your fork to `microsoft/winget-pkgs`.
+
+### Local Manifest Generation
+
+Use this helper script if you need to regenerate manifests locally:
+
+```powershell
+.\tools\generate_winget_manifests.ps1 `
+  -PackageIdentifier 'BirdNET.BirdNETLive' `
+  -PackageVersion '0.16.1' `
+  -InstallerUrl 'https://github.com/birdnet-team/birdnet-live-app/releases/download/v0.16.1/BirdNET_Live_v0.16.1_windows_x64_setup.exe'
+```
