@@ -2,6 +2,40 @@
 
 This folder contains CI workflows for BirdNET Live.
 
+## CI Configuration Reference
+
+Configure the following repository-level GitHub Actions settings in `Settings > Secrets and variables > Actions`.
+
+### Repository Secrets
+
+- `ANDROID_KEYSTORE_BASE64` (required for Android release signing)
+- `ANDROID_STORE_PASSWORD` (required for Android release signing)
+- `ANDROID_KEY_ALIAS` (required for Android release signing)
+- `ANDROID_KEY_PASSWORD` (required for Android release signing)
+- `WINGET_CREATE_GITHUB_TOKEN` (optional, required only for automatic Winget PR submission)
+
+### Repository Variables
+
+- `WINGET_AUTO_SUBMIT` (optional)
+  - Set to `true` to enable automatic Winget submission.
+  - Any other value keeps the manual manifest-only flow.
+- `WINGET_SUBMIT_MODE` (optional)
+  - `update` (default behavior when unset)
+  - `new` (for first-time package submission)
+
+### Optional CLI Setup (Secrets and Variables)
+
+```bash
+gh secret set ANDROID_KEYSTORE_BASE64
+gh secret set ANDROID_STORE_PASSWORD
+gh secret set ANDROID_KEY_ALIAS
+gh secret set ANDROID_KEY_PASSWORD
+gh secret set WINGET_CREATE_GITHUB_TOKEN
+
+gh variable set WINGET_AUTO_SUBMIT --body "true"
+gh variable set WINGET_SUBMIT_MODE --body "update"
+```
+
 ## Android Release Signing in CI
 
 The Android job in [build.yml](build.yml) signs the release APK using GitHub secrets.
