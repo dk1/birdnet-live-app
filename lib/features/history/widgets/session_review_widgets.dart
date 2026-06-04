@@ -124,12 +124,17 @@ class _SummaryHeader extends ConsumerWidget {
                 const SizedBox(width: 8),
                 InkWell(
                   onTap: () async {
-                    await ref.read(privacyAllowWeatherProvider.notifier).set(true);
+                    await ref
+                        .read(privacyAllowWeatherProvider.notifier)
+                        .set(true);
                     onFetchWeather?.call();
                   },
                   borderRadius: BorderRadius.circular(4),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -568,7 +573,7 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
 
   static const double _defaultViewSeconds = 10.0;
   static const double _minViewSeconds = 1.0;
-  static const double _maxInitialViewSeconds = 180.0;
+  static const double _maxInitialViewSeconds = 60.0;
 
   /// Pick an initial view width that scales with clip length: short
   /// recordings (≤ 5 min) open at the user's preferred live-spectrogram
@@ -593,7 +598,8 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
   @override
   void initState() {
     super.initState();
-    _interpolatedPositionSec = widget.positionNotifier.value.inMicroseconds / 1000000.0;
+    _interpolatedPositionSec =
+        widget.positionNotifier.value.inMicroseconds / 1000000.0;
     widget.positionNotifier.addListener(_onPositionChanged);
     if (widget.duration > Duration.zero) {
       _viewSeconds = _initialViewSecondsFor(widget.duration);
@@ -725,7 +731,9 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
                 timelineOffsetSec: widget.timelineOffsetSec,
                 viewSeconds: _viewSeconds,
                 colorScheme: theme.colorScheme,
-                filterQuality: spectrogramFilterQualityFromString(widget.quality),
+                filterQuality: spectrogramFilterQualityFromString(
+                  widget.quality,
+                ),
               ),
               size: const Size(double.infinity, 150),
             ),
@@ -773,7 +781,8 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
     }
     _scaleStartViewSeconds = _viewSeconds;
     _scaleStartCenterSec =
-        _pannedCenterSec ?? widget.positionNotifier.value.inMicroseconds / 1000000.0;
+        _pannedCenterSec ??
+        widget.positionNotifier.value.inMicroseconds / 1000000.0;
   }
 
   void _handleScaleUpdate(ScaleUpdateDetails details) {
@@ -784,7 +793,8 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
 
     final startView = _scaleStartViewSeconds ?? _viewSeconds;
     final startCenter =
-        _scaleStartCenterSec ?? widget.positionNotifier.value.inMicroseconds / 1000000.0;
+        _scaleStartCenterSec ??
+        widget.positionNotifier.value.inMicroseconds / 1000000.0;
 
     // `details.scale` is *cumulative from gesture start*, not per-frame —
     // so we apply it against the captured `startView` and must NOT reset
@@ -1193,13 +1203,16 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
     // 1. Is species active?
     bool speciesActive = false;
     if (widget.isPlaying) {
-      final clipOffset = Duration(microseconds: (widget.clipOffsetSec * 1e6).round());
+      final clipOffset = Duration(
+        microseconds: (widget.clipOffsetSec * 1e6).round(),
+      );
       for (final r in widget.group.allRecords) {
         final offset = r.timestamp.difference(widget.sessionStart);
         final rel = offset - clipOffset;
-        final detEnd = r.endTimestamp != null
-            ? r.endTimestamp!.difference(widget.sessionStart) - clipOffset
-            : rel + Duration(seconds: widget.windowSec);
+        final detEnd =
+            r.endTimestamp != null
+                ? r.endTimestamp!.difference(widget.sessionStart) - clipOffset
+                : rel + Duration(seconds: widget.windowSec);
         if (position >= rel && position <= detEnd) {
           speciesActive = true;
           break;
@@ -1216,12 +1229,17 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
         final cluster = widget.group.clusters[i];
         bool clusterActive = false;
         for (final r in cluster.records) {
-          final startSec = r.timestamp.difference(widget.sessionStart).inMicroseconds / 1e6 -
+          final startSec =
+              r.timestamp.difference(widget.sessionStart).inMicroseconds / 1e6 -
               widget.clipOffsetSec;
-          final endSec = r.endTimestamp != null
-              ? r.endTimestamp!.difference(widget.sessionStart).inMicroseconds / 1e6 -
-                  widget.clipOffsetSec
-              : startSec + widget.windowSec;
+          final endSec =
+              r.endTimestamp != null
+                  ? r.endTimestamp!
+                              .difference(widget.sessionStart)
+                              .inMicroseconds /
+                          1e6 -
+                      widget.clipOffsetSec
+                  : startSec + widget.windowSec;
           final posSec = position.inMicroseconds / 1e6;
           if (posSec >= startSec && posSec <= endSec) {
             clusterActive = true;
@@ -1264,7 +1282,9 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
     // displayed offset stays aligned with the spectrogram playhead
     // after the audio has been cropped; absolute mode is unaffected
     // since wall-clock time is independent of the trim.
-    final clipOffsetDur = Duration(microseconds: (widget.clipOffsetSec * 1e6).round());
+    final clipOffsetDur = Duration(
+      microseconds: (widget.clipOffsetSec * 1e6).round(),
+    );
     final offsetStr = formatDetectionTime(
       widget.group.firstTimestamp,
       widget.sessionStart,
@@ -1328,7 +1348,8 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                                     : widget.onSeekCluster(
                                       widget.group.clusters.firstWhere(
                                         (c) => c.hasAudioClip,
-                                        orElse: () => widget.group.clusters.first,
+                                        orElse:
+                                            () => widget.group.clusters.first,
                                       ),
                                     ),
                         borderRadius: BorderRadius.circular(16),
@@ -1413,7 +1434,9 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              if (widget.group.allRecords.any((r) => r.isConfirmed))
+                              if (widget.group.allRecords.any(
+                                (r) => r.isConfirmed,
+                              ))
                                 Padding(
                                   padding: const EdgeInsets.only(left: 4),
                                   child: Icon(
@@ -1551,22 +1574,41 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                       clipOffsetSec: widget.clipOffsetSec,
                       windowSec: widget.windowSec,
                       isActive: _activeState.activeClusterIndex == i,
-                      onSeek: () => widget.onSeekCluster(widget.group.clusters[i]),
+                      onSeek:
+                          () => widget.onSeekCluster(widget.group.clusters[i]),
                       onPause: widget.onPause,
-                      onDelete: () => widget.onDeleteCluster(widget.group.clusters[i]),
+                      onDelete:
+                          () =>
+                              widget.onDeleteCluster(widget.group.clusters[i]),
                       onDeleteSpecies: widget.onDeleteSpecies,
-                      onReplace: () => widget.onReplaceCluster(widget.group.clusters[i]),
-                      onToggleConfirm: () => widget.onToggleConfirmCluster(widget.group.clusters[i]),
-                      onShare: () => widget.onShareCluster(widget.group.clusters[i]),
-                      onEditNote: () => widget.onEditNoteCluster(widget.group.clusters[i]),
-                      onEditVoiceMemo: () => widget.onEditVoiceMemoCluster(widget.group.clusters[i]),
+                      onReplace:
+                          () =>
+                              widget.onReplaceCluster(widget.group.clusters[i]),
+                      onToggleConfirm:
+                          () => widget.onToggleConfirmCluster(
+                            widget.group.clusters[i],
+                          ),
+                      onShare:
+                          () => widget.onShareCluster(widget.group.clusters[i]),
+                      onEditNote:
+                          () => widget.onEditNoteCluster(
+                            widget.group.clusters[i],
+                          ),
+                      onEditVoiceMemo:
+                          () => widget.onEditVoiceMemoCluster(
+                            widget.group.clusters[i],
+                          ),
                       onDeleteVoiceMemo:
-                          () => widget.onDeleteVoiceMemoCluster(widget.group.clusters[i]),
+                          () => widget.onDeleteVoiceMemoCluster(
+                            widget.group.clusters[i],
+                          ),
                       isSurvey: widget.isSurvey,
                       audioAvailable: widget.audioAvailable,
                       onShowOnMap:
                           widget.onShowOnMap != null
-                              ? () => widget.onShowOnMap!(widget.group.clusters[i].records.first)
+                              ? () => widget.onShowOnMap!(
+                                widget.group.clusters[i].records.first,
+                              )
                               : null,
                     ),
                 ],
