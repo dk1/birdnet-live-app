@@ -186,11 +186,13 @@ class _SpectrogramChunk {
     required this.startSec,
     required this.endSec,
     required this.image,
+    required this.hop,
   });
 
   final double startSec;
   final double endSec;
   final ui.Image image;
+  final int hop;
 
   void dispose() => image.dispose();
 }
@@ -209,6 +211,8 @@ class _SpectrogramChunk {
 class _SpectrogramChunkRequest {
   const _SpectrogramChunkRequest({
     required this.path,
+    required this.sourceSampleRate,
+    required this.rawPcm16,
     required this.startSample,
     required this.count,
     required this.targetSampleRate,
@@ -218,6 +222,8 @@ class _SpectrogramChunkRequest {
   });
 
   final String path;
+  final int sourceSampleRate;
+  final bool rawPcm16;
   final int startSample;
   final int count;
   final int targetSampleRate;
@@ -250,9 +256,15 @@ class _SpectrogramChunkPixels {
 Future<_SpectrogramChunkPixels?> _decodeAndRenderSpectrogramChunk(
   _SpectrogramChunkRequest req,
 ) async {
-  final canDart = await AudioDecoder.canDecodeDart(req.path);
   final DecodedAudio audio;
-  if (canDart) {
+  if (req.rawPcm16) {
+    audio = await _decodePcm16Range(
+      req.path,
+      sampleRate: req.sourceSampleRate,
+      startSample: req.startSample,
+      count: req.count,
+    );
+  } else if (await AudioDecoder.canDecodeDart(req.path)) {
     audio = await AudioDecoder.decodeRange(
       req.path,
       startSample: req.startSample,
@@ -272,6 +284,39 @@ Future<_SpectrogramChunkPixels?> _decodeAndRenderSpectrogramChunk(
     hop: req.hop,
     maxDisplayBins: req.maxDisplayBins,
   );
+}
+
+Future<DecodedAudio> _decodePcm16Range(
+  String path, {
+  required int sampleRate,
+  required int startSample,
+  required int count,
+}) async {
+  final file = File(path);
+  final fileLength = await file.length();
+  final totalSamples = fileLength ~/ 2;
+  final safeStart = startSample.clamp(0, totalSamples);
+  final safeEnd = (startSample + count).clamp(0, totalSamples);
+  final bytesToRead = math.max(0, safeEnd - safeStart) * 2;
+  final output = Int16List(count);
+  if (bytesToRead <= 0) {
+    return DecodedAudio(samples: output, sampleRate: sampleRate);
+  }
+
+  final raf = await file.open();
+  try {
+    await raf.setPosition(safeStart * 2);
+    final bytes = await raf.read(bytesToRead);
+    final byteData = ByteData.sublistView(bytes);
+    final sampleOffset = safeStart - startSample;
+    for (var i = 0; i < bytes.length ~/ 2; i++) {
+      output[sampleOffset + i] = byteData.getInt16(i * 2, Endian.little);
+    }
+  } finally {
+    await raf.close();
+  }
+
+  return DecodedAudio(samples: output, sampleRate: sampleRate);
 }
 
 _SpectrogramChunkPixels? _renderSpectrogramChunkPixels(
@@ -487,11 +532,15 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// Source path/metadata for range-decoded spectrogram chunks.
   String? _spectrogramAudioPath;
   AudioMetadata? _spectrogramAudioMetadata;
+  String? _spectrogramTempPcmPath;
+  bool _spectrogramAudioIsRawPcm16 = false;
 
   /// Detailed spectrogram chunks keyed by absolute recording seconds.
   final List<_SpectrogramChunk> _spectrogramChunks = [];
   final Set<int> _loadingSpectrogramChunkIndexes = {};
   int _spectrogramGeneration = 0;
+  int? _lastLoadedTargetHop;
+  double? _lastLoadedChunkSeconds;
 
   bool get _canUndo => _undoStack.isNotEmpty;
   bool get _canRedo => _redoStack.isNotEmpty;
@@ -872,21 +921,44 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 path,
                 _formatLabelForPath(path),
               );
-      // Native-decoded formats (MP3, OGG, AAC, etc.) always lazy-load:
-      // NativeAudioDecoder.decodeRange() supports seek+partial-decode via
-      // MediaExtractor, so decoding the entire file into memory is wasteful.
+      // Native-decoded formats (MP3, OGG, AAC, etc.) always lazy-load the
+      // spectrogram, but first stream the compressed file to a temporary PCM
+      // cache. Per-tile compressed seeks are not sample-exact enough for MP3
+      // and can create visible gaps; PCM ranges behave like the FLAC path.
       // Dart-decodable formats (WAV/FLAC) keep the 128 MB threshold since
       // their range-decode is essentially free (direct byte reads).
       final shouldLazyLoad =
           !canDart || metadata.decodedPcmBytes >= 128 * 1024 * 1024;
       var sourcePath = path;
       var sourceMetadata = metadata;
+      var sourceIsRawPcm16 = false;
+
+      if (shouldLazyLoad && !canDart) {
+        final decoded = await NativeAudioDecoder.decodeToTempPcmFile(path);
+        if (!mounted) {
+          try {
+            final file = File(decoded.pcmPath);
+            if (file.existsSync()) file.deleteSync();
+          } catch (_) {}
+          return;
+        }
+        sourcePath = decoded.pcmPath;
+        sourceMetadata = AudioMetadata(
+          sampleRate: decoded.sampleRate,
+          totalSamples: decoded.totalSamples,
+          format: '${metadata.format} PCM',
+        );
+        sourceIsRawPcm16 = true;
+      }
 
       if (mounted) {
         setState(() {
           _clearSpectrogramChunks();
+          _deleteSpectrogramTempPcm();
           _spectrogramAudioPath = sourcePath;
           _spectrogramAudioMetadata = sourceMetadata;
+          _spectrogramAudioIsRawPcm16 = sourceIsRawPcm16;
+          _spectrogramTempPcmPath = sourceIsRawPcm16 ? sourcePath : null;
           _spectrogramLazy = shouldLazyLoad;
           if (_spectrogramImage != null &&
               !identical(_spectrogramImage, _fullSpectrogramImage)) {
@@ -1059,15 +1131,25 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     return _SpectrogramImageResult(image: image, stride: stride);
   }
 
-  static const double _lazySpectrogramChunkSeconds = 30.0;
-  static const int _maxCachedSpectrogramChunks = 12;
-
   void _clearSpectrogramChunks() {
     for (final chunk in _spectrogramChunks) {
       chunk.dispose();
     }
     _spectrogramChunks.clear();
     _loadingSpectrogramChunkIndexes.clear();
+  }
+
+  void _deleteSpectrogramTempPcm() {
+    final path = _spectrogramTempPcmPath;
+    _spectrogramTempPcmPath = null;
+    _spectrogramAudioIsRawPcm16 = false;
+    if (path == null) return;
+    try {
+      final file = File(path);
+      if (file.existsSync()) file.deleteSync();
+    } catch (_) {
+      // Best-effort cleanup of a temporary spectrogram cache.
+    }
   }
 
   void _requestSpectrogramViewport(
@@ -1108,14 +1190,25 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     if (!_spectrogramLazy || metadata == null || durationSec <= 0) return;
 
     final totalSec = durationSec / 1000000.0;
-    // Keep the padding bounded so a heavy zoom-out doesn't try to load
-    // dozens of off-screen chunks at once; the painter happily stretches
-    // whatever tiles we already have for the overview, so a small look-
-    // ahead is enough to feel responsive.
-    final padding = math.min(
-      math.max(5.0, viewSeconds * 0.25),
-      _lazySpectrogramChunkSeconds,
-    );
+    // Define zoom levels, dynamic chunk seconds, hop multipliers, and cache sizes.
+    final double chunkSeconds;
+    final int hopMultiplier;
+    final int maxCachedChunks;
+    if (viewSeconds <= 20.0) {
+      chunkSeconds = 30.0;
+      hopMultiplier = 1;
+      maxCachedChunks = 16;
+    } else if (viewSeconds <= 60.0) {
+      chunkSeconds = 120.0;
+      hopMultiplier = 4;
+      maxCachedChunks = 16;
+    } else {
+      chunkSeconds = 480.0;
+      hopMultiplier = 16;
+      maxCachedChunks = 16;
+    }
+
+    final padding = math.min(math.max(5.0, viewSeconds * 0.25), chunkSeconds);
     final startSec = (absoluteCenterSec - viewSeconds / 2 - padding).clamp(
       0.0,
       totalSec,
@@ -1124,23 +1217,58 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       0.0,
       totalSec,
     );
-    final firstIndex = (startSec / _lazySpectrogramChunkSeconds).floor();
-    final lastIndex = (endSec / _lazySpectrogramChunkSeconds).floor();
+    final firstIndex = (startSec / chunkSeconds).floor();
+    final lastIndex = math.max(
+      firstIndex,
+      ((endSec - 0.000001) / chunkSeconds).floor(),
+    );
 
-    // Collect every candidate index in the viewport, then keep the ones
-    // closest to the center first. This prevents zoom-out from queuing
-    // more chunks than the cache can hold (older ones would be evicted
-    // before they ever rendered, leaving the spinner stuck forever).
-    final centerIndex =
-        (absoluteCenterSec / _lazySpectrogramChunkSeconds).floor();
+    // Determine the base hop to compute target hop
+    final String quality = ref.read(spectrogramQualityProvider);
+    final long = totalSec > 600.0;
+    int baseHop;
+    switch (quality.toLowerCase()) {
+      case 'low':
+        baseHop = long ? 3072 : 2048;
+        break;
+      case 'medium':
+        baseHop = long ? 2048 : 1024;
+        break;
+      case 'high':
+      default:
+        baseHop = long ? 1024 : 512;
+        break;
+    }
+    final targetHop = baseHop * hopMultiplier;
+
+    // Clear pending load indexes when transition between zoom levels occurs.
+    var activeGeneration = generation;
+    if (_lastLoadedTargetHop != targetHop ||
+        _lastLoadedChunkSeconds != chunkSeconds) {
+      _lastLoadedTargetHop = targetHop;
+      _lastLoadedChunkSeconds = chunkSeconds;
+      _spectrogramGeneration++;
+      activeGeneration = _spectrogramGeneration;
+      _loadingSpectrogramChunkIndexes.clear();
+      _clearSpectrogramChunks();
+    }
+
+    // Collect candidate indexes that don't have a chunk with the targetHop covering the required range.
+    final centerIndex = (absoluteCenterSec / chunkSeconds).floor();
     final candidates = <int>[];
     for (var index = firstIndex; index <= lastIndex; index++) {
-      if (_spectrogramChunks.any(
-        (chunk) =>
-            (chunk.startSec / _lazySpectrogramChunkSeconds).floor() == index,
-      )) {
-        continue;
+      final reqStart = index * chunkSeconds;
+      final reqEnd = math.min(reqStart + chunkSeconds, totalSec);
+      bool covered = false;
+      for (final chunk in _spectrogramChunks) {
+        if (chunk.startSec <= reqStart + 0.001 &&
+            chunk.endSec >= reqEnd - 0.001 &&
+            chunk.hop <= targetHop) {
+          covered = true;
+          break;
+        }
       }
+      if (covered) continue;
       if (_loadingSpectrogramChunkIndexes.contains(index)) continue;
       candidates.add(index);
     }
@@ -1148,7 +1276,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       (a, b) => (a - centerIndex).abs().compareTo((b - centerIndex).abs()),
     );
     final inFlight = _loadingSpectrogramChunkIndexes.length;
-    final budget = math.max(0, _maxCachedSpectrogramChunks - inFlight);
+    final budget = math.max(0, maxCachedChunks - inFlight);
     final scheduled = candidates.take(budget).toList();
 
     if (scheduled.isEmpty) {
@@ -1164,13 +1292,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // Hold a snapshot of what we reserved so the finally block can
     // guarantee cleanup even if `_loadSpectrogramChunk` throws (e.g.
     // a range-read failure near a freshly applied clip boundary).
-    // Without this, an exception leaves stale indexes in
-    // `_loadingSpectrogramChunkIndexes`, pinning `_decoding = true`
-    // forever — the symptom users see after trim → undo.
     final reserved = scheduled.toSet();
     try {
       for (final index in scheduled) {
-        if (!mounted || generation != _spectrogramGeneration) {
+        if (!mounted || activeGeneration != _spectrogramGeneration) {
           // Drop pending reservations so a follow-up request can retry.
           _loadingSpectrogramChunkIndexes.removeAll(reserved);
           if (mounted) {
@@ -1185,8 +1310,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         try {
           await _loadSpectrogramChunk(
             index,
-            generation,
+            activeGeneration,
             cacheCenterSec: absoluteCenterSec,
+            maxCachedChunks: maxCachedChunks,
+            hop: targetHop,
+            chunkSeconds: chunkSeconds,
           );
         } catch (e, st) {
           // ignore: avoid_print
@@ -1209,6 +1337,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     int index,
     int generation, {
     required double cacheCenterSec,
+    required int maxCachedChunks,
+    required int hop,
+    required double chunkSeconds,
   }) async {
     try {
       final path = _spectrogramAudioPath;
@@ -1216,11 +1347,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       if (path == null || metadata == null) return;
 
       final totalSec = metadata.duration.inMicroseconds / 1000000.0;
-      final chunkStartSec = index * _lazySpectrogramChunkSeconds;
-      final chunkEndSec = math.min(
-        totalSec,
-        chunkStartSec + _lazySpectrogramChunkSeconds,
-      );
+      final chunkStartSec = index * chunkSeconds;
+      final chunkEndSec = math.min(totalSec, chunkStartSec + chunkSeconds);
       if (chunkEndSec <= chunkStartSec) return;
 
       final startSample = (chunkStartSec * metadata.sampleRate).floor();
@@ -1228,32 +1356,48 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ((chunkEndSec - chunkStartSec) * metadata.sampleRate).ceil();
 
       final String quality = ref.read(spectrogramQualityProvider);
-      final long = totalSec > 600.0;
       final fftSize = 2048;
 
-      int maxDisplayBins;
-      int hop;
+      int baseMaxDisplayBins;
       switch (quality.toLowerCase()) {
         case 'low':
-          maxDisplayBins = 128;
-          hop = long ? 3072 : 2048;
+          baseMaxDisplayBins = 128;
           break;
         case 'medium':
-          maxDisplayBins = 256;
-          hop = long ? 2048 : 1024;
+          baseMaxDisplayBins = 256;
           break;
         case 'high':
         default:
-          maxDisplayBins = 512;
-          hop = long ? 1024 : 512;
+          baseMaxDisplayBins = 512;
           break;
       }
+
+      final long = totalSec > 600.0;
+      int baseHop;
+      switch (quality.toLowerCase()) {
+        case 'low':
+          baseHop = long ? 3072 : 2048;
+          break;
+        case 'medium':
+          baseHop = long ? 2048 : 1024;
+          break;
+        case 'high':
+        default:
+          baseHop = long ? 1024 : 512;
+          break;
+      }
+      final hopMultiplier = math.max(1, hop ~/ baseHop);
+      final int binDivisor =
+          hopMultiplier == 1 ? 1 : (hopMultiplier <= 4 ? 2 : 4);
+      final maxDisplayBins = math.max(32, baseMaxDisplayBins ~/ binDivisor);
 
       // Decode + STFT in a background isolate so pinch-zoom never stalls
       // the UI thread. Only the cheap GPU upload happens on main.
       final pixelData = await _runSpectrogramChunkIsolate(
         _SpectrogramChunkRequest(
           path: path,
+          sourceSampleRate: metadata.sampleRate,
+          rawPcm16: _spectrogramAudioIsRawPcm16,
           startSample: startSample,
           count: count,
           targetSampleRate: AppConstants.sampleRate,
@@ -1282,15 +1426,25 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       }
 
       setState(() {
+        for (var i = _spectrogramChunks.length - 1; i >= 0; i--) {
+          final chunk = _spectrogramChunks[i];
+          if (chunk.startSec >= chunkStartSec - 0.001 &&
+              chunk.endSec <= chunkEndSec + 0.001 &&
+              chunk.hop >= hop) {
+            _spectrogramChunks.removeAt(i).dispose();
+          }
+        }
+
         _spectrogramChunks.add(
           _SpectrogramChunk(
             startSec: chunkStartSec,
             endSec: chunkEndSec,
             image: image,
+            hop: hop,
           ),
         );
         _spectrogramChunks.sort((a, b) => a.startSec.compareTo(b.startSec));
-        while (_spectrogramChunks.length > _maxCachedSpectrogramChunks) {
+        while (_spectrogramChunks.length > maxCachedChunks) {
           var farthestIndex = 0;
           var farthestDistance = -1.0;
           for (var i = 0; i < _spectrogramChunks.length; i++) {
@@ -1367,6 +1521,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
     _fullSpectrogramImage?.dispose();
     _clearSpectrogramChunks();
+    _deleteSpectrogramTempPcm();
     _player.dispose();
     _clipPlayer.dispose();
     _speciesSearchController.dispose();
@@ -2093,6 +2248,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _autoStopPosition = null;
 
       _player.seek(seekPos);
+      _positionNotifier.value = seekPos;
       if (!_isPlaying) _player.play();
       return;
     }
@@ -2140,6 +2296,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // over the timeline.
     _autoStopPosition = null;
     _player.seek(position);
+    _positionNotifier.value = position;
     if (!_isPlaying) _player.play();
   }
 

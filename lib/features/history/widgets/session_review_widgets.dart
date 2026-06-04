@@ -670,6 +670,10 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
         widget.duration != oldWidget.duration) {
       _requestVisibleSpectrogram(force: true);
     }
+
+    if (widget.quality != oldWidget.quality) {
+      _requestVisibleSpectrogram(force: true);
+    }
   }
 
   @override
@@ -734,6 +738,7 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
                 filterQuality: spectrogramFilterQualityFromString(
                   widget.quality,
                 ),
+                quality: widget.quality,
               ),
               size: const Size(double.infinity, 150),
             ),
@@ -876,6 +881,7 @@ class _ReviewSpectrogramPainter extends CustomPainter {
     required this.viewSeconds,
     required this.colorScheme,
     required this.filterQuality,
+    required this.quality,
   });
 
   final ui.Image? spectrogramImage;
@@ -890,6 +896,7 @@ class _ReviewSpectrogramPainter extends CustomPainter {
   final double viewSeconds;
   final ColorScheme colorScheme;
   final FilterQuality filterQuality;
+  final String quality;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -929,23 +936,30 @@ class _ReviewSpectrogramPainter extends CustomPainter {
       }
     }
 
+    const targetSampleRate = 32000;
+
     for (final chunk in spectrogramChunks) {
+      final chunkW = chunk.image.width.toDouble();
+      final chunkH = chunk.image.height.toDouble();
+
       final overlapStart = math.max(absoluteStartSec, chunk.startSec);
       final overlapEnd = math.min(absoluteEndSec, chunk.endSec);
       if (overlapEnd <= overlapStart) continue;
 
-      final chunkDuration = chunk.endSec - chunk.startSec;
-      if (chunkDuration <= 0) continue;
-      final chunkW = chunk.image.width.toDouble();
-      final chunkH = chunk.image.height.toDouble();
-      final srcX1 = ((overlapStart - chunk.startSec) / chunkDuration * chunkW)
+      final srcX1 = ((overlapStart - chunk.startSec) *
+              targetSampleRate /
+              chunk.hop)
           .clamp(0.0, chunkW);
-      final srcX2 = ((overlapEnd - chunk.startSec) / chunkDuration * chunkW)
+      final srcX2 = ((overlapEnd - chunk.startSec) *
+              targetSampleRate /
+              chunk.hop)
           .clamp(0.0, chunkW);
+
       final dstX1 =
           (overlapStart - absoluteStartSec) / viewSeconds * size.width;
       final dstX2 = (overlapEnd - absoluteStartSec) / viewSeconds * size.width;
       if (srcX2 <= srcX1 || dstX2 <= dstX1) continue;
+
       canvas.drawImageRect(
         chunk.image,
         Rect.fromLTRB(srcX1, 0, srcX2, chunkH),
@@ -1011,7 +1025,9 @@ class _ReviewSpectrogramPainter extends CustomPainter {
         old.durationSec != durationSec ||
         old.timelineOffsetSec != timelineOffsetSec ||
         old.viewSeconds != viewSeconds ||
+        old.quality != quality ||
         !identical(old.spectrogramImage, spectrogramImage) ||
+        !identical(old.spectrogramChunks, spectrogramChunks) ||
         old.spectrogramChunks.length != spectrogramChunks.length;
   }
 }

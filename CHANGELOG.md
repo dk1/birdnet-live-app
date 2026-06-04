@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.7] - 2026-06-04
+
+### Fixed
+
+- Fixed Session Review spectrogram loading and playback alignment for long MP3 and other compressed File Analysis recordings.
+- Fixed lazy spectrogram gaps near chunk boundaries and long recording tails.
+
 ## [0.16.6] - 2026-06-04
 
 ### Fixed
