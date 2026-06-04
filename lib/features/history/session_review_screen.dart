@@ -250,9 +250,9 @@ class _SpectrogramChunkPixels {
 Future<_SpectrogramChunkPixels?> _decodeAndRenderSpectrogramChunk(
   _SpectrogramChunkRequest req,
 ) async {
-  final isWav = await AudioDecoder.isWav(req.path);
+  final canDart = await AudioDecoder.canDecodeDart(req.path);
   final DecodedAudio audio;
-  if (isWav) {
+  if (canDart) {
     audio = await AudioDecoder.decodeRange(
       req.path,
       startSample: req.startSample,
@@ -872,7 +872,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 path,
                 _formatLabelForPath(path),
               );
-      final shouldLazyLoad = metadata.decodedPcmBytes >= 128 * 1024 * 1024;
+      // Native-decoded formats (MP3, OGG, AAC, etc.) always lazy-load:
+      // NativeAudioDecoder.decodeRange() supports seek+partial-decode via
+      // MediaExtractor, so decoding the entire file into memory is wasteful.
+      // Dart-decodable formats (WAV/FLAC) keep the 128 MB threshold since
+      // their range-decode is essentially free (direct byte reads).
+      final shouldLazyLoad =
+          !canDart || metadata.decodedPcmBytes >= 128 * 1024 * 1024;
       var sourcePath = path;
       var sourceMetadata = metadata;
 
