@@ -276,3 +276,44 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: release/winget/winget-manifests-v${{ env.APP_VERSION }}.zip
+
+      - name: Install wingetcreate (optional auto-submit)
+        if: ${{ vars.WINGET_AUTO_SUBMIT == 'true' }}
+        shell: pwsh
+        env:
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
+            Write-Host 'WINGET_CREATE_GITHUB_TOKEN is not set; skipping wingetcreate installation.'
+            exit 0
+          }
+          winget install wingetcreate --accept-package-agreements --accept-source-agreements --silent
+
+      - name: Submit Winget PR automatically (optional)
+        if: ${{ vars.WINGET_AUTO_SUBMIT == 'true' }}
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REPOSITORY: ${{ github.repository }}
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
+            Write-Host 'WINGET_CREATE_GITHUB_TOKEN is not set; skipping automatic Winget submission.'
+            exit 0
+          }
+
+          $installerUrl = "https://github.com/$env:REPOSITORY/releases/download/$env:RELEASE_TAG/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64_setup.exe"
+          $mode = '${{ vars.WINGET_SUBMIT_MODE }}'
+          if ([string]::IsNullOrWhiteSpace($mode)) {
+            $mode = 'update'
+          }
+
+          if ($mode -eq 'new') {
+            wingetcreate new BirdNET.BirdNETLive --version "${{ env.APP_VERSION }}" --urls $installerUrl --token $env:WINGET_CREATE_GITHUB_TOKEN --submit
+          }
+          elseif ($mode -eq 'update') {
+            wingetcreate update BirdNET.BirdNETLive --version "${{ env.APP_VERSION }}" --urls $installerUrl --token $env:WINGET_CREATE_GITHUB_TOKEN --submit
+          }
+          else {
+            throw "Unsupported WINGET_SUBMIT_MODE '$mode'. Use 'new' or 'update'."
+          }

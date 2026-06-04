@@ -164,6 +164,27 @@ The release workflow generates Winget-compatible manifest files from the Windows
 2. Copy the generated manifest directory into your `winget-pkgs` fork using the same path structure.
 3. Open a PR from your fork to `microsoft/winget-pkgs`.
 
+### Optional: Automatic Winget PR Submission
+
+You can enable automatic PR creation to `microsoft/winget-pkgs` directly from the release workflow via `wingetcreate`.
+
+Set these in your repository settings:
+
+- Secret: `WINGET_CREATE_GITHUB_TOKEN`
+  - GitHub token used by `wingetcreate` to open a PR against `winget-pkgs`.
+- Variable: `WINGET_AUTO_SUBMIT`
+  - Set to `true` to enable auto-submission.
+- Variable: `WINGET_SUBMIT_MODE`
+  - `update` (default) for existing package updates.
+  - `new` for first-time package submission.
+
+When enabled, the workflow runs one of:
+
+- `wingetcreate update BirdNET.BirdNETLive ... --submit`
+- `wingetcreate new BirdNET.BirdNETLive ... --submit`
+
+If `WINGET_AUTO_SUBMIT` is not `true` or the token is missing, the workflow skips auto-submission and still publishes the manifest ZIP for manual PR flow.
+
 ### Local Manifest Generation
 
 Use this helper script if you need to regenerate manifests locally:
