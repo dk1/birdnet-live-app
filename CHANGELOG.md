@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.16.3] - 2026-06-03
 
+### Fixed
+
+- Corrected localized documentation homepage screenshot paths and renamed the German documentation navigation entry from "Heim" to "Start".
+
 ### Optimized
 
 - Decoupled real-time audio playback position tracking from parent state updates in the Session Review screen by introducing a `ValueNotifier<Duration>` listener interface for spectrogram scrolling and local active status updates on `_SpeciesTile` widgets, completely eliminating full-screen and map component redraw stutters.

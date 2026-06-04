@@ -27,11 +27,11 @@ BirdNET Live is a Flutter app built for field researchers, conservationists, and
 - **Responsive layouts** - Adaptive phone, tablet, portrait, and landscape interfaces
 
 <p align="center">
-  <img src="assets/screenshots/live-mode.png" alt="Live Mode" width="150">
-  <img src="assets/screenshots/session-review.png" alt="Session Review" width="150">
-  <img src="assets/screenshots/explore.png" alt="Explore" width="150">
-  <img src="assets/screenshots/species.png" alt="Species Overlay" width="150">
-  <img src="assets/screenshots/file-analysis.png" alt="File Analysis" width="150">
+  <img src="../assets/screenshots/live-mode.png" alt="Live Mode" width="150">
+  <img src="../assets/screenshots/session-review.png" alt="Session Review" width="150">
+  <img src="../assets/screenshots/explore.png" alt="Explore" width="150">
+  <img src="../assets/screenshots/species.png" alt="Species Overlay" width="150">
+  <img src="../assets/screenshots/file-analysis.png" alt="File Analysis" width="150">
 </p>
 
 <p align="center">
