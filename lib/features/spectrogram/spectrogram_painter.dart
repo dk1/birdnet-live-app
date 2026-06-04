@@ -60,6 +60,7 @@ class SpectrogramPainter extends CustomPainter {
     this.maxDisplayFrequency = 0,
     this.hopDuration = const Duration(milliseconds: 50),
     this.filterQuality = FilterQuality.high,
+    this.quality = 'medium',
     super.repaint,
   }) : _lut = SpectrogramColorMap.lut(colorMapName);
 
@@ -100,6 +101,9 @@ class SpectrogramPainter extends CustomPainter {
   /// image to the display rect.  Higher quality looks sharper but costs
   /// more GPU per frame; older devices may want [FilterQuality.low].
   final FilterQuality filterQuality;
+
+  /// The quality preset ('low' | 'medium' | 'high').
+  final String quality;
 
   // ---------------------------------------------------------------------------
   // Internal state
@@ -234,11 +238,26 @@ class SpectrogramPainter extends CustomPainter {
   // per call, causing OOM after ~3 min of continuous spectrogram updates).
   // ---------------------------------------------------------------------------
 
+  /// Hard cap on rendered frequency bins based on quality preset.
+  int get maxDisplayBins {
+    switch (quality.toLowerCase()) {
+      case 'low':
+        return 128;
+      case 'medium':
+        return 256;
+      case 'high':
+      default:
+        return 512;
+    }
+  }
+
   /// Number of frequency bins to display (constant per painter lifetime).
   int get displayBins {
     final effectiveMaxFreq =
         maxDisplayFrequency > 0 ? maxDisplayFrequency : (sampleRate ~/ 2);
-    return (effectiveMaxFreq * fftSize / sampleRate).round().clamp(1, binCount);
+    final visibleBins = (effectiveMaxFreq * fftSize / sampleRate).round().clamp(1, binCount);
+    final binStride = (visibleBins / maxDisplayBins).ceil().clamp(1, visibleBins);
+    return (visibleBins / binStride).ceil();
   }
 
   /// Asynchronously rebuild the spectrogram image if new columns have
@@ -313,9 +332,13 @@ class SpectrogramPainter extends CustomPainter {
 
   /// Draw [newCols] new columns at 1:1 pixel resolution.
   ///
-  /// Each column is exactly 1 pixel wide and [binCount] pixels tall.
+  /// Each column is exactly 1 pixel wide and [displayBins] pixels tall.
   void _drawNewColumnsPixel(Canvas canvas, int imgW, int imgH, int newCols) {
     final numCols = _columns.length;
+    final effectiveMaxFreq =
+        maxDisplayFrequency > 0 ? maxDisplayFrequency : (sampleRate ~/ 2);
+    final visibleBins = (effectiveMaxFreq * fftSize / sampleRate).round().clamp(1, binCount);
+    final binStride = (visibleBins / imgH).ceil().clamp(1, visibleBins);
 
     for (var i = 0; i < newCols; i++) {
       final colIdx = numCols - newCols + i;
@@ -326,8 +349,23 @@ class SpectrogramPainter extends CustomPainter {
 
       for (var y = 0; y < imgH; y++) {
         // Flip vertically — low frequencies at the bottom.
-        final srcBin = imgH - 1 - y;
-        final value = srcBin < column.length ? column[srcBin] : 0.0;
+        final displayRow = imgH - 1 - y;
+
+        final binStart = displayRow * binStride;
+        final binEnd = (binStart + binStride).clamp(0, column.length);
+
+        var value = 0.0;
+        if (binStart < column.length) {
+          var sum = 0.0;
+          var count = 0;
+          for (var b = binStart; b < binEnd; b++) {
+            sum += column[b];
+            count++;
+          }
+          if (count > 0) {
+            value = sum / count;
+          }
+        }
 
         // If the value maps to the 0th index, it's already the background color.
         final lutIndex = (value * 255).round().clamp(0, 255);
