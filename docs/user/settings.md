@@ -158,7 +158,9 @@ When **Detections only** is active, the app shows a single **Clip context** slid
 
 ### Format
 
-Choose **WAV** or **FLAC**.
+Choose **WAV** or **FLAC**. WAV is larger but widely compatible and quick to inspect. FLAC keeps the same lossless audio quality while using less storage, which is usually better for long sessions.
+
+This setting applies to audio recorded by BirdNET Live. **File Analysis** keeps an app-managed copy of the imported file in its original format, so MP3, AAC, WAV, and FLAC uploads stay reviewable without an extra conversion step.
 
 ### Auto-start recording (Live mode only)
 
