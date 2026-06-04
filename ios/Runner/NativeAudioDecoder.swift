@@ -74,11 +74,13 @@ enum NativeAudioDecoder {
             throw DecoderError.noAudioTrack(path)
         }
 
+        let sampleRate = sampleRateFromTrack(track)
         let reader = try AVAssetReader(asset: asset)
 
         // Request mono Int16 PCM output.
         let outputSettings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatLinearPCM),
+            AVSampleRateKey: sampleRate,
             AVLinearPCMBitDepthKey: 16,
             AVLinearPCMIsFloatKey: false,
             AVLinearPCMIsBigEndianKey: false,
@@ -135,8 +137,6 @@ enum NativeAudioDecoder {
             throw DecoderError.readerFailed(msg)
         }
 
-        // Get the original sample rate from the track's format descriptions.
-        let sampleRate = sampleRateFromTrack(track)
         let totalSamples = totalBytes / 2  // 16-bit = 2 bytes per sample
 
         return [
@@ -159,11 +159,13 @@ enum NativeAudioDecoder {
             throw DecoderError.noAudioTrack(path)
         }
 
+        let sampleRate = sampleRateFromTrack(track)
         let reader = try AVAssetReader(asset: asset)
 
         // Request mono Int16 PCM output.
         let outputSettings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatLinearPCM),
+            AVSampleRateKey: sampleRate,
             AVLinearPCMBitDepthKey: 16,
             AVLinearPCMIsFloatKey: false,
             AVLinearPCMIsBigEndianKey: false,
@@ -174,8 +176,6 @@ enum NativeAudioDecoder {
         let output = AVAssetReaderTrackOutput(track: track, outputSettings: outputSettings)
         output.alwaysCopiesSampleData = false
         reader.add(output)
-
-        let sampleRate = sampleRateFromTrack(track)
 
         // Seek/restrict to time range.
         let startTime = CMTime(value: CMTimeValue(startSample), timescale: CMTimeScale(sampleRate))

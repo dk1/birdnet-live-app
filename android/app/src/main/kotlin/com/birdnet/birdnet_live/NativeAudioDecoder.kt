@@ -83,13 +83,12 @@ object NativeAudioDecoder {
 
             val mime = format.getString(MediaFormat.KEY_MIME)
                 ?: throw IllegalArgumentException("No MIME type in track format")
-            val inputSampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
 
             // Decode compressed audio to mono PCM directly to file.
-            val totalSamples = decodeTrack(extractor, format, mime, tempFile, isCancelled)
+            val (codecSampleRate, totalSamples) = decodeTrack(extractor, format, mime, tempFile, isCancelled)
 
             return mapOf(
-                "sampleRate" to inputSampleRate,
+                "sampleRate" to codecSampleRate,
                 "totalSamples" to totalSamples,
             )
         } catch (e: Throwable) {
@@ -121,12 +120,12 @@ object NativeAudioDecoder {
                 ?: throw IllegalArgumentException("No audio track found in: $path")
             extractor.selectTrack(trackIndex)
 
-            val sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+            val trackSampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
             val mime = format.getString(MediaFormat.KEY_MIME)
                 ?: throw IllegalArgumentException("No MIME type in track format")
 
             // Seek to previous sync frame.
-            val startUs = startSample * 1_000_000L / sampleRate
+            val startUs = startSample * 1_000_000L / trackSampleRate
             extractor.seekTo(startUs, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
 
             val codec = MediaCodec.createDecoderByType(mime)
@@ -135,16 +134,17 @@ object NativeAudioDecoder {
 
             val bufferInfo = MediaCodec.BufferInfo()
             var inputDone = false
-            val outputBytes = java.io.ByteArrayOutputStream()
-            var reachedInputEnd = false
+            var outputBufferBytes: ByteBuffer? = null
+            var outputShorts: java.nio.ShortBuffer? = null
+            var discardSamples = 0L
+            var decodedSamplesCount = 0L
 
             var channels = if (format.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
                 format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
             } else {
                 1
             }
-
-            val endSample = startSample + count
+            var codecSampleRate = trackSampleRate
 
             try {
                 while (true) {
@@ -164,7 +164,6 @@ object NativeAudioDecoder {
                                     MediaCodec.BUFFER_FLAG_END_OF_STREAM,
                                 )
                                 inputDone = true
-                                reachedInputEnd = true
                             } else {
                                 codec.queueInputBuffer(
                                     inputIndex, 0, bytesRead,
@@ -189,15 +188,35 @@ object NativeAudioDecoder {
                             val totalShorts = bufferInfo.size / 2
                             val frames = totalShorts / channels
 
-                            val presentationSample = (bufferInfo.presentationTimeUs * sampleRate / 1_000_000L)
+                            if (outputBufferBytes == null) {
+                                val targetCount = (count.toLong() * codecSampleRate / trackSampleRate).toInt()
+                                val bytesBuffer = ByteBuffer.allocate(targetCount * 2).order(ByteOrder.LITTLE_ENDIAN)
+                                outputBufferBytes = bytesBuffer
+                                outputShorts = bytesBuffer.asShortBuffer()
 
-                            for (f in 0 until frames) {
-                                val globalSample = presentationSample + f
-                                if (globalSample >= endSample) {
-                                    reachedEnd = true
-                                    break
+                                val desiredStartSample = startSample * codecSampleRate / trackSampleRate
+                                val firstOutputSample = bufferInfo.presentationTimeUs * codecSampleRate / 1_000_000L
+                                discardSamples = (desiredStartSample - firstOutputSample).coerceAtLeast(0L)
+                            }
+
+                            val shorts = outputShorts!!
+                            if (channels == 1) {
+                                for (f in 0 until frames) {
+                                    if (shortBuf.hasRemaining()) {
+                                        val sample = shortBuf.get()
+                                        if (decodedSamplesCount >= discardSamples) {
+                                            if (shorts.hasRemaining()) {
+                                                shorts.put(sample)
+                                            } else {
+                                                reachedEnd = true
+                                                break
+                                            }
+                                        }
+                                        decodedSamplesCount++
+                                    }
                                 }
-                                if (globalSample >= startSample) {
+                            } else {
+                                for (f in 0 until frames) {
                                     var sum = 0L
                                     for (ch in 0 until channels) {
                                         if (shortBuf.hasRemaining()) {
@@ -205,27 +224,33 @@ object NativeAudioDecoder {
                                         }
                                     }
                                     val avg = (sum / channels).toInt().coerceIn(-32768, 32767).toShort()
-                                    outputBytes.write(avg.toInt() and 0xFF)
-                                    outputBytes.write((avg.toInt() shr 8) and 0xFF)
-                                } else {
-                                    for (ch in 0 until channels) {
-                                        if (shortBuf.hasRemaining()) {
-                                            shortBuf.get()
+
+                                    if (decodedSamplesCount >= discardSamples) {
+                                        if (shorts.hasRemaining()) {
+                                            shorts.put(avg)
+                                        } else {
+                                            reachedEnd = true
+                                            break
                                         }
                                     }
+                                    decodedSamplesCount++
                                 }
                             }
                         }
                         codec.releaseOutputBuffer(outputIndex, false)
 
-                        val collectedSamples = outputBytes.size() / 2
-                        if (collectedSamples >= count || (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) || reachedEnd) {
+                        val targetCount = (count.toLong() * codecSampleRate / trackSampleRate).toInt()
+                        val collectedSamples = if (outputShorts != null) outputShorts.position() else 0
+                        if (collectedSamples >= targetCount || (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) || reachedEnd) {
                             break
                         }
                     } else if (outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                         val newFormat = codec.outputFormat
                         if (newFormat.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
                             channels = newFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+                        }
+                        if (newFormat.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+                            codecSampleRate = newFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE)
                         }
                     } else if (outputIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
                         if (inputDone) {
@@ -238,11 +263,27 @@ object NativeAudioDecoder {
                 codec.release()
             }
 
+            val finalBytes = if (outputBufferBytes != null) {
+                val actualSamples = outputShorts!!.position()
+                val targetCount = (count.toLong() * codecSampleRate / trackSampleRate).toInt()
+                if (actualSamples < targetCount) {
+                    val trimmed = ByteArray(actualSamples * 2)
+                    System.arraycopy(outputBufferBytes.array(), 0, trimmed, 0, actualSamples * 2)
+                    trimmed
+                } else {
+                    outputBufferBytes.array()
+                }
+            } else {
+                ByteArray(0)
+            }
+            val finalTotalSamples = if (outputShorts != null) outputShorts.position() else 0
+            val expectedTotalSamples = (count.toLong() * codecSampleRate / trackSampleRate).toInt()
+
             return mapOf(
-                "samples" to outputBytes.toByteArray(),
-                "sampleRate" to sampleRate,
-                "totalSamples" to outputBytes.size() / 2,
-                "reachedEnd" to reachedInputEnd,
+                "samples" to finalBytes,
+                "sampleRate" to codecSampleRate,
+                "totalSamples" to finalTotalSamples,
+                "reachedEnd" to (finalTotalSamples < expectedTotalSamples),
             )
         } finally {
             extractor.release()
@@ -268,7 +309,7 @@ object NativeAudioDecoder {
         mime: String,
         tempFile: File,
         isCancelled: () -> Boolean,
-    ): Int {
+    ): Pair<Int, Int> {
         val codec = MediaCodec.createDecoderByType(mime)
         codec.configure(format, null, null, 0)
         codec.start()
@@ -281,6 +322,11 @@ object NativeAudioDecoder {
             format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
         } else {
             1
+        }
+        var codecSampleRate = if (format.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+            format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+        } else {
+            32000
         }
 
         val outputStream = tempFile.outputStream()
@@ -360,6 +406,9 @@ object NativeAudioDecoder {
                     if (newFormat.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
                         channels = newFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
                     }
+                    if (newFormat.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+                        codecSampleRate = newFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+                    }
                 } else if (outputIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
                     if (inputDone) {
                         // No more input and no output — done.
@@ -372,6 +421,6 @@ object NativeAudioDecoder {
             codec.stop()
             codec.release()
         }
-        return totalSamples
+        return Pair(codecSampleRate, totalSamples)
     }
 }

@@ -522,12 +522,12 @@ class _FooterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon, size: isTablet ? 22 : 18, color: color),
+      icon: Icon(icon, size: isTablet ? 24 : 20, color: color),
       label: Text(
         label,
         style: TextStyle(
           color: color,
-          fontSize: isTablet ? 14 : 12,
+          fontSize: isTablet ? 16 : 14,
         ),
       ),
       style: TextButton.styleFrom(
