@@ -97,41 +97,49 @@ During the Android build job:
 - Store a secure offline backup of your keystore.
 - If this key is lost, app update publishing can be blocked.
 
-## Windows MSIX Signing in CI
+## Windows Inno Setup Installer in CI
 
-The Windows release job in [release.yml](release.yml) signs the `.msix` package using repository secrets.
+The Windows release job in [release.yml](release.yml) builds a standard Windows `.exe` installer with Inno Setup and uploads it to each GitHub Release alongside the portable `.zip` build.
 
-### Secrets Required
+### Packages Required on the Runner
 
-- `WINDOWS_MSIX_CERTIFICATE_BASE64`: Base64-encoded `.pfx` certificate file (single line, no extra whitespace).
-- `WINDOWS_MSIX_CERTIFICATE_PASSWORD`: Password for that `.pfx` certificate.
-- `WINDOWS_MSIX_PUBLISHER`: Publisher subject string used for signing (for example: `CN=Contoso Software, O=Contoso Corporation, C=US`).
-
-These names must match [release.yml](release.yml) exactly.
-
-### Local Install for Self-Signed MSIX (Windows)
-
-If the MSIX is signed with a self-signed certificate, Windows can show an unknown publisher and fail with `0x800B010A` until the signer certificate is trusted.
-
-Use PowerShell on the target machine:
+The workflow installs Inno Setup with Chocolatey:
 
 ```powershell
-$msix = "C:\Path\To\BirdNET_Live_v0.16.0_windows_x64.msix"
-$sig = Get-AuthenticodeSignature $msix
-$cert = $sig.SignerCertificate
-
-$tp = New-Object System.Security.Cryptography.X509Certificates.X509Store("TrustedPeople","CurrentUser")
-$tp.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
-$tp.Add($cert)
-$tp.Close()
-
-$root = New-Object System.Security.Cryptography.X509Certificates.X509Store("Root","CurrentUser")
-$root.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
-$root.Add($cert)
-$root.Close()
-
-Get-AuthenticodeSignature $msix | Format-List Status,StatusMessage
-Add-AppxPackage -Path $msix
+choco install innosetup --no-progress -y
 ```
 
-This trust step is intended for internal testing and private distribution. For public end-user distribution, use a certificate chain trusted by Windows by default.
+No Windows signing secrets are required to build the installer artifact itself.
+
+### Local Test Build
+
+Install Inno Setup 6 once on your Windows machine:
+
+```powershell
+winget install JRSoftware.InnoSetup
+```
+
+Then build the Windows app bundle and package it as an installer:
+
+```powershell
+.\dev\build_inno_installer.ps1
+```
+
+The script writes the installer to:
+
+```text
+build\windows\x64\runner\BirdNET_Live_v<version>_windows_x64_setup.exe
+```
+
+If you already have a fresh `flutter build windows --release` output and only want to rebuild the installer wrapper:
+
+```powershell
+.\dev\build_inno_installer.ps1 -SkipFlutterBuild
+```
+
+### Release Artifacts
+
+The workflow now publishes two Windows artifacts:
+
+- `BirdNET_Live_v<version>_windows_x64.zip` for portable use
+- `BirdNET_Live_v<version>_windows_x64_setup.exe` for guided installation
