@@ -187,10 +187,10 @@ The release workflow generates Winget-compatible manifest files from the Windows
 - Workflow artifact: `winget-manifests-v<version>`
 - Release asset: `winget-manifests-v<version>.zip`
 - Manifest root: `release/winget/manifests/`
-- Files generated for `BirdNET.BirdNETLive`:
-  - `BirdNET.BirdNETLive.yaml`
-  - `BirdNET.BirdNETLive.installer.yaml`
-  - `BirdNET.BirdNETLive.locale.en-US.yaml`
+- Files generated for `BirdNET-Team.BirdNETLive`:
+  - `BirdNET-Team.BirdNETLive.yaml`
+  - `BirdNET-Team.BirdNETLive.installer.yaml`
+  - `BirdNET-Team.BirdNETLive.locale.en-US.yaml`
 
 ### How To Publish To Winget
 
@@ -214,8 +214,8 @@ Set these in your repository settings:
 
 When enabled, the workflow runs one of:
 
-- `wingetcreate update BirdNET.BirdNETLive ... --submit`
-- `wingetcreate new BirdNET.BirdNETLive ... --submit`
+- `wingetcreate update BirdNET-Team.BirdNETLive ... --submit`
+- `wingetcreate new BirdNET-Team.BirdNETLive ... --submit`
 
 If `WINGET_AUTO_SUBMIT` is not `true` or the token is missing, the workflow skips auto-submission and still publishes the manifest ZIP for manual PR flow.
 
@@ -225,7 +225,7 @@ Use this helper script if you need to regenerate manifests locally:
 
 ```powershell
 .\tools\generate_winget_manifests.ps1 `
-  -PackageIdentifier 'BirdNET.BirdNETLive' `
+  -PackageIdentifier 'BirdNET-Team.BirdNETLive' `
   -PackageVersion '0.16.1' `
   -InstallerUrl 'https://github.com/birdnet-team/birdnet-live-app/releases/download/v0.16.1/BirdNET_Live_v0.16.1_windows_x64_setup.exe'
 ```
