@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed Session Review timestamp formatting, seek alignment, and spectrogram time labels for sessions with pause and resume gaps, keeping review playback aligned with the actual recorded audio timeline.
 - Fixed Live and Point Count screens to clear stale session state and old detections when reopening a fresh run, preventing previous-session cards from flashing on load.
 
+### Changed
+
+- Updated and unified app icon for consistent visuals across platforms
+
 ## [0.16.7] - 2026-06-04
 
 ### Fixed
