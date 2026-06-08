@@ -905,8 +905,6 @@ class _ReviewSpectrogramPainter extends CustomPainter {
   final LiveSession? session;
   final TimestampDisplayMode tsMode;
 
-
-
   @override
   void paint(Canvas canvas, Size size) {
     if (durationSec <= 0) return;
@@ -1244,7 +1242,13 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
         final rel = Duration(microseconds: (relSec * 1e6).round()) - clipOffset;
         final detEnd =
             r.endTimestamp != null
-                ? Duration(microseconds: (widget.session.absoluteToRelative(r.endTimestamp!) * 1e6).round()) - clipOffset
+                ? Duration(
+                      microseconds:
+                          (widget.session.absoluteToRelative(r.endTimestamp!) *
+                                  1e6)
+                              .round(),
+                    ) -
+                    clipOffset
                 : rel + Duration(seconds: widget.windowSec);
         if (position >= rel && position <= detEnd) {
           speciesActive = true;
@@ -1263,10 +1267,12 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
         bool clusterActive = false;
         for (final r in cluster.records) {
           final startSec =
-              widget.session.absoluteToRelative(r.timestamp) - widget.clipOffsetSec;
+              widget.session.absoluteToRelative(r.timestamp) -
+              widget.clipOffsetSec;
           final endSec =
               r.endTimestamp != null
-                  ? widget.session.absoluteToRelative(r.endTimestamp!) - widget.clipOffsetSec
+                  ? widget.session.absoluteToRelative(r.endTimestamp!) -
+                      widget.clipOffsetSec
                   : startSec + widget.windowSec;
           final posSec = position.inMicroseconds / 1e6;
           if (posSec >= startSec && posSec <= endSec) {
