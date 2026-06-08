@@ -104,6 +104,9 @@ class LiveController {
   LiveState _state = LiveState.idle;
   String? _errorMessage;
 
+  /// When the current recording segment started.
+  DateTime? _segmentStart;
+
   /// All detections from the current session (newest first for history).
   final List<DetectionRecord> _sessionDetections = [];
 
@@ -388,6 +391,9 @@ class LiveController {
     onSessionStarted?.call();
     _notifyListeners();
 
+    _session!.startSegment();
+    _segmentStart = DateTime.now();
+
     debugPrint(
       '[LiveController] session started '
       '(window=${windowDuration}s, rate=${inferenceRate}Hz, '
@@ -415,6 +421,8 @@ class LiveController {
     _inferenceTimer?.cancel();
     _inferenceTimer = null;
 
+    _closeRecordingSegment();
+
     _state = LiveState.paused;
     _notifyListeners();
 
@@ -432,6 +440,9 @@ class LiveController {
 
     _state = LiveState.active;
     _notifyListeners();
+
+    _session?.startSegment();
+    _segmentStart = DateTime.now();
 
     debugPrint('[LiveController] session resumed');
 
@@ -453,6 +464,8 @@ class LiveController {
     // If still active, stop timer first.
     _inferenceTimer?.cancel();
     _inferenceTimer = null;
+
+    _closeRecordingSegment();
 
     // Stop recording.
     final recordingPath = await recordingService.stopRecording();
@@ -777,6 +790,16 @@ class LiveController {
     } finally {
       _inferring = false;
     }
+  }
+
+  void _closeRecordingSegment() {
+    final start = _segmentStart;
+    final session = _session;
+    if (start == null || session == null) return;
+    final secs = DateTime.now().difference(start).inSeconds;
+    if (secs > 0) session.accumulateRecordedSeconds(secs);
+    session.closeSegment();
+    _segmentStart = null;
   }
 
   /// Notify the provider layer of state changes.
