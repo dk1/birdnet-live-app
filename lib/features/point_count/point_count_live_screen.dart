@@ -63,6 +63,7 @@ class PointCountLiveScreen extends ConsumerStatefulWidget {
     this.inferenceRateOverride,
     this.confidenceThresholdOverride,
     this.speciesFilterModeOverride,
+    this.sensitivityOverride,
   });
 
   /// Total survey duration in minutes.
@@ -86,6 +87,7 @@ class PointCountLiveScreen extends ConsumerStatefulWidget {
   final double? inferenceRateOverride;
   final int? confidenceThresholdOverride;
   final String? speciesFilterModeOverride;
+  final double? sensitivityOverride;
 
   @override
   ConsumerState<PointCountLiveScreen> createState() =>
@@ -165,6 +167,8 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         ref.read(confidenceThresholdProvider);
     final String filterMode =
         widget.speciesFilterModeOverride ?? ref.read(speciesFilterModeProvider);
+    final double sensitivity =
+        widget.sensitivityOverride ?? ref.read(sensitivityProvider);
     final recordingModeStr = ref.read(recordingModeProvider);
     final recordingMode = recordingModeFromString(recordingModeStr);
     final recordingFormat = ref.read(recordingFormatProvider);
@@ -196,7 +200,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       geoModelSpeciesNames: geoSpeciesNames,
       poolingWindows: ref.read(scorePoolingWindowsProvider),
       poolingMode: ref.read(scorePoolingProvider),
-      sensitivity: ref.read(sensitivityProvider),
+      sensitivity: sensitivity,
       latitude: startLat,
       longitude: startLon,
     );
