@@ -122,6 +122,10 @@ class LiveController {
   /// Whether an inference cycle is currently in progress.
   bool _inferring = false;
 
+  /// Monotonic generation used to discard stale inference results after
+  /// session lifecycle transitions.
+  int _sessionGeneration = 0;
+
   /// Inference cycle counter for periodic memory logging.
   int _inferenceCycleCount = 0;
 
@@ -351,6 +355,7 @@ class LiveController {
     _latestDetections = const [];
     _currentLiveDetections = const [];
     _activeCardSpecies.clear();
+    _sessionGeneration++;
     _confidenceThreshold = confidenceThreshold;
     _sensitivity = sensitivity;
     _isolate.setMaxPoolWindows(poolingWindows);
@@ -358,6 +363,8 @@ class LiveController {
     _isolate.resetPooling();
     _inferenceCycleCount = 0;
     ringBuffer.clear();
+
+    _notifyListeners();
 
     // Start memory monitoring for this session (debug builds only).
     if (kDebugMode) {
@@ -421,6 +428,7 @@ class LiveController {
     _inferenceTimer?.cancel();
     _inferenceTimer = null;
 
+    _sessionGeneration++;
     _closeRecordingSegment();
 
     _state = LiveState.paused;
@@ -438,6 +446,7 @@ class LiveController {
 
     final settings = _session!.settings;
 
+    _sessionGeneration++;
     _state = LiveState.active;
     _notifyListeners();
 
@@ -465,6 +474,7 @@ class LiveController {
     _inferenceTimer?.cancel();
     _inferenceTimer = null;
 
+    _sessionGeneration++;
     _closeRecordingSegment();
 
     // Stop recording.
@@ -597,6 +607,7 @@ class LiveController {
 
     _inferring = true;
     _inferenceCycleCount++;
+    final generation = _sessionGeneration;
 
     // Snapshot the live-tunable threshold for this cycle so a mid-cycle
     // setter call can't half-apply.
@@ -620,6 +631,10 @@ class LiveController {
         sensitivity: sensitivity,
         confidenceThreshold: confidenceThreshold / 100.0,
       );
+
+      if (generation != _sessionGeneration) {
+        return;
+      }
 
       debugPrint(
         '[LiveController] inference done — '
@@ -800,6 +815,19 @@ class LiveController {
     if (secs > 0) session.accumulateRecordedSeconds(secs);
     session.closeSegment();
     _segmentStart = null;
+  }
+
+  /// Clear the session state to prepare for a fresh run.
+  void clearSessionState() {
+    _sessionGeneration++;
+    _session = null;
+    _segmentStart = null;
+    _errorMessage = null;
+    _sessionDetections.clear();
+    _latestDetections = const [];
+    _currentLiveDetections = const [];
+    _activeCardSpecies.clear();
+    _notifyListeners();
   }
 
   /// Notify the provider layer of state changes.

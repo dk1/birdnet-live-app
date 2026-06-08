@@ -121,7 +121,17 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
 
     // Start session after the first frame.
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _startSession();
+      if (mounted) {
+        // Reset previous session state post-frame to ensure blank screen on load and avoid build-phase modifications.
+        if (controller.state != LiveState.active &&
+            controller.state != LiveState.paused) {
+          controller.clearSessionState();
+          ref.read(sessionDetectionsProvider.notifier).state = const [];
+          ref.read(latestLiveDetectionsProvider.notifier).state = const [];
+          ref.read(currentSessionProvider.notifier).state = null;
+        }
+        _startSession();
+      }
     });
   }
 
@@ -369,7 +379,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final captureState = ref.watch(captureStateProvider);
     final isCapturing = captureState == CaptureState.capturing;
     final isActive = liveState == LiveState.active;
-    final detections = ref.watch(sessionDetectionsProvider);
+    final detections = isActive
+        ? ref.watch(sessionDetectionsProvider)
+        : const <DetectionRecord>[];
 
     // Hot-apply tunable settings to the running point count: changes
     // made on the Settings screen mid-count are pushed straight to the
