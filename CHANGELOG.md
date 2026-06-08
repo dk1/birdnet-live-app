@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.8] - 2026-06-08
+
+### Added
+
+- Added a sensitivity control to Point Count setup and active Point Count screens so species detection tuning matches Live Mode.
+
+### Fixed
+
+- Fixed Session Review timestamp formatting, seek alignment, and spectrogram time labels for sessions with pause and resume gaps, keeping review playback aligned with the actual recorded audio timeline.
+- Fixed Live and Point Count screens to clear stale session state and old detections when reopening a fresh run, preventing previous-session cards from flashing on load.
+
 ## [0.16.7] - 2026-06-04
 
 ### Fixed
