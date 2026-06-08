@@ -132,11 +132,13 @@ class _ReviewWarningCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.body,
+    this.onDismiss,
   });
 
   final IconData icon;
   final String title;
   final String body;
+  final VoidCallback? onDismiss;
 
   @override
   Widget build(BuildContext context) {
@@ -147,9 +149,12 @@ class _ReviewWarningCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: theme.colorScheme.onErrorContainer),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Icon(icon, color: theme.colorScheme.onErrorContainer),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -174,6 +179,16 @@ class _ReviewWarningCard extends StatelessWidget {
                 ],
               ),
             ),
+            if (onDismiss != null) ...[
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(AppIcons.close, size: 20),
+                color: theme.colorScheme.onErrorContainer,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: onDismiss,
+              ),
+            ],
           ],
         ),
       ),
@@ -517,6 +532,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// True when the audio file ends materially before the session/detections.
   bool _audioTruncatedWarning = false;
 
+  /// True if the user dismissed the audio truncated warning.
+  bool _audioTruncatedWarningDismissed = false;
+
   /// True when long-session spectrogram detail is decoded on demand.
   bool _spectrogramLazy = false;
 
@@ -694,6 +712,29 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _resolveLocation();
     _resolveWeather();
     _loadSpeciesSort();
+    _loadDismissedWarningState();
+  }
+
+  Future<void> _loadDismissedWarningState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'dismissed_audio_warning_${widget.session.id}';
+    if (prefs.getBool(key) == true) {
+      if (mounted) {
+        setState(() {
+          _audioTruncatedWarningDismissed = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _dismissAudioWarning() async {
+    setState(() {
+      _audioTruncatedWarningDismissed = true;
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('dismissed_audio_warning_${widget.session.id}', true);
+    } catch (_) {}
   }
 
   Future<void> _loadSpeciesSort() async {
@@ -783,19 +824,24 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               );
       final audioSec = metadata.duration.inMicroseconds / 1e6;
       var expectedSec = 0.0;
-      final end = widget.session.endTime;
-      if (end != null) {
-        expectedSec = math.max(
-          expectedSec,
-          end.difference(widget.session.startTime).inMicroseconds / 1e6,
-        );
-      }
-      for (final detection in widget.session.detections) {
-        final eventEnd = detection.endTimestamp ?? detection.timestamp;
-        expectedSec = math.max(
-          expectedSec,
-          eventEnd.difference(widget.session.startTime).inMicroseconds / 1e6,
-        );
+      final recordedSec = widget.session.recordedDurationSeconds?.toDouble();
+      if (recordedSec != null && recordedSec > 0) {
+        expectedSec = recordedSec;
+      } else {
+        final end = widget.session.endTime;
+        if (end != null) {
+          expectedSec = math.max(
+            expectedSec,
+            end.difference(widget.session.startTime).inMicroseconds / 1e6,
+          );
+        }
+        for (final detection in widget.session.detections) {
+          final eventEnd = detection.endTimestamp ?? detection.timestamp;
+          expectedSec = math.max(
+            expectedSec,
+            eventEnd.difference(widget.session.startTime).inMicroseconds / 1e6,
+          );
+        }
       }
       final isTruncated = expectedSec > 0 && audioSec + 5 < expectedSec;
       if (mounted && isTruncated != _audioTruncatedWarning) {
@@ -2227,9 +2273,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // Full recording available — seek the main player.
     if (_audioAvailable && _duration != Duration.zero) {
       final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
-      final offset = cluster.firstTimestamp.difference(
-        widget.session.startTime,
-      );
+      final relativeSec = widget.session.absoluteToRelative(cluster.firstTimestamp);
+      final offset = Duration(microseconds: (relativeSec * 1e6).round());
       var seekPos = offset - clipOffset;
       // Clamp into the playable range [0, duration] so detections that
       // landed slightly before the recorder fully spun up (negative
@@ -3121,11 +3166,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             ),
           ],
         ),
-      if (_audioTruncatedWarning)
+      if (_audioTruncatedWarning && !_audioTruncatedWarningDismissed)
         _ReviewWarningCard(
           icon: AppIcons.warningAmberRounded,
           title: l10n.sessionReviewAudioShortTitle,
           body: l10n.sessionReviewAudioShortBody,
+          onDismiss: _dismissAudioWarning,
         ),
       if (_audioAvailable) ...[
         if (_trimMode && (_fullSpectrogramImage ?? _spectrogramImage) != null)
@@ -3148,6 +3194,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           Stack(
             children: [
               _SpectrogramStrip(
+                session: widget.session,
                 spectrogramImage: _spectrogramImage,
                 spectrogramChunks: List.unmodifiable(_spectrogramChunks),
                 decoding: _decoding,
@@ -3407,7 +3454,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           return _SpeciesTile(
             key: ValueKey('species-tile-${group.scientificName}'),
             group: group,
-            sessionStart: widget.session.startTime,
+            session: widget.session,
             isExpanded: isExpanded,
             positionNotifier: _positionNotifier,
             isPlaying: _isPlaying,

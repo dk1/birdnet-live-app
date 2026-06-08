@@ -63,6 +63,7 @@ class PointCountLiveScreen extends ConsumerStatefulWidget {
     this.inferenceRateOverride,
     this.confidenceThresholdOverride,
     this.speciesFilterModeOverride,
+    this.sensitivityOverride,
   });
 
   /// Total survey duration in minutes.
@@ -86,6 +87,7 @@ class PointCountLiveScreen extends ConsumerStatefulWidget {
   final double? inferenceRateOverride;
   final int? confidenceThresholdOverride;
   final String? speciesFilterModeOverride;
+  final double? sensitivityOverride;
 
   @override
   ConsumerState<PointCountLiveScreen> createState() =>
@@ -119,7 +121,17 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
 
     // Start session after the first frame.
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _startSession();
+      if (mounted) {
+        // Reset previous session state post-frame to ensure blank screen on load and avoid build-phase modifications.
+        if (controller.state != LiveState.active &&
+            controller.state != LiveState.paused) {
+          controller.clearSessionState();
+          ref.read(sessionDetectionsProvider.notifier).state = const [];
+          ref.read(latestLiveDetectionsProvider.notifier).state = const [];
+          ref.read(currentSessionProvider.notifier).state = null;
+        }
+        _startSession();
+      }
     });
   }
 
@@ -165,6 +177,8 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         ref.read(confidenceThresholdProvider);
     final String filterMode =
         widget.speciesFilterModeOverride ?? ref.read(speciesFilterModeProvider);
+    final double sensitivity =
+        widget.sensitivityOverride ?? ref.read(sensitivityProvider);
     final recordingModeStr = ref.read(recordingModeProvider);
     final recordingMode = recordingModeFromString(recordingModeStr);
     final recordingFormat = ref.read(recordingFormatProvider);
@@ -196,7 +210,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       geoModelSpeciesNames: geoSpeciesNames,
       poolingWindows: ref.read(scorePoolingWindowsProvider),
       poolingMode: ref.read(scorePoolingProvider),
-      sensitivity: ref.read(sensitivityProvider),
+      sensitivity: sensitivity,
       latitude: startLat,
       longitude: startLon,
     );
@@ -365,7 +379,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final captureState = ref.watch(captureStateProvider);
     final isCapturing = captureState == CaptureState.capturing;
     final isActive = liveState == LiveState.active;
-    final detections = ref.watch(sessionDetectionsProvider);
+    final detections = isActive
+        ? ref.watch(sessionDetectionsProvider)
+        : const <DetectionRecord>[];
 
     // Hot-apply tunable settings to the running point count: changes
     // made on the Settings screen mid-count are pushed straight to the

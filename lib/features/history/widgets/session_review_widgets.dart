@@ -502,8 +502,9 @@ class _WeatherRow extends StatelessWidget {
 ///
 /// The painter derives pixels-per-second from image width / player duration,
 /// ensuring perfect alignment regardless of sample rate discrepancies.
-class _SpectrogramStrip extends StatefulWidget {
+class _SpectrogramStrip extends ConsumerStatefulWidget {
   const _SpectrogramStrip({
+    required this.session,
     required this.spectrogramImage,
     required this.spectrogramChunks,
     required this.decoding,
@@ -517,6 +518,8 @@ class _SpectrogramStrip extends StatefulWidget {
     required this.userDefaultViewSeconds,
     this.quality = 'medium',
   });
+
+  final LiveSession session;
 
   /// Initial / preferred view width for short clips, sourced from the
   /// user's live-spectrogram duration setting. Long files override this
@@ -538,10 +541,10 @@ class _SpectrogramStrip extends StatefulWidget {
   final String quality;
 
   @override
-  State<_SpectrogramStrip> createState() => _SpectrogramStripState();
+  ConsumerState<_SpectrogramStrip> createState() => _SpectrogramStripState();
 }
 
-class _SpectrogramStripState extends State<_SpectrogramStrip>
+class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
     with SingleTickerProviderStateMixin {
   /// When non-null the view is pinned to this center (user panned).
   /// When null the view follows the playback position.
@@ -739,6 +742,10 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
                   widget.quality,
                 ),
                 quality: widget.quality,
+                session: widget.session,
+                tsMode: TimestampDisplayMode.fromString(
+                  ref.watch(timestampDisplayModeProvider),
+                ),
               ),
               size: const Size(double.infinity, 150),
             ),
@@ -882,6 +889,8 @@ class _ReviewSpectrogramPainter extends CustomPainter {
     required this.colorScheme,
     required this.filterQuality,
     required this.quality,
+    required this.session,
+    required this.tsMode,
   });
 
   final ui.Image? spectrogramImage;
@@ -889,14 +898,12 @@ class _ReviewSpectrogramPainter extends CustomPainter {
   final double centerSec;
   final double durationSec;
   final double timelineOffsetSec;
-
-  /// How many seconds of audio the widget viewport currently shows.
-  /// Lives on the painter (instead of being a const) so pinch-zoom can
-  /// drive it from the parent state.
   final double viewSeconds;
   final ColorScheme colorScheme;
   final FilterQuality filterQuality;
   final String quality;
+  final LiveSession? session;
+  final TimestampDisplayMode tsMode;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1004,6 +1011,13 @@ class _ReviewSpectrogramPainter extends CustomPainter {
   }
 
   String _fmtSec(double sec) {
+    if (tsMode == TimestampDisplayMode.absolute && session != null) {
+      final absoluteTime = session!.relativeToAbsolute(timelineOffsetSec + sec);
+      final h = absoluteTime.toLocal().hour.toString().padLeft(2, '0');
+      final m = absoluteTime.toLocal().minute.toString().padLeft(2, '0');
+      final s = absoluteTime.toLocal().second.toString().padLeft(2, '0');
+      return '$h:$m:$s';
+    }
     final m = sec ~/ 60;
     final s = (sec % 60).toInt();
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
@@ -1026,6 +1040,7 @@ class _ReviewSpectrogramPainter extends CustomPainter {
         old.timelineOffsetSec != timelineOffsetSec ||
         old.viewSeconds != viewSeconds ||
         old.quality != quality ||
+        old.tsMode != tsMode ||
         !identical(old.spectrogramImage, spectrogramImage) ||
         !identical(old.spectrogramChunks, spectrogramChunks) ||
         old.spectrogramChunks.length != spectrogramChunks.length;
@@ -1072,7 +1087,7 @@ class _SpeciesTile extends ConsumerStatefulWidget {
   const _SpeciesTile({
     super.key,
     required this.group,
-    required this.sessionStart,
+    required this.session,
     required this.isExpanded,
     required this.positionNotifier,
     required this.isPlaying,
@@ -1097,7 +1112,7 @@ class _SpeciesTile extends ConsumerStatefulWidget {
   });
 
   final _SpeciesGroup group;
-  final DateTime sessionStart;
+  final LiveSession session;
   final bool isExpanded;
   final ValueNotifier<Duration> positionNotifier;
   final bool isPlaying;
@@ -1223,11 +1238,17 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
         microseconds: (widget.clipOffsetSec * 1e6).round(),
       );
       for (final r in widget.group.allRecords) {
-        final offset = r.timestamp.difference(widget.sessionStart);
-        final rel = offset - clipOffset;
+        final relSec = widget.session.absoluteToRelative(r.timestamp);
+        final rel = Duration(microseconds: (relSec * 1e6).round()) - clipOffset;
         final detEnd =
             r.endTimestamp != null
-                ? r.endTimestamp!.difference(widget.sessionStart) - clipOffset
+                ? Duration(
+                      microseconds:
+                          (widget.session.absoluteToRelative(r.endTimestamp!) *
+                                  1e6)
+                              .round(),
+                    ) -
+                    clipOffset
                 : rel + Duration(seconds: widget.windowSec);
         if (position >= rel && position <= detEnd) {
           speciesActive = true;
@@ -1246,14 +1267,11 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
         bool clusterActive = false;
         for (final r in cluster.records) {
           final startSec =
-              r.timestamp.difference(widget.sessionStart).inMicroseconds / 1e6 -
+              widget.session.absoluteToRelative(r.timestamp) -
               widget.clipOffsetSec;
           final endSec =
               r.endTimestamp != null
-                  ? r.endTimestamp!
-                              .difference(widget.sessionStart)
-                              .inMicroseconds /
-                          1e6 -
+                  ? widget.session.absoluteToRelative(r.endTimestamp!) -
                       widget.clipOffsetSec
                   : startSec + widget.windowSec;
           final posSec = position.inMicroseconds / 1e6;
@@ -1303,8 +1321,9 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
     );
     final offsetStr = formatDetectionTime(
       widget.group.firstTimestamp,
-      widget.sessionStart,
+      widget.session.startTime,
       tsMode,
+      absoluteToRelative: widget.session.absoluteToRelative,
       clipOffset: clipOffsetDur,
       showSeconds: tsShowSeconds,
     );
@@ -1586,7 +1605,7 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                   for (var i = 0; i < widget.group.clusters.length; i++)
                     _ClusterRow(
                       cluster: widget.group.clusters[i],
-                      sessionStart: widget.sessionStart,
+                      session: widget.session,
                       clipOffsetSec: widget.clipOffsetSec,
                       windowSec: widget.windowSec,
                       isActive: _activeState.activeClusterIndex == i,
@@ -1670,7 +1689,7 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
 class _ClusterRow extends ConsumerWidget {
   const _ClusterRow({
     required this.cluster,
-    required this.sessionStart,
+    required this.session,
     required this.onSeek,
     required this.onDelete,
     required this.onDeleteSpecies,
@@ -1690,7 +1709,7 @@ class _ClusterRow extends ConsumerWidget {
   });
 
   final _DetectionCluster cluster;
-  final DateTime sessionStart;
+  final LiveSession session;
   final VoidCallback onSeek;
   final VoidCallback onDelete;
   final VoidCallback onDeleteSpecies;
@@ -1746,15 +1765,17 @@ class _ClusterRow extends ConsumerWidget {
     // back to a single timestamp to keep the row compact.
     final startStr = formatDetectionTime(
       cluster.firstTimestamp,
-      sessionStart,
+      session.startTime,
       tsMode,
+      absoluteToRelative: session.absoluteToRelative,
       clipOffset: clipOffsetDur,
       showSeconds: tsShowSeconds,
     );
     final endStr = formatDetectionTime(
       lastEnd,
-      sessionStart,
+      session.startTime,
       tsMode,
+      absoluteToRelative: session.absoluteToRelative,
       clipOffset: clipOffsetDur,
       showSeconds: tsShowSeconds,
     );
