@@ -295,7 +295,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
+			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\nAPP_FRAMEWORK_INFO=\"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/App.framework/Info.plist\"\nif [ -f \"$APP_FRAMEWORK_INFO\" ]; then\n  /usr/bin/plutil -replace MinimumOSVersion -string \"${IPHONEOS_DEPLOYMENT_TARGET}\" \"$APP_FRAMEWORK_INFO\"\nfi";
 		};
 		71A42C79C18D993AB3DE4DF5 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
