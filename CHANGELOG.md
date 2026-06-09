@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.9] - 2026-06-09
+
+### Added
+
+- Added placeholder entry points for Batch Analysis and ARU Mode on the home screen with localized Coming Soon behavior.
+- Added localized documentation pages for Batch Analysis and ARU Mode across all supported docs locales, including site navigation links.
+- Added new session type labels and numbered session title/card strings for Batch Analysis and ARU sessions across all app locales.
+
+### Changed
+
+- Reworked the Home mode selector from a single static grid to a paged carousel with indicator dots, keeping active modes on page one and upcoming modes on page two.
+- Refined shared session-type icon/color mappings so upcoming modes use consistent visual semantics in navigation and session metadata surfaces.
+
 ## [0.16.8] - 2026-06-08
 
 ### Added

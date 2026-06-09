@@ -606,8 +606,9 @@ class _PermissionsPage extends ConsumerWidget {
                     title: l10n.settingsPrivacyAllowMap,
                     description: l10n.settingsPrivacyAllowMapSubtitle,
                     value: ref.watch(privacyAllowMapProvider),
-                    onChanged: (val) =>
-                        ref.read(privacyAllowMapProvider.notifier).set(val),
+                    onChanged:
+                        (val) =>
+                            ref.read(privacyAllowMapProvider.notifier).set(val),
                     theme: theme,
                   ),
                   const SizedBox(height: 14),
@@ -617,8 +618,8 @@ class _PermissionsPage extends ConsumerWidget {
                     description:
                         l10n.settingsPrivacyAllowReverseGeocodingSubtitle,
                     value: ref.watch(privacyAllowReverseGeocodingProvider),
-                    onChanged: (val) =>
-                        ref
+                    onChanged:
+                        (val) => ref
                             .read(privacyAllowReverseGeocodingProvider.notifier)
                             .set(val),
                     theme: theme,
@@ -629,8 +630,10 @@ class _PermissionsPage extends ConsumerWidget {
                     title: l10n.settingsPrivacyAllowWeather,
                     description: l10n.settingsPrivacyAllowWeatherSubtitle,
                     value: ref.watch(privacyAllowWeatherProvider),
-                    onChanged: (val) =>
-                        ref.read(privacyAllowWeatherProvider.notifier).set(val),
+                    onChanged:
+                        (val) => ref
+                            .read(privacyAllowWeatherProvider.notifier)
+                            .set(val),
                     theme: theme,
                   ),
                 ],
@@ -826,10 +829,7 @@ class _ConsentTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-          ),
+          Switch(value: value, onChanged: onChanged),
         ],
       ),
     );

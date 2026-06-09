@@ -184,7 +184,8 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
   }
 
   void _scheduleGpsRetryOrStop() {
-    if (!mounted || _locationChoice != _LocationChoice.gps ||
+    if (!mounted ||
+        _locationChoice != _LocationChoice.gps ||
         _gpsAttempts >= _maxGpsAttempts) {
       if (mounted) setState(() => _gpsFetching = false);
       return;
@@ -741,7 +742,6 @@ class _ParametersStep extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-
           // ── Inference rate ───────────────────────────────────
           _ParamTile(
             title: l10n.settingsInferenceRate,
@@ -932,7 +932,11 @@ class _ReadyStep extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(AppIcons.timerRounded, size: 64, color: theme.colorScheme.primary),
+          Icon(
+            AppIcons.timerRounded,
+            size: 64,
+            color: theme.colorScheme.primary,
+          ),
           const SizedBox(height: 24),
           Text(
             l10n.pointCountReady,

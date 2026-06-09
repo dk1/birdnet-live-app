@@ -184,6 +184,12 @@ enum SessionType {
 
   /// Background survey session with GPS tracking.
   survey,
+
+  /// Bulk processing of audio files.
+  batchAnalysis,
+
+  /// Autonomous Recording Unit mode.
+  aru,
 }
 
 /// Why a session ended.
@@ -746,7 +752,8 @@ class LiveSession {
       stopReasonValue: json['stopReasonValue'] as num?,
       recordedDurationSeconds:
           (json['recordedDurationSeconds'] as num?)?.toInt(),
-      segments: (json['segments'] as List<dynamic>?)
+      segments:
+          (json['segments'] as List<dynamic>?)
               ?.map((s) => SessionSegment.fromJson(s as Map<String, dynamic>))
               .toList() ??
           [],
@@ -884,7 +891,10 @@ class SessionSegment {
   factory SessionSegment.fromJson(Map<String, dynamic> json) {
     return SessionSegment(
       startTime: DateTime.parse(json['startTime'] as String),
-      endTime: json['endTime'] != null ? DateTime.parse(json['endTime'] as String) : null,
+      endTime:
+          json['endTime'] != null
+              ? DateTime.parse(json['endTime'] as String)
+              : null,
     );
   }
 

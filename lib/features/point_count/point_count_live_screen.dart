@@ -379,9 +379,10 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final captureState = ref.watch(captureStateProvider);
     final isCapturing = captureState == CaptureState.capturing;
     final isActive = liveState == LiveState.active;
-    final detections = isActive
-        ? ref.watch(sessionDetectionsProvider)
-        : const <DetectionRecord>[];
+    final detections =
+        isActive
+            ? ref.watch(sessionDetectionsProvider)
+            : const <DetectionRecord>[];
 
     // Hot-apply tunable settings to the running point count: changes
     // made on the Settings screen mid-count are pushed straight to the

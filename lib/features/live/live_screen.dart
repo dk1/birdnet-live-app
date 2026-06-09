@@ -439,9 +439,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final isCapturing = captureState == CaptureState.capturing;
     final isActive = liveState == LiveState.active;
     final isPaused = liveState == LiveState.paused;
-    final detections = (isActive || isPaused)
-        ? ref.watch(sessionDetectionsProvider)
-        : const <DetectionRecord>[];
+    final detections =
+        (isActive || isPaused)
+            ? ref.watch(sessionDetectionsProvider)
+            : const <DetectionRecord>[];
 
     // Hot-apply tunable settings to the running session: when the user
     // tweaks the confidence threshold or pooling window count from the
