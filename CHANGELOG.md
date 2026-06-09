@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Reworked the Home mode selector from a single static grid to a paged carousel with indicator dots, keeping active modes on page one and upcoming modes on page two.
 - Refined shared session-type icon/color mappings so upcoming modes use consistent visual semantics in navigation and session metadata surfaces.
-- Updated upcoming mode accent colors to distinct hues: Batch Analysis now uses violet and ARU Mode now uses teal.
+- Updated upcoming mode accent colors to distinct hues: Batch Analysis now uses copper and ARU Mode now uses violet.
 
 ### Fixed
 

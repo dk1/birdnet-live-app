@@ -45,8 +45,8 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   static const Color _pointCountBase = Color(0xFF1E88E5);
   static const Color _surveyBase = Color(0xFF43A047);
   static const Color _fileAnalysisBase = Color(0xFFFB8C00);
-  static const Color _batchAnalysisBase = Color(0xFF8E24AA);
-  static const Color _aruBase = Color(0xFF00897B);
+  static const Color _batchAnalysisBase = Color(0xFF8D6E63);
+  static const Color _aruBase = Color(0xFF8E24AA);
 
   static const AppSemanticColors light = AppSemanticColors(
     success: _successBase,
@@ -157,8 +157,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
       sessionPointCount: sessionPointCount ?? this.sessionPointCount,
       sessionSurvey: sessionSurvey ?? this.sessionSurvey,
       sessionFileAnalysis: sessionFileAnalysis ?? this.sessionFileAnalysis,
-      sessionBatchAnalysis:
-          sessionBatchAnalysis ?? this.sessionBatchAnalysis,
+      sessionBatchAnalysis: sessionBatchAnalysis ?? this.sessionBatchAnalysis,
       sessionAru: sessionAru ?? this.sessionAru,
     );
   }
@@ -185,14 +184,9 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
           Color.lerp(sessionFileAnalysis, other.sessionFileAnalysis, t) ??
           sessionFileAnalysis,
       sessionBatchAnalysis:
-          Color.lerp(
-            sessionBatchAnalysis,
-            other.sessionBatchAnalysis,
-            t,
-          ) ??
+          Color.lerp(sessionBatchAnalysis, other.sessionBatchAnalysis, t) ??
           sessionBatchAnalysis,
-      sessionAru:
-          Color.lerp(sessionAru, other.sessionAru, t) ?? sessionAru,
+      sessionAru: Color.lerp(sessionAru, other.sessionAru, t) ?? sessionAru,
     );
   }
 }
