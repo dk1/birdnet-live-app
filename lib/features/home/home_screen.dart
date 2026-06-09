@@ -48,7 +48,8 @@ class HomeScreen extends ConsumerWidget {
           builder: (context, constraints) {
             return SingleChildScrollView(
               padding: EdgeInsets.symmetric(
-                horizontal: isLandscape ? (isTablet ? 64 : 48) : (isTablet ? 40 : 24),
+                horizontal:
+                    isLandscape ? (isTablet ? 64 : 48) : (isTablet ? 40 : 24),
                 vertical: isLandscape ? 12 : 0,
               ),
               child: Center(
@@ -98,7 +99,7 @@ class _PortraitHomeLayout extends ConsumerWidget {
         const SizedBox(height: 32),
         _LogoHeader(l10n: l10n, theme: theme, isTablet: isTablet),
         const SizedBox(height: 24),
-        _ModeGrid(l10n: l10n, theme: theme, isTablet: isTablet),
+        _ModeCarousel(l10n: l10n, theme: theme, isTablet: isTablet),
         const SizedBox(height: 24),
         _Footer(l10n: l10n, theme: theme, isTablet: isTablet),
         const SizedBox(height: 16),
@@ -143,7 +144,7 @@ class _LandscapeHomeLayout extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _ModeGrid(
+              _ModeCarousel(
                 l10n: l10n,
                 theme: theme,
                 landscape: true,
@@ -177,7 +178,8 @@ class _LogoHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final logoSize = compact ? (isTablet ? 96.0 : 72.0) : (isTablet ? 160.0 : 120.0);
+    final logoSize =
+        compact ? (isTablet ? 96.0 : 72.0) : (isTablet ? 160.0 : 120.0);
     return Column(
       children: [
         // Circular logo with subtle glow.
@@ -206,11 +208,14 @@ class _LogoHeader extends ConsumerWidget {
         SizedBox(height: compact ? (isTablet ? 16 : 12) : (isTablet ? 28 : 20)),
         Text(
           l10n.appTitle,
-          style: (compact ? theme.textTheme.headlineSmall : theme.textTheme.headlineMedium)?.copyWith(
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
-            fontSize: !compact && isTablet ? 32 : null,
-          ),
+          style: (compact
+                  ? theme.textTheme.headlineSmall
+                  : theme.textTheme.headlineMedium)
+              ?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+                fontSize: !compact && isTablet ? 32 : null,
+              ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 6),
@@ -228,11 +233,11 @@ class _LogoHeader extends ConsumerWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Mode Grid — 2×2 cards
+// Mode Carousel — 2 pages of 2×2 cards with indicators
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ModeGrid extends StatelessWidget {
-  const _ModeGrid({
+class _ModeCarousel extends StatefulWidget {
+  const _ModeCarousel({
     required this.l10n,
     required this.theme,
     this.landscape = false,
@@ -244,53 +249,180 @@ class _ModeGrid extends StatelessWidget {
   final bool isTablet;
 
   @override
+  State<_ModeCarousel> createState() => _ModeCarouselState();
+}
+
+class _ModeCarouselState extends State<_ModeCarousel> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final double maxWidth = isTablet ? (landscape ? 650 : 550) : (landscape ? 500 : 400);
-    final double aspectRatio = landscape ? (isTablet ? 1.3 : 1.6) : (isTablet ? 1.2 : 1.0);
+    final double maxWidth =
+        widget.isTablet
+            ? (widget.landscape ? 650 : 550)
+            : (widget.landscape ? 500 : 400);
+    final double aspectRatio =
+        widget.landscape
+            ? (widget.isTablet ? 1.3 : 1.6)
+            : (widget.isTablet ? 1.2 : 1.0);
+    final double spacing = widget.landscape ? 12 : 16;
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: maxWidth),
-      child: GridView.count(
-        crossAxisCount: 2,
-        crossAxisSpacing: landscape ? 12 : 16,
-        mainAxisSpacing: landscape ? 12 : 16,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        childAspectRatio: aspectRatio,
-        children: [
-          _ModeCard(
-            icon: sessionTypeIcon(SessionType.live),
-            label: l10n.liveMode,
-            description: l10n.liveModeDescription,
-            accentColor: sessionTypeAccentColor(theme, SessionType.live),
-            isTablet: isTablet,
-            onTap: () => _openLive(context),
-          ),
-          _ModeCard(
-            icon: sessionTypeIcon(SessionType.pointCount),
-            label: l10n.pointCountMode,
-            description: l10n.pointCountModeDescription,
-            accentColor: sessionTypeAccentColor(theme, SessionType.pointCount),
-            isTablet: isTablet,
-            onTap: () => _openPointCount(context),
-          ),
-          _ModeCard(
-            icon: sessionTypeIcon(SessionType.survey),
-            label: l10n.surveyMode,
-            description: l10n.surveyModeDescription,
-            accentColor: sessionTypeAccentColor(theme, SessionType.survey),
-            isTablet: isTablet,
-            onTap: () => _openSurvey(context),
-          ),
-          _ModeCard(
-            icon: sessionTypeIcon(SessionType.fileUpload),
-            label: l10n.fileAnalysisMode,
-            description: l10n.fileAnalysisModeDescription,
-            accentColor: sessionTypeAccentColor(theme, SessionType.fileUpload),
-            isTablet: isTablet,
-            onTap: () => _openFileAnalysis(context),
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final gridWidth = constraints.maxWidth.clamp(0.0, maxWidth);
+          final cellWidth = (gridWidth - spacing) / 2;
+          final cellHeight = cellWidth / aspectRatio;
+          final gridHeight = cellHeight * 2 + spacing;
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: gridHeight,
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (page) {
+                    setState(() {
+                      _currentPage = page;
+                    });
+                  },
+                  children: [
+                    // Page 1 — Active Modes
+                    GridView.count(
+                      padding: EdgeInsets.zero,
+                      crossAxisCount: 2,
+                      crossAxisSpacing: spacing,
+                      mainAxisSpacing: spacing,
+                      physics: const NeverScrollableScrollPhysics(),
+                      childAspectRatio: aspectRatio,
+                      children: [
+                        _ModeCard(
+                          icon: sessionTypeIcon(SessionType.live),
+                          label: widget.l10n.liveMode,
+                          description: widget.l10n.liveModeDescription,
+                          accentColor: sessionTypeAccentColor(
+                            widget.theme,
+                            SessionType.live,
+                          ),
+                          isTablet: widget.isTablet,
+                          onTap: () => _openLive(context),
+                        ),
+                        _ModeCard(
+                          icon: sessionTypeIcon(SessionType.pointCount),
+                          label: widget.l10n.pointCountMode,
+                          description: widget.l10n.pointCountModeDescription,
+                          accentColor: sessionTypeAccentColor(
+                            widget.theme,
+                            SessionType.pointCount,
+                          ),
+                          isTablet: widget.isTablet,
+                          onTap: () => _openPointCount(context),
+                        ),
+                        _ModeCard(
+                          icon: sessionTypeIcon(SessionType.survey),
+                          label: widget.l10n.surveyMode,
+                          description: widget.l10n.surveyModeDescription,
+                          accentColor: sessionTypeAccentColor(
+                            widget.theme,
+                            SessionType.survey,
+                          ),
+                          isTablet: widget.isTablet,
+                          onTap: () => _openSurvey(context),
+                        ),
+                        _ModeCard(
+                          icon: sessionTypeIcon(SessionType.fileUpload),
+                          label: widget.l10n.fileAnalysisMode,
+                          description: widget.l10n.fileAnalysisModeDescription,
+                          accentColor: sessionTypeAccentColor(
+                            widget.theme,
+                            SessionType.fileUpload,
+                          ),
+                          isTablet: widget.isTablet,
+                          onTap: () => _openFileAnalysis(context),
+                        ),
+                      ],
+                    ),
+                    // Page 2 — Coming Soon Modes & Placeholders
+                    GridView.count(
+                      padding: EdgeInsets.zero,
+                      crossAxisCount: 2,
+                      crossAxisSpacing: spacing,
+                      mainAxisSpacing: spacing,
+                      physics: const NeverScrollableScrollPhysics(),
+                      childAspectRatio: aspectRatio,
+                      children: [
+                        _ModeCard(
+                          icon: sessionTypeIcon(SessionType.batchAnalysis),
+                          label: widget.l10n.batchAnalysisMode,
+                          description: widget.l10n.batchAnalysisModeDescription,
+                          accentColor: sessionTypeAccentColor(
+                            widget.theme,
+                            SessionType.batchAnalysis,
+                          ),
+                          isTablet: widget.isTablet,
+                          comingSoon: true,
+                          onTap:
+                              () => _showComingSoonSnackBar(
+                                context,
+                                widget.l10n.batchAnalysisMode,
+                              ),
+                        ),
+                        _ModeCard(
+                          icon: sessionTypeIcon(SessionType.aru),
+                          label: widget.l10n.aruMode,
+                          description: widget.l10n.aruModeDescription,
+                          accentColor: sessionTypeAccentColor(
+                            widget.theme,
+                            SessionType.aru,
+                          ),
+                          isTablet: widget.isTablet,
+                          comingSoon: true,
+                          onTap:
+                              () => _showComingSoonSnackBar(
+                                context,
+                                widget.l10n.aruMode,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Page Indicator Dots
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(2, (index) {
+                  final isSelected = _currentPage == index;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    height: 8,
+                    width: isSelected ? 18 : 8,
+                    decoration: BoxDecoration(
+                      color:
+                          isSelected
+                              ? widget.theme.colorScheme.primary
+                              : widget.theme.colorScheme.onSurface.withAlpha(
+                                50,
+                              ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  );
+                }),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -318,7 +450,19 @@ class _ModeGrid extends StatelessWidget {
       context,
     ).push(MaterialPageRoute<void>(builder: (_) => const FileAnalysisScreen()));
   }
+
+  void _showComingSoonSnackBar(BuildContext context, String modeLabel) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$modeLabel: ${widget.l10n.comingSoon}'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Individual mode card
@@ -331,6 +475,7 @@ class _ModeCard extends StatelessWidget {
     required this.description,
     required this.accentColor,
     this.isTablet = false,
+    this.comingSoon = false,
     this.onTap,
   });
 
@@ -339,6 +484,7 @@ class _ModeCard extends StatelessWidget {
   final String description;
   final Color accentColor;
   final bool isTablet;
+  final bool comingSoon;
   final VoidCallback? onTap;
 
   @override
@@ -364,6 +510,8 @@ class _ModeCard extends StatelessWidget {
               ),
     );
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Material(
       color: cardColor,
       elevation: isBrandTheme ? 0 : 1,
@@ -376,25 +524,55 @@ class _ModeCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Icon in a tinted circle.
-              Container(
-                width: isTablet ? 52 : 44,
-                height: isTablet ? 52 : 44,
-                decoration: BoxDecoration(
-                  color:
-                      isBrandTheme
-                          ? accentColor.withAlpha(isDark ? 50 : 30)
-                          : accentColor.withAlpha(36),
-                  borderRadius: BorderRadius.circular(isTablet ? 16 : 14),
-                ),
-                child: Icon(icon, color: accentColor, size: isTablet ? 28 : 24),
+              // Icon & "Coming Soon" badge row.
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: isTablet ? 52 : 44,
+                    height: isTablet ? 52 : 44,
+                    decoration: BoxDecoration(
+                      color:
+                          isBrandTheme
+                              ? accentColor.withAlpha(isDark ? 50 : 30)
+                              : accentColor.withAlpha(36),
+                      borderRadius: BorderRadius.circular(isTablet ? 16 : 14),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: accentColor,
+                      size: isTablet ? 28 : 24,
+                    ),
+                  ),
+                  if (comingSoon)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.secondaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        l10n.comingSoon,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSecondaryContainer,
+                          fontWeight: FontWeight.bold,
+                          fontSize: isTablet ? 11 : 9,
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const Spacer(),
               Text(
                 label,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface,
+                  color: theme.colorScheme.onSurface.withAlpha(
+                    comingSoon ? 150 : 255,
+                  ),
                   fontSize: isTablet ? 14 : null,
                 ),
                 maxLines: 1,
@@ -405,7 +583,9 @@ class _ModeCard extends StatelessWidget {
                 child: Text(
                   description,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withAlpha(100),
+                    color: theme.colorScheme.onSurface.withAlpha(
+                      comingSoon ? 80 : 100,
+                    ),
                     fontSize: isTablet ? 12 : 11,
                   ),
                   maxLines: isTablet ? 3 : 2,
@@ -525,15 +705,13 @@ class _FooterButton extends StatelessWidget {
       icon: Icon(icon, size: isTablet ? 24 : 20, color: color),
       label: Text(
         label,
-        style: TextStyle(
-          color: color,
-          fontSize: isTablet ? 16 : 14,
-        ),
+        style: TextStyle(color: color, fontSize: isTablet ? 16 : 14),
       ),
       style: TextButton.styleFrom(
-        padding: isTablet
-            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
-            : null,
+        padding:
+            isTablet
+                ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
+                : null,
       ),
     );
   }

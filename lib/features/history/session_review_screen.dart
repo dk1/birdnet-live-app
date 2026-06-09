@@ -2273,7 +2273,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // Full recording available — seek the main player.
     if (_audioAvailable && _duration != Duration.zero) {
       final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
-      final relativeSec = widget.session.absoluteToRelative(cluster.firstTimestamp);
+      final relativeSec = widget.session.absoluteToRelative(
+        cluster.firstTimestamp,
+      );
       final offset = Duration(microseconds: (relativeSec * 1e6).round());
       var seekPos = offset - clipOffset;
       // Clamp into the playable range [0, duration] so detections that
@@ -3654,6 +3656,10 @@ String _sessionTypeLabel(AppLocalizations l10n, SessionType type) {
       return l10n.sessionTypePointCount;
     case SessionType.survey:
       return l10n.sessionTypeSurvey;
+    case SessionType.batchAnalysis:
+      return l10n.sessionTypeBatchAnalysis;
+    case SessionType.aru:
+      return l10n.sessionTypeAru;
   }
 }
 
@@ -3676,6 +3682,10 @@ String _sessionReviewTitle(AppLocalizations l10n, LiveSession session) {
       return l10n.sessionTitlePointCountNum(n);
     case SessionType.survey:
       return l10n.sessionTitleSurveyNum(n);
+    case SessionType.batchAnalysis:
+      return l10n.sessionTitleBatchAnalysisNum(n);
+    case SessionType.aru:
+      return l10n.sessionTitleAruNum(n);
   }
 }
 

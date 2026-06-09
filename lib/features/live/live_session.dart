@@ -184,6 +184,12 @@ enum SessionType {
 
   /// Background survey session with GPS tracking.
   survey,
+
+  /// Bulk processing of audio files.
+  batchAnalysis,
+
+  /// Autonomous Recording Unit mode.
+  aru,
 }
 
 /// Why a session ended.
@@ -634,7 +640,20 @@ class LiveSession {
   /// accumulated.
   Duration get duration {
     final recorded = _recordedDurationSeconds;
-    if (recorded != null) return Duration(seconds: recorded);
+    if (recorded != null) {
+      // Include the currently active segment (if any). Without this,
+      // resumed sessions show a static elapsed time until the next pause/stop
+      // persists another closed segment.
+      Duration activeSegment = Duration.zero;
+      if (segments.isNotEmpty) {
+        final last = segments.last;
+        if (last.endTime == null) {
+          activeSegment = DateTime.now().difference(last.startTime);
+          if (activeSegment.isNegative) activeSegment = Duration.zero;
+        }
+      }
+      return Duration(seconds: recorded) + activeSegment;
+    }
     return (endTime ?? DateTime.now()).difference(startTime);
   }
 
@@ -746,7 +765,8 @@ class LiveSession {
       stopReasonValue: json['stopReasonValue'] as num?,
       recordedDurationSeconds:
           (json['recordedDurationSeconds'] as num?)?.toInt(),
-      segments: (json['segments'] as List<dynamic>?)
+      segments:
+          (json['segments'] as List<dynamic>?)
               ?.map((s) => SessionSegment.fromJson(s as Map<String, dynamic>))
               .toList() ??
           [],
@@ -884,7 +904,10 @@ class SessionSegment {
   factory SessionSegment.fromJson(Map<String, dynamic> json) {
     return SessionSegment(
       startTime: DateTime.parse(json['startTime'] as String),
-      endTime: json['endTime'] != null ? DateTime.parse(json['endTime'] as String) : null,
+      endTime:
+          json['endTime'] != null
+              ? DateTime.parse(json['endTime'] as String)
+              : null,
     );
   }
 

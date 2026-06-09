@@ -52,12 +52,14 @@ class FftProcessor {
     this.fftSize = 2048,
     this.dbFloor = -80.0,
     this.dbCeiling = 0.0,
-  })  : assert(fftSize > 0 && (fftSize & (fftSize - 1)) == 0,
-            'fftSize must be a positive power of two'),
-        _fft = FFT(fftSize),
-        _window = Float64List(fftSize),
-        _windowedBuffer = Float64List(fftSize),
-        _binCount = fftSize ~/ 2 + 1 {
+  }) : assert(
+         fftSize > 0 && (fftSize & (fftSize - 1)) == 0,
+         'fftSize must be a positive power of two',
+       ),
+       _fft = FFT(fftSize),
+       _window = Float64List(fftSize),
+       _windowedBuffer = Float64List(fftSize),
+       _binCount = fftSize ~/ 2 + 1 {
     _buildHannWindow();
   }
 
@@ -116,8 +118,10 @@ class FftProcessor {
   /// Returns a [Float64List] of length [binCount] with values in [0.0, 1.0]
   /// where 0.0 maps to [dbFloor] and 1.0 maps to [dbCeiling].
   Float64List process(Float32List samples) {
-    assert(samples.length >= fftSize,
-        'Need at least $fftSize samples, got ${samples.length}');
+    assert(
+      samples.length >= fftSize,
+      'Need at least $fftSize samples, got ${samples.length}',
+    );
 
     // 1. Apply Hann window.
     for (var i = 0; i < fftSize; i++) {
