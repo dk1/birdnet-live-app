@@ -242,7 +242,7 @@ jobs:
           $releaseNotesUrl = "https://github.com/$env:REPOSITORY/releases/tag/$env:RELEASE_TAG"
 
           .\tools\generate_winget_manifests.ps1 `
-            -PackageIdentifier 'BirdNET.BirdNETLive' `
+            -PackageIdentifier 'BirdNET-Team.BirdNETLive' `
             -PackageVersion "${{ env.APP_VERSION }}" `
             -InstallerUrl $installerUrl `
             -Publisher 'BirdNET' `
@@ -309,10 +309,10 @@ jobs:
           }
 
           if ($mode -eq 'new') {
-            wingetcreate new BirdNET.BirdNETLive --version "${{ env.APP_VERSION }}" --urls $installerUrl --token $env:WINGET_CREATE_GITHUB_TOKEN --submit
+            wingetcreate new BirdNET-Team.BirdNETLive --version "${{ env.APP_VERSION }}" --urls $installerUrl --token $env:WINGET_CREATE_GITHUB_TOKEN --submit
           }
           elseif ($mode -eq 'update') {
-            wingetcreate update BirdNET.BirdNETLive --version "${{ env.APP_VERSION }}" --urls $installerUrl --token $env:WINGET_CREATE_GITHUB_TOKEN --submit
+            wingetcreate update BirdNET-Team.BirdNETLive --version "${{ env.APP_VERSION }}" --urls $installerUrl --token $env:WINGET_CREATE_GITHUB_TOKEN --submit
           }
           else {
             throw "Unsupported WINGET_SUBMIT_MODE '$mode'. Use 'new' or 'update'."

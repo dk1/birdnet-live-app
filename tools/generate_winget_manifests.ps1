@@ -36,7 +36,7 @@ if ([string]::IsNullOrWhiteSpace($ReleaseNotesUrl)) {
 
 $segments = $PackageIdentifier.Split('.')
 if ($segments.Length -lt 2) {
-    throw 'PackageIdentifier must be a dot-separated identifier, for example: BirdNET.BirdNETLive'
+    throw 'PackageIdentifier must be a dot-separated identifier, for example: BirdNET-Team.BirdNETLive'
 }
 
 $manifestsRoot = Join-Path $OutputRoot 'manifests'
