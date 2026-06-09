@@ -102,9 +102,9 @@ Color _accentForType(AppSemanticColors colors, SessionType type) {
     case SessionType.fileUpload:
       return colors.sessionFileAnalysis;
     case SessionType.batchAnalysis:
-      return colors.sessionFileAnalysis;
+      return colors.sessionBatchAnalysis;
     case SessionType.aru:
-      return colors.sessionSurvey;
+      return colors.sessionAru;
   }
 }
 
