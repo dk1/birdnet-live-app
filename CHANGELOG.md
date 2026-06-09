@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reworked the Home mode selector from a single static grid to a paged carousel with indicator dots, keeping active modes on page one and upcoming modes on page two.
 - Refined shared session-type icon/color mappings so upcoming modes use consistent visual semantics in navigation and session metadata surfaces.
 
+### Fixed
+
+- Fixed Live session elapsed-time and recording-size progression after app background pause and resume, so resumed sessions continue updating instead of showing a static elapsed value.
+
 ## [0.16.8] - 2026-06-08
 
 ### Added
