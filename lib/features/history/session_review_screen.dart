@@ -69,6 +69,7 @@ import '../../shared/models/weather_snapshot.dart';
 import '../../shared/services/weather_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/taxonomy_service.dart';
+import '../../shared/services/link_launcher.dart';
 import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/timestamp_format.dart';
 import '../../shared/utils/weather_format.dart';
@@ -3980,6 +3981,25 @@ class _FullscreenSurveyMapScreenState
               ),
           ],
         ),
+        actions: [
+          if (Platform.isIOS)
+            IconButton(
+              icon: const Icon(AppIcons.openInNew),
+              tooltip: l10n.openInAppleMaps,
+              onPressed: () {
+                final lat = widget.session.latitude ??
+                    (widget.gpsTrack.isNotEmpty ? widget.gpsTrack.first.latitude : null);
+                final lng = widget.session.longitude ??
+                    (widget.gpsTrack.isNotEmpty ? widget.gpsTrack.first.longitude : null);
+                if (lat != null && lng != null) {
+                  openExternalUrl(
+                    context,
+                    'https://maps.apple.com/?q=$lat,$lng',
+                  );
+                }
+              },
+            ),
+        ],
       ),
       body: Stack(
         children: [
