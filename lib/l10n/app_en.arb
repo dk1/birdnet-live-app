@@ -3454,5 +3454,13 @@
   "linkOpenFailedCopied": "Couldn't open link. URL copied to clipboard.",
   "@linkOpenFailedCopied": {
     "description": "Snackbar shown when launching an external https/mailto URL fails (e.g. no browser installed). The URL is copied to the clipboard so the user can paste it elsewhere."
+  },
+  "permissionRequestIOS": "Continue",
+  "@permissionRequestIOS": {
+    "description": "Request permission button for iOS compliant with Guideline 5.1.1(iv)"
+  },
+  "openInAppleMaps": "Open in Apple Maps",
+  "@openInAppleMaps": {
+    "description": "Action to open the location in the external Apple Maps app"
   }
 }

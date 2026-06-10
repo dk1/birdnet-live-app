@@ -20,6 +20,8 @@
 //     there is no follow-up gate screen.
 // =====================================================================
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -756,7 +758,11 @@ class _PermissionTile extends StatelessWidget {
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                        : Text(l10n.permissionRequest),
+                        : Text(
+                            Platform.isIOS
+                                ? l10n.permissionRequestIOS
+                                : l10n.permissionRequest,
+                          ),
               ),
             ),
         ],

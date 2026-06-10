@@ -904,5 +904,7 @@
   "sessionHelpUndoRedo": "Rückgängig und Wiederholen gehen bei Bearbeitungen der aktuellen Überprüfung einen Schritt zurück oder vor.",
   "sessionHelpSaveDiscard": "Speichern schreibt Ihre Änderungen, Teilen exportiert das Session-Bundle, Verwerfen entfernt die gespeicherte Session, und die Hilfe-Schaltfläche öffnet dieses Overlay erneut.",
   "sessionHelpContinueSurvey": "Bei Survey-Sessions setzt die Play-Schaltfläche die Aufnahme in derselben Survey fort, anstatt eine neue zu starten.",
-  "linkOpenFailedCopied": "Link konnte nicht geöffnet werden. URL in die Zwischenablage kopiert."
+  "linkOpenFailedCopied": "Link konnte nicht geöffnet werden. URL in die Zwischenablage kopiert.",
+  "permissionRequestIOS": "Weiter",
+  "openInAppleMaps": "In Apple Maps öffnen"
 }

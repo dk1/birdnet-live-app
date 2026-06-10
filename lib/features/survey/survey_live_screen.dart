@@ -740,6 +740,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   @override
   Widget build(BuildContext context) {
     final surveyState = ref.watch(surveyStateProvider);
+    // The active survey session is mutated in place, so watching the
+    // per-cycle live detections provides a reliable rebuild signal for the
+    // map/list shell even when the session object identity stays unchanged.
+    final _ = ref.watch(surveyDetectionsProvider);
     final session = ref.watch(surveySessionProvider);
     final controller = ref.read(surveyControllerProvider);
     final ringBuffer = ref.read(ringBufferProvider);

@@ -904,5 +904,7 @@
   "sessionHelpUndoRedo": "Zpět a znovu posunují úpravy provedené během aktuální revize o krok zpět nebo vpřed.",
   "sessionHelpSaveDiscard": "Uložit zapíše vaše změny, sdílet exportuje balíček relace, zahodit odstraní uloženou relaci a tlačítko nápovědy znovu otevře tento panel.",
   "sessionHelpContinueSurvey": "U relací survey tlačítko přehrávání pokračuje v nahrávání ve stejné survey místo spuštění nové.",
-  "linkOpenFailedCopied": "Odkaz se nepodařilo otevřít. URL byla zkopírována do schránky."
+  "linkOpenFailedCopied": "Odkaz se nepodařilo otevřít. URL byla zkopírována do schránky.",
+  "permissionRequestIOS": "Pokračovat",
+  "openInAppleMaps": "Otevřít v Apple Maps"
 }

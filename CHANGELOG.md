@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.10] - 2026-06-09
+
+### Added
+
+- Added iOS-only Open in Apple Maps actions in Session Map and full-screen Survey Review map flows while keeping the in-app survey map overlays.
+- Added localized iOS permission CTA and Apple Maps action labels across all supported app locales.
+
+### Changed
+
+- Updated onboarding permission CTA wording on iOS from Grant to Continue to align with App Review guidance, while keeping Android wording unchanged.
+- Updated survey GPS tracking to use platform-aware geolocator settings and enable iOS background location updates with indicator support.
+- Minimum OS version for iOS updated to 16.0
+
+### Fixed
+
+- Fixed iOS App Review compliance gaps for permission pre-prompt wording and native map handoff availability.
+- Fixed survey session screen updates on iOS by reliably watching live detections
+
 ## [0.16.9] - 2026-06-09
 
 ### Added
