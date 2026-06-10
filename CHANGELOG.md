@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restored the iOS app icon style to the bird-in-circle on a white background while keeping Android icon behavior unchanged.
 - Updated Batch Analysis accent color from copper to a darker yellow tone for better visual alignment with File Analysis.
 - Updated mode subtitles: Point Count now reads "Record at a fixed point for a set duration" and Survey now emphasizes background recording with shorter wording.
+- Updated locale strings and added missing metadata
 
 ## [0.16.10] - 2026-06-09
 
