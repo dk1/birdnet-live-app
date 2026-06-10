@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added dedicated in-app Help entries for Batch Analysis and ARU Mode across all supported locales.
+- Added AGENTS.md with concise repository guidance for coding agents, including localization, documentation, style, and safety rules.
 
 ### Changed
 
