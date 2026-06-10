@@ -21,6 +21,15 @@ This file is for coding agents working in this repository.
 - Main modes: Live Mode, Point Count, Survey, File Analysis.
 - Additional modes present in UX: Batch Analysis, ARU Mode.
 
+## Project Structure
+
+- lib/core: app-wide constants, services, theme, and infrastructure.
+- lib/shared: shared models, providers, utilities, and widgets.
+- lib/features: feature modules (live, point_count, survey, file_analysis, history, settings, home, about, explore).
+- lib/l10n: ARB localization source files and generated localization outputs.
+- docs: user/developer documentation.
+- dev and tools: maintenance scripts, model pipelines, and release helpers.
+
 ## Core Rules
 
 - Always keep user-facing strings translated in all 7 locales: en, de, cs, es, fr, it, pt.
@@ -46,6 +55,12 @@ This file is for coding agents working in this repository.
 - Document user-visible behavior changes in CHANGELOG.md.
 - Prefer frequent, small documentation updates over large delayed updates.
 
+## Dev Folder Sync Rule
+
+- Do not sync or copy broad content from dev by default.
+- Only sync items from dev when the user explicitly requests it and names the specific files/folders.
+- Treat dev as tooling/working area; avoid accidental release/docs spillover from dev artifacts.
+
 ## Audio, Maps, and Runtime Safety
 
 - Do not use Picture.toImageSync() for spectrogram rendering.
@@ -70,6 +85,15 @@ This file is for coding agents working in this repository.
 - Version source of truth is pubspec.yaml.
 - For release bumps, increment patch and build together, then run dart dev/sync_version.dart.
 
+## Version Bumping Checklist
+
+- Update version in pubspec.yaml as patch+build (example: 0.16.10+178 -> 0.16.11+179).
+- Add/update release notes in CHANGELOG.md under the matching version header.
+- Run dart dev/sync_version.dart to sync README/docs version badges.
+- If strings changed, run flutter gen-l10n and verify locale completeness.
+- Run flutter analyze (and flutter test when relevant) before committing.
+- Keep release commits focused and use a conventional commit message.
+
 ## Git Workflow
 
 - Use conventional one-line commit messages, for example:
@@ -78,3 +102,4 @@ This file is for coding agents working in this repository.
 - docs(scope): ...
 - Group related changes; avoid mixed-purpose commits.
 - Never push unless explicitly requested in the current task.
+- Never run git push without explicit user consent in the current conversation.
