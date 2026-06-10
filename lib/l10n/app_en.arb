@@ -417,11 +417,11 @@
   "@liveModeDescription": {
     "description": "Description for Live mode on the main menu"
   },
-  "surveyModeDescription": "Walk and record in the background",
+  "surveyModeDescription": "Record in the background while walking",
   "@surveyModeDescription": {
     "description": "Description for Survey mode on the main menu"
   },
-  "pointCountModeDescription": "Record at a fixed point for a set duration",
+  "pointCountModeDescription": "Record species at a fixed location for a set duration",
   "@pointCountModeDescription": {
     "description": "Description for Point Count mode on the main menu"
   },
@@ -433,7 +433,7 @@
   "@batchAnalysisMode": {
     "description": "Label for Batch Analysis mode on the main menu"
   },
-  "batchAnalysisModeDescription": "Analyze multiple files in bulk",
+  "batchAnalysisModeDescription": "Analyze multiple files at once",
   "@batchAnalysisModeDescription": {
     "description": "Description for Batch Analysis mode on the main menu"
   },
@@ -441,7 +441,7 @@
   "@aruMode": {
     "description": "Label for ARU mode on the main menu"
   },
-  "aruModeDescription": "Turn your device into a recording unit",
+  "aruModeDescription": "Use your device as an acoustic recorder",
   "@aruModeDescription": {
     "description": "Description for ARU mode on the main menu"
   },
@@ -1313,17 +1313,53 @@
     "description": "Subtitle for the show-seconds toggle"
   },
   "monthJ": "J",
+  "@monthJ": {
+    "description": "Single-letter month label for January"
+  },
   "monthF": "F",
+  "@monthF": {
+    "description": "Single-letter month label for February"
+  },
   "monthM": "M",
+  "@monthM": {
+    "description": "Single-letter month label for March"
+  },
   "monthA": "A",
+  "@monthA": {
+    "description": "Single-letter month label for April"
+  },
   "monthMay": "M",
+  "@monthMay": {
+    "description": "Single-letter month label for May"
+  },
   "monthJun": "J",
+  "@monthJun": {
+    "description": "Single-letter month label for June"
+  },
   "monthJul": "J",
+  "@monthJul": {
+    "description": "Single-letter month label for July"
+  },
   "monthAug": "A",
+  "@monthAug": {
+    "description": "Single-letter month label for August"
+  },
   "monthS": "S",
+  "@monthS": {
+    "description": "Single-letter month label for September"
+  },
   "monthO": "O",
+  "@monthO": {
+    "description": "Single-letter month label for October"
+  },
   "monthN": "N",
+  "@monthN": {
+    "description": "Single-letter month label for November"
+  },
   "monthD": "D",
+  "@monthD": {
+    "description": "Single-letter month label for December"
+  },
   "exploreHelpTitle": "About Species Predictions",
   "@exploreHelpTitle": {
     "description": "Title for explore screen help overlay"
@@ -1420,15 +1456,6 @@
   "settingsDangerZoneDescription": "Irreversible actions — reset or delete app data",
   "@settingsDangerZoneDescription": {
     "description": "Subtitle for Danger Zone settings section"
-  },
-
-  "settingsWindowDuration": "Window duration",
-  "@settingsWindowDuration": {
-    "description": "Label for analysis window duration setting"
-  },
-  "settingsConfidenceThreshold": "Confidence threshold",
-  "@settingsConfidenceThreshold": {
-    "description": "Label for confidence threshold setting"
   },
 
   "fileAnalysisStepFile": "File",
@@ -1678,30 +1705,105 @@
     "description": "Tooltip on the help (?) icon next to a setting"
   },
   "settingsHelpShowSciNames": "When enabled, scientific names appear in grey under common names throughout the app. Useful when you want unambiguous identification or are working with field guides that use Latin names.",
+  "@settingsHelpShowSciNames": {
+    "description": "Help text for the show scientific names setting"
+  },
   "settingsHelpTimestampDisplayMode": "Choose how per-detection times are rendered in session review. 'Relative' shows the offset from the start of the recording (00:12:34) — best for reviewing a single session and matching the spectrogram playhead. 'Absolute' shows the local clock time when the detection was captured (08:42:17) — best for cross-referencing field notes, weather logs, or other recordings. Storage and exports always use UTC instants regardless of this setting, so the choice never affects your data.",
+  "@settingsHelpTimestampDisplayMode": {
+    "description": "Help text for timestamp display mode setting"
+  },
   "settingsHelpTimestampShowSeconds": "When enabled, absolute detection times include the trailing seconds component (08:42:17). When disabled, they stop at minute precision (08:42), which can be easier to scan in long lists. Only affects absolute mode — relative offsets always show seconds for spectrogram alignment, and exported CSV and JSON files always include seconds regardless.",
+  "@settingsHelpTimestampShowSeconds": {
+    "description": "Help text for timestamp show seconds setting"
+  },
   "settingsHelpGain": "Multiplies the microphone signal in the app. Use values above 1.0 only for very quiet recordings — high gain amplifies noise too and can cause clipping. Most built-in mics work best at 1.0.",
+  "@settingsHelpGain": {
+    "description": "Help text for gain setting"
+  },
   "settingsHelpHighPassFilter": "Removes low-frequency content (wind, traffic, handling noise) before inference. Most species vocalize above 1 kHz, so a 100–200 Hz cut-off is usually safe and improves detection in noisy conditions.",
+  "@settingsHelpHighPassFilter": {
+    "description": "Help text for high-pass filter setting"
+  },
   "settingsHelpWindowDuration": "How many seconds of audio BirdNET analyzes at once. Shorter windows react faster and give finer time resolution; longer windows average more context per pass for steadier scores at the cost of slower reaction time.",
+  "@settingsHelpWindowDuration": {
+    "description": "Help text for analysis window duration setting"
+  },
   "settingsHelpConfidenceThreshold": "Detections below this score are hidden. Default is 35%. Lower values surface more uncertain detections (good for rare species or quiet recordings); higher values reduce false positives but may miss faint or distant calls.",
+  "@settingsHelpConfidenceThreshold": {
+    "description": "Help text for confidence threshold setting"
+  },
   "settingsHelpSensitivity": "Logistic sigmoid steepness applied to model logits. Higher values push uncertain scores toward extremes (more high-confidence detections plus more false positives). Leave at 1.0 unless you know what you're doing.",
+  "@settingsHelpSensitivity": {
+    "description": "Help text for sensitivity setting"
+  },
   "settingsHelpInferenceRate": "How often BirdNET runs inference per second. Higher rates catch brief calls but use more battery and CPU; lower rates are gentler on the device but may miss short vocalizations.",
+  "@settingsHelpInferenceRate": {
+    "description": "Help text for inference rate setting"
+  },
   "settingsHelpScorePooling": "How scores from overlapping analysis windows are combined. 'Max' is most reactive; 'average' smooths flickering; 'LME' (log-mean-exp) is a soft maximum that balances both, requires repeated raw-window support before a new species first appears, and keeps supported high scores close to their strongest recent raw score.",
+  "@settingsHelpScorePooling": {
+    "description": "Help text for score pooling setting"
+  },
   "settingsHelpScorePoolingWindows": "Number of consecutive inference windows that contribute to the pooled score. Larger values smooth detections over a longer time horizon — better for steady, distant calls but slower to react to brief vocalizations. Smaller values are more responsive but noisier.",
+  "@settingsHelpScorePoolingWindows": {
+    "description": "Help text for score pooling windows setting"
+  },
   "settingsHelpFftSize": "Resolution of the spectrogram. Larger sizes give finer frequency detail but coarser timing; smaller sizes show transient calls more sharply but blur frequencies. 1024–2048 works well for most species.",
+  "@settingsHelpFftSize": {
+    "description": "Help text for FFT size setting"
+  },
   "settingsHelpColorMap": "Color palette used to render spectrogram intensity. Viridis and Magma are perceptually uniform; Grayscale is print-friendly and emphasizes structure over hue.",
+  "@settingsHelpColorMap": {
+    "description": "Help text for spectrogram color map setting"
+  },
   "settingsHelpSpectrogramDuration": "How many seconds of audio fit on screen at once. Shorter durations give more detail per call; longer durations show temporal patterns and let you compare detections.",
+  "@settingsHelpSpectrogramDuration": {
+    "description": "Help text for spectrogram duration setting"
+  },
   "settingsHelpFrequencyRange": "Upper limit of the spectrogram's vertical axis. Reduce to focus on low-frequency vocalizations (owls, grouse) or increase to see ultrasonic calls and high-pitched insects.",
+  "@settingsHelpFrequencyRange": {
+    "description": "Help text for spectrogram frequency range setting"
+  },
   "settingsHelpLogAmplitude": "Applies a logarithmic scale to spectrogram intensity. Makes quiet calls more visible at the cost of also showing more background noise. Helpful for distant or faint species.",
+  "@settingsHelpLogAmplitude": {
+    "description": "Help text for log amplitude setting"
+  },
   "settingsHelpSpectrogramQuality": "Controls the GPU filtering used to render the live spectrogram. 'High' looks smoothest and is recommended on modern phones. Drop to 'Medium' or 'Low' on older devices if you see frame drops or excessive battery drain.",
+  "@settingsHelpSpectrogramQuality": {
+    "description": "Help text for spectrogram quality setting"
+  },
   "settingsHelpRecordingMode": "Whether and how audio is saved to disk. 'Full' keeps everything (large files); 'Detections only' saves short clips around each detection; 'Off' analyzes in real time without writing audio.",
+  "@settingsHelpRecordingMode": {
+    "description": "Help text for recording mode setting"
+  },
   "settingsHelpRecordingFormat": "Container format for saved audio. WAV is uncompressed and universally supported; FLAC is lossless but ~50% smaller and supported by most analysis software.",
+  "@settingsHelpRecordingFormat": {
+    "description": "Help text for recording format setting"
+  },
   "settingsHelpUseGps": "Use the device's GPS for live location. When off, the app uses the manual coordinates you set below — useful for stationary deployments or when GPS reception is poor indoors.",
+  "@settingsHelpUseGps": {
+    "description": "Help text for use GPS setting"
+  },
   "settingsHelpSpeciesFilter": "Restrict detections by geographic likelihood using the on-device location model. 'Location filter' hides species below the threshold; 'Location weighting' multiplies detection scores by the location prior.",
+  "@settingsHelpSpeciesFilter": {
+    "description": "Help text for species filter setting"
+  },
   "settingsHelpGeoThreshold": "Minimum geographic-prior score for a species to pass the location filter. Lower values are more permissive (good for rare or migrating species); higher values stay strictly within typical ranges.",
+  "@settingsHelpGeoThreshold": {
+    "description": "Help text for geo threshold setting"
+  },
   "settingsHelpExportFormat": "Format for exported session data. Raven is for use in Cornell Raven Pro; CSV opens in spreadsheets; JSON is easiest for programmatic processing; GPX writes the survey track and waypoints for use in mapping tools.",
+  "@settingsHelpExportFormat": {
+    "description": "Help text for export format setting"
+  },
   "settingsHelpIncludeAudioFiles": "When enabled, exported sessions include the saved audio files alongside the metadata table. Useful for archiving and re-analysis; results in much larger exports.",
+  "@settingsHelpIncludeAudioFiles": {
+    "description": "Help text for include audio files setting"
+  },
   "settingsHelpExportHtmlReport": "When enabled, the export ZIP also contains a self-contained `report.html`. Open it in any browser to see a styled session summary with map, per-detection cards, and inline audio players. Species images are loaded from the BirdNET taxonomy service when online.",
+  "@settingsHelpExportHtmlReport": {
+    "description": "Help text for export HTML report setting"
+  },
   "fileAnalysisNext": "Next",
   "@fileAnalysisNext": {
     "description": "Next button in wizard navigation"
@@ -2055,7 +2157,11 @@
     "description": "Subtitle / explainer for the species alerts wizard step"
   },
   "surveyAlertModeOff": "Off",
-  "@surveyAlertModeOff": {},
+  "@surveyAlertModeOff": {
+
+    "description": "Metadata for surveyAlertModeOff"
+
+  },
   "surveyAlertModeFirstInSession": "First in session",
   "@surveyAlertModeFirstInSession": {
     "description": "Alert mode: notify the first time a species is heard during this survey"
@@ -2073,51 +2179,143 @@
     "description": "Alert mode: notify only species on a saved custom list"
   },
   "surveyAlertModeOffDescription": "No species alerts during this survey.",
-  "@surveyAlertModeOffDescription": {},
+  "@surveyAlertModeOffDescription": {
+
+    "description": "Metadata for surveyAlertModeOffDescription"
+
+  },
   "surveyAlertModeFirstInSessionDescription": "Alert the first time each species is heard in this survey.",
-  "@surveyAlertModeFirstInSessionDescription": {},
+  "@surveyAlertModeFirstInSessionDescription": {
+
+    "description": "Metadata for surveyAlertModeFirstInSessionDescription"
+
+  },
   "surveyAlertModeFirstEverDescription": "Alert only when the app encounters a species for the very first time.",
-  "@surveyAlertModeFirstEverDescription": {},
+  "@surveyAlertModeFirstEverDescription": {
+
+    "description": "Metadata for surveyAlertModeFirstEverDescription"
+
+  },
   "surveyAlertModeRareDescription": "Alert when a species is below the geo-model probability threshold for your current location.",
-  "@surveyAlertModeRareDescription": {},
+  "@surveyAlertModeRareDescription": {
+
+    "description": "Metadata for surveyAlertModeRareDescription"
+
+  },
   "surveyAlertModeWatchlistDescription": "Alert only for species on the selected saved list.",
-  "@surveyAlertModeWatchlistDescription": {},
+  "@surveyAlertModeWatchlistDescription": {
+
+    "description": "Metadata for surveyAlertModeWatchlistDescription"
+
+  },
   "surveyAlertRareThresholdLabel": "Rarity threshold",
-  "@surveyAlertRareThresholdLabel": {},
+  "@surveyAlertRareThresholdLabel": {
+
+    "description": "Metadata for surveyAlertRareThresholdLabel"
+
+  },
   "surveyAlertRareThresholdHelp": "Detected species with a geo-model probability below this value count as rare.",
-  "@surveyAlertRareThresholdHelp": {},
+  "@surveyAlertRareThresholdHelp": {
+
+    "description": "Metadata for surveyAlertRareThresholdHelp"
+
+  },
   "surveyAlertWatchlistLabel": "Watchlist",
-  "@surveyAlertWatchlistLabel": {},
+  "@surveyAlertWatchlistLabel": {
+
+    "description": "Metadata for surveyAlertWatchlistLabel"
+
+  },
   "surveyAlertWatchlistNone": "No watchlist selected",
-  "@surveyAlertWatchlistNone": {},
+  "@surveyAlertWatchlistNone": {
+
+    "description": "Metadata for surveyAlertWatchlistNone"
+
+  },
   "surveyAlertWatchlistEmpty": "No saved species lists. Create one in Settings → Species → Custom Lists.",
-  "@surveyAlertWatchlistEmpty": {},
+  "@surveyAlertWatchlistEmpty": {
+
+    "description": "Metadata for surveyAlertWatchlistEmpty"
+
+  },
   "surveyAlertSoundLabel": "Sound",
-  "@surveyAlertSoundLabel": {},
+  "@surveyAlertSoundLabel": {
+
+    "description": "Metadata for surveyAlertSoundLabel"
+
+  },
   "surveyAlertVibrateLabel": "Vibration",
-  "@surveyAlertVibrateLabel": {},
+  "@surveyAlertVibrateLabel": {
+
+    "description": "Metadata for surveyAlertVibrateLabel"
+
+  },
   "surveyAlertMinConfidenceLabel": "Minimum confidence",
-  "@surveyAlertMinConfidenceLabel": {},
+  "@surveyAlertMinConfidenceLabel": {
+
+    "description": "Metadata for surveyAlertMinConfidenceLabel"
+
+  },
   "surveyAlertMinConfidenceHelp": "Detections below this confidence are never alerted on. Floor is your session confidence threshold so alerts can never be more sensitive than detections themselves.",
-  "@surveyAlertMinConfidenceHelp": {},
+  "@surveyAlertMinConfidenceHelp": {
+
+    "description": "Metadata for surveyAlertMinConfidenceHelp"
+
+  },
   "surveyAlertWatchlistRequired": "Select or create a watchlist to continue.",
-  "@surveyAlertWatchlistRequired": {},
+  "@surveyAlertWatchlistRequired": {
+
+    "description": "Metadata for surveyAlertWatchlistRequired"
+
+  },
   "surveyAlertCreateListButton": "New watchlist",
-  "@surveyAlertCreateListButton": {},
+  "@surveyAlertCreateListButton": {
+
+    "description": "Metadata for surveyAlertCreateListButton"
+
+  },
   "surveyAlertCreateListTitle": "New watchlist",
-  "@surveyAlertCreateListTitle": {},
+  "@surveyAlertCreateListTitle": {
+
+    "description": "Metadata for surveyAlertCreateListTitle"
+
+  },
   "surveyAlertCreateListNameLabel": "List name",
-  "@surveyAlertCreateListNameLabel": {},
+  "@surveyAlertCreateListNameLabel": {
+
+    "description": "Metadata for surveyAlertCreateListNameLabel"
+
+  },
   "surveyAlertCreateListSpeciesLabel": "Scientific names (one per line)",
-  "@surveyAlertCreateListSpeciesLabel": {},
+  "@surveyAlertCreateListSpeciesLabel": {
+
+    "description": "Metadata for surveyAlertCreateListSpeciesLabel"
+
+  },
   "surveyAlertCreateListSpeciesHint": "Parus major\nTurdus merula\nFringilla coelebs",
-  "@surveyAlertCreateListSpeciesHint": {},
+  "@surveyAlertCreateListSpeciesHint": {
+
+    "description": "Metadata for surveyAlertCreateListSpeciesHint"
+
+  },
   "surveyAlertCreateListImportFile": "Import from file",
-  "@surveyAlertCreateListImportFile": {},
+  "@surveyAlertCreateListImportFile": {
+
+    "description": "Metadata for surveyAlertCreateListImportFile"
+
+  },
   "surveyAlertCreateListImportError": "Could not read file. Make sure it's a plain-text list with one scientific name per line.",
-  "@surveyAlertCreateListImportError": {},
+  "@surveyAlertCreateListImportError": {
+
+    "description": "Metadata for surveyAlertCreateListImportError"
+
+  },
   "surveyAlertCreateListSearchHint": "Search species…",
-  "@surveyAlertCreateListSearchHint": {},
+  "@surveyAlertCreateListSearchHint": {
+
+    "description": "Metadata for surveyAlertCreateListSearchHint"
+
+  },
   "surveyAlertCreateListSelectedHeader": "Selected ({count})",
   "@surveyAlertCreateListSelectedHeader": {
     "placeholders": {
@@ -2125,17 +2323,41 @@
     }
   },
   "surveyAlertCreateListNoSelection": "No species selected yet. Search above or import a file.",
-  "@surveyAlertCreateListNoSelection": {},
+  "@surveyAlertCreateListNoSelection": {
+
+    "description": "Metadata for surveyAlertCreateListNoSelection"
+
+  },
   "surveyAlertCreateListPaste": "Paste from clipboard",
-  "@surveyAlertCreateListPaste": {},
+  "@surveyAlertCreateListPaste": {
+
+    "description": "Metadata for surveyAlertCreateListPaste"
+
+  },
   "surveyAlertCreateListSave": "Save",
-  "@surveyAlertCreateListSave": {},
+  "@surveyAlertCreateListSave": {
+
+    "description": "Metadata for surveyAlertCreateListSave"
+
+  },
   "surveyAlertCreateListCancel": "Cancel",
-  "@surveyAlertCreateListCancel": {},
+  "@surveyAlertCreateListCancel": {
+
+    "description": "Metadata for surveyAlertCreateListCancel"
+
+  },
   "surveyAlertCreateListEmpty": "Add at least one scientific name.",
-  "@surveyAlertCreateListEmpty": {},
+  "@surveyAlertCreateListEmpty": {
+
+    "description": "Metadata for surveyAlertCreateListEmpty"
+
+  },
   "surveyAlertCreateListNameTaken": "A list with this name already exists.",
-  "@surveyAlertCreateListNameTaken": {},
+  "@surveyAlertCreateListNameTaken": {
+
+    "description": "Metadata for surveyAlertCreateListNameTaken"
+
+  },
   "surveyAlertWatchlistDeleteConfirm": "Delete watchlist '{name}'?",
   "@surveyAlertWatchlistDeleteConfirm": {
     "placeholders": {
@@ -2149,15 +2371,35 @@
     }
   },
   "surveyAlertUnlimited": "Unlimited",
-  "@surveyAlertUnlimited": {},
+  "@surveyAlertUnlimited": {
+
+    "description": "Metadata for surveyAlertUnlimited"
+
+  },
   "surveyAlertHelpModesTitle": "What triggers an alert?",
-  "@surveyAlertHelpModesTitle": {},
+  "@surveyAlertHelpModesTitle": {
+
+    "description": "Metadata for surveyAlertHelpModesTitle"
+
+  },
   "surveyAlertHelpModesBody": "Pick a single rule. 'First in session' is the most chatty — every species new to this survey buzzes you. 'First ever' only fires for species the app has never recorded for you. 'Rare for this location' uses the on-device geographic model to flag unlikely visitors. 'Watchlist' restricts alerts to a saved species list.",
-  "@surveyAlertHelpModesBody": {},
+  "@surveyAlertHelpModesBody": {
+
+    "description": "Metadata for surveyAlertHelpModesBody"
+
+  },
   "surveyAlertHelpThrottlingTitle": "Why aren't I being spammed?",
-  "@surveyAlertHelpThrottlingTitle": {},
+  "@surveyAlertHelpThrottlingTitle": {
+
+    "description": "Metadata for surveyAlertHelpThrottlingTitle"
+
+  },
   "surveyAlertHelpThrottlingBody": "At survey start, many common species can trigger first-in-session alerts at once. The startup grace window suppresses those for the first minute. The minimum interval prevents back-to-back buzzes. Over the per-minute cap, extra alerts queue into a single summary instead of being dropped. Rare and Watchlist alerts always bypass the grace window.",
-  "@surveyAlertHelpThrottlingBody": {},
+  "@surveyAlertHelpThrottlingBody": {
+
+    "description": "Metadata for surveyAlertHelpThrottlingBody"
+
+  },
   "surveyAlertRareLiveLabel": "Alerts on species with under {pct}% likelihood at this location.",
   "@surveyAlertRareLiveLabel": {
     "placeholders": {
@@ -2165,33 +2407,81 @@
     }
   },
   "surveyAlertAdvancedTitle": "Frequency control",
-  "@surveyAlertAdvancedTitle": {},
+  "@surveyAlertAdvancedTitle": {
+
+    "description": "Metadata for surveyAlertAdvancedTitle"
+
+  },
   "surveyAlertGraceLabel": "Startup grace (s)",
-  "@surveyAlertGraceLabel": {},
+  "@surveyAlertGraceLabel": {
+
+    "description": "Metadata for surveyAlertGraceLabel"
+
+  },
   "surveyAlertGraceHelp": "Suppress First-in-session alerts during this many seconds at the start of the survey. Rare and Watchlist alerts always fire.",
-  "@surveyAlertGraceHelp": {},
+  "@surveyAlertGraceHelp": {
+
+    "description": "Metadata for surveyAlertGraceHelp"
+
+  },
   "surveyAlertMinIntervalLabel": "Minimum interval (s)",
-  "@surveyAlertMinIntervalLabel": {},
+  "@surveyAlertMinIntervalLabel": {
+
+    "description": "Metadata for surveyAlertMinIntervalLabel"
+
+  },
   "surveyAlertMinIntervalHelp": "Hard cooldown between any two alerts.",
-  "@surveyAlertMinIntervalHelp": {},
+  "@surveyAlertMinIntervalHelp": {
+
+    "description": "Metadata for surveyAlertMinIntervalHelp"
+
+  },
   "surveyAlertMaxPerMinuteLabel": "Max per minute",
-  "@surveyAlertMaxPerMinuteLabel": {},
+  "@surveyAlertMaxPerMinuteLabel": {
+
+    "description": "Metadata for surveyAlertMaxPerMinuteLabel"
+
+  },
   "surveyAlertMaxPerMinuteHelp": "Set to 0 for unlimited.",
-  "@surveyAlertMaxPerMinuteHelp": {},
+  "@surveyAlertMaxPerMinuteHelp": {
+
+    "description": "Metadata for surveyAlertMaxPerMinuteHelp"
+
+  },
   "surveyAlertCoalesceLabel": "Coalesce extra alerts",
-  "@surveyAlertCoalesceLabel": {},
+  "@surveyAlertCoalesceLabel": {
+
+    "description": "Metadata for surveyAlertCoalesceLabel"
+
+  },
   "surveyAlertCoalesceHelp": "When over the per-minute cap, queue extra alerts into a summary instead of dropping them.",
-  "@surveyAlertCoalesceHelp": {},
+  "@surveyAlertCoalesceHelp": {
+
+    "description": "Metadata for surveyAlertCoalesceHelp"
+
+  },
   "surveyAlertChannelName": "Species alerts",
   "@surveyAlertChannelName": {
     "description": "Android notification channel name"
   },
   "surveyAlertChannelDescription": "Heads-up alerts when interesting species are detected during a survey.",
-  "@surveyAlertChannelDescription": {},
+  "@surveyAlertChannelDescription": {
+
+    "description": "Metadata for surveyAlertChannelDescription"
+
+  },
   "surveyAlertBodyFirstInSession": "First detection in this survey",
-  "@surveyAlertBodyFirstInSession": {},
+  "@surveyAlertBodyFirstInSession": {
+
+    "description": "Metadata for surveyAlertBodyFirstInSession"
+
+  },
   "surveyAlertBodyFirstEver": "First detection ever in BirdNET Live",
-  "@surveyAlertBodyFirstEver": {},
+  "@surveyAlertBodyFirstEver": {
+
+    "description": "Metadata for surveyAlertBodyFirstEver"
+
+  },
   "surveyAlertBodyRare": "Rare here ({pct}% prior)",
   "@surveyAlertBodyRare": {
     "placeholders": {
@@ -2199,7 +2489,11 @@
     }
   },
   "surveyAlertBodyWatchlist": "On your watchlist",
-  "@surveyAlertBodyWatchlist": {},
+  "@surveyAlertBodyWatchlist": {
+
+    "description": "Metadata for surveyAlertBodyWatchlist"
+
+  },
   "surveyAlertSummaryTitle": "{count} more new species",
   "@surveyAlertSummaryTitle": {
     "placeholders": {
@@ -3080,73 +3374,209 @@
     "description": "Small caps header above the rotating tips on the live empty state"
   },
   "liveTipAnnouncementsTitle": "Hear it called out",
-  "@liveTipAnnouncementsTitle": {},
+  "@liveTipAnnouncementsTitle": {
+
+    "description": "Metadata for liveTipAnnouncementsTitle"
+
+  },
   "liveTipAnnouncementsBody": "Enable spoken announcements in Settings to hear new species named while you keep your eyes on the sky.",
-  "@liveTipAnnouncementsBody": {},
+  "@liveTipAnnouncementsBody": {
+
+    "description": "Metadata for liveTipAnnouncementsBody"
+
+  },
   "liveTipWindTitle": "Mind the wind",
-  "@liveTipWindTitle": {},
+  "@liveTipWindTitle": {
+
+    "description": "Metadata for liveTipWindTitle"
+
+  },
   "liveTipWindBody": "Wind across the mic adds noise that hides quiet calls. Shelter the device with your body or a foam windscreen.",
-  "@liveTipWindBody": {},
+  "@liveTipWindBody": {
+
+    "description": "Metadata for liveTipWindBody"
+
+  },
   "liveTipQuietPlaybackTitle": "Quiet clip? Crank it up",
-  "@liveTipQuietPlaybackTitle": {},
+  "@liveTipQuietPlaybackTitle": {
+
+    "description": "Metadata for liveTipQuietPlaybackTitle"
+
+  },
   "liveTipQuietPlaybackBody": "The clip player automatically boosts very quiet recordings on playback so distant birds become easier to hear.",
-  "@liveTipQuietPlaybackBody": {},
+  "@liveTipQuietPlaybackBody": {
+
+    "description": "Metadata for liveTipQuietPlaybackBody"
+
+  },
   "liveTipGeoFilterTitle": "Filter by your location",
-  "@liveTipGeoFilterTitle": {},
+  "@liveTipGeoFilterTitle": {
+
+    "description": "Metadata for liveTipGeoFilterTitle"
+
+  },
   "liveTipGeoFilterBody": "Turn on the geographic species filter so detections are limited to species likely to occur where you are.",
-  "@liveTipGeoFilterBody": {},
+  "@liveTipGeoFilterBody": {
+
+    "description": "Metadata for liveTipGeoFilterBody"
+
+  },
   "liveTipSaveClipsTitle": "Keep the receipts",
-  "@liveTipSaveClipsTitle": {},
+  "@liveTipSaveClipsTitle": {
+
+    "description": "Metadata for liveTipSaveClipsTitle"
+
+  },
   "liveTipSaveClipsBody": "Enable 'Save detection clips' to attach a short audio snippet to every detection for later review.",
-  "@liveTipSaveClipsBody": {},
+  "@liveTipSaveClipsBody": {
+
+    "description": "Metadata for liveTipSaveClipsBody"
+
+  },
   "liveTipNotesTitle": "Add a field note",
-  "@liveTipNotesTitle": {},
+  "@liveTipNotesTitle": {
+
+    "description": "Metadata for liveTipNotesTitle"
+
+  },
   "liveTipNotesBody": "Open a detection to type a quick note or record a voice memo before you forget what you saw.",
-  "@liveTipNotesBody": {},
+  "@liveTipNotesBody": {
+
+    "description": "Metadata for liveTipNotesBody"
+
+  },
   "liveTipSpectrogramTitle": "Watch the sound",
-  "@liveTipSpectrogramTitle": {},
+  "@liveTipSpectrogramTitle": {
+
+    "description": "Metadata for liveTipSpectrogramTitle"
+
+  },
   "liveTipSpectrogramBody": "The live spectrogram shows energy over time and frequency — a great way to spot calls before the model does.",
-  "@liveTipSpectrogramBody": {},
+  "@liveTipSpectrogramBody": {
+
+    "description": "Metadata for liveTipSpectrogramBody"
+
+  },
   "liveTipThresholdTitle": "Tune the threshold",
-  "@liveTipThresholdTitle": {},
+  "@liveTipThresholdTitle": {
+
+    "description": "Metadata for liveTipThresholdTitle"
+
+  },
   "liveTipThresholdBody": "Lower the confidence threshold to catch more candidates, raise it to keep only the surest calls.",
-  "@liveTipThresholdBody": {},
+  "@liveTipThresholdBody": {
+
+    "description": "Metadata for liveTipThresholdBody"
+
+  },
   "liveTipWatchlistTitle": "Star your targets",
-  "@liveTipWatchlistTitle": {},
+  "@liveTipWatchlistTitle": {
+
+    "description": "Metadata for liveTipWatchlistTitle"
+
+  },
   "liveTipWatchlistBody": "Build a watchlist for species you're hoping to find and get a louder cue when one is detected.",
-  "@liveTipWatchlistBody": {},
+  "@liveTipWatchlistBody": {
+
+    "description": "Metadata for liveTipWatchlistBody"
+
+  },
   "liveTipFileAnalysisTitle": "Got a recording?",
-  "@liveTipFileAnalysisTitle": {},
+  "@liveTipFileAnalysisTitle": {
+
+    "description": "Metadata for liveTipFileAnalysisTitle"
+
+  },
   "liveTipFileAnalysisBody": "Use File Analysis to identify species in any WAV or FLAC you have recorded outside the app.",
-  "@liveTipFileAnalysisBody": {},
+  "@liveTipFileAnalysisBody": {
+
+    "description": "Metadata for liveTipFileAnalysisBody"
+
+  },
   "liveTipBluetoothMicTitle": "Use a better mic",
-  "@liveTipBluetoothMicTitle": {},
+  "@liveTipBluetoothMicTitle": {
+
+    "description": "Metadata for liveTipBluetoothMicTitle"
+
+  },
   "liveTipBluetoothMicBody": "For surveys, pair a Bluetooth or wired external microphone — point it at the source and improve range and clarity over the built-in mic.",
-  "@liveTipBluetoothMicBody": {},
+  "@liveTipBluetoothMicBody": {
+
+    "description": "Metadata for liveTipBluetoothMicBody"
+
+  },
   "liveTipSurveyNotificationsTitle": "Surveys keep going",
-  "@liveTipSurveyNotificationsTitle": {},
+  "@liveTipSurveyNotificationsTitle": {
+
+    "description": "Metadata for liveTipSurveyNotificationsTitle"
+
+  },
   "liveTipSurveyNotificationsBody": "Surveys run as a foreground service with a persistent notification, so recording continues even when your screen is off or the app is in the background.",
-  "@liveTipSurveyNotificationsBody": {},
+  "@liveTipSurveyNotificationsBody": {
+
+    "description": "Metadata for liveTipSurveyNotificationsBody"
+
+  },
   "liveTipStudyDesignTitle": "Be consistent",
-  "@liveTipStudyDesignTitle": {},
+  "@liveTipStudyDesignTitle": {
+
+    "description": "Metadata for liveTipStudyDesignTitle"
+
+  },
   "liveTipStudyDesignBody": "For comparable results, keep the device, mic, threshold and session length the same across surveys at a site — change one thing at a time.",
-  "@liveTipStudyDesignBody": {},
+  "@liveTipStudyDesignBody": {
+
+    "description": "Metadata for liveTipStudyDesignBody"
+
+  },
   "liveTipAiMistakesTitle": "AI gets it wrong",
-  "@liveTipAiMistakesTitle": {},
+  "@liveTipAiMistakesTitle": {
+
+    "description": "Metadata for liveTipAiMistakesTitle"
+
+  },
   "liveTipAiMistakesBody": "Even high-confidence detections can be wrong. Review the spectrogram and audio clip before trusting a record — especially for rare species.",
-  "@liveTipAiMistakesBody": {},
+  "@liveTipAiMistakesBody": {
+
+    "description": "Metadata for liveTipAiMistakesBody"
+
+  },
   "liveTipBatteryTitle": "Bring power",
-  "@liveTipBatteryTitle": {},
+  "@liveTipBatteryTitle": {
+
+    "description": "Metadata for liveTipBatteryTitle"
+
+  },
   "liveTipBatteryBody": "Long surveys with the screen on and GPS active drain the battery quickly. Pack a power bank for anything longer than an hour.",
-  "@liveTipBatteryBody": {},
+  "@liveTipBatteryBody": {
+
+    "description": "Metadata for liveTipBatteryBody"
+
+  },
   "liveTipScoresTitle": "Scores aren't probabilities",
-  "@liveTipScoresTitle": {},
+  "@liveTipScoresTitle": {
+
+    "description": "Metadata for liveTipScoresTitle"
+
+  },
   "liveTipScoresBody": "Confidence scores show how well the audio matched the model's pattern, not the statistical chance that a species is actually present.",
-  "@liveTipScoresBody": {},
+  "@liveTipScoresBody": {
+
+    "description": "Metadata for liveTipScoresBody"
+
+  },
   "liveTipDistanceTitle": "Distance matters",
-  "@liveTipDistanceTitle": {},
+  "@liveTipDistanceTitle": {
+
+    "description": "Metadata for liveTipDistanceTitle"
+
+  },
   "liveTipDistanceBody": "Distant calls lose high frequencies over long ranges and might not trigger a detection, even if human ears can pick them out.",
-  "@liveTipDistanceBody": {},
+  "@liveTipDistanceBody": {
+
+    "description": "Metadata for liveTipDistanceBody"
+
+  },
   "settingsGain": "Gain",
   "@settingsGain": {
     "description": "Audio gain slider label"
