@@ -55,6 +55,9 @@ post_install do |installer|
     target.build_configurations.each do |config|
       # Keep generated pod targets aligned with the app minimum iOS version.
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+      # Xcode 16 module verification trips over onnxruntime-objc's public
+      # quoted includes even though the pod itself builds fine otherwise.
+      config.build_settings['ENABLE_MODULE_VERIFIER'] = 'NO'
     end
   end
 end
