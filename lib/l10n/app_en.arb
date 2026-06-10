@@ -417,11 +417,11 @@
   "@liveModeDescription": {
     "description": "Description for Live mode on the main menu"
   },
-  "surveyModeDescription": "Walk a transect and map species along the way",
+  "surveyModeDescription": "Walk and record in the background",
   "@surveyModeDescription": {
     "description": "Description for Survey mode on the main menu"
   },
-  "pointCountModeDescription": "Record species at a fixed point for a set duration",
+  "pointCountModeDescription": "Record at a fixed point for a set duration",
   "@pointCountModeDescription": {
     "description": "Description for Point Count mode on the main menu"
   },
@@ -2556,6 +2556,22 @@
   "helpFileAnalysisBody": "File Analysis is a four-step wizard: pick a file, set location and date, choose parameters, and run analysis. The settings button opens the File Analysis settings subset, and completed analyses open in Session Review.",
   "@helpFileAnalysisBody": {
     "description": "Help body text for File Analysis mode"
+  },
+  "helpBatchAnalysisTitle": "Batch Analysis",
+  "@helpBatchAnalysisTitle": {
+    "description": "Section title for Batch Analysis help"
+  },
+  "helpBatchAnalysisBody": "Batch Analysis is designed for many files at once. Select multiple recordings, confirm shared parameters, and run one queue that processes each file and stores results for later review.",
+  "@helpBatchAnalysisBody": {
+    "description": "Help body text for Batch Analysis mode"
+  },
+  "helpAruTitle": "ARU Mode",
+  "@helpAruTitle": {
+    "description": "Section title for ARU help"
+  },
+  "helpAruBody": "ARU Mode turns your device into a passive recording unit. Configure deployment details, start recording, and let BirdNET Live capture audio in the background for later analysis and review.",
+  "@helpAruBody": {
+    "description": "Help body text for ARU mode"
   },
   "helpExploreTitle": "Explore",
   "@helpExploreTitle": {

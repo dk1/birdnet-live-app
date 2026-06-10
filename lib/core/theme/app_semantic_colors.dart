@@ -45,7 +45,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   static const Color _pointCountBase = Color(0xFF1E88E5);
   static const Color _surveyBase = Color(0xFF43A047);
   static const Color _fileAnalysisBase = Color(0xFFFB8C00);
-  static const Color _batchAnalysisBase = Color(0xFF8D6E63);
+  static const Color _batchAnalysisBase = Color(0xFFD4AF37);
   static const Color _aruBase = Color(0xFF8E24AA);
 
   static const AppSemanticColors light = AppSemanticColors(
