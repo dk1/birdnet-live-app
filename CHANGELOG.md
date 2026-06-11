@@ -5,11 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.0] - 2026-06-11
+
+### Added
+
+- Added ARU Mode as a scheduled fixed-site recorder with localized setup, persisted deployment state, cycle metadata, schedule-aware storage estimates, active deployment status, Android foreground notification controls, documentation, and focused tests.
+- Added ARU site setup with GPS, manual/map-picked coordinates, skip-location handling, shared weather context, WAV/FLAC format selection, and JSON/ZIP export support for deployment metadata, segments, and cycle recordings.
+
+### Changed
+
+- Refined ARU setup and ready-state UX with Survey-style field tips, compact review cards, consolidated site/weather context, clearer deployment-end summaries, and schedule controls for manual stop, fixed cycles, fixed date/time, cycle duration, repeat interval, and recording windows.
+- Reworked active ARU deployment screens toward the Survey live layout with clearer recording/waiting state, live spectrogram and detections tabs, persistent detection feed, stats, and shared microphone handling.
+- Updated ARU detection sampling and session grouping so Smart/Top N retention distributes clips across cycles or time buckets instead of clustering retained clips in one short span.
+
+### Fixed
+
+- Fixed ARU stop handling, scheduled cycle recording, live inference, and detection-clip retention so deployments stop cleanly, record only at schedule boundaries, and save detections during active cycles.
+
 ## [0.16.11] - 2026-06-10
 
 ### Added
 
-- Added dedicated in-app Help entries for Batch Analysis and ARU Mode across all supported locales.
+- Added dedicated in-app Help entries for Batch Analysis across all supported locales.
 - Added AGENTS.md with concise repository guidance for coding agents, including localization, documentation, style, and safety rules.
 
 ### Changed
