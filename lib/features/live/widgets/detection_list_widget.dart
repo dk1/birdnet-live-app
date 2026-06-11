@@ -37,6 +37,9 @@ class DetectionList extends StatelessWidget {
     this.onDetectionTap,
     this.actionsBuilder,
     this.showTips = false,
+    this.emptyIcon,
+    this.emptyTitle,
+    this.emptySubtitle,
   });
 
   /// Detections to display (newest first).
@@ -51,6 +54,15 @@ class DetectionList extends StatelessWidget {
   /// Whether the empty detection panel may show rotating Live-mode tips.
   final bool showTips;
 
+  /// Optional empty-state icon override.
+  final IconData? emptyIcon;
+
+  /// Optional empty-state title override.
+  final String? emptyTitle;
+
+  /// Optional empty-state subtitle override.
+  final String? emptySubtitle;
+
   /// Optional per-detection action contract. When non-null and
   /// non-empty, each tile gets an inline confirm checkmark (if
   /// [DetectionActions.onToggleConfirm] is set) and a more_vert overflow
@@ -62,7 +74,13 @@ class DetectionList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (detections.isEmpty) {
-      return _EmptyState(isActive: isActive, showTips: showTips);
+      return _EmptyState(
+        isActive: isActive,
+        showTips: showTips,
+        icon: emptyIcon,
+        title: emptyTitle,
+        subtitle: emptySubtitle,
+      );
     }
 
     return ListView.builder(
@@ -340,10 +358,19 @@ class DetectionTile extends ConsumerWidget {
 
 /// Empty state shown when no detections are available.
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.isActive, required this.showTips});
+  const _EmptyState({
+    required this.isActive,
+    required this.showTips,
+    this.icon,
+    this.title,
+    this.subtitle,
+  });
 
   final bool isActive;
   final bool showTips;
+  final IconData? icon;
+  final String? title;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -366,19 +393,19 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isActive ? AppIcons.hearing : AppIcons.micOff,
+              icon ?? (isActive ? AppIcons.hearing : AppIcons.micOff),
               size: 40,
               color: theme.colorScheme.onSurface.withAlpha(77),
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.liveListening,
+              title ?? l10n.liveListening,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurface.withAlpha(128),
               ),
             ),
             Text(
-              l10n.liveSpeciesWillAppear,
+              subtitle ?? l10n.liveSpeciesWillAppear,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withAlpha(77),
               ),

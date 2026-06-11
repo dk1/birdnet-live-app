@@ -49,6 +49,7 @@ class AruScheduleConfig {
     this.maxCycles,
     this.lowBatteryStopPercent,
     this.dielPattern = AruDielPattern.anyTime,
+    this.testCycleEnabled = false,
     this.latitude,
     this.longitude,
   });
@@ -75,6 +76,10 @@ class AruScheduleConfig {
 
   /// Optional diel restriction.
   final AruDielPattern dielPattern;
+
+  /// Runs one immediate one-minute sanity-check cycle before the regular
+  /// clock-aligned schedule begins.
+  final bool testCycleEnabled;
 
   /// Optional deployment latitude for sunrise/sunset estimation.
   final double? latitude;
@@ -337,10 +342,32 @@ class AruScheduleCalculator {
 
   AruCycleWindow? _windowAt(int index) {
     if (index < 0) return null;
-    if (config.maxCycles != null && index >= config.maxCycles!) return null;
+    if (config.testCycleEnabled && index == 0) {
+      final plannedEnd = config.startTime.add(const Duration(minutes: 1));
+      final deploymentEnd = config.endTime;
+      if (deploymentEnd != null && !config.startTime.isBefore(deploymentEnd)) {
+        return null;
+      }
+      final end =
+          deploymentEnd != null && deploymentEnd.isBefore(plannedEnd)
+              ? deploymentEnd
+              : plannedEnd;
+      if (!end.isAfter(config.startTime)) return null;
+      return AruCycleWindow(
+        index: 0,
+        start: config.startTime,
+        end: end,
+        plannedEnd: plannedEnd,
+      );
+    }
+
+    final regularIndex = config.testCycleEnabled ? index - 1 : index;
+    if (config.maxCycles != null && regularIndex >= config.maxCycles!) {
+      return null;
+    }
 
     if (config.dielPattern == AruDielPattern.anyTime) {
-      return _candidateWindow(rawIndex: index, windowIndex: index);
+      return _candidateWindow(rawIndex: regularIndex, windowIndex: index);
     }
 
     var accepted = 0;
@@ -348,11 +375,11 @@ class AruScheduleCalculator {
     while (rawIndex < 200000) {
       final candidate = _candidateWindow(
         rawIndex: rawIndex,
-        windowIndex: accepted,
+        windowIndex: config.testCycleEnabled ? accepted + 1 : accepted,
       );
       if (candidate == null) return null;
       if (_isAllowedStart(candidate.start)) {
-        if (accepted == index) return candidate;
+        if (accepted == regularIndex) return candidate;
         accepted++;
       }
       rawIndex++;
@@ -364,7 +391,7 @@ class AruScheduleCalculator {
     required int rawIndex,
     required int windowIndex,
   }) {
-    final start = config.startTime.add(config.repeatInterval * rawIndex);
+    final start = _regularCycleStart(rawIndex);
     final plannedEnd = start.add(config.cycleDuration);
     final deploymentEnd = config.endTime;
     if (deploymentEnd != null && !start.isBefore(deploymentEnd)) return null;
@@ -381,6 +408,24 @@ class AruScheduleCalculator {
       end: end,
       plannedEnd: plannedEnd,
     );
+  }
+
+  DateTime _regularCycleStart(int rawIndex) {
+    final first = _firstClockAlignedStart();
+    return first.add(config.repeatInterval * rawIndex);
+  }
+
+  DateTime _firstClockAlignedStart() {
+    final start = config.startTime;
+    final midnight =
+        start.isUtc
+            ? DateTime.utc(start.year, start.month, start.day)
+            : DateTime(start.year, start.month, start.day);
+    final elapsed = start.difference(midnight);
+    final intervalMicros = config.repeatInterval.inMicroseconds;
+    final remainder = elapsed.inMicroseconds % intervalMicros;
+    if (remainder == 0) return start;
+    return start.add(Duration(microseconds: intervalMicros - remainder));
   }
 
   bool _isAllowedStart(DateTime start) {

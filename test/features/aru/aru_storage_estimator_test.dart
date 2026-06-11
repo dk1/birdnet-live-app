@@ -55,6 +55,26 @@ void main() {
       expect(estimate.totalBytes, 10 * 60 * 32000);
     });
 
+    test('includes optional test cycle in full-recording estimates', () {
+      final estimate = estimator.estimate(
+        AruStorageEstimateInput(
+          schedule: AruScheduleConfig(
+            startTime: start,
+            cycleDuration: const Duration(minutes: 10),
+            repeatInterval: const Duration(hours: 1),
+            maxCycles: 1,
+            testCycleEnabled: true,
+          ),
+          recordingMode: RecordingMode.full,
+          format: 'wav',
+        ),
+      );
+
+      expect(estimate.totalRecordedDuration, const Duration(minutes: 11));
+      expect(estimate.totalCycles, 2);
+      expect(estimate.totalBytes, 11 * 60 * 64000);
+    });
+
     test('clamps active duration at schedule end', () {
       final estimate = estimator.estimate(
         AruStorageEstimateInput(

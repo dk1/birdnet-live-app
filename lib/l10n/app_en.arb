@@ -538,6 +538,14 @@
   "@aruOptionalTestCycle": {
     "description": "Label for ARU optional test cycle toggle"
   },
+  "aruTestRun": "Test run",
+  "@aruTestRun": {
+    "description": "Short label for the immediate one-minute ARU test recording cycle"
+  },
+  "aruTestRunReadyHint": "A one-minute test run will start immediately before the scheduled cycles.",
+  "@aruTestRunReadyHint": {
+    "description": "Ready-screen hint shown when the ARU test run option is enabled"
+  },
   "aruReadySummary": "Review the deployment before starting. The session is saved immediately so schedule state can be recovered later.",
   "@aruReadySummary": {
     "description": "Summary text on ARU ready step"
@@ -630,9 +638,25 @@
   "@aruActiveTitle": {
     "description": "Title for active ARU screen"
   },
+  "aruTabStatus": "Status",
+  "@aruTabStatus": {
+    "description": "Tab label for the active ARU status dashboard"
+  },
   "aruActiveWaiting": "Waiting for next cycle",
   "@aruActiveWaiting": {
     "description": "Status text when ARU is waiting"
+  },
+  "aruWaitingDetectionsTitle": "Waiting for the next cycle",
+  "@aruWaitingDetectionsTitle": {
+    "description": "Empty-state title for ARU detections while waiting between recording cycles"
+  },
+  "aruWaitingDetectionsBody": "Detections from the next recording cycle will appear here.",
+  "@aruWaitingDetectionsBody": {
+    "description": "Empty-state body for ARU detections while waiting between recording cycles"
+  },
+  "aruHelpStatusIcons": "Status icons: mic shows current audio level, checkmark shows completed cycles, list shows total detections, waveform shows unique species, red dot marks an active recording, clock marks waiting for the next scheduled cycle, and the test icon marks the immediate one-minute test run.",
+  "@aruHelpStatusIcons": {
+    "description": "Help text explaining icons on the active ARU screen"
   },
   "aruActiveRecording": "Recording cycle",
   "@aruActiveRecording": {
@@ -646,6 +670,10 @@
   "@aruNextCycle": {
     "description": "Label for next ARU cycle time"
   },
+  "aruNextCyclesPreview": "Next 10 cycles",
+  "@aruNextCyclesPreview": {
+    "description": "Heading for the ARU schedule tab showing only the next 10 upcoming cycles"
+  },
   "aruCompletedCycles": "Completed cycles",
   "@aruCompletedCycles": {
     "description": "Label for completed ARU cycles count"
@@ -653,6 +681,10 @@
   "aruRecordedAudio": "Recorded audio",
   "@aruRecordedAudio": {
     "description": "Label for ARU recorded audio duration"
+  },
+  "aruElapsedTime": "Elapsed time",
+  "@aruElapsedTime": {
+    "description": "Label for elapsed wall-clock time on the active ARU summary tab"
   },
   "aruStopDeployment": "Stop Deployment",
   "@aruStopDeployment": {

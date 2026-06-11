@@ -177,6 +177,7 @@ class AruStorageEstimator {
               : end,
       lowBatteryStopPercent: schedule.lowBatteryStopPercent,
       dielPattern: schedule.dielPattern,
+      testCycleEnabled: schedule.testCycleEnabled,
       latitude: schedule.latitude,
       longitude: schedule.longitude,
     );

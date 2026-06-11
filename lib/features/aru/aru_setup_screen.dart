@@ -68,6 +68,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
   RecordingMode _recordingMode = RecordingMode.full;
   SamplingMode _samplingMode = SamplingMode.smart;
   int _topNPerSpecies = 10;
+  bool _testCycleEnabled = true;
   bool _eachCycleIsSession = true;
   bool _starting = false;
 
@@ -246,7 +247,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
               ? _samplingMode.name
               : SamplingMode.all.name,
       topNPerSpecies: _topNPerSpecies,
-      testCycleEnabled: false,
+      testCycleEnabled: _testCycleEnabled,
       eachCycleIsSession: _eachCycleIsSession,
     );
 
@@ -391,6 +392,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
                 _locationChoice == _LocationChoice.skip ? null : _latitude,
             longitude:
                 _locationChoice == _LocationChoice.skip ? null : _longitude,
+            testCycleEnabled: _testCycleEnabled,
             eachCycleIsSession: _eachCycleIsSession,
             onCycleDurationChanged:
                 (value) => setState(() {
@@ -410,6 +412,8 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
                 (value) => setState(() => _lowBatteryStop = value),
             onDielPatternChanged:
                 (value) => setState(() => _dielPattern = value),
+            onTestCycleEnabledChanged:
+                (value) => setState(() => _testCycleEnabled = value),
             onEachCycleIsSessionChanged:
                 (value) => setState(() => _eachCycleIsSession = value),
           ),
@@ -433,6 +437,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
             recordingMode: _recordingMode,
             samplingMode: _samplingMode,
             topNPerSpecies: _topNPerSpecies,
+            testCycleEnabled: _testCycleEnabled,
             eachCycleIsSession: _eachCycleIsSession,
           ),
         },
@@ -953,6 +958,7 @@ class _ScheduleStep extends ConsumerWidget {
     required this.dielPattern,
     required this.latitude,
     required this.longitude,
+    required this.testCycleEnabled,
     required this.eachCycleIsSession,
     required this.onCycleDurationChanged,
     required this.onRepeatIntervalChanged,
@@ -961,6 +967,7 @@ class _ScheduleStep extends ConsumerWidget {
     required this.onMaxCyclesChanged,
     required this.onLowBatteryStopChanged,
     required this.onDielPatternChanged,
+    required this.onTestCycleEnabledChanged,
     required this.onEachCycleIsSessionChanged,
     super.key,
   });
@@ -974,6 +981,7 @@ class _ScheduleStep extends ConsumerWidget {
   final AruDielPattern dielPattern;
   final double? latitude;
   final double? longitude;
+  final bool testCycleEnabled;
   final bool eachCycleIsSession;
   final ValueChanged<Duration> onCycleDurationChanged;
   final ValueChanged<Duration> onRepeatIntervalChanged;
@@ -982,6 +990,7 @@ class _ScheduleStep extends ConsumerWidget {
   final ValueChanged<int> onMaxCyclesChanged;
   final ValueChanged<int> onLowBatteryStopChanged;
   final ValueChanged<AruDielPattern> onDielPatternChanged;
+  final ValueChanged<bool> onTestCycleEnabledChanged;
   final ValueChanged<bool> onEachCycleIsSessionChanged;
 
   @override
@@ -1011,6 +1020,7 @@ class _ScheduleStep extends ConsumerWidget {
                   lowBatteryStopPercent:
                       lowBatteryStop > 0 ? lowBatteryStop : null,
                   dielPattern: dielPattern,
+                  testCycleEnabled: testCycleEnabled,
                   latitude: latitude,
                   longitude: longitude,
                   recordingMode: RecordingMode.full.name,
@@ -1186,6 +1196,18 @@ class _ScheduleStep extends ConsumerWidget {
         ),
         const Divider(height: 32),
 
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          secondary: const Icon(AppIcons.scienceRounded),
+          title: Text(l10n.aruOptionalTestCycle),
+          value: testCycleEnabled,
+          onChanged: (value) {
+            HapticFeedback.selectionClick();
+            onTestCycleEnabledChanged(value);
+          },
+        ),
+        const Divider(height: 32),
+
         // Session Grouping
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
@@ -1317,6 +1339,7 @@ class _ReadyStep extends ConsumerWidget {
     required this.recordingMode,
     required this.samplingMode,
     required this.topNPerSpecies,
+    required this.testCycleEnabled,
     required this.eachCycleIsSession,
     super.key,
   });
@@ -1336,6 +1359,7 @@ class _ReadyStep extends ConsumerWidget {
   final RecordingMode recordingMode;
   final SamplingMode samplingMode;
   final int topNPerSpecies;
+  final bool testCycleEnabled;
   final bool eachCycleIsSession;
 
   @override
@@ -1364,6 +1388,7 @@ class _ReadyStep extends ConsumerWidget {
                   recordingMode: recordingMode.name,
                   samplingMode: samplingMode.name,
                   topNPerSpecies: topNPerSpecies,
+                  testCycleEnabled: testCycleEnabled,
                 ).toScheduleConfig(),
             recordingMode: recordingMode,
             format: ref.watch(recordingFormatProvider),
@@ -1421,6 +1446,12 @@ class _ReadyStep extends ConsumerWidget {
           rows: [
             (l10n.aruCycleDuration, _formatDuration(cycleDuration)),
             (l10n.aruRepeatInterval, _formatDuration(repeatInterval)),
+            (
+              l10n.aruOptionalTestCycle,
+              testCycleEnabled
+                  ? _formatDuration(const Duration(minutes: 1))
+                  : l10n.settingsFilterOff,
+            ),
             (l10n.aruRecordingWindow, _dielPatternLabel(l10n, dielPattern)),
             (
               l10n.aruScheduleEnd,
@@ -1433,6 +1464,16 @@ class _ReadyStep extends ConsumerWidget {
             ),
           ],
         ),
+        if (testCycleEnabled) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: const Icon(AppIcons.scienceRounded),
+              title: Text(l10n.aruTestRun),
+              subtitle: Text(l10n.aruTestRunReadyHint),
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
         _ReviewCard(
           icon: AppIcons.micRounded,

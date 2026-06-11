@@ -53,7 +53,10 @@ class AruNotificationService {
   static String _notificationTitle = '';
   static String _stopButtonText = '';
   static String _openButtonText = '';
+  static const Duration _startRetryDelay = Duration(minutes: 1);
   bool _running = false;
+  bool _starting = false;
+  DateTime? _nextStartAttempt;
 
   bool get isRunning => _running;
   static String get notificationTitle => _notificationTitle;
@@ -99,34 +102,53 @@ class AruNotificationService {
 
   Future<void> start({required String title, required String text}) async {
     if (!Platform.isAndroid) return;
-    await init();
+    if (_running || _starting) return;
 
-    final granted = await ensurePermission();
-    if (!granted) {
-      debugPrint(
-        '[AruNotification] permission not granted - attempting startService',
-      );
+    final now = DateTime.now();
+    final nextAttempt = _nextStartAttempt;
+    if (nextAttempt != null && now.isBefore(nextAttempt)) {
+      return;
     }
 
-    final result = await FlutterForegroundTask.startService(
-      serviceId: 512,
-      notificationTitle: title,
-      notificationText: text,
-      notificationIcon: const NotificationIcon(
-        metaDataName: 'com.birdnet.live.notification_icon',
-      ),
-      notificationButtons: [
-        NotificationButton(id: 'stop', text: _stopButtonText),
-        NotificationButton(id: 'open', text: _openButtonText),
-      ],
-      callback: aruTaskCallback,
-    );
-    _running = result is ServiceRequestSuccess;
-    debugPrint(
-      _running
-          ? '[AruNotification] started'
-          : '[AruNotification] startService failed: $result',
-    );
+    _starting = true;
+    try {
+      await init();
+
+      final granted = await ensurePermission();
+      if (!granted) {
+        debugPrint(
+          '[AruNotification] permission not granted - attempting startService',
+        );
+      }
+
+      final result = await FlutterForegroundTask.startService(
+        serviceId: 512,
+        notificationTitle: title,
+        notificationText: text,
+        notificationIcon: const NotificationIcon(
+          metaDataName: 'com.birdnet.live.notification_icon',
+        ),
+        notificationButtons: [
+          NotificationButton(id: 'stop', text: _stopButtonText),
+          NotificationButton(id: 'open', text: _openButtonText),
+        ],
+        callback: aruTaskCallback,
+      );
+      if (result is ServiceRequestSuccess) {
+        _running = true;
+        _nextStartAttempt = null;
+        debugPrint('[AruNotification] started');
+      } else {
+        _running = false;
+        _nextStartAttempt = now.add(_startRetryDelay);
+        debugPrint(
+          '[AruNotification] startService failed: $result. '
+          'Retrying in ${_startRetryDelay.inSeconds}s.',
+        );
+      }
+    } finally {
+      _starting = false;
+    }
   }
 
   Future<void> update({required String title, required String text}) async {
@@ -144,6 +166,7 @@ class AruNotificationService {
     if (!_running) return;
     await FlutterForegroundTask.stopService();
     _running = false;
+    _nextStartAttempt = null;
     debugPrint('[AruNotification] stopped');
   }
 }

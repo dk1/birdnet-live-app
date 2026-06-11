@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:battery_plus/battery_plus.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:birdnet_live/shared/widgets/app_help_bottom_sheet.dart';
@@ -14,6 +15,8 @@ import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../audio/ring_buffer.dart';
 import '../explore/explore_providers.dart';
+import '../history/session_library_screen.dart';
+import '../history/session_review_screen.dart';
 import '../live/live_controller.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
@@ -38,10 +41,12 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   Timer? _timer;
   late final TabController _tabController;
   final AruNotificationService _notificationService = AruNotificationService();
+  final Battery _battery = Battery();
   bool _stopping = false;
   bool _tickBusy = false;
   bool _inferenceStarting = false;
   bool _aruInferenceActive = false;
+  DateTime? _lastBatteryCheck;
 
   @override
   void initState() {
@@ -105,6 +110,9 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
           _scheduleSnapshot(session)?.currentWindow == null) {
         await _stopInference();
       }
+      if (await _stopIfBatteryBelowThreshold(controller)) {
+        return;
+      }
       await controller.evaluate();
       if (!mounted) return;
       ref.read(aruStateProvider.notifier).state = controller.state;
@@ -139,19 +147,19 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       if (controller.state != LiveState.ready) return;
 
       await controller.startSession(
-        windowDuration: ref.read(windowDurationProvider),
-        inferenceRate: ref.read(surveyInferenceRateProvider),
-        confidenceThreshold: ref.read(confidenceThresholdProvider),
-        speciesFilterMode: ref.read(speciesFilterModeProvider),
+        windowDuration: session.settings.windowDuration,
+        inferenceRate: session.settings.inferenceRate,
+        confidenceThreshold: session.settings.confidenceThreshold,
+        speciesFilterMode: session.settings.speciesFilterMode,
         recordingMode: RecordingMode.off,
         geoScores: await ref.read(geoScoresProvider.future),
         geoThreshold: ref.read(geoThresholdProvider),
         geoModelSpeciesNames: await ref.read(
           geoModelSpeciesNamesProvider.future,
         ),
-        poolingWindows: ref.read(scorePoolingWindowsProvider),
-        poolingMode: ref.read(scorePoolingProvider),
-        sensitivity: ref.read(sensitivityProvider),
+        poolingWindows: session.settings.poolingWindows,
+        poolingMode: session.settings.poolingMode ?? 'lme',
+        sensitivity: session.settings.sensitivity ?? 1.0,
         gainLinear: session.settings.gainLinear,
         highPassHz: session.settings.highPassHz,
         latitude: session.latitude,
@@ -208,16 +216,84 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   Future<void> _stopDeployment() async {
     if (_stopping || !mounted) return;
     setState(() => _stopping = true);
+    final reviewSession = await _finishDeployment(
+      reason: SessionStopReason.manual,
+    );
+    if (!mounted) return;
+    setState(() => _stopping = false);
+    _openReview(reviewSession);
+  }
+
+  Future<LiveSession?> _finishDeployment({
+    required SessionStopReason reason,
+    num? reasonValue,
+  }) async {
     final controller = ref.read(aruControllerProvider);
     await _stopInference();
-    await controller.stop();
-    if (!mounted) return;
+    await controller.stop(reason: reason, reasonValue: reasonValue);
+    if (!mounted) return controller.reviewSession;
     ref.read(aruStateProvider.notifier).state = controller.state;
     ref.read(aruSessionProvider.notifier).state = controller.session;
     await _notificationService.stop();
-    if (!mounted) return;
-    setState(() => _stopping = false);
-    Navigator.of(context).pop();
+    ref.invalidate(sessionListProvider);
+    return controller.reviewSession;
+  }
+
+  void _openReview(LiveSession? session) {
+    if (!mounted || session == null) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final navigator = Navigator.of(context);
+    navigator.pushReplacement(
+      PageRouteBuilder<void>(
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+        pageBuilder: (a, b, c) => const SessionLibraryScreen(),
+      ),
+    );
+    navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) => SessionReviewScreen(session: session),
+      ),
+    );
+  }
+
+  Future<bool> _stopIfBatteryBelowThreshold(AruController controller) async {
+    final threshold = controller.session?.aruMetadata?.lowBatteryStopPercent;
+    if (threshold == null || threshold <= 0) return false;
+
+    final now = DateTime.now();
+    if (_lastBatteryCheck != null &&
+        now.difference(_lastBatteryCheck!) < const Duration(minutes: 1)) {
+      return false;
+    }
+    _lastBatteryCheck = now;
+
+    try {
+      final level = await _battery.batteryLevel;
+      if (level > threshold) return false;
+
+      if (mounted) setState(() => _stopping = true);
+      final reviewSession = await _finishDeployment(
+        reason: SessionStopReason.lowBattery,
+        reasonValue: level,
+      );
+      if (!mounted) return true;
+      setState(() => _stopping = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.sessionAutoStopLowBattery(level),
+          ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      _openReview(reviewSession);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> _syncNotification() async {
@@ -258,6 +334,10 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
                 body: l10n.helpAruBody,
               ),
               AppHelpSection(
+                icon: AppIcons.infoOutline,
+                body: l10n.aruHelpStatusIcons,
+              ),
+              AppHelpSection(
                 icon: AppIcons.graphicEqRounded,
                 body: l10n.aruSetupHelpBody,
               ),
@@ -279,6 +359,25 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
         isRecording &&
         captureState == CaptureState.capturing &&
         _tabController.index == 1;
+
+    ref.listen<int>(confidenceThresholdProvider, (_, next) {
+      ref.read(liveControllerProvider).setConfidenceThreshold(next);
+    });
+    ref.listen<int?>(scorePoolingWindowsProvider, (_, next) {
+      ref.read(liveControllerProvider).setPoolingWindows(next);
+    });
+    ref.listen<String>(scorePoolingProvider, (_, next) {
+      ref.read(liveControllerProvider).setPoolingMode(next);
+    });
+    ref.listen<double>(sensitivityProvider, (_, next) {
+      ref.read(liveControllerProvider).setSensitivity(next);
+    });
+    ref.listen<double>(audioGainProvider, (_, next) {
+      ref.read(audioCaptureServiceProvider).setGain(next);
+    });
+    ref.listen<double>(highPassFilterProvider, (_, next) {
+      ref.read(audioCaptureServiceProvider).setHighPassCutoff(next);
+    });
 
     return PopScope(
       canPop: session == null || state == AruControllerState.completed,
@@ -315,12 +414,12 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     required RingBuffer ringBuffer,
     required bool spectrogramActive,
   }) {
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-    final showFullPageTab =
-        _tabController.index == 2 || _tabController.index == 3;
     final isRecording = state == AruControllerState.recording;
     final visibleDetections = _visibleDetections(session, state);
+    final showDetectionPane =
+        _tabController.index == 0 || _tabController.index == 1;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
     final statusBar = _AruStatusBar(
       state: state,
@@ -335,16 +434,16 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       labelStyle: theme.textTheme.labelSmall,
       tabs: [
         Tab(
-          icon: const Icon(AppIcons.scheduleRounded, size: 18),
-          text: l10n.aruSetupSchedule,
+          icon: const Icon(AppIcons.infoOutline, size: 18),
+          text: l10n.aruTabStatus,
         ),
         Tab(
           icon: const Icon(AppIcons.graphicEq, size: 18),
           text: l10n.surveyTabSpectrogram,
         ),
         Tab(
-          icon: const Icon(AppIcons.detections, size: 18),
-          text: l10n.surveyTabSummaryDetections,
+          icon: const Icon(AppIcons.scheduleRounded, size: 18),
+          text: l10n.aruSetupSchedule,
         ),
         Tab(
           icon: const Icon(AppIcons.summaryChart, size: 18),
@@ -356,25 +455,28 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       controller: _tabController,
       physics: const NeverScrollableScrollPhysics(),
       children: [
-        _SchedulePanel(session: session, state: state),
+        _StatusPanel(session: session, state: state),
         _SpectrogramPanel(isActive: spectrogramActive, state: state),
-        _DetectionsPanel(detections: visibleDetections, isActive: isRecording),
+        _SchedulePanel(session: session),
         _SummaryPanel(session: session),
       ],
     );
     final statsBar = _AruStatsBar(session: session, ringBuffer: ringBuffer);
-    final detectionList = Padding(
-      padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+    final detectionPane = Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
       child: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
         child: DetectionList(
           detections: visibleDetections,
           isActive: isRecording,
+          emptyIcon: isRecording ? null : AppIcons.scheduleRounded,
+          emptyTitle: isRecording ? null : l10n.aruWaitingDetectionsTitle,
+          emptySubtitle: isRecording ? null : l10n.aruWaitingDetectionsBody,
         ),
       ),
     );
 
-    if (isLandscape) {
+    if (isLandscape && showDetectionPane) {
       return Column(
         children: [
           statusBar,
@@ -382,20 +484,18 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
             child: Row(
               children: [
                 Expanded(
-                  flex: 1,
                   child: Column(
                     children: [
                       tabBar,
                       Expanded(child: tabContent),
-                      if (!showFullPageTab) statsBar,
+                      statsBar,
                     ],
                   ),
                 ),
-                if (!showFullPageTab) Expanded(flex: 1, child: detectionList),
+                Expanded(child: detectionPane),
               ],
             ),
           ),
-          const SizedBox(height: 16),
         ],
       );
     }
@@ -404,12 +504,11 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       children: [
         statusBar,
         tabBar,
-        Expanded(flex: showFullPageTab ? 1 : 2, child: tabContent),
-        if (!showFullPageTab) ...[
+        Expanded(flex: showDetectionPane ? 2 : 1, child: tabContent),
+        if (showDetectionPane) ...[
           statsBar,
-          Expanded(flex: 3, child: detectionList),
+          Expanded(flex: 3, child: detectionPane),
         ],
-        const SizedBox(height: 16),
       ],
     );
   }
@@ -479,16 +578,21 @@ class _AruStatusBarState extends State<_AruStatusBar> {
     final snapshot = _scheduleSnapshot(widget.session);
     final current = snapshot?.currentWindow;
     final next = snapshot?.nextWindow;
-    final label = switch (widget.state) {
-      AruControllerState.recording => l10n.aruActiveRecording,
-      AruControllerState.completed => l10n.aruActiveCompleted,
-      _ => l10n.aruActiveWaiting,
-    };
+    final now = DateTime.now();
+    final isTest = current != null && _isTestWindow(widget.session, current);
+    final label =
+        isTest
+            ? l10n.aruTestRun
+            : switch (widget.state) {
+              AruControllerState.recording => l10n.aruActiveRecording,
+              AruControllerState.completed => l10n.aruActiveCompleted,
+              _ => l10n.aruNextCycle,
+            };
     final detail =
         current != null
-            ? _formatDuration(current.end.difference(DateTime.now()))
+            ? _formatDuration(current.end.difference(now))
             : next != null
-            ? _formatDuration(next.start.difference(DateTime.now()))
+            ? _formatDuration(next.start.difference(now))
             : _formatDuration(widget.session.duration);
 
     return Padding(
@@ -623,11 +727,36 @@ class _AruStatsBar extends StatelessWidget {
   }
 }
 
-class _SchedulePanel extends StatelessWidget {
-  const _SchedulePanel({required this.session, required this.state});
+class _StatusPanel extends StatelessWidget {
+  const _StatusPanel({
+    required this.session,
+    required this.state,
+  });
 
   final LiveSession session;
   final AruControllerState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final snapshot = _scheduleSnapshot(session);
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      children: [
+        _ScheduleFocusCard(
+          state: state,
+          session: session,
+          currentWindow: snapshot?.currentWindow,
+          nextWindow: snapshot?.nextWindow,
+        ),
+      ],
+    );
+  }
+}
+
+class _SchedulePanel extends StatelessWidget {
+  const _SchedulePanel({required this.session});
+
+  final LiveSession session;
 
   @override
   Widget build(BuildContext context) {
@@ -639,58 +768,12 @@ class _SchedulePanel extends StatelessWidget {
             ? null
             : AruScheduleCalculator(metadata.toScheduleConfig());
     final now = DateTime.now();
-    final snapshot = schedule?.snapshotAt(now);
-    final current = snapshot?.currentWindow;
-    final next = snapshot?.nextWindow;
-    final windows = schedule?.nextWindows(now, count: 3) ?? const [];
+    final windows = schedule?.nextWindows(now, count: 10) ?? const [];
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       children: [
-        _ScheduleFocusCard(
-          state: state,
-          currentWindow: current,
-          nextWindow: next,
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _MetricRow(
-                  icon: AppIcons.timerRounded,
-                  label: l10n.aruCycleDuration,
-                  value: _formatDuration(
-                    Duration(seconds: metadata?.cycleDurationSeconds ?? 0),
-                  ),
-                ),
-                _MetricRow(
-                  icon: AppIcons.repeatRounded,
-                  label: l10n.aruRepeatInterval,
-                  value: _formatDuration(
-                    Duration(seconds: metadata?.repeatIntervalSeconds ?? 0),
-                  ),
-                ),
-                _MetricRow(
-                  icon: AppIcons.stopCircle,
-                  label: l10n.aruScheduleEnd,
-                  value: _scheduleEndSummary(l10n, metadata),
-                ),
-                _MetricRow(
-                  icon: AppIcons.batteryChargingFull,
-                  label: l10n.aruLowBatteryStop,
-                  value:
-                      metadata?.lowBatteryStopPercent != null
-                          ? '${metadata!.lowBatteryStopPercent}%'
-                          : l10n.settingsFilterOff,
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(l10n.aruNextCycle, style: theme.textTheme.titleSmall),
+        Text(l10n.aruNextCyclesPreview, style: theme.textTheme.titleSmall),
         const SizedBox(height: 8),
         if (windows.isEmpty)
           Card(
@@ -701,12 +784,22 @@ class _SchedulePanel extends StatelessWidget {
           )
         else
           for (final window in windows)
-            Card(
-              child: ListTile(
-                leading: const Icon(AppIcons.scheduleRounded),
-                title: Text(DateFormat.yMMMd().add_jm().format(window.start)),
-                subtitle: Text(_windowLabel(window)),
+            ListTile(
+              leading: Icon(
+                window.contains(now)
+                    ? AppIcons.fiberManualRecordRounded
+                    : AppIcons.scheduleRounded,
+                color:
+                    window.contains(now)
+                        ? theme.colorScheme.error
+                        : theme.colorScheme.onSurfaceVariant,
               ),
+              title: Text(
+                _isTestWindow(session, window)
+                    ? l10n.aruTestRun
+                    : DateFormat.yMMMd().add_jm().format(window.start),
+              ),
+              subtitle: Text(_windowLabel(window)),
             ),
       ],
     );
@@ -716,11 +809,13 @@ class _SchedulePanel extends StatelessWidget {
 class _ScheduleFocusCard extends StatelessWidget {
   const _ScheduleFocusCard({
     required this.state,
+    required this.session,
     required this.currentWindow,
     required this.nextWindow,
   });
 
   final AruControllerState state;
+  final LiveSession session;
   final AruCycleWindow? currentWindow;
   final AruCycleWindow? nextWindow;
 
@@ -729,13 +824,21 @@ class _ScheduleFocusCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isRecording = state == AruControllerState.recording;
+    final currentIsTest =
+        currentWindow != null && _isTestWindow(session, currentWindow!);
+    final nextIsTest = nextWindow != null && _isTestWindow(session, nextWindow!);
     final icon =
         isRecording
             ? AppIcons.fiberManualRecordRounded
             : AppIcons.scheduleRounded;
     final color =
         isRecording ? theme.colorScheme.error : theme.colorScheme.primary;
-    final title = isRecording ? l10n.aruActiveRecording : l10n.aruActiveWaiting;
+    final title =
+        currentIsTest || nextIsTest
+            ? l10n.aruTestRun
+            : isRecording
+            ? l10n.aruActiveRecording
+            : l10n.aruActiveWaiting;
     final body =
         currentWindow != null
             ? '${_windowLabel(currentWindow!)} - ${l10n.fileAnalysisEtaRemaining(_formatDuration(currentWindow!.end.difference(DateTime.now())))}'
@@ -776,41 +879,28 @@ class _SpectrogramPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     final ringBuffer = ref.watch(ringBufferProvider);
 
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child:
-          isActive
-              ? ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: _AruSpectrogram(ringBuffer: ringBuffer, isActive: true),
-              )
-              : Center(
-                child: Text(
-                  state == AruControllerState.recording
-                      ? l10n.surveyStarting
-                      : l10n.aruActiveWaiting,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-    );
-  }
-}
+    if (isActive) {
+      return _AruSpectrogram(ringBuffer: ringBuffer, isActive: true);
+    }
 
-class _DetectionsPanel extends StatelessWidget {
-  const _DetectionsPanel({required this.detections, required this.isActive});
-
-  final List<DetectionRecord> detections;
-  final bool isActive;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: DetectionList(detections: detections, isActive: isActive),
+    return ColoredBox(
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            state == AruControllerState.recording
+                ? l10n.surveyStarting
+                : l10n.aruActiveWaiting,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -855,15 +945,41 @@ class _AruSpectrogram extends ConsumerWidget {
   }
 }
 
-class _SummaryPanel extends StatelessWidget {
+class _SummaryPanel extends StatefulWidget {
   const _SummaryPanel({required this.session});
 
   final LiveSession session;
 
   @override
+  State<_SummaryPanel> createState() => _SummaryPanelState();
+}
+
+class _SummaryPanelState extends State<_SummaryPanel> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final metadata = session.aruMetadata;
+    final theme = Theme.of(context);
+    final session = widget.session;
+    final elapsed = (session.endTime ?? DateTime.now()).difference(
+      session.startTime,
+    );
+    final species = _speciesSummary(session.detections);
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -874,9 +990,9 @@ class _SummaryPanel extends StatelessWidget {
             child: Column(
               children: [
                 _MetricRow(
-                  icon: AppIcons.checkCircleRounded,
-                  label: l10n.aruCompletedCycles,
-                  value: '${_completedCycleCount(session)}',
+                  icon: AppIcons.timerRounded,
+                  label: l10n.aruElapsedTime,
+                  value: _formatDuration(elapsed),
                 ),
                 _MetricRow(
                   icon: AppIcons.libraryMusic,
@@ -897,43 +1013,72 @@ class _SummaryPanel extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                if ((metadata?.stationId ?? '').trim().isNotEmpty)
-                  _MetricRow(
-                    icon: AppIcons.sdStorage,
-                    label: l10n.aruStationId,
-                    value: metadata!.stationId!,
+        if (species.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l10n.surveyTabSummarySpecies,
+                    style: theme.textTheme.titleSmall,
                   ),
-                _MetricRow(
-                  icon: AppIcons.fiberManualRecordRounded,
-                  label: l10n.surveyRecordingMode,
-                  value: _recordingModeSummaryLabel(
-                    l10n,
-                    metadata?.recordingMode,
-                  ),
-                ),
-                _MetricRow(
-                  icon: AppIcons.stopCircle,
-                  label: l10n.aruScheduleEnd,
-                  value: _scheduleEndSummary(l10n, metadata),
-                ),
-                _MetricRow(
-                  icon: AppIcons.scheduleRounded,
-                  label: l10n.aruNextCycle,
-                  value: _nextCycleLabel(session),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  for (final item in species.take(12))
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.commonName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            '${item.count}',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }
+}
+
+class _AruSpeciesSummary {
+  const _AruSpeciesSummary({required this.commonName, required this.count});
+
+  final String commonName;
+  final int count;
+}
+
+List<_AruSpeciesSummary> _speciesSummary(List<DetectionRecord> detections) {
+  final bySpecies = <String, _AruSpeciesSummary>{};
+  for (final detection in detections) {
+    final existing = bySpecies[detection.scientificName];
+    bySpecies[detection.scientificName] = _AruSpeciesSummary(
+      commonName: detection.commonName,
+      count: (existing?.count ?? 0) + 1,
+    );
+  }
+  final list = bySpecies.values.toList();
+  list.sort((a, b) => b.count.compareTo(a.count));
+  return list;
 }
 
 class _MetricRow extends StatelessWidget {
@@ -1012,10 +1157,8 @@ int _completedCycleCount(LiveSession session) {
       .length;
 }
 
-String _nextCycleLabel(LiveSession session) {
-  final next = _scheduleSnapshot(session)?.nextWindow;
-  if (next == null) return '-';
-  return DateFormat.yMMMd().add_jm().format(next.start);
+bool _isTestWindow(LiveSession session, AruCycleWindow window) {
+  return session.aruMetadata?.testCycleEnabled == true && window.index == 0;
 }
 
 String _windowLabel(AruCycleWindow window) {
@@ -1023,36 +1166,19 @@ String _windowLabel(AruCycleWindow window) {
   return '${formatter.format(window.start)} - ${formatter.format(window.end)}';
 }
 
-String _scheduleEndSummary(
-  AppLocalizations l10n,
-  AruDeploymentMetadata? metadata,
-) {
-  if (metadata == null) return '-';
-  if (metadata.scheduleEnd != null) {
-    return DateFormat.yMMMd().add_jm().format(metadata.scheduleEnd!.toLocal());
-  }
-  if (metadata.maxCycles != null) return '${metadata.maxCycles}';
-  return l10n.aruScheduleNoLimit;
-}
-
-String _recordingModeSummaryLabel(AppLocalizations l10n, String? mode) {
-  return switch (mode) {
-    'full' => l10n.surveyRecordingFull,
-    'detections' || 'detectionsOnly' => l10n.surveyRecordingDetections,
-    'off' => l10n.surveyRecordingOff,
-    _ => '-',
-  };
-}
-
 String _formatDuration(Duration duration) {
   if (duration.isNegative) return '0 s';
   if (duration.inHours >= 1) {
     final minutes = duration.inMinutes % 60;
-    return minutes == 0
-        ? '${duration.inHours} h'
-        : '${duration.inHours} h $minutes min';
+    final seconds = duration.inSeconds % 60;
+    final minutePart = minutes > 0 ? ' $minutes min' : '';
+    final secondPart = ' $seconds s';
+    return '${duration.inHours} h$minutePart$secondPart';
   }
-  if (duration.inMinutes >= 1) return '${duration.inMinutes} min';
+  if (duration.inMinutes >= 1) {
+    final seconds = duration.inSeconds % 60;
+    return '${duration.inMinutes} min $seconds s';
+  }
   return '${duration.inSeconds} s';
 }
 

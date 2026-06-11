@@ -71,10 +71,12 @@ class AruController {
   int? _activeCycleIndex;
   DateTime? _activeCycleStart;
   AruDetectionSampler? _sampler;
+  LiveSession? _lastReviewSession;
 
   AruControllerState get state => _state;
   LiveSession? get session => _session;
   String? get errorMessage => _errorMessage;
+  LiveSession? get reviewSession => _lastReviewSession ?? _session;
 
   Future<void> startDeployment({
     required String sessionId,
@@ -104,6 +106,7 @@ class AruController {
         longitude: longitude,
         aruMetadata: metadata,
       );
+      _lastReviewSession = _session;
       _sampler = AruDetectionSampler(
         mode: samplingModeFromString(metadata.samplingMode),
         topN: metadata.topNPerSpecies,
@@ -412,6 +415,10 @@ class AruController {
     );
 
     final eachCycleIsSession = session.aruMetadata?.eachCycleIsSession ?? false;
+    if (stoppedPath != null && !eachCycleIsSession) {
+      session.recordingPath = stoppedPath;
+    }
+
     if (eachCycleIsSession) {
       final cycleDetections = _detectionsInWindow(
         session,
@@ -437,6 +444,9 @@ class AruController {
       );
 
       await _saveSession(cycleSession);
+      _lastReviewSession = cycleSession;
+    } else {
+      _lastReviewSession = session;
     }
 
     _activeCycleIndex = null;

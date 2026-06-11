@@ -619,6 +619,7 @@ class AruDeploymentMetadata {
       maxCycles: maxCycles,
       lowBatteryStopPercent: lowBatteryStopPercent,
       dielPattern: dielPattern,
+      testCycleEnabled: testCycleEnabled,
       latitude: latitude,
       longitude: longitude,
     );

@@ -130,6 +130,46 @@ void main() {
       expect(windows.map((w) => w.index), <int>[1, 2]);
     });
 
+    test('aligns regular cycles to clock interval boundaries', () {
+      final deployedAt = DateTime.utc(2026, 1, 1, 6, 17);
+      final calc = AruScheduleCalculator(
+        AruScheduleConfig(
+          startTime: deployedAt,
+          cycleDuration: const Duration(minutes: 10),
+          repeatInterval: const Duration(hours: 1),
+          maxCycles: 2,
+        ),
+      );
+
+      final windows = calc.nextWindows(deployedAt, count: 2);
+
+      expect(windows.map((w) => w.start), <DateTime>[
+        DateTime.utc(2026, 1, 1, 7),
+        DateTime.utc(2026, 1, 1, 8),
+      ]);
+    });
+
+    test('runs optional immediate test cycle before regular cycles', () {
+      final deployedAt = DateTime.utc(2026, 1, 1, 6, 17);
+      final calc = AruScheduleCalculator(
+        AruScheduleConfig(
+          startTime: deployedAt,
+          cycleDuration: const Duration(minutes: 10),
+          repeatInterval: const Duration(hours: 1),
+          maxCycles: 2,
+          testCycleEnabled: true,
+        ),
+      );
+
+      final windows = calc.nextWindows(deployedAt, count: 3);
+
+      expect(windows.map((w) => w.index), <int>[0, 1, 2]);
+      expect(windows[0].start, deployedAt);
+      expect(windows[0].end, deployedAt.add(const Duration(minutes: 1)));
+      expect(windows[1].start, DateTime.utc(2026, 1, 1, 7));
+      expect(windows[2].start, DateTime.utc(2026, 1, 1, 8));
+    });
+
     test('clamps a cycle at deployment end', () {
       final end = start.add(const Duration(minutes: 65));
       final calc = AruScheduleCalculator(

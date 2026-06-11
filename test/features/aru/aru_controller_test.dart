@@ -129,6 +129,33 @@ void main() {
       expect(controller.session!.segments.length, 2);
     });
 
+    test('runs optional sanity check cycle immediately', () async {
+      final deployedAt = DateTime.utc(2026, 6, 1, 4, 17);
+      final controller = AruController(
+        saveSession: (session) async {},
+        now: () => deployedAt,
+      );
+
+      await controller.startDeployment(
+        sessionId: 'aru-1',
+        settings: settings,
+        metadata: AruDeploymentMetadata(
+          scheduleStart: deployedAt,
+          cycleDurationSeconds: 600,
+          repeatIntervalSeconds: 3600,
+          maxCycles: 1,
+          testCycleEnabled: true,
+        ),
+      );
+
+      expect(controller.state, AruControllerState.recording);
+      expect(controller.session!.segments.single.startTime, deployedAt);
+      expect(
+        controller.session!.aruMetadata!.cycles.single.plannedEnd,
+        deployedAt.add(const Duration(minutes: 1)),
+      );
+    });
+
     test('completes after the final configured cycle', () async {
       final controller = AruController(
         saveSession: (session) async {},
@@ -209,6 +236,10 @@ void main() {
           'stop:0:${start.add(const Duration(minutes: 10)).toIso8601String()}',
         ]);
         expect(cycle.recordingPath, '/recordings/aru/cycle_0.flac.closed');
+        expect(
+          controller.session!.recordingPath,
+          '/recordings/aru/cycle_0.flac.closed',
+        );
         expect(cycle.status, AruCycleStatus.completed);
       },
     );
@@ -328,6 +359,7 @@ void main() {
           cycleSessions.first.endTime,
           start.add(const Duration(minutes: 10)),
         );
+        expect(controller.reviewSession, cycleSessions.first);
       },
     );
 

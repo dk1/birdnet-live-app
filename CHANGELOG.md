@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.1] - 2026-06-11
+
+### Added
+
+- Added broader ARU mode setup and active-deployment localization coverage across all supported locales.
+
+### Changed
+
+- Refined ARU setup, scheduling, notification, and active-state behavior to better align with long-running fixed-site deployments.
+- Improved ARU storage estimation and deployment flow ergonomics, including active status visibility and schedule handling polish.
+- Updated ARU and live detection list presentation details for clearer in-session monitoring.
+
+### Fixed
+
+- Fixed ARU deployment edge cases around stop/finalization handling, schedule transitions, and retained detection clip behavior.
+
 ## [0.17.0] - 2026-06-11
 
 ### Added
@@ -16,11 +32,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Refined ARU setup and ready-state UX with Survey-style field tips, compact review cards, consolidated site/weather context, clearer deployment-end summaries, and schedule controls for manual stop, fixed cycles, fixed date/time, cycle duration, repeat interval, and recording windows.
 - Reworked active ARU deployment screens toward the Survey live layout with clearer recording/waiting state, live spectrogram and detections tabs, persistent detection feed, stats, and shared microphone handling.
+- Streamlined the active ARU deployment dashboard with a full-width spectrogram-first layout, persistent recent detections, and a consolidated runtime summary of recording, sampling, grouping, schedule, and battery settings.
+- Updated ARU scheduling so regular cycles align to wall-clock interval boundaries and a default-on one-minute immediate test run can run as a deployment sanity check.
 - Updated ARU detection sampling and session grouping so Smart/Top N retention distributes clips across cycles or time buckets instead of clustering retained clips in one short span.
 
 ### Fixed
 
 - Fixed ARU stop handling, scheduled cycle recording, live inference, and detection-clip retention so deployments stop cleanly, record only at schedule boundaries, and save detections during active cycles.
+- Fixed ARU low-battery stop so the deployment now ends when the configured battery threshold is reached.
+- Fixed ARU stop navigation and full-audio review handoff so stopping opens Session Review for the combined deployment or latest per-cycle session with its recording path attached.
 
 ## [0.16.11] - 2026-06-10
 
