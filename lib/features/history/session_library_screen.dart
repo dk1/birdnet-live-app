@@ -30,6 +30,7 @@ import '../../shared/widgets/empty_view.dart';
 import '../../shared/widgets/error_view.dart';
 import '../../shared/widgets/loading_view.dart';
 import '../../shared/widgets/stat_chip.dart';
+import '../aru/aru_setup_screen.dart';
 import '../explore/explore_providers.dart';
 import '../file_analysis/file_analysis_screen.dart';
 import '../live/live_providers.dart';
@@ -288,6 +289,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                           (SessionType.pointCount, l10n.sessionTypePointCount),
                           (SessionType.fileUpload, l10n.sessionTypeFileUpload),
                           (SessionType.survey, l10n.sessionTypeSurvey),
+                          (
+                            SessionType.batchAnalysis,
+                            l10n.sessionTypeBatchAnalysis,
+                          ),
+                          (SessionType.aru, l10n.sessionTypeAru),
                         ],
                         onToggle:
                             (t) => update(() {
@@ -682,8 +688,10 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       SessionType.fileUpload => MaterialPageRoute<void>(
         builder: (_) => const FileAnalysisScreen(),
       ),
-      SessionType.batchAnalysis ||
-      SessionType.aru => throw UnsupportedError('Coming soon'),
+      SessionType.aru => MaterialPageRoute<void>(
+        builder: (_) => const AruSetupScreen(),
+      ),
+      SessionType.batchAnalysis => throw UnsupportedError('Coming soon'),
     };
     navigator.pushReplacement(route);
   }
@@ -714,6 +722,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         type: SessionType.fileUpload,
         label: l10n.fileAnalysisMode,
         description: l10n.fileAnalysisModeDescription,
+      ),
+      _ModeOption(
+        type: SessionType.aru,
+        label: l10n.aruMode,
+        description: l10n.aruModeDescription,
       ),
     ];
 

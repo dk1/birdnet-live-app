@@ -150,6 +150,7 @@ class SurveyNotificationService {
   /// Start the foreground service with an initial notification.
   Future<void> start({required String title, required String text}) async {
     if (!Platform.isAndroid) return;
+    await init();
 
     // Best-effort permission check — don't bail if denied; Android will
     // still create a foreground service (just with a default notification

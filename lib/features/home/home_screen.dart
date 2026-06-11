@@ -4,6 +4,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../about/about_screen.dart';
+import '../aru/aru_setup_screen.dart';
 import '../explore/explore_screen.dart';
 import '../history/session_library_screen.dart';
 import '../live/live_screen.dart';
@@ -385,12 +386,7 @@ class _ModeCarouselState extends State<_ModeCarousel> {
                             SessionType.aru,
                           ),
                           isTablet: widget.isTablet,
-                          comingSoon: true,
-                          onTap:
-                              () => _showComingSoonSnackBar(
-                                context,
-                                widget.l10n.aruMode,
-                              ),
+                          onTap: () => _openAru(context),
                         ),
                       ],
                     ),
@@ -451,6 +447,12 @@ class _ModeCarouselState extends State<_ModeCarousel> {
     ).push(MaterialPageRoute<void>(builder: (_) => const FileAnalysisScreen()));
   }
 
+  void _openAru(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const AruSetupScreen()));
+  }
+
   void _showComingSoonSnackBar(BuildContext context, String modeLabel) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -462,7 +464,6 @@ class _ModeCarouselState extends State<_ModeCarousel> {
     );
   }
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Individual mode card

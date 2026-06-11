@@ -520,6 +520,9 @@ String buildJsonExport(LiveSession session, {Map<String, dynamic>? metadata}) {
     'settings': session.settings.toJson(),
     if (session.trimStartSec != null) 'trimStartSec': session.trimStartSec,
     if (session.trimEndSec != null) 'trimEndSec': session.trimEndSec,
+    if (session.segments.isNotEmpty)
+      'segments': session.segments.map((s) => s.toJson()).toList(),
+    if (session.aruMetadata != null) 'aru': session.aruMetadata!.toJson(),
     'detections':
         session.detections.map((d) {
           final beginSec =
@@ -691,6 +694,19 @@ Future<String?> buildSessionExport(
     clipFileMap = clipExportNames;
   }
 
+  final aruCycleAudioEntries = <int, ({File file, String name})>{};
+  final aruCycles = session.aruMetadata?.cycles ?? const <AruCycleMetadata>[];
+  for (final cycle in aruCycles) {
+    final path = cycle.recordingPath;
+    if (path == null || path.isEmpty) continue;
+    final file = File(path);
+    if (!file.existsSync()) continue;
+    final cycleName =
+        'aru_cycles/${prefix}_cycle_${cycle.index.toString().padLeft(3, '0')}${p.extension(path)}';
+    aruCycleAudioEntries[cycle.index] = (file: file, name: cycleName);
+  }
+  final hasAruCycleAudio = aruCycleAudioEntries.isNotEmpty;
+
   // ── Generate document content for every selected format ──────────
   // Map: format token → (extension, content). The order in
   // `formatPriority` chooses the "primary" file when only one format is
@@ -753,7 +769,7 @@ Future<String?> buildSessionExport(
   //     ZIP in that last case is what carries the weather snapshot or audio
   //     integrity warning alongside an otherwise plain CSV/Raven selection.
   final mustZip =
-      (includeAudio && hasAnyAudio) ||
+      (includeAudio && (hasAnyAudio || hasAruCycleAudio)) ||
       docs.length > 1 ||
       includeHtmlReport ||
       (exportMetadata != null &&
@@ -777,6 +793,13 @@ Future<String?> buildSessionExport(
             ArchiveFile(entry.value, clipBytes.length, clipBytes),
           );
         }
+      }
+    }
+
+    if (includeAudio && hasAruCycleAudio) {
+      for (final entry in aruCycleAudioEntries.values) {
+        final audioBytes = await entry.file.readAsBytes();
+        archive.addFile(ArchiveFile(entry.name, audioBytes.length, audioBytes));
       }
     }
 
@@ -885,7 +908,9 @@ Future<String?> buildSessionExport(
             ? p.dirname(audioPath)
             : (hasClips
                 ? p.dirname(clipEntries.values.first.path)
-                : Directory.systemTemp.path);
+                : (hasAruCycleAudio
+                    ? p.dirname(aruCycleAudioEntries.values.first.file.path)
+                    : Directory.systemTemp.path));
     final zipPath = p.join(zipDir, '$prefix.zip');
     await File(zipPath).writeAsBytes(zipBytes);
 
