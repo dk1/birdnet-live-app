@@ -54,7 +54,7 @@ Elaborare e analizzare più file audio in batch. (Prossimamente)
 
 ### [Modalità ARU](aru-mode.md)
 
-Trasforma il tuo dispositivo in un'unità di registrazione autonoma. (Prossimamente)
+Crea una sessione di distribuzione ARU programmata, registra l'audio completo di ogni ciclo e segui i cicli di registrazione pianificati. La revisione basata sull'inferenza è ancora in sviluppo.
 
 ## Riferimento
 

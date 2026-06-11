@@ -54,7 +54,7 @@ Process and analyze multiple audio files in bulk. (Coming Soon)
 
 ### [ARU Mode](aru-mode.md)
 
-Turn your device into an autonomous recording unit. (Coming Soon)
+Create a scheduled ARU deployment session, record full cycle audio, and track planned recording cycles. Inference-backed review is still in development.
 
 ## Reference
 

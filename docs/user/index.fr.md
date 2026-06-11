@@ -54,7 +54,7 @@ Traiter et analyser plusieurs fichiers audio par lots. (Prochainement)
 
 ### [Mode ARU](aru-mode.md)
 
-Transformez votre appareil en unité d'enregistrement autonome. (Prochainement)
+Créez une session de déploiement ARU planifiée, enregistrez l'audio complet de chaque cycle et suivez les cycles d'enregistrement prévus. La relecture basée sur l'inférence est encore en développement.
 
 ## Référence
 

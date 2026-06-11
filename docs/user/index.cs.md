@@ -54,7 +54,7 @@ Zpracovat a analyzovat více zvukových souborů hromadně. (Již brzy)
 
 ### [Režim ARU](aru-mode.md)
 
-Proměňte své zařízení v autonomní nahrávací jednotku. (Již brzy)
+Vytvořte naplánovanou relaci nasazení ARU, nahrávejte plný zvuk jednotlivých cyklů a sledujte plánované nahrávací cykly. Kontrola založená na inferenci je stále ve vývoji.
 
 ## Reference
 
