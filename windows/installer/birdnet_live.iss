@@ -1,5 +1,5 @@
 #define MyAppName "BirdNET Live"
-#define MyAppPublisher "BirdNET"
+#define MyAppPublisher "BirdNET Team"
 #define MyAppExeName "birdnet_live.exe"
 
 #ifndef MyAppVersion
