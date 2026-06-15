@@ -712,7 +712,7 @@
   "helpBatchAnalysisTitle": "Analisi batch",
   "helpBatchAnalysisBody": "L'analisi batch è pensata per elaborare molti file in una sola esecuzione. Seleziona più registrazioni, conferma i parametri condivisi e avvia una coda unica che elabora ogni file e salva i risultati per una revisione successiva.",
   "helpAruTitle": "Modalità ARU",
-  "helpAruBody": "La modalità ARU pianifica cicli di registrazione in un sito fisso e salva ogni installazione come una Session ARU. Questa implementazione iniziale può registrare l'audio completo dei cicli e mostrare una notifica in primo piano su Android; inferenza, clip solo rilevamenti e revisione completa della Session sono ancora in sviluppo.",
+  "helpAruBody": "La modalità ARU pianifica cicli di registrazione in un sito fisso e salva ogni installazione come una Session ARU. Registra l'audio completo dei cicli o clip di rilevamento conservate durante i cicli attivi, esegue inferenza live durante i cicli e mostra controlli di notifica in primo piano su Android.",
   "helpExploreTitle": "Esplora",
   "helpExploreBody": "Explore costruisce un elenco di specie basato sulla posizione dal geomodello BirdNET. Usa aggiorna per ricostruire l'elenco, il pulsante di aiuto nell'intestazione della posizione per il contesto e tocca una scheda specie per aprire immagini, descrizioni, link e il grafico stagionale.",
   "helpSessionsTitle": "Sessions e revisione",
@@ -989,5 +989,5 @@
   "permissionRequestIOS": "Continua",
   "openInAppleMaps": "Apri in Apple Maps",
   "aruCombinedSessionWarningTitle": "Conflitto con audio completo",
-  "aruCombinedSessionWarningBody": "Le Sessions combinate non supportano l'audio completo. El sistema tornerà a salvare clip con campionamento intelligente (Smart). Torna alla schermata precedente per controllare le impostazioni di registrazione se desideri modificarlo."
+  "aruCombinedSessionWarningBody": "Le Sessions combinate non supportano l'audio completo. Il sistema tornerà a salvare clip con campionamento intelligente (Smart). Torna alla schermata precedente per controllare le impostazioni di registrazione se desideri modificarlo."
 }

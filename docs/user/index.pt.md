@@ -54,7 +54,7 @@ Processar e analisar múltiplos arquivos de áudio em lote. (Em breve)
 
 ### [Modo ARU](aru-mode.md)
 
-Crie uma sessão de implantação ARU agendada, grave o áudio completo de cada ciclo e acompanhe os ciclos de gravação planejados. A revisão baseada em inferência ainda está em desenvolvimento.
+Crie uma Session de implantação ARU agendada, grave áudio completo do ciclo ou clipes de detecção retidos, execute inferência ao vivo durante ciclos ativos e acompanhe os ciclos de gravação planejados.
 
 ## Referência
 

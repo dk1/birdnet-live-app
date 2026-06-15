@@ -78,6 +78,39 @@ class AruController {
   String? get errorMessage => _errorMessage;
   LiveSession? get reviewSession => _lastReviewSession ?? _session;
 
+  Future<void> restoreDeployment(LiveSession session, {DateTime? now}) async {
+    if (session.type != SessionType.aru || session.aruMetadata == null) {
+      throw ArgumentError('Session is not an ARU deployment');
+    }
+    if (session.endTime != null) {
+      throw ArgumentError('ARU deployment is already completed');
+    }
+    if (_state != AruControllerState.idle &&
+        _state != AruControllerState.completed &&
+        _state != AruControllerState.error) {
+      throw StateError('ARU deployment already started');
+    }
+
+    _state = AruControllerState.recovering;
+    _errorMessage = null;
+    _session = session;
+    _calculator = AruScheduleCalculator(
+      session.aruMetadata!.toScheduleConfig(),
+    );
+    _activeCycleIndex = null;
+    _activeCycleStart = null;
+    _lastReviewSession = session;
+    _sampler = AruDetectionSampler(
+      mode: samplingModeFromString(session.aruMetadata!.samplingMode),
+      topN: session.aruMetadata!.topNPerSpecies,
+      scopeKeyFor: _samplingScopeKeyFor,
+      timeBucketFor: _samplingTimeBucketFor,
+    );
+
+    _normalizeRecoveredCycles(now ?? _now());
+    await evaluate(now: now ?? _now());
+  }
+
   Future<void> startDeployment({
     required String sessionId,
     required SessionSettings settings,
@@ -404,21 +437,20 @@ class AruController {
       effectiveEnd,
     );
 
-    _upsertCycle(
-      AruCycleMetadata(
-        index: index,
-        plannedStart: existing?.plannedStart ?? startedAt,
-        plannedEnd: existing?.plannedEnd ?? effectiveEnd,
-        actualStart: existing?.actualStart ?? startedAt,
-        actualEnd: effectiveEnd,
-        status: status,
-        recordingPath: stoppedPath ?? existing?.recordingPath,
-        detectionCount: existing?.detectionCount ?? 0,
-        retainedClipCount: existing?.retainedClipCount ?? 0,
-        droppedClipCount: existing?.droppedClipCount ?? 0,
-        note: existing?.note,
-      ),
+    final finalizedCycle = AruCycleMetadata(
+      index: index,
+      plannedStart: existing?.plannedStart ?? startedAt,
+      plannedEnd: existing?.plannedEnd ?? effectiveEnd,
+      actualStart: existing?.actualStart ?? startedAt,
+      actualEnd: effectiveEnd,
+      status: status,
+      recordingPath: stoppedPath ?? existing?.recordingPath,
+      detectionCount: existing?.detectionCount ?? 0,
+      retainedClipCount: existing?.retainedClipCount ?? 0,
+      droppedClipCount: existing?.droppedClipCount ?? 0,
+      note: existing?.note,
     );
+    _upsertCycle(finalizedCycle);
 
     final eachCycleIsSession = session.aruMetadata?.eachCycleIsSession ?? false;
     if (stoppedPath != null && !eachCycleIsSession) {
@@ -445,6 +477,11 @@ class AruController {
         longitude: session.longitude,
         recordingPath: stoppedPath ?? existing?.recordingPath,
         detections: cycleDetections,
+        aruMetadata: _cycleDeploymentMetadata(
+          session,
+          finalizedCycle,
+          cycleDetections.length,
+        ),
       );
 
       await _saveSession(cycleSession);
@@ -508,14 +545,82 @@ class AruController {
     }
   }
 
+  void _normalizeRecoveredCycles(DateTime now) {
+    final cycles = _session?.aruMetadata?.cycles;
+    if (cycles == null) return;
+
+    for (final cycle in cycles.toList()) {
+      if (cycle.status != AruCycleStatus.recording) continue;
+      final end = now.isAfter(cycle.plannedEnd) ? cycle.plannedEnd : now;
+      _upsertCycle(
+        AruCycleMetadata(
+          index: cycle.index,
+          plannedStart: cycle.plannedStart,
+          plannedEnd: cycle.plannedEnd,
+          actualStart: cycle.actualStart,
+          actualEnd: end,
+          status: AruCycleStatus.partial,
+          recordingPath: cycle.recordingPath,
+          detectionCount: cycle.detectionCount,
+          retainedClipCount: cycle.retainedClipCount,
+          droppedClipCount: cycle.droppedClipCount,
+          note: cycle.note,
+        ),
+      );
+    }
+  }
+
   Future<void> _persist() async {
     final session = _session;
     if (session != null) await _saveSession(session);
   }
 
+  AruDeploymentMetadata? _cycleDeploymentMetadata(
+    LiveSession session,
+    AruCycleMetadata cycle,
+    int detectionCount,
+  ) {
+    final metadata = session.aruMetadata;
+    if (metadata == null) return null;
+    return AruDeploymentMetadata(
+      deploymentName: metadata.deploymentName,
+      stationId: metadata.stationId,
+      scheduleStart: cycle.plannedStart,
+      cycleDurationSeconds:
+          cycle.plannedEnd.difference(cycle.plannedStart).inSeconds,
+      repeatIntervalSeconds: metadata.repeatIntervalSeconds,
+      scheduleEnd: cycle.actualEnd,
+      maxCycles: 1,
+      lowBatteryStopPercent: metadata.lowBatteryStopPercent,
+      dielPattern: metadata.dielPattern,
+      latitude: metadata.latitude,
+      longitude: metadata.longitude,
+      recordingMode: metadata.recordingMode,
+      recordingFormat: metadata.recordingFormat,
+      samplingMode: metadata.samplingMode,
+      topNPerSpecies: metadata.topNPerSpecies,
+      testCycleEnabled: _isTestCycle(session, cycle.index),
+      eachCycleIsSession: true,
+      cycles: [
+        AruCycleMetadata(
+          index: cycle.index,
+          plannedStart: cycle.plannedStart,
+          plannedEnd: cycle.plannedEnd,
+          actualStart: cycle.actualStart,
+          actualEnd: cycle.actualEnd,
+          status: cycle.status,
+          recordingPath: cycle.recordingPath,
+          detectionCount: detectionCount,
+          retainedClipCount: cycle.retainedClipCount,
+          droppedClipCount: cycle.droppedClipCount,
+          note: cycle.note,
+        ),
+      ],
+    );
+  }
+
   String _cycleSessionName(LiveSession session, int cycleIndex) {
-    final isTestRun =
-        session.aruMetadata?.testCycleEnabled == true && cycleIndex == 0;
+    final isTestRun = _isTestCycle(session, cycleIndex);
     final cyclePart =
         isTestRun
             ? 'Test Run'
@@ -549,5 +654,9 @@ class AruController {
       return cycleIndex;
     }
     return cycleIndex + 1;
+  }
+
+  bool _isTestCycle(LiveSession session, int cycleIndex) {
+    return session.aruMetadata?.testCycleEnabled == true && cycleIndex == 0;
   }
 }

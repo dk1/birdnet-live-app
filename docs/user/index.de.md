@@ -54,7 +54,7 @@ Mehrere Audiodateien im Batch-Modus analysieren. (Demnächst)
 
 ### [ARU-Modus](aru-mode.md)
 
-Erstellen Sie eine geplante ARU-Einsatz-Session, zeichnen Sie vollständiges Zyklus-Audio auf und verfolgen Sie geplante Aufnahmezyklen. Die inferenzgestützte Prüfung ist noch in Entwicklung.
+Erstellen Sie eine geplante ARU-Einsatz-Session, zeichnen Sie vollständiges Zyklus-Audio oder beibehaltene Erkennungsclips auf, führen Sie während aktiver Zyklen Live-Inferenz aus und verfolgen Sie geplante Aufnahmezyklen.
 
 ## Referenz
 

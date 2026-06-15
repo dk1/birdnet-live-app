@@ -54,7 +54,7 @@ Process and analyze multiple audio files in bulk. (Coming Soon)
 
 ### [ARU Mode](aru-mode.md)
 
-Create a scheduled ARU deployment session, record full cycle audio, and track planned recording cycles. Inference-backed review is still in development.
+Create a scheduled ARU deployment session, record full cycle audio or retained detection clips, run live inference during active cycles, and track planned recording cycles.
 
 ## Reference
 

@@ -712,7 +712,7 @@
   "helpBatchAnalysisTitle": "Análisis por lotes",
   "helpBatchAnalysisBody": "El análisis por lotes está pensado para muchos archivos a la vez. Selecciona varias grabaciones, confirma parámetros compartidos y ejecuta una sola cola que procesa cada archivo y guarda resultados para revisarlos después.",
   "helpAruTitle": "Modo ARU",
-  "helpAruBody": "El modo ARU programa ciclos de grabación en un sitio fijo y guarda cada despliegue como una Session ARU. Esta implementación temprana puede grabar el audio completo de cada ciclo y mostrar una notificación en primer plano en Android; la inferencia, los clips solo por detección y la revisión completa de la Session siguen en desarrollo.",
+  "helpAruBody": "El modo ARU programa ciclos de grabación en un sitio fijo y guarda cada despliegue como una Session ARU. Graba audio completo de ciclo o clips de detección retenidos durante ciclos activos, ejecuta inferencia en vivo durante los ciclos y muestra controles de notificación en primer plano en Android.",
   "helpExploreTitle": "Explorar",
   "helpExploreBody": "Explore crea una lista de especies basada en la ubicación a partir del geomodelo de BirdNET. Usa actualizar para reconstruir la lista, el botón de ayuda del encabezado de ubicación para el contexto y toca cualquier tarjeta para abrir imágenes, descripciones, enlaces y el gráfico estacional.",
   "helpSessionsTitle": "Sessions y revisión",

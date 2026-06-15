@@ -728,7 +728,7 @@
   "helpBatchAnalysisTitle": "Batch-Analyse",
   "helpBatchAnalysisBody": "Die Batch-Analyse ist für viele Dateien auf einmal gedacht. Wählen Sie mehrere Aufnahmen, bestätigen Sie gemeinsame Parameter und starten Sie eine Warteschlange, die jede Datei verarbeitet und die Ergebnisse zur späteren Überprüfung speichert.",
   "helpAruTitle": "ARU-Modus",
-  "helpAruBody": "Der ARU-Modus plant feste Aufnahmezyklen und speichert jede Ausbringung als ARU-Session. Diese frühe Implementierung kann vollständiges Zyklus-Audio aufzeichnen und unter Android eine Vordergrundbenachrichtigung anzeigen; Inferenz, reine Erkennungsclips und die vollständige Session-Überprüfung sind noch in Arbeit.",
+  "helpAruBody": "Der ARU-Modus plant feste Aufnahmezyklen und speichert jede Ausbringung als ARU-Session. Er zeichnet vollständiges Zyklus-Audio oder beibehaltene Erkennungsclips während aktiver Zyklen auf, führt während der Zyklen Live-Inferenz aus und zeigt unter Android Vordergrundbenachrichtigungen.",
   "helpExploreTitle": "Erkunden",
   "helpExploreBody": "Explore erstellt mit dem BirdNET-Geomodell eine standortbezogene Artenliste. Verwenden Sie Aktualisieren, um die Liste neu zu berechnen, die Hilfe-Schaltfläche in der Standortleiste für Kontext, und tippen Sie auf eine Artenkarte, um Bilder, Beschreibungen, Links und die saisonale Grafik zu öffnen.",
   "helpSessionsTitle": "Sessions & Überprüfung",

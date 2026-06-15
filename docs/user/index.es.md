@@ -54,7 +54,7 @@ Procesar y analizar varios archivos de audio en lote. (Próximamente)
 
 ### [Modo ARU](aru-mode.md)
 
-Cree una sesión de despliegue ARU programada, grabe el audio completo de cada ciclo y siga los ciclos de grabación planificados. La revisión basada en inferencia sigue en desarrollo.
+Cree una sesión de despliegue ARU programada, grabe audio completo de ciclo o clips de detección retenidos, ejecute inferencia en vivo durante los ciclos activos y siga los ciclos de grabación planificados.
 
 ## Referencia
 

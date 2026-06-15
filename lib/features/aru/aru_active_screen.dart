@@ -49,6 +49,8 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   bool _tickBusy = false;
   bool _inferenceStarting = false;
   bool _aruInferenceActive = false;
+  bool _finishingDeployment = false;
+  Future<void> _syncDetectionsTail = Future<void>.value();
   DateTime? _lastBatteryCheck;
 
   @override
@@ -82,7 +84,8 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
 
   void _onInferenceStateChanged() {
     if (!mounted) return;
-    _syncDetectionsFromInference();
+    if (_finishingDeployment) return;
+    unawaited(_syncDetectionsFromInference());
   }
 
   Future<void> _syncDetectionsFromInference() async {
@@ -91,6 +94,14 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   }
 
   Future<void> _syncDetections(List<DetectionRecord> detections) async {
+    final snapshot = List<DetectionRecord>.of(detections);
+    final previous = _syncDetectionsTail.catchError((_) {});
+    final next = previous.then((_) => _syncDetectionsNow(snapshot));
+    _syncDetectionsTail = next.catchError((_) {});
+    await next;
+  }
+
+  Future<void> _syncDetectionsNow(List<DetectionRecord> detections) async {
     final controller = ref.read(aruControllerProvider);
     await controller.syncDetections(detections);
     if (!mounted) return;
@@ -233,15 +244,23 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     required SessionStopReason reason,
     num? reasonValue,
   }) async {
+    _finishingDeployment = true;
     final controller = ref.read(aruControllerProvider);
-    await _stopInference();
-    await controller.stop(reason: reason, reasonValue: reasonValue);
-    if (!mounted) return controller.reviewSession;
-    ref.read(aruStateProvider.notifier).state = controller.state;
-    ref.read(aruSessionProvider.notifier).state = controller.session;
-    await _notificationService.stop();
-    ref.invalidate(sessionListProvider);
-    return controller.reviewSession;
+    try {
+      await _stopInference();
+      await _syncDetectionsTail;
+      await controller.stop(reason: reason, reasonValue: reasonValue);
+      if (!mounted) return controller.reviewSession;
+      ref.read(aruStateProvider.notifier).state = controller.state;
+      ref.read(aruSessionProvider.notifier).state = controller.session;
+      await _notificationService.stop();
+      ref.invalidate(sessionListProvider);
+      return controller.reviewSession;
+    } finally {
+      if (controller.state != AruControllerState.completed) {
+        _finishingDeployment = false;
+      }
+    }
   }
 
   void _openReview(LiveSession? session) {

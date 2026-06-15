@@ -73,6 +73,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
   bool _testCycleEnabled = true;
   bool _eachCycleIsSession = true;
   bool _starting = false;
+  bool _recovering = false;
 
   @override
   void initState() {
@@ -83,15 +84,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
     _fetchGpsLocation();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final session = ref.read(aruSessionProvider);
-      final state = ref.read(aruStateProvider);
-      if (session != null &&
-          state != AruControllerState.completed &&
-          state != AruControllerState.idle) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(builder: (_) => const AruActiveScreen()),
-        );
-      }
+      _restoreActiveDeployment();
     });
   }
 
@@ -234,6 +227,53 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
   int? get _selectedLowBatteryStop =>
       _lowBatteryStop > 0 ? _lowBatteryStop : null;
 
+  Future<void> _restoreActiveDeployment() async {
+    if (_recovering) return;
+    _recovering = true;
+    try {
+      final inMemorySession = ref.read(aruSessionProvider);
+      final inMemoryState = ref.read(aruStateProvider);
+      if (inMemorySession != null &&
+          inMemoryState != AruControllerState.completed &&
+          inMemoryState != AruControllerState.idle) {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(builder: (_) => const AruActiveScreen()),
+        );
+        return;
+      }
+
+      final repo = ref.read(sessionRepositoryProvider);
+      final sessions = await repo.listAll();
+      final restorable =
+          sessions
+              .where(
+                (session) =>
+                    session.type == SessionType.aru &&
+                    session.endTime == null &&
+                    session.aruMetadata != null,
+              )
+              .toList()
+            ..sort((a, b) => b.startTime.compareTo(a.startTime));
+      final pendingSession = restorable.firstOrNull;
+      if (pendingSession == null) return;
+
+      final controller = ref.read(aruControllerProvider);
+      await controller.restoreDeployment(pendingSession);
+      ref.read(aruStateProvider.notifier).state = controller.state;
+      ref.read(aruSessionProvider.notifier).state = controller.session;
+
+      if (!mounted || controller.state == AruControllerState.completed) {
+        return;
+      }
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(builder: (_) => const AruActiveScreen()),
+      );
+    } finally {
+      _recovering = false;
+    }
+  }
+
   Future<void> _start() async {
     if (_starting || !_validateLocationSelection()) return;
     setState(() => _starting = true);
@@ -253,13 +293,15 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
     if (stationId.isNotEmpty) {
       await ref.read(aruLastStationIdProvider.notifier).set(stationId);
     }
-    final finalRecordingMode = (!_eachCycleIsSession && _recordingMode == RecordingMode.full)
-        ? RecordingMode.detectionsOnly
-        : _recordingMode;
-
-    final finalSamplingMode = (!_eachCycleIsSession && _recordingMode == RecordingMode.full)
-        ? SamplingMode.smart
-        : _samplingMode;
+    final finalRecordingMode = _effectiveAruRecordingMode(
+      eachCycleIsSession: _eachCycleIsSession,
+      recordingMode: _recordingMode,
+    );
+    final finalSamplingMode = _effectiveAruSamplingMode(
+      eachCycleIsSession: _eachCycleIsSession,
+      recordingMode: _recordingMode,
+      samplingMode: _samplingMode,
+    );
 
     final metadata = AruDeploymentMetadata(
       deploymentName: _emptyToNull(_deploymentController.text),
@@ -306,23 +348,31 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
     final repo = ref.read(sessionRepositoryProvider);
     final sessionNumber = await repo.nextSessionNumber(SessionType.aru);
 
-    final controller = ref.read(aruControllerProvider);
-    await controller.startDeployment(
-      sessionId: 'aru-${now.toUtc().toIso8601String().replaceAll(':', '-')}',
-      settings: settings,
-      metadata: metadata,
-      observerName: observer.isEmpty ? null : observer,
-      latitude: latitude,
-      longitude: longitude,
-      sessionNumber: sessionNumber,
-    );
-    ref.read(aruStateProvider.notifier).state = controller.state;
-    ref.read(aruSessionProvider.notifier).state = controller.session;
+    try {
+      final controller = ref.read(aruControllerProvider);
+      await controller.startDeployment(
+        sessionId: 'aru-${now.toUtc().toIso8601String().replaceAll(':', '-')}',
+        settings: settings,
+        metadata: metadata,
+        observerName: observer.isEmpty ? null : observer,
+        latitude: latitude,
+        longitude: longitude,
+        sessionNumber: sessionNumber,
+      );
+      ref.read(aruStateProvider.notifier).state = controller.state;
+      ref.read(aruSessionProvider.notifier).state = controller.session;
 
-    if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => const AruActiveScreen()),
-    );
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(builder: (_) => const AruActiveScreen()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _starting = false);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(e.toString())));
+    }
   }
 
   void _showHelp() {
@@ -929,7 +979,7 @@ class _ParametersStep extends ConsumerWidget {
               min: 0,
               max: 5,
               divisions: 5,
-              label: '±${clipContext}s',
+              label: '+/-${clipContext}s',
               onChanged:
                   (v) => ref.read(clipContextProvider.notifier).set(v.round()),
             ),
@@ -1047,6 +1097,10 @@ class _ScheduleStep extends ConsumerWidget {
         AruDefaults.repeatIntervalOptions
             .where((duration) => duration >= cycleDuration)
             .toList();
+    final effectiveRecordingMode = _effectiveAruRecordingMode(
+      eachCycleIsSession: eachCycleIsSession,
+      recordingMode: recordingMode,
+    );
     final estimate = ref
         .watch(aruStorageEstimatorProvider)
         .estimate(
@@ -1070,9 +1124,9 @@ class _ScheduleStep extends ConsumerWidget {
                   testCycleEnabled: testCycleEnabled,
                   latitude: latitude,
                   longitude: longitude,
-                  recordingMode: RecordingMode.full.name,
+                  recordingMode: effectiveRecordingMode.name,
                 ).toScheduleConfig(),
-            recordingMode: RecordingMode.full,
+            recordingMode: effectiveRecordingMode,
             format: ref.watch(recordingFormatProvider),
           ),
         );
@@ -1426,6 +1480,15 @@ class _ReadyStep extends ConsumerWidget {
     final devices = ref.watch(inputDevicesProvider).asData?.value ?? const [];
     final selectedDevice = ref.watch(selectedDeviceProvider);
     final recordingFormat = ref.watch(recordingFormatProvider).toUpperCase();
+    final effectiveRecordingMode = _effectiveAruRecordingMode(
+      eachCycleIsSession: eachCycleIsSession,
+      recordingMode: recordingMode,
+    );
+    final effectiveSamplingMode = _effectiveAruSamplingMode(
+      eachCycleIsSession: eachCycleIsSession,
+      recordingMode: recordingMode,
+      samplingMode: samplingMode,
+    );
     final estimate = ref
         .watch(aruStorageEstimatorProvider)
         .estimate(
@@ -1442,12 +1505,12 @@ class _ReadyStep extends ConsumerWidget {
                   dielPattern: dielPattern,
                   latitude: latitude,
                   longitude: longitude,
-                  recordingMode: recordingMode.name,
-                  samplingMode: samplingMode.name,
+                  recordingMode: effectiveRecordingMode.name,
+                  samplingMode: effectiveSamplingMode.name,
                   topNPerSpecies: topNPerSpecies,
                   testCycleEnabled: testCycleEnabled,
                 ).toScheduleConfig(),
-            recordingMode: recordingMode,
+            recordingMode: effectiveRecordingMode,
             format: ref.watch(recordingFormatProvider),
           ),
         );
@@ -1546,15 +1609,15 @@ class _ReadyStep extends ConsumerWidget {
             (l10n.settingsRecordingFormat, recordingFormat),
             (
               l10n.surveyRecordingMode,
-              _recordingModeLabel(l10n, recordingMode),
+              _recordingModeLabel(l10n, effectiveRecordingMode),
             ),
-            if (recordingMode == RecordingMode.detectionsOnly)
+            if (effectiveRecordingMode == RecordingMode.detectionsOnly)
               (
                 l10n.surveyDetectionSampling,
-                _samplingModeLabel(l10n, samplingMode),
+                _samplingModeLabel(l10n, effectiveSamplingMode),
               ),
-            if (recordingMode == RecordingMode.detectionsOnly &&
-                samplingMode != SamplingMode.all)
+            if (effectiveRecordingMode == RecordingMode.detectionsOnly &&
+                effectiveSamplingMode != SamplingMode.all)
               (l10n.surveyTopNPerSpecies, '$topNPerSpecies'),
           ],
         ),
@@ -1732,6 +1795,27 @@ String _samplingModeLabel(AppLocalizations l10n, SamplingMode mode) {
     SamplingMode.topN => l10n.surveySamplingTopN,
     SamplingMode.smart => l10n.surveySamplingSmart,
   };
+}
+
+RecordingMode _effectiveAruRecordingMode({
+  required bool eachCycleIsSession,
+  required RecordingMode recordingMode,
+}) {
+  if (!eachCycleIsSession && recordingMode == RecordingMode.full) {
+    return RecordingMode.detectionsOnly;
+  }
+  return recordingMode;
+}
+
+SamplingMode _effectiveAruSamplingMode({
+  required bool eachCycleIsSession,
+  required RecordingMode recordingMode,
+  required SamplingMode samplingMode,
+}) {
+  if (!eachCycleIsSession && recordingMode == RecordingMode.full) {
+    return SamplingMode.smart;
+  }
+  return samplingMode;
 }
 
 String _dielPatternLabel(AppLocalizations l10n, AruDielPattern pattern) {

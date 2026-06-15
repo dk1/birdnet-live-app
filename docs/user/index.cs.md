@@ -54,7 +54,7 @@ Zpracovat a analyzovat více zvukových souborů hromadně. (Již brzy)
 
 ### [Režim ARU](aru-mode.md)
 
-Vytvořte naplánovanou relaci nasazení ARU, nahrávejte plný zvuk jednotlivých cyklů a sledujte plánované nahrávací cykly. Kontrola založená na inferenci je stále ve vývoji.
+Vytvořte naplánovanou relaci nasazení ARU, nahrávejte plný zvuk cyklů nebo ponechané detekční klipy, spouštějte živou inferenci během aktivních cyklů a sledujte plánované nahrávací cykly.
 
 ## Reference
 

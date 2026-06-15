@@ -102,6 +102,64 @@ void main() {
       expect(cycle.actualStart, start);
     });
 
+    test('restores an unfinished deployment and resumes scheduling', () async {
+      final saved = <LiveSession>[];
+      final session = LiveSession(
+        id: 'aru-restore',
+        type: SessionType.aru,
+        startTime: start,
+        settings: settings,
+        aruMetadata: metadata(maxCycles: 2),
+      );
+      final controller = AruController(
+        saveSession: (session) async => saved.add(session),
+        now: () => start.add(const Duration(minutes: 5)),
+      );
+
+      await controller.restoreDeployment(session);
+
+      expect(controller.state, AruControllerState.recording);
+      expect(controller.session?.id, 'aru-restore');
+      expect(controller.session?.aruMetadata?.cycles.single.index, 0);
+      expect(
+        controller.session?.aruMetadata?.cycles.single.status,
+        AruCycleStatus.recording,
+      );
+      expect(saved, isNotEmpty);
+    });
+
+    test('marks stale recording cycles partial during restore', () async {
+      final session = LiveSession(
+        id: 'aru-restore',
+        type: SessionType.aru,
+        startTime: start,
+        settings: settings,
+        aruMetadata: metadata(maxCycles: 2)
+          ..cycles.add(
+            AruCycleMetadata(
+              index: 0,
+              plannedStart: start,
+              plannedEnd: start.add(const Duration(minutes: 10)),
+              actualStart: start,
+              status: AruCycleStatus.recording,
+              recordingPath: '/recordings/aru/cycle_0.flac',
+            ),
+          ),
+      );
+      final controller = AruController(
+        saveSession: (session) async {},
+        now: () => start.add(const Duration(minutes: 30)),
+      );
+
+      await controller.restoreDeployment(session);
+
+      final cycle = controller.session!.aruMetadata!.cycles.single;
+      expect(controller.state, AruControllerState.waiting);
+      expect(cycle.status, AruCycleStatus.partial);
+      expect(cycle.actualEnd, start.add(const Duration(minutes: 10)));
+      expect(cycle.recordingPath, '/recordings/aru/cycle_0.flac');
+    });
+
     test('finalizes a late cycle at planned end, not wakeup time', () async {
       final controller = AruController(
         saveSession: (session) async {},
@@ -401,6 +459,13 @@ void main() {
           cycleSessions.first.endTime,
           start.add(const Duration(minutes: 10)),
         );
+        expect(cycleSessions.first.aruMetadata, isNotNull);
+        expect(cycleSessions.first.aruMetadata!.cycles.single.index, 0);
+        expect(
+          cycleSessions.first.aruMetadata!.cycles.single.status,
+          AruCycleStatus.completed,
+        );
+        expect(cycleSessions.first.aruMetadata!.eachCycleIsSession, isTrue);
         expect(controller.reviewSession, cycleSessions.last);
       },
     );

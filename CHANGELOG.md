@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a new setting "Playback overlay in review" to trigger the modal player sheet with a spectrogram when reviewing clips from clips-only Session reviews.
 - Active by default for sessions that have clips only and no full recording/spectrogram, and bypassed (never shown) for sessions with full audio recordings.
+
+### Changed
+
+- Updated ARU help and user documentation to reflect current behavior: cycle-level Full Audio or retained detection clips, live inference during active cycles, and Android foreground notification controls.
+- Improved ARU setup summaries and storage estimates to consistently show effective recording and sampling modes when combined-session deployments cannot use Full Audio.
+
+### Fixed
+
+- Restored unfinished ARU deployments from persisted sessions after app relaunch and resumed schedule evaluation instead of leaving deployments stranded.
+- Serialized ARU detection-sync updates during active deployment and guarded finalization to prevent race conditions while stopping.
 
 ## [0.17.4] - 2026-06-15
 

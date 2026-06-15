@@ -712,7 +712,7 @@
   "helpBatchAnalysisTitle": "Analyse par lot",
   "helpBatchAnalysisBody": "L'analyse par lot est conçue pour traiter de nombreux fichiers en une seule exécution. Sélectionnez plusieurs enregistrements, confirmez les paramètres partagés et lancez une file unique qui traite chaque fichier et enregistre les résultats pour une revue ultérieure.",
   "helpAruTitle": "Mode ARU",
-  "helpAruBody": "Le mode ARU planifie des cycles d'enregistrement sur site fixe et enregistre chaque déploiement comme une session ARU. Cette implémentation précoce peut enregistrer l'audio complet des cycles et afficher une notification de premier plan sur Android ; l'inférence, les clips de détection seuls et la relecture complète de session sont encore en développement.",
+  "helpAruBody": "Le mode ARU planifie des cycles d'enregistrement sur site fixe et enregistre chaque déploiement comme une session ARU. Il enregistre l'audio complet des cycles ou les clips de détection conservés pendant les cycles actifs, exécute l'inférence en direct pendant les cycles et affiche des contrôles de notification de premier plan sur Android.",
   "helpExploreTitle": "Explorer",
   "helpExploreBody": "Explore construit une liste d'espèces liée à l'emplacement à partir du géo-modèle BirdNET. Utilisez l'actualisation pour recalculer la liste, le bouton d'aide de l'en-tête de localisation pour le contexte, et appuyez sur une carte d'espèce pour ouvrir images, descriptions, liens et graphique saisonnier.",
   "helpSessionsTitle": "Sessions et consultation",
