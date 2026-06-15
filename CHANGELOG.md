@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Upgraded the weather cache to a per-observation-hour model supporting sessions up to 90 days old via the Open-Meteo forecast API, and older sessions via the archive API; stale entries (older than 30 days) are pruned on each write.
+- Refactor translations for improved readability and maintainability
 
 ### Fixed
 
