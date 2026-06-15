@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed ARU combined-session deployments configured with Full Audio: the session is now saved with Detections Only + Smart sampling instead of an unsupported Full Audio mode.
+- Clear state-change callbacks on dispose to prevent updates on disposed widgets.
 
 ## [0.17.3] - 2026-06-15
 

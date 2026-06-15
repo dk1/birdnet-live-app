@@ -369,6 +369,14 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     WidgetsBinding.instance.removeObserver(this);
     _countdownTimer?.cancel();
     _remainingNotifier.dispose();
+
+    // Clear the state-change callback on the long-lived controller to avoid calling
+    // updates on a defunct/disposed widget state.
+    final controller = ref.read(liveControllerProvider);
+    if (controller.onStateChanged == _onControllerStateChanged) {
+      controller.onStateChanged = null;
+    }
+
     WakelockService.disable();
     super.dispose();
   }
