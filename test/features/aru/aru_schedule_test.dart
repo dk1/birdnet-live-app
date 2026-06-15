@@ -19,8 +19,8 @@ void main() {
       final start = DateTime.utc(2026, 1, 1, 6);
       final config = AruScheduleConfig(
         startTime: start,
-        cycleDuration: const Duration(seconds: 30),
-        repeatInterval: const Duration(seconds: 20),
+        cycleDuration: const Duration(seconds: 15),
+        repeatInterval: const Duration(seconds: 10),
         endTime: start,
         maxCycles: 0,
         lowBatteryStopPercent: 101,
@@ -29,7 +29,7 @@ void main() {
       expect(
         config.validate(),
         containsAll(<String>[
-          'cycleDuration must be at least 1 minute',
+          'cycleDuration must be at least 30 seconds',
           'repeatInterval must be greater than or equal to cycleDuration',
           'endTime must be after startTime',
           'maxCycles must be greater than zero',
@@ -151,6 +151,27 @@ void main() {
 
     test('runs optional immediate test cycle before regular cycles', () {
       final deployedAt = DateTime.utc(2026, 1, 1, 6, 17);
+      final calc = AruScheduleCalculator(
+        AruScheduleConfig(
+          startTime: deployedAt,
+          cycleDuration: const Duration(minutes: 10),
+          repeatInterval: const Duration(hours: 1),
+          maxCycles: 2,
+          testCycleEnabled: true,
+        ),
+      );
+
+      final windows = calc.nextWindows(deployedAt, count: 3);
+
+      expect(windows.map((w) => w.index), <int>[0, 1, 2]);
+      expect(windows[0].start, deployedAt);
+      expect(windows[0].end, deployedAt.add(const Duration(minutes: 1)));
+      expect(windows[1].start, DateTime.utc(2026, 1, 1, 7));
+      expect(windows[2].start, DateTime.utc(2026, 1, 1, 8));
+    });
+
+    test('postpones aligned start to prevent overlap with 1min test cycle', () {
+      final deployedAt = DateTime.utc(2026, 1, 1, 6);
       final calc = AruScheduleCalculator(
         AruScheduleConfig(
           startTime: deployedAt,

@@ -469,7 +469,7 @@
   "@aruSetupHelpTitle": {
     "description": "Title for ARU setup help"
   },
-  "aruSetupHelpBody": "ARU Mode schedules fixed-location recording cycles. This early implementation saves recoverable deployment state, records full audio during each scheduled cycle, and shows an Android foreground notification; inference, detection-only clips, and full review playback are still in development.",
+  "aruSetupHelpBody": "ARU Mode schedules fixed-location recording cycles. Deployments save recoverable schedule state, record full audio or retained detection clips during active cycles, run live inference during cycles, and show Android foreground notification controls. iOS background behavior still needs field validation.",
   "@aruSetupHelpBody": {
     "description": "Help text for the first ARU setup implementation"
   },
@@ -645,6 +645,14 @@
   "aruActiveWaiting": "Waiting for next cycle",
   "@aruActiveWaiting": {
     "description": "Status text when ARU is waiting"
+  },
+  "aruStatusWaiting": "Waiting",
+  "@aruStatusWaiting": {
+    "description": "Status text when ARU is waiting between cycles"
+  },
+  "aruStatusRecording": "Recording",
+  "@aruStatusRecording": {
+    "description": "Status text when ARU is recording a cycle"
   },
   "aruWaitingDetectionsTitle": "Waiting for the next cycle",
   "@aruWaitingDetectionsTitle": {

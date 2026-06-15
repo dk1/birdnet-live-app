@@ -91,7 +91,7 @@ class AruScheduleConfig {
   List<String> validate() {
     final errors = <String>[];
     if (cycleDuration < AruDefaults.minCycleDuration) {
-      errors.add('cycleDuration must be at least 1 minute');
+      errors.add('cycleDuration must be at least 30 seconds');
     }
     if (cycleDuration > AruDefaults.maxCycleDuration) {
       errors.add('cycleDuration must be at most 60 minutes');
@@ -416,16 +416,18 @@ class AruScheduleCalculator {
   }
 
   DateTime _firstClockAlignedStart() {
-    final start = config.startTime;
+    final baseTime = config.testCycleEnabled
+        ? config.startTime.add(const Duration(minutes: 1))
+        : config.startTime;
     final midnight =
-        start.isUtc
-            ? DateTime.utc(start.year, start.month, start.day)
-            : DateTime(start.year, start.month, start.day);
-    final elapsed = start.difference(midnight);
+        baseTime.isUtc
+            ? DateTime.utc(baseTime.year, baseTime.month, baseTime.day)
+            : DateTime(baseTime.year, baseTime.month, baseTime.day);
+    final elapsed = baseTime.difference(midnight);
     final intervalMicros = config.repeatInterval.inMicroseconds;
     final remainder = elapsed.inMicroseconds % intervalMicros;
-    if (remainder == 0) return start;
-    return start.add(Duration(microseconds: intervalMicros - remainder));
+    if (remainder == 0) return baseTime;
+    return baseTime.add(Duration(microseconds: intervalMicros - remainder));
   }
 
   bool _isAllowedStart(DateTime start) {

@@ -16,11 +16,13 @@ import 'package:latlong2/latlong.dart';
 
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
+import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../survey/detection_sampler.dart';
 import 'aru_active_screen.dart';
+import 'aru_controller.dart';
 import 'aru_defaults.dart';
 import 'aru_notification.dart';
 import 'aru_providers.dart';
@@ -77,6 +79,18 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
     super.initState();
     _scheduleEnd = _defaultScheduleEnd();
     _fetchGpsLocation();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final session = ref.read(aruSessionProvider);
+      final state = ref.read(aruStateProvider);
+      if (session != null &&
+          state != AruControllerState.completed &&
+          state != AruControllerState.idle) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(builder: (_) => const AruActiveScreen()),
+        );
+      }
+    });
   }
 
   @override
@@ -199,8 +213,9 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
   }
 
   void _parseManualLocation() {
-    _latitude = double.tryParse(_latController.text)?.clamp(-90, 90);
-    _longitude = double.tryParse(_lonController.text)?.clamp(-180, 180);
+    _latitude = double.tryParse(_latController.text)?.clamp(-90, 90).toDouble();
+    _longitude =
+        double.tryParse(_lonController.text)?.clamp(-180, 180).toDouble();
   }
 
   static DateTime _defaultScheduleEnd() {
@@ -263,14 +278,18 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       highPassHz: ref.read(highPassFilterProvider),
     );
 
+    final repo = ref.read(sessionRepositoryProvider);
+    final sessionNumber = await repo.nextSessionNumber(SessionType.aru);
+
     final controller = ref.read(aruControllerProvider);
     await controller.startDeployment(
-      sessionId: 'aru-${now.toUtc().toIso8601String()}',
+      sessionId: 'aru-${now.toUtc().toIso8601String().replaceAll(':', '-')}',
       settings: settings,
       metadata: metadata,
       observerName: _emptyToNull(_observerController.text),
       latitude: latitude,
       longitude: longitude,
+      sessionNumber: sessionNumber,
     );
     ref.read(aruStateProvider.notifier).state = controller.state;
     ref.read(aruSessionProvider.notifier).state = controller.session;

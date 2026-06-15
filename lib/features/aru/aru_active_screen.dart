@@ -83,9 +83,13 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   }
 
   Future<void> _syncDetectionsFromInference() async {
-    final controller = ref.read(aruControllerProvider);
     final liveController = ref.read(liveControllerProvider);
-    await controller.syncDetections(liveController.sessionDetections);
+    await _syncDetections(liveController.sessionDetections);
+  }
+
+  Future<void> _syncDetections(List<DetectionRecord> detections) async {
+    final controller = ref.read(aruControllerProvider);
+    await controller.syncDetections(detections);
     if (!mounted) return;
     ref.read(aruSessionProvider.notifier).state = controller.session;
     setState(() {});
@@ -117,6 +121,16 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       if (!mounted) return;
       ref.read(aruStateProvider.notifier).state = controller.state;
       ref.read(aruSessionProvider.notifier).state = controller.session;
+      if (controller.state == AruControllerState.completed) {
+        setState(() => _stopping = true);
+        final reviewSession = await _finishDeployment(
+          reason: SessionStopReason.maxDuration,
+        );
+        if (!mounted) return;
+        setState(() => _stopping = false);
+        _openReview(reviewSession);
+        return;
+      }
       await _syncInferenceSession(controller.state, controller.session);
       await _syncNotification();
     } finally {
@@ -178,7 +192,10 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     await _syncDetectionsFromInference();
     if (controller.state == LiveState.active ||
         controller.state == LiveState.paused) {
-      await controller.finalizeSession();
+      final completedSession = await controller.finalizeSession();
+      if (completedSession != null) {
+        await _syncDetections(completedSession.detections);
+      }
     }
     _aruInferenceActive = false;
   }
@@ -461,7 +478,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
         _SummaryPanel(session: session),
       ],
     );
-    final statsBar = _AruStatsBar(session: session, ringBuffer: ringBuffer);
+    final statsBar = _AruStatsBar(session: session);
     final detectionPane = Padding(
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
       child: ClipRRect(
@@ -579,15 +596,12 @@ class _AruStatusBarState extends State<_AruStatusBar> {
     final current = snapshot?.currentWindow;
     final next = snapshot?.nextWindow;
     final now = DateTime.now();
-    final isTest = current != null && _isTestWindow(widget.session, current);
     final label =
-        isTest
-            ? l10n.aruTestRun
-            : switch (widget.state) {
-              AruControllerState.recording => l10n.aruActiveRecording,
-              AruControllerState.completed => l10n.aruActiveCompleted,
-              _ => l10n.aruNextCycle,
-            };
+        switch (widget.state) {
+          AruControllerState.recording => l10n.aruStatusRecording,
+          AruControllerState.completed => l10n.aruActiveCompleted,
+          _ => l10n.aruStatusWaiting,
+        };
     final detail =
         current != null
             ? _formatDuration(current.end.difference(now))
@@ -600,12 +614,15 @@ class _AruStatusBarState extends State<_AruStatusBar> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(AppIcons.stopRounded, size: 22),
+            icon: Icon(
+              _isActive ? AppIcons.stopRounded : AppIcons.arrowBackRounded,
+              size: 22,
+            ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             onPressed:
                 _isActive ? widget.onStop : () => Navigator.of(context).pop(),
-            tooltip: l10n.aruStopDeployment,
+            tooltip: _isActive ? l10n.aruStopDeployment : l10n.tooltipBack,
             color: _isActive ? theme.colorScheme.error : null,
           ),
           Expanded(
@@ -680,10 +697,9 @@ class _AruStatusBarState extends State<_AruStatusBar> {
 }
 
 class _AruStatsBar extends StatelessWidget {
-  const _AruStatsBar({required this.session, required this.ringBuffer});
+  const _AruStatsBar({required this.session});
 
   final LiveSession session;
-  final RingBuffer ringBuffer;
 
   @override
   Widget build(BuildContext context) {
@@ -692,9 +708,6 @@ class _AruStatsBar extends StatelessWidget {
       color: theme.colorScheme.onSurface,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
-    final level = ringBuffer.rmsLevel();
-    final levelLabel =
-        level <= 0 ? '0%' : '${(level * 100).clamp(1, 99).round()}%';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -705,7 +718,6 @@ class _AruStatsBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          StatChip(icon: AppIcons.mic, value: levelLabel, style: style),
           StatChip(
             icon: AppIcons.checkCircleRounded,
             value: '${_completedCycleCount(session)}',
@@ -894,7 +906,9 @@ class _SpectrogramPanel extends ConsumerWidget {
           child: Text(
             state == AruControllerState.recording
                 ? l10n.surveyStarting
-                : l10n.aruActiveWaiting,
+                : state == AruControllerState.completed
+                    ? l10n.aruActiveCompleted
+                    : l10n.aruActiveWaiting,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,

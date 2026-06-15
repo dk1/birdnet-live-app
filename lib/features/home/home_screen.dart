@@ -4,6 +4,9 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../about/about_screen.dart';
+import '../aru/aru_active_screen.dart';
+import '../aru/aru_controller.dart';
+import '../aru/aru_providers.dart';
 import '../aru/aru_setup_screen.dart';
 import '../explore/explore_screen.dart';
 import '../history/session_library_screen.dart';
@@ -237,7 +240,7 @@ class _LogoHeader extends ConsumerWidget {
 // Mode Carousel — 2 pages of 2×2 cards with indicators
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ModeCarousel extends StatefulWidget {
+class _ModeCarousel extends ConsumerStatefulWidget {
   const _ModeCarousel({
     required this.l10n,
     required this.theme,
@@ -250,10 +253,10 @@ class _ModeCarousel extends StatefulWidget {
   final bool isTablet;
 
   @override
-  State<_ModeCarousel> createState() => _ModeCarouselState();
+  ConsumerState<_ModeCarousel> createState() => _ModeCarouselState();
 }
 
-class _ModeCarouselState extends State<_ModeCarousel> {
+class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
@@ -386,7 +389,7 @@ class _ModeCarouselState extends State<_ModeCarousel> {
                             SessionType.aru,
                           ),
                           isTablet: widget.isTablet,
-                          onTap: () => _openAru(context),
+                          onTap: () => _openAru(context, ref),
                         ),
                       ],
                     ),
@@ -447,10 +450,20 @@ class _ModeCarouselState extends State<_ModeCarousel> {
     ).push(MaterialPageRoute<void>(builder: (_) => const FileAnalysisScreen()));
   }
 
-  void _openAru(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const AruSetupScreen()));
+  void _openAru(BuildContext context, WidgetRef ref) {
+    final session = ref.read(aruSessionProvider);
+    final state = ref.read(aruStateProvider);
+    if (session != null &&
+        state != AruControllerState.completed &&
+        state != AruControllerState.idle) {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const AruActiveScreen()),
+      );
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const AruSetupScreen()),
+      );
+    }
   }
 
   void _showComingSoonSnackBar(BuildContext context, String modeLabel) {

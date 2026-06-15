@@ -1,7 +1,7 @@
 # ARU Mode
 
 !!! note "Early implementation"
-    ARU Mode currently creates a recoverable scheduled deployment session, records scheduled cycles, runs live inference during active cycles, and shows Android foreground notification controls. iOS background behavior still needs field validation.
+    ARU Mode currently creates a recoverable scheduled deployment session, records scheduled cycles, runs live inference during active cycles, saves retained detection clips when that recording mode is selected, and shows Android foreground notification controls. iOS background behavior still needs field validation.
 
 ARU (Autonomous Recording Unit) Mode is the fixed-location workflow for scheduled acoustic deployments.
 
@@ -13,7 +13,7 @@ ARU (Autonomous Recording Unit) Mode is the fixed-location workflow for schedule
 
 Starting a deployment immediately saves a `SessionType.aru` session with ARU schedule metadata so cycle state can be recovered later.
 
-JSON and ZIP exports include ARU deployment metadata. If a later build has saved per-cycle recording files on the session, ZIP export bundles those files under `aru_cycles/`.
+JSON and ZIP exports include ARU deployment metadata. ZIP exports bundle saved per-cycle recording files under `aru_cycles/`.
 
 ## Active Deployment Screen
 

@@ -85,6 +85,7 @@ class AruController {
     String? observerName,
     double? latitude,
     double? longitude,
+    int? sessionNumber,
   }) async {
     if (_state != AruControllerState.idle) {
       throw StateError('ARU deployment already started');
@@ -105,6 +106,7 @@ class AruController {
         latitude: latitude,
         longitude: longitude,
         aruMetadata: metadata,
+        sessionNumber: sessionNumber,
       );
       _lastReviewSession = _session;
       _sampler = AruDetectionSampler(

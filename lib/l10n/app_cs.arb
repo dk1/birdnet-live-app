@@ -110,6 +110,186 @@
   "batchAnalysisModeDescription": "Hromadně analyzovat více souborů",
   "aruMode": "Režim ARU",
   "aruModeDescription": "Používejte zařízení jako akustický rekordér",
+  "aruSetupTitle": "Nastavení ARU",
+  "@aruSetupTitle": {
+    "description": "Title for the ARU setup wizard"
+  },
+  "aruSetupDetails": "Nasazení",
+  "@aruSetupDetails": {
+    "description": "ARU setup step title for deployment details"
+  },
+  "aruSetupSchedule": "Plán",
+  "@aruSetupSchedule": {
+    "description": "ARU setup step title for schedule settings"
+  },
+  "aruSetupReady": "Připraveno",
+  "@aruSetupReady": {
+    "description": "ARU setup step title for review"
+  },
+  "aruSetupHelpTitle": "Nápověda k režimu ARU",
+  "@aruSetupHelpTitle": {
+    "description": "Title for ARU setup help"
+  },
+  "aruSetupHelpBody": "Režim ARU plánuje nahrávací cykly na pevném místě. Nasazení ukládají obnovitelný stav plánu, během aktivních cyklů nahrávají plný zvuk nebo uchované detekční klipy, spouštějí živou inferenci během cyklů a v Androidu zobrazují ovládání oznámení na popředí. Chování na pozadí v iOS stále vyžaduje terénní ověření.",
+  "@aruSetupHelpBody": {
+    "description": "Help text for the first ARU setup implementation"
+  },
+  "aruDeploymentName": "Název nasazení",
+  "@aruDeploymentName": {
+    "description": "Label for ARU deployment name field"
+  },
+  "aruStationId": "ARU / ID stanice",
+  "@aruStationId": {
+    "description": "Label for ARU station id field"
+  },
+  "aruObserverName": "Jméno pozorovatele",
+  "@aruObserverName": {
+    "description": "Label for ARU observer name field"
+  },
+  "aruGpsFixRequired": "Počkejte na GPS fix, obnovte polohu nebo přepněte na Ručně/Přeskočit.",
+  "@aruGpsFixRequired": {
+    "description": "Validation message when ARU GPS mode has no fix yet"
+  },
+  "aruManualLocationInvalid": "Před pokračováním zadejte platné ruční souřadnice.",
+  "@aruManualLocationInvalid": {
+    "description": "Validation message when ARU manual coordinates are invalid"
+  },
+  "aruCycleDuration": "Délka cyklu",
+  "@aruCycleDuration": {
+    "description": "Label for ARU cycle duration selector"
+  },
+  "aruRepeatInterval": "Interval opakování",
+  "@aruRepeatInterval": {
+    "description": "Label for ARU repeat interval selector"
+  },
+  "aruScheduleEnd": "Konec nasazení",
+  "@aruScheduleEnd": {
+    "description": "Label for how an ARU deployment ends"
+  },
+  "aruScheduleEndManual": "Ručně",
+  "@aruScheduleEndManual": {
+    "description": "ARU schedule end option for running until the user stops it"
+  },
+  "aruScheduleEndCycles": "Cykly",
+  "@aruScheduleEndCycles": {
+    "description": "ARU schedule end option for stopping after a fixed number of cycles"
+  },
+  "aruScheduleEndDateTime": "Datum a čas",
+  "@aruScheduleEndDateTime": {
+    "description": "ARU schedule end option for stopping at a fixed date and time"
+  },
+  "aruScheduleNoLimit": "Do ručního zastavení",
+  "@aruScheduleNoLimit": {
+    "description": "ARU summary label for deployments with no fixed end"
+  },
+  "aruMaxCycles": "Počet cyklů",
+  "@aruMaxCycles": {
+    "description": "Label for ARU maximum cycle count control"
+  },
+  "aruLowBatteryStop": "Zastavení při nízké baterii",
+  "@aruLowBatteryStop": {
+    "description": "Label for ARU low battery stop threshold"
+  },
+  "aruOptionalTestCycle": "Nejprve spustit jednominutový testovací cyklus",
+  "@aruOptionalTestCycle": {
+    "description": "Label for ARU optional test cycle toggle"
+  },
+  "aruStorageEstimate": "Odhadované úložiště pro zvuk",
+  "@aruStorageEstimate": {
+    "description": "Label for ARU storage estimate"
+  },
+  "aruPerHourEstimate": "Za hodinu",
+  "@aruPerHourEstimate": {
+    "description": "Label for ARU storage estimate per hour"
+  },
+  "aruPerDayEstimate": "Za den",
+  "@aruPerDayEstimate": {
+    "description": "Label for ARU storage estimate per day"
+  },
+  "aruReadySummary": "Před spuštěním nasazení zkontrolujte. Session se uloží okamžitě, aby bylo možné později obnovit stav plánu.",
+  "@aruReadySummary": {
+    "description": "Summary text on ARU ready step"
+  },
+  "aruReadyPlatformNote": "Android může mezi cykly zůstat nasazený s oznámením na popředí. Na iOS je stále nutné považovat nahrávání na pozadí a plánované probouzení za neověřené.",
+  "@aruReadyPlatformNote": {
+    "description": "ARU readiness note about current platform limitations"
+  },
+  "aruReadyReminderAirplane": "Pokud je to možné, zapněte ručně Režim letadlo a znovu povolte jen připojení, která nasazení potřebuje.",
+  "@aruReadyReminderAirplane": {
+    "description": "ARU readiness reminder about using Airplane Mode"
+  },
+  "aruReadyReminderMount": "Použijte stabilní držák, nechte mikrofon volný a chraňte zařízení před přímým deštěm a hlukem při manipulaci.",
+  "@aruReadyReminderMount": {
+    "description": "ARU readiness reminder about mounting and protecting the recorder"
+  },
+  "aruStartDeployment": "Spustit nasazení",
+  "@aruStartDeployment": {
+    "description": "Button label to start ARU deployment"
+  },
+  "aruActiveTitle": "Nasazení ARU",
+  "@aruActiveTitle": {
+    "description": "Title for active ARU screen"
+  },
+  "aruActiveRecording": "Nahrávací cyklus",
+  "@aruActiveRecording": {
+    "description": "Status text when ARU is recording"
+  },
+  "aruActiveWaiting": "Čekání na další cyklus",
+  "@aruActiveWaiting": {
+    "description": "Status text when ARU is waiting"
+  },
+  "aruStatusWaiting": "Čekání",
+  "@aruStatusWaiting": {
+    "description": "Status text when ARU is waiting between cycles"
+  },
+  "aruStatusRecording": "Nahrávání",
+  "@aruStatusRecording": {
+    "description": "Status text when ARU is recording a cycle"
+  },
+  "aruActiveCompleted": "Nasazení dokončeno",
+  "@aruActiveCompleted": {
+    "description": "Status text when ARU deployment is complete"
+  },
+  "aruStopDeployment": "Zastavit nasazení",
+  "@aruStopDeployment": {
+    "description": "Button label to stop ARU deployment"
+  },
+  "aruStopConfirmTitle": "Zastavit nasazení ARU?",
+  "@aruStopConfirmTitle": {
+    "description": "Title for stop ARU confirmation dialog"
+  },
+  "aruStopConfirmBody": "Aktuální nasazení bude dokončeno a uloženo.",
+  "@aruStopConfirmBody": {
+    "description": "Body for stop ARU confirmation dialog"
+  },
+  "aruNoActiveDeployment": "Žádné aktivní nasazení ARU",
+  "@aruNoActiveDeployment": {
+    "description": "Shown when active ARU screen has no session"
+  },
+  "aruNextCycle": "Další cyklus",
+  "@aruNextCycle": {
+    "description": "Label for next ARU cycle time"
+  },
+  "aruCompletedCycles": "Dokončené cykly",
+  "@aruCompletedCycles": {
+    "description": "Label for completed ARU cycles count"
+  },
+  "aruRecordedAudio": "Nahraný zvuk",
+  "@aruRecordedAudio": {
+    "description": "Label for ARU recorded audio duration"
+  },
+  "aruNotificationTitle": "Nasazení ARU",
+  "@aruNotificationTitle": {
+    "description": "Foreground notification title for active ARU deployments"
+  },
+  "aruNotificationChannelName": "BirdNET ARU",
+  "@aruNotificationChannelName": {
+    "description": "Android notification channel name for ARU foreground deployments"
+  },
+  "aruNotificationChannelDescription": "Aktivní nasazení ARU",
+  "@aruNotificationChannelDescription": {
+    "description": "Android notification channel description for ARU foreground deployments"
+  },
   "aruTabStatus": "Stav",
   "aruElapsedTime": "Uplynulý čas",
   "aruTestRun": "Test",
