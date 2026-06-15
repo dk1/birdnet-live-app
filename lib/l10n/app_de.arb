@@ -984,5 +984,7 @@
   "sessionHelpContinueSurvey": "Bei Survey-Sessions setzt die Play-Schaltfläche die Aufnahme in derselben Survey fort, anstatt eine neue zu starten.",
   "linkOpenFailedCopied": "Link konnte nicht geöffnet werden. URL in die Zwischenablage kopiert.",
   "permissionRequestIOS": "Weiter",
-  "openInAppleMaps": "In Apple Maps öffnen"
+  "openInAppleMaps": "In Apple Maps öffnen",
+  "aruCombinedSessionWarningTitle": "Voll-Audio-Konflikt",
+  "aruCombinedSessionWarningBody": "Kombinierte Sessions unterstützen kein Voll-Audio. Das System speichert stattdessen Clips mit Smart-Sampling. Bitte gehen Sie zum vorherigen Bildschirm zurück, um Ihre Aufnahmeeinstellungen zu überprüfen, falls Sie dies ändern möchten."
 }

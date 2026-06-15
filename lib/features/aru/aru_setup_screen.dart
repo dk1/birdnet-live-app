@@ -253,6 +253,14 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
     if (stationId.isNotEmpty) {
       await ref.read(aruLastStationIdProvider.notifier).set(stationId);
     }
+    final finalRecordingMode = (!_eachCycleIsSession && _recordingMode == RecordingMode.full)
+        ? RecordingMode.detectionsOnly
+        : _recordingMode;
+
+    final finalSamplingMode = (!_eachCycleIsSession && _recordingMode == RecordingMode.full)
+        ? SamplingMode.smart
+        : _samplingMode;
+
     final metadata = AruDeploymentMetadata(
       deploymentName: _emptyToNull(_deploymentController.text),
       stationId: _emptyToNull(stationId),
@@ -265,11 +273,11 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       dielPattern: _dielPattern,
       latitude: latitude,
       longitude: longitude,
-      recordingMode: _recordingMode.name,
+      recordingMode: finalRecordingMode.name,
       recordingFormat: ref.read(recordingFormatProvider),
       samplingMode:
-          _recordingMode == RecordingMode.detectionsOnly
-              ? _samplingMode.name
+          finalRecordingMode == RecordingMode.detectionsOnly
+              ? finalSamplingMode.name
               : SamplingMode.all.name,
       topNPerSpecies: _topNPerSpecies,
       testCycleEnabled: _testCycleEnabled,
@@ -286,11 +294,11 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       poolingWindows: ref.read(scorePoolingWindowsProvider),
       gainLinear: ref.read(audioGainProvider),
       highPassHz: ref.read(highPassFilterProvider),
-      recordingMode: _recordingMode.name,
+      recordingMode: finalRecordingMode.name,
       recordingFormat: ref.read(recordingFormatProvider),
       detectionSamplingMode:
-          _recordingMode == RecordingMode.detectionsOnly
-              ? _samplingMode.name
+          finalRecordingMode == RecordingMode.detectionsOnly
+              ? finalSamplingMode.name
               : SamplingMode.all.name,
       topNPerSpecies: _topNPerSpecies,
     );
@@ -430,6 +438,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
                 _locationChoice == _LocationChoice.skip ? null : _longitude,
             testCycleEnabled: _testCycleEnabled,
             eachCycleIsSession: _eachCycleIsSession,
+            recordingMode: _recordingMode,
             onCycleDurationChanged:
                 (value) => setState(() {
                   _cycleDuration = value;
@@ -996,6 +1005,7 @@ class _ScheduleStep extends ConsumerWidget {
     required this.longitude,
     required this.testCycleEnabled,
     required this.eachCycleIsSession,
+    required this.recordingMode,
     required this.onCycleDurationChanged,
     required this.onRepeatIntervalChanged,
     required this.onScheduleEndModeChanged,
@@ -1019,6 +1029,7 @@ class _ScheduleStep extends ConsumerWidget {
   final double? longitude;
   final bool testCycleEnabled;
   final bool eachCycleIsSession;
+  final RecordingMode recordingMode;
   final ValueChanged<Duration> onCycleDurationChanged;
   final ValueChanged<Duration> onRepeatIntervalChanged;
   final ValueChanged<_ScheduleEndMode> onScheduleEndModeChanged;
@@ -1268,6 +1279,8 @@ class _ScheduleStep extends ConsumerWidget {
             onEachCycleIsSessionChanged(value);
           },
         ),
+        if (!eachCycleIsSession && recordingMode == RecordingMode.full)
+          const _CombinedSessionWarningCard(),
       ],
     );
   }
@@ -1455,6 +1468,10 @@ class _ReadyStep extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       children: [
+        if (!eachCycleIsSession && recordingMode == RecordingMode.full) ...[
+          const _CombinedSessionWarningCard(),
+          const SizedBox(height: 16),
+        ],
         Icon(
           AppIcons.scheduleRounded,
           size: 56,
@@ -1803,4 +1820,52 @@ String _formatBytes(int bytes) {
   const gb = 1024 * mb;
   if (bytes >= gb) return '${(bytes / gb).toStringAsFixed(1)} GB';
   return '${(bytes / mb).toStringAsFixed(0)} MB';
+}
+
+class _CombinedSessionWarningCard extends StatelessWidget {
+  const _CombinedSessionWarningCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    return Card(
+      color: theme.colorScheme.errorContainer,
+      margin: const EdgeInsets.only(top: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              AppIcons.warningAmberRounded,
+              color: theme.colorScheme.onErrorContainer,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.aruCombinedSessionWarningTitle,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: theme.colorScheme.onErrorContainer,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.aruCombinedSessionWarningBody,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

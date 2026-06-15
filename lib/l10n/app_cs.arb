@@ -1119,5 +1119,7 @@
   "sessionHelpContinueSurvey": "U relací survey tlačítko přehrávání pokračuje v nahrávání ve stejné survey místo spuštění nové.",
   "linkOpenFailedCopied": "Odkaz se nepodařilo otevřít. URL byla zkopírována do schránky.",
   "permissionRequestIOS": "Pokračovat",
-  "openInAppleMaps": "Otevřít v Apple Maps"
+  "openInAppleMaps": "Otevřít v Apple Maps",
+  "aruCombinedSessionWarningTitle": "Konflikt s plným zvukem",
+  "aruCombinedSessionWarningBody": "Kombinované relace nepodporují plný zvuk. Systém se vrátí k ukládání klipů s inteligentním vzorkováním (Smart). Chcete-li to změnit, přejděte na předchozí obrazovku a zkontrolujte nastavení nahrávání."
 }

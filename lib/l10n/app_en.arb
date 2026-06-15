@@ -4213,5 +4213,13 @@
   "openInAppleMaps": "Open in Apple Maps",
   "@openInAppleMaps": {
     "description": "Action to open the location in the external Apple Maps app"
+  },
+  "aruCombinedSessionWarningTitle": "Full Audio Conflict",
+  "@aruCombinedSessionWarningTitle": {
+    "description": "Title of the warning shown when a combined ARU session is configured with full audio recording mode"
+  },
+  "aruCombinedSessionWarningBody": "Combined sessions do not support Full Audio. The system will fall back to saving clips with Smart sampling. Go to the previous screen to review recording settings if you wish to change this.",
+  "@aruCombinedSessionWarningBody": {
+    "description": "Body of the warning shown when a combined ARU session is configured with full audio recording mode"
   }
 }

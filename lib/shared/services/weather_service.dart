@@ -23,11 +23,11 @@
 //     network calls for the same coarse cell (e.g. setup preview → ready
 //     preview → session save at the same site). On top of that, every
 //     successful fetch is persisted to [SharedPreferences]
-//     under [PrefKeys.weatherCachePrefix] so that a fresh app launch within
-//     [_cacheTtl] reuses the same snapshot for nearby coordinates instead of
+//     under [PrefKeys.weatherCachePrefix] so that a fresh app launch reuses a
+//     snapshot observed within ±2 hours at the same coarse cell instead of
 //     re-hitting Open-Meteo. The persistent cache is keyed by a 0.1° cell
 //     (~10 km) so trips that stay around the same site share one fetch for
-//     several sessions.
+//     several sessions. Entries older than 30 days are pruned on each write.
 // =============================================================================
 
 import 'dart:async';
@@ -48,23 +48,9 @@ class WeatherService {
   final Map<String, WeatherSnapshot> _cache = {};
   final Map<String, Future<WeatherSnapshot?>> _inFlight = {};
 
-  /// How long a persisted snapshot stays valid. Birds don't care if the
-  /// wind shifts by 0.5 m/s mid-morning, so a coarse 6 h window is plenty
-  /// for survey-context use and avoids hammering Open-Meteo on days when
-  /// the user runs many short sessions back-to-back.
-  static const Duration _cacheTtl = Duration(hours: 6);
-
   /// Open-Meteo forecast endpoint. Returns hourly observations for the
   /// current day; we extract the hour closest to [observedAt].
   static const String _endpoint = 'https://api.open-meteo.com/v1/forecast';
-
-  /// Builds the persistent-cache key for a 0.1° cell.
-  String _cellKey(double lat, double lon) {
-    final cellLat = (lat * 10).round() / 10;
-    final cellLon = (lon * 10).round() / 10;
-    return '${PrefKeys.weatherCachePrefix}${cellLat.toStringAsFixed(1)}_'
-        '${cellLon.toStringAsFixed(1)}';
-  }
 
   /// Fetches a [WeatherSnapshot] for the given coordinates and time.
   ///
@@ -93,47 +79,94 @@ class WeatherService {
     final cellLon = (longitude * 10).round() / 10;
     final hourKey = DateTime.utc(at.year, at.month, at.day, at.hour);
     final cacheKey = '$cellLat,$cellLon,${hourKey.toIso8601String()}';
-    final cached = _cache[cacheKey];
-    if (cached != null) return cached;
 
-    // Persistent (cross-launch) cache: any successful fetch for the
-    // same 0.1° cell within the last [_cacheTtl] is considered fresh
-    // enough to reuse, so multiple short sessions at the same site
-    // don't repeatedly hit the network.
-    final persistentKey = _cellKey(latitude, longitude);
-    final inFlight = _inFlight[persistentKey];
-    if (inFlight != null) return inFlight;
-
-    final persistedRaw = prefs.getString(persistentKey);
-    if (persistedRaw != null) {
-      try {
-        final decoded = json.decode(persistedRaw) as Map<String, dynamic>;
-        final snap = WeatherSnapshot.fromJson(decoded);
-        if (snap != null) {
-          final age = DateTime.now().toUtc().difference(snap.fetchedAt);
-          if (age >= Duration.zero && age < _cacheTtl) {
-            _cache[cacheKey] = snap;
+    // In-process cache check: search for any snapshot for the same cell
+    // observed within 2 hours of `at`.
+    final cellPrefix = '$cellLat,$cellLon,';
+    for (final key in _cache.keys) {
+      if (key.startsWith(cellPrefix)) {
+        final snap = _cache[key]!;
+        final snapObserved = snap.observedAt;
+        if (snapObserved != null) {
+          final diff = snapObserved.difference(at).abs();
+          if (diff <= const Duration(hours: 2)) {
             return snap;
           }
         }
-      } catch (_) {
-        // Ignore corrupt cache entries; we'll overwrite on success.
       }
     }
 
-    final uri = Uri.parse(_endpoint).replace(
-      queryParameters: {
-        'latitude': latitude.toStringAsFixed(4),
-        'longitude': longitude.toStringAsFixed(4),
-        'hourly':
-            'temperature_2m,precipitation,wind_speed_10m,'
-            'wind_direction_10m,cloud_cover,weather_code',
-        'wind_speed_unit': 'ms',
-        'timezone': 'UTC',
-        'past_days': '1',
-        'forecast_days': '1',
-      },
-    );
+    // Persistent cache check: search for any snapshot for the same cell
+    // observed within 2 hours of `at`.
+    final cellLatStr = cellLat.toStringAsFixed(1);
+    final cellLonStr = cellLon.toStringAsFixed(1);
+    final persistentPrefix = '${PrefKeys.weatherCachePrefix}${cellLatStr}_${cellLonStr}_';
+    final persistentKey = '$persistentPrefix${hourKey.toIso8601String()}';
+
+    final inFlight = _inFlight[persistentKey];
+    if (inFlight != null) return inFlight;
+
+    final keys = prefs.getKeys();
+    for (final key in keys) {
+      if (key.startsWith(persistentPrefix)) {
+        final persistedRaw = prefs.getString(key);
+        if (persistedRaw != null) {
+          try {
+            final decoded = json.decode(persistedRaw) as Map<String, dynamic>;
+            final snap = WeatherSnapshot.fromJson(decoded);
+            if (snap != null) {
+              final snapObserved = snap.observedAt;
+              if (snapObserved != null) {
+                final diff = snapObserved.difference(at).abs();
+                if (diff <= const Duration(hours: 2)) {
+                  _cache[cacheKey] = snap;
+                  return snap;
+                }
+              }
+            }
+          } catch (_) {
+            // Ignore corrupt cache entries.
+          }
+        }
+      }
+    }
+
+    // Determine query parameters and endpoint.
+    final daysAgo = DateTime.now().toUtc().difference(at).inDays;
+    final Uri uri;
+    if (daysAgo > 90) {
+      // Historical API
+      final dateStr = '${at.year}-${at.month.toString().padLeft(2, '0')}-${at.day.toString().padLeft(2, '0')}';
+      uri = Uri.parse('https://archive-api.open-meteo.com/v1/archive').replace(
+        queryParameters: {
+          'latitude': latitude.toStringAsFixed(4),
+          'longitude': longitude.toStringAsFixed(4),
+          'start_date': dateStr,
+          'end_date': dateStr,
+          'hourly':
+              'temperature_2m,precipitation,wind_speed_10m,'
+              'wind_direction_10m,cloud_cover,weather_code',
+          'wind_speed_unit': 'ms',
+          'timezone': 'UTC',
+        },
+      );
+    } else {
+      // Forecast API with dynamic past_days
+      final pastDays = (daysAgo + 1).clamp(1, 92);
+      uri = Uri.parse(_endpoint).replace(
+        queryParameters: {
+          'latitude': latitude.toStringAsFixed(4),
+          'longitude': longitude.toStringAsFixed(4),
+          'hourly':
+              'temperature_2m,precipitation,wind_speed_10m,'
+              'wind_direction_10m,cloud_cover,weather_code',
+          'wind_speed_unit': 'ms',
+          'timezone': 'UTC',
+          'past_days': pastDays.toString(),
+          'forecast_days': '1',
+        },
+      );
+    }
 
     final request = _fetchAndCache(
       uri: uri,
@@ -212,10 +245,29 @@ class WeatherService {
       );
 
       _cache[cacheKey] = snapshot;
-      // Best-effort persist; ignore errors so a failing prefs write
-      // never blocks returning a fresh snapshot to the caller.
       try {
         await prefs.setString(persistentKey, json.encode(snapshot.toJson()));
+
+        // Clean up old entries (older than 30 days) to prevent SharedPreferences bloat
+        final allKeys = prefs.getKeys();
+        final nowTime = DateTime.now().toUtc();
+        for (final key in allKeys) {
+          if (key.startsWith(PrefKeys.weatherCachePrefix)) {
+            final raw = prefs.getString(key);
+            if (raw != null) {
+              try {
+                final decoded = json.decode(raw) as Map<String, dynamic>;
+                final fetchedAtStr = decoded['fetchedAt'] as String?;
+                if (fetchedAtStr != null) {
+                  final fetchedAt = DateTime.tryParse(fetchedAtStr);
+                  if (fetchedAt != null && nowTime.difference(fetchedAt).inDays > 30) {
+                    await prefs.remove(key);
+                  }
+                }
+              } catch (_) {}
+            }
+          }
+        }
       } catch (_) {
         /* non-fatal */
       }

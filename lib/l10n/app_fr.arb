@@ -984,5 +984,7 @@
   "sessionHelpContinueSurvey": "Pour les sessions de relevé, le bouton lecture poursuit l'enregistrement dans le même relevé au lieu d'en démarrer un nouveau.",
   "linkOpenFailedCopied": "Impossible d'ouvrir le lien. URL copiée dans le presse-papiers.",
   "permissionRequestIOS": "Continuer",
-  "openInAppleMaps": "Ouvrir dans Apple Maps"
+  "openInAppleMaps": "Ouvrir dans Apple Maps",
+  "aruCombinedSessionWarningTitle": "Conflit avec audio complet",
+  "aruCombinedSessionWarningBody": "Les sessions combinées ne prennent pas en charge l'audio complet. Le système enregistrera des clips avec échantillonnage intelligent (Smart). Veuillez revenir à l'écran précédent pour vérifier vos paramètres d'enregistrement si vous souhaitez modifier cela."
 }

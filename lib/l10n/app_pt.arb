@@ -984,5 +984,7 @@
   "sessionHelpContinueSurvey": "Para sessões de survey, o botão de play continua a gravação na mesma survey em vez de iniciar uma nova.",
   "linkOpenFailedCopied": "Não foi possível abrir o link. URL copiado para a área de transferência.",
   "permissionRequestIOS": "Continuar",
-  "openInAppleMaps": "Abrir no Apple Maps"
+  "openInAppleMaps": "Abrir no Apple Maps",
+  "aruCombinedSessionWarningTitle": "Conflito com áudio completo",
+  "aruCombinedSessionWarningBody": "As sessões combinadas não suportam áudio completo. O sistema salvará clipes com amostragem inteligente (Smart). Volte à tela anterior para revisar suas configurações de gravação se desejar alterar isso."
 }

@@ -984,5 +984,7 @@
   "sessionHelpContinueSurvey": "En sesiones de survey, el botón de reproducir continúa la grabación en la misma survey en lugar de iniciar una nueva.",
   "linkOpenFailedCopied": "No se pudo abrir el enlace. URL copiada al portapapeles.",
   "permissionRequestIOS": "Continuar",
-  "openInAppleMaps": "Abrir en Apple Maps"
+  "openInAppleMaps": "Abrir en Apple Maps",
+  "aruCombinedSessionWarningTitle": "Conflicto con audio completo",
+  "aruCombinedSessionWarningBody": "Las sesiones combinadas no admiten audio completo. El sistema guardará clips con muestreo inteligente (Smart). Vuelva a la pantalla anterior para revisar sus ajustes de grabación si desea cambiar esto."
 }

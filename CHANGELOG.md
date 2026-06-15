@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.4] - 2026-06-15
+
+### Added
+
+- Added an in-app warning card when ARU combined-session mode is configured with Full Audio recording, explaining the automatic fallback to Smart-sampled clips.
+- Added background weather backfill so saved sessions with GPS coordinates but no weather data are automatically enriched on the next app launch.
+
+### Changed
+
+- Upgraded the weather cache to a per-observation-hour model supporting sessions up to 90 days old via the Open-Meteo forecast API, and older sessions via the archive API; stale entries (older than 30 days) are pruned on each write.
+
+### Fixed
+
+- Fixed ARU combined-session deployments configured with Full Audio: the session is now saved with Detections Only + Smart sampling instead of an unsupported Full Audio mode.
+
 ## [0.17.3] - 2026-06-15
 
 ### Changed
