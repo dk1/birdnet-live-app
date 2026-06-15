@@ -4,6 +4,7 @@ import 'package:battery_plus/battery_plus.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:birdnet_live/shared/widgets/app_help_bottom_sheet.dart';
+import 'package:birdnet_live/shared/widgets/confirm_destructive.dart';
 import 'package:birdnet_live/shared/widgets/stat_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import 'package:birdnet_live/core/theme/app_semantic_colors.dart';
+import 'package:birdnet_live/core/theme/score_colors.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
@@ -204,30 +206,14 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
 
   Future<void> _confirmStop() async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(l10n.aruStopConfirmTitle),
-            content: Text(l10n.aruStopConfirmBody),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(l10n.cancel),
-              ),
-              FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  foregroundColor: Theme.of(context).colorScheme.onError,
-                ),
-                onPressed: () => Navigator.of(context).pop(true),
-                icon: const Icon(AppIcons.stopRounded),
-                label: Text(l10n.aruStopDeployment),
-              ),
-            ],
-          ),
+    final confirmed = await confirmDestructive(
+      context,
+      title: l10n.aruStopConfirmTitle,
+      body: l10n.aruStopConfirmBody,
+      confirmLabel: l10n.aruStopDeployment,
+      cancelLabel: l10n.cancel,
     );
-    if (confirmed == true && mounted) {
+    if (confirmed && mounted) {
       await _stopDeployment();
     }
   }
@@ -458,15 +444,15 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
         ),
         Tab(
           icon: const Icon(AppIcons.graphicEq, size: 18),
-          text: l10n.surveyTabSpectrogram,
+          text: l10n.aruTabSpectrogram,
         ),
         Tab(
           icon: const Icon(AppIcons.scheduleRounded, size: 18),
-          text: l10n.aruSetupSchedule,
+          text: l10n.aruTabSchedule,
         ),
         Tab(
           icon: const Icon(AppIcons.summaryChart, size: 18),
-          text: l10n.surveyTabSummary,
+          text: l10n.aruTabSummary,
         ),
       ],
     );
@@ -491,6 +477,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
           emptyIcon: isRecording ? null : AppIcons.scheduleRounded,
           emptyTitle: isRecording ? null : l10n.aruWaitingDetectionsTitle,
           emptySubtitle: isRecording ? null : l10n.aruWaitingDetectionsBody,
+          emptyAlignment: const Alignment(0, -0.35),
         ),
       ),
     );
@@ -871,7 +858,24 @@ class _StatusPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final snapshot = _scheduleSnapshot(session);
+    final now = DateTime.now();
+    final metadata = session.aruMetadata;
+    final nextWindow = snapshot?.nextWindow;
+    final elapsed = (session.endTime ?? now).difference(session.startTime);
+    final completed = _completedCycleCount(session);
+    final totalCycles =
+        metadata == null
+            ? null
+            : metadata.maxCycles == null
+            ? null
+            : metadata.maxCycles! + (metadata.testCycleEnabled ? 1 : 0);
+    final progress =
+        totalCycles == null || totalCycles == 0
+            ? null
+            : (completed / totalCycles).clamp(0.0, 1.0);
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
       children: [
@@ -881,7 +885,171 @@ class _StatusPanel extends StatelessWidget {
           currentWindow: snapshot?.currentWindow,
           nextWindow: snapshot?.nextWindow,
         ),
+        const SizedBox(height: 8),
+        _StatusProgressBlock(
+          label: l10n.aruCycleProgress,
+          value:
+              totalCycles == null
+                  ? '$completed / ${l10n.aruScheduleNoLimit}'
+                  : '$completed / $totalCycles',
+          progress: progress,
+        ),
+        const SizedBox(height: 8),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth >= 520 ? 4 : 2;
+            final spacing = 8.0;
+            final width =
+                (constraints.maxWidth - spacing * (columns - 1)) / columns;
+            return Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                _StatusMetricTile(
+                  width: width,
+                  icon: AppIcons.scheduleRounded,
+                  label: l10n.aruNextIn,
+                  value:
+                      nextWindow == null
+                          ? l10n.aruActiveCompleted
+                          : _formatDuration(nextWindow.start.difference(now)),
+                ),
+                _StatusMetricTile(
+                  width: width,
+                  icon: AppIcons.timerRounded,
+                  label: l10n.aruElapsedTime,
+                  value: _formatDuration(elapsed),
+                ),
+                _StatusMetricTile(
+                  width: width,
+                  icon: AppIcons.detections,
+                  label: l10n.surveyTabSummaryDetections,
+                  value: '${session.detections.length}',
+                ),
+                _StatusMetricTile(
+                  width: width,
+                  icon: AppIcons.species,
+                  label: l10n.surveyTabSummarySpecies,
+                  value: '${session.uniqueSpeciesCount}',
+                ),
+              ],
+            );
+          },
+        ),
       ],
+    );
+  }
+}
+
+class _StatusProgressBlock extends StatelessWidget {
+  const _StatusProgressBlock({
+    required this.label,
+    required this.value,
+    required this.progress,
+  });
+
+  final String label;
+  final String value;
+  final double? progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              Text(
+                value,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          LinearProgressIndicator(
+            value: progress,
+            minHeight: 5,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusMetricTile extends StatelessWidget {
+  const _StatusMetricTile({
+    required this.width,
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final double width;
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      width: width,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -982,17 +1150,17 @@ class _ScheduleFocusCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(width: 12),
+            Icon(icon, color: color, size: 26),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 4),
+                  Text(title, style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 2),
                   Text(body, style: theme.textTheme.bodySmall),
                 ],
               ),
@@ -1081,16 +1249,16 @@ class _AruSpectrogram extends ConsumerWidget {
   }
 }
 
-class _SummaryPanel extends StatefulWidget {
+class _SummaryPanel extends ConsumerStatefulWidget {
   const _SummaryPanel({required this.session});
 
   final LiveSession session;
 
   @override
-  State<_SummaryPanel> createState() => _SummaryPanelState();
+  ConsumerState<_SummaryPanel> createState() => _SummaryPanelState();
 }
 
-class _SummaryPanelState extends State<_SummaryPanel> {
+class _SummaryPanelState extends ConsumerState<_SummaryPanel> {
   Timer? _timer;
 
   @override
@@ -1112,141 +1280,206 @@ class _SummaryPanelState extends State<_SummaryPanel> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final session = widget.session;
+    final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
+    final showSciNames = ref.watch(showSciNamesProvider);
     final elapsed = (session.endTime ?? DateTime.now()).difference(
       session.startTime,
     );
     final species = _speciesSummary(session.detections);
+    final completed = _completedCycleCount(session);
+    final rate =
+        elapsed.inSeconds > 0
+            ? (session.detections.length / elapsed.inMinutes.clamp(1, 999999))
+                .toStringAsFixed(1)
+            : '0';
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
+        Wrap(
+          alignment: WrapAlignment.spaceEvenly,
+          spacing: 16,
+          runSpacing: 8,
+          children: [
+            _SummaryChip(
+              label: l10n.surveyTabSummarySpecies,
+              value: '${species.length}',
+              theme: theme,
+            ),
+            _SummaryChip(
+              label: l10n.surveyTabSummaryDetections,
+              value: '${session.detections.length}',
+              theme: theme,
+            ),
+            _SummaryChip(
+              label: l10n.aruCyclesShort,
+              value: '$completed',
+              theme: theme,
+            ),
+            _SummaryChip(
+              label: l10n.surveyTabSummaryRate,
+              value: '$rate/min',
+              theme: theme,
+            ),
+            _SummaryChip(
+              label: l10n.aruSummaryElapsed,
+              value: _formatDuration(elapsed),
+              theme: theme,
+            ),
+            _SummaryChip(
+              label: l10n.aruSummaryAudio,
+              value: _formatDuration(session.duration),
+              theme: theme,
+            ),
+          ],
+        ),
+        if (species.isNotEmpty) const SizedBox(height: 12),
+        for (final (i, item) in species.take(24).indexed)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Row(
               children: [
-                _MetricRow(
-                  icon: AppIcons.timerRounded,
-                  label: l10n.aruElapsedTime,
-                  value: _formatDuration(elapsed),
+                SizedBox(
+                  width: 20,
+                  child: Text(
+                    '${i + 1}',
+                    textAlign: TextAlign.right,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(100),
+                    ),
+                  ),
                 ),
-                _MetricRow(
-                  icon: AppIcons.libraryMusic,
-                  label: l10n.aruRecordedAudio,
-                  value: _formatDuration(session.duration),
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: 28,
+                  child: Text(
+                    '${item.count}x',
+                    textAlign: TextAlign.right,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
                 ),
-                _MetricRow(
-                  icon: AppIcons.detections,
-                  label: l10n.surveyTabSummaryDetections,
-                  value: '${session.detections.length}',
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        taxonomy
+                                ?.lookup(item.scientificName)
+                                ?.commonNameForLocale(speciesLocale) ??
+                            item.commonName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                      if (showSciNames)
+                        Text(
+                          item.scientificName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontStyle: FontStyle.italic,
+                            color: theme.colorScheme.onSurface.withAlpha(140),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-                _MetricRow(
-                  icon: AppIcons.species,
-                  label: l10n.surveyTabSummarySpecies,
-                  value: '${session.uniqueSpeciesCount}',
+                Text(
+                  '${(item.bestConfidence * 100).toStringAsFixed(0)}%',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: (theme.extension<ScoreColors>() ?? ScoreColors.light)
+                        .forScore(item.bestConfidence),
+                  ),
                 ),
               ],
             ),
           ),
-        ),
-        if (species.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    l10n.surveyTabSummarySpecies,
-                    style: theme.textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  for (final item in species.take(12))
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              item.commonName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            '${item.count}',
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ],
     );
   }
 }
 
 class _AruSpeciesSummary {
-  const _AruSpeciesSummary({required this.commonName, required this.count});
+  _AruSpeciesSummary({
+    required this.scientificName,
+    required this.commonName,
+    required this.count,
+    required this.bestConfidence,
+  });
 
+  final String scientificName;
   final String commonName;
-  final int count;
+  int count;
+  double bestConfidence;
 }
 
 List<_AruSpeciesSummary> _speciesSummary(List<DetectionRecord> detections) {
   final bySpecies = <String, _AruSpeciesSummary>{};
   for (final detection in detections) {
     final existing = bySpecies[detection.scientificName];
-    bySpecies[detection.scientificName] = _AruSpeciesSummary(
-      commonName: detection.commonName,
-      count: (existing?.count ?? 0) + 1,
-    );
+    if (existing == null) {
+      bySpecies[detection.scientificName] = _AruSpeciesSummary(
+        scientificName: detection.scientificName,
+        commonName: detection.commonName,
+        count: 1,
+        bestConfidence: detection.confidence,
+      );
+    } else {
+      existing.count++;
+      if (detection.confidence > existing.bestConfidence) {
+        existing.bestConfidence = detection.confidence;
+      }
+    }
   }
   final list = bySpecies.values.toList();
-  list.sort((a, b) => b.count.compareTo(a.count));
+  list.sort((a, b) {
+    final cmp = b.count.compareTo(a.count);
+    if (cmp != 0) return cmp;
+    return b.bestConfidence.compareTo(a.bestConfidence);
+  });
   return list;
 }
 
-class _MetricRow extends StatelessWidget {
-  const _MetricRow({
-    required this.icon,
+class _SummaryChip extends StatelessWidget {
+  const _SummaryChip({
     required this.label,
     required this.value,
+    required this.theme,
   });
 
-  final IconData icon;
   final String label;
   final String value;
+  final ThemeData theme;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
+    return SizedBox(
+      width: 92,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(width: 12),
-          Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
-          Flexible(
-            child: Text(
-              value,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.end,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: theme.colorScheme.primary,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurface.withAlpha(150),
             ),
           ),
         ],

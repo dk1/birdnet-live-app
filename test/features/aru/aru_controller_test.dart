@@ -49,9 +49,34 @@ void main() {
       expect(controller.session?.type, SessionType.aru);
       expect(controller.session?.observerName, 'Jane');
       expect(controller.session?.latitude, 52.52);
+      expect(controller.session?.customName, 'Dawn Station - ARU-07');
       expect(controller.session?.aruMetadata?.stationId, 'ARU-07');
       expect(saved.length, 2);
     });
+
+    test(
+      'uses station ID as session name when deployment name is empty',
+      () async {
+        final controller = AruController(
+          saveSession: (session) async {},
+          now: () => start.subtract(const Duration(minutes: 5)),
+        );
+
+        await controller.startDeployment(
+          sessionId: 'aru-1',
+          settings: settings,
+          metadata: AruDeploymentMetadata(
+            stationId: 'ARU-09',
+            scheduleStart: start,
+            cycleDurationSeconds: 600,
+            repeatIntervalSeconds: 3600,
+            maxCycles: 1,
+          ),
+        );
+
+        expect(controller.session?.customName, 'ARU-09');
+      },
+    );
 
     test('enters recording state inside a scheduled cycle', () async {
       final controller = AruController(

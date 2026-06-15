@@ -174,9 +174,10 @@ abstract final class PrefKeys {
 
   // Shared field-session identity settings
   static const String lastObserver = 'last_observer';
-    static const String legacyPointCountLastObserver =
-            'point_count_last_observer';
-    static const String legacySurveyLastObserver = 'survey_last_observer';
+  static const String aruLastStationId = 'aru_last_station_id';
+  static const String legacyPointCountLastObserver =
+      'point_count_last_observer';
+  static const String legacySurveyLastObserver = 'survey_last_observer';
 
   // Survey settings
   static const String surveyInferenceRate = 'survey_inference_rate';

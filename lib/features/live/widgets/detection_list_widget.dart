@@ -40,6 +40,7 @@ class DetectionList extends StatelessWidget {
     this.emptyIcon,
     this.emptyTitle,
     this.emptySubtitle,
+    this.emptyAlignment = Alignment.center,
   });
 
   /// Detections to display (newest first).
@@ -63,6 +64,9 @@ class DetectionList extends StatelessWidget {
   /// Optional empty-state subtitle override.
   final String? emptySubtitle;
 
+  /// Alignment for the empty-state prompt within the available list area.
+  final Alignment emptyAlignment;
+
   /// Optional per-detection action contract. When non-null and
   /// non-empty, each tile gets an inline confirm checkmark (if
   /// [DetectionActions.onToggleConfirm] is set) and a more_vert overflow
@@ -80,6 +84,7 @@ class DetectionList extends StatelessWidget {
         icon: emptyIcon,
         title: emptyTitle,
         subtitle: emptySubtitle,
+        alignment: emptyAlignment,
       );
     }
 
@@ -364,6 +369,7 @@ class _EmptyState extends StatelessWidget {
     this.icon,
     this.title,
     this.subtitle,
+    required this.alignment,
   });
 
   final bool isActive;
@@ -371,14 +377,16 @@ class _EmptyState extends StatelessWidget {
   final IconData? icon;
   final String? title;
   final String? subtitle;
+  final Alignment alignment;
 
   @override
   Widget build(BuildContext context) {
     if (showTips && !isActive) {
-      return const Center(
+      return Align(
+        alignment: alignment,
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          child: LiveTipsCarousel(),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: const LiveTipsCarousel(),
         ),
       );
     }
@@ -386,7 +394,8 @@ class _EmptyState extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    return Center(
+    return Align(
+      alignment: alignment,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Column(

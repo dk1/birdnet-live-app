@@ -104,7 +104,7 @@ class AruController {
         id: sessionId,
         type: SessionType.aru,
         startTime: metadata.scheduleStart,
-        customName: metadata.deploymentName,
+        customName: _deploymentSessionName(metadata),
         settings: settings,
         observerName: observerName,
         latitude: latitude,
@@ -531,6 +531,17 @@ class AruController {
             ? 'Deployment #$deploymentNumber'
             : 'Deployment';
     return 'ARU $deploymentPart - $cyclePart';
+  }
+
+  static String? _deploymentSessionName(AruDeploymentMetadata metadata) {
+    final deploymentName = metadata.deploymentName?.trim();
+    final stationId = metadata.stationId?.trim();
+    final hasDeployment = deploymentName != null && deploymentName.isNotEmpty;
+    final hasStation = stationId != null && stationId.isNotEmpty;
+    if (hasDeployment && hasStation) return '$deploymentName - $stationId';
+    if (hasDeployment) return deploymentName;
+    if (hasStation) return stationId;
+    return null;
   }
 
   int _displayCycleNumber(LiveSession session, int cycleIndex) {

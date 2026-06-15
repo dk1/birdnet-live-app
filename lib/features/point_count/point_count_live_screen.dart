@@ -211,6 +211,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       poolingWindows: ref.read(scorePoolingWindowsProvider),
       poolingMode: ref.read(scorePoolingProvider),
       sensitivity: sensitivity,
+      targetDurationSeconds: widget.durationMinutes * 60,
       latitude: startLat,
       longitude: startLon,
     );

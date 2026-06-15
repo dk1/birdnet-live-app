@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.3] - 2026-06-15
+
+### Changed
+
+- Refined ARU active deployment dashboards with compact status metrics, clearer tab labels, localized species summaries, and shared destructive confirmation behavior.
+- Reused the latest ARU/station ID in ARU setup, included it in ARU session names, and kept ARU deployment metadata with shared exports.
+- Expanded session export provenance to include session-retained runtime settings and type-specific metadata while limiting export preference snapshots to relevant keys.
+
 ## [0.17.2] - 2026-06-15
 
 ### Changed

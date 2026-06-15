@@ -837,6 +837,59 @@ void main() {
       expect(names, contains(startsWith('aru_cycles/')));
       expect(names, contains(endsWith('_cycle_000.flac')));
       expect(names, contains(endsWith('.json')));
+      expect(names, contains(endsWith('.metadata.json')));
+
+      final metaFile = archive.firstWhere(
+        (f) => f.name.endsWith('.metadata.json'),
+      );
+      final meta =
+          jsonDecode(String.fromCharCodes(metaFile.content as List<int>))
+              as Map<String, dynamic>;
+      expect(
+        (meta['aruCycleAudioFiles'] as Map<String, dynamic>)['0'],
+        startsWith('aru_cycles/'),
+      );
+    });
+
+    test('keeps ARU metadata sidecar for non-JSON exports', () async {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(type: SessionType.aru);
+      session.aruMetadata = AruDeploymentMetadata(
+        deploymentName: 'Wetland ARU',
+        stationId: 'ARU-01',
+        scheduleStart: start,
+        cycleDurationSeconds: 600,
+        repeatIntervalSeconds: 3600,
+        maxCycles: 1,
+      );
+
+      final zipPath = await buildSessionExport(
+        session,
+        formats: const {'raven'},
+        includeAudio: false,
+      );
+
+      expect(zipPath, isNotNull);
+      expect(p.extension(zipPath!), '.zip');
+
+      final archive = ZipDecoder().decodeBytes(File(zipPath).readAsBytesSync());
+      final names = archive.map((f) => f.name).toList();
+
+      expect(names, contains(endsWith('.selections.txt')));
+      expect(names, contains(endsWith('.metadata.json')));
+
+      final metaFile = archive.firstWhere(
+        (f) => f.name.endsWith('.metadata.json'),
+      );
+      final meta =
+          jsonDecode(String.fromCharCodes(metaFile.content as List<int>))
+              as Map<String, dynamic>;
+      final sessionMeta = meta['session'] as Map<String, dynamic>;
+      expect(sessionMeta['type'], 'aru');
+      expect(sessionMeta['displayName'], session.displayName);
+      final typeMetadata = meta['typeMetadata'] as Map<String, dynamic>;
+      final aru = typeMetadata['aru'] as Map<String, dynamic>;
+      expect(aru['stationId'], 'ARU-01');
     });
   });
 

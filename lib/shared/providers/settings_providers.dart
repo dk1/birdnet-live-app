@@ -457,6 +457,13 @@ final lastObserverProvider =
       );
     });
 
+/// Last used ARU/station ID for fixed-site deployments.
+final aruLastStationIdProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return StringSettingNotifier(prefs, PrefKeys.aruLastStationId, '');
+    });
+
 String _legacyLastObserver(SharedPreferences prefs) {
   final surveyObserver = prefs.getString(PrefKeys.legacySurveyLastObserver);
   if (surveyObserver != null && surveyObserver.trim().isNotEmpty) {

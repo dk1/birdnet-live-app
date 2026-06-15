@@ -43,6 +43,15 @@ class SessionSettings {
     this.poolingWindows,
     this.gainLinear,
     this.highPassHz,
+    this.recordingMode,
+    this.recordingFormat,
+    this.detectionSamplingMode,
+    this.topNPerSpecies,
+    this.gpsIntervalSeconds,
+    this.maxDurationHours,
+    this.targetDurationSeconds,
+    this.autoStopBatteryPercent,
+    this.backgroundGps,
   });
 
   /// Window duration in seconds.
@@ -123,6 +132,33 @@ class SessionSettings {
   /// High-pass filter cutoff in Hz (0 disables the filter).
   final double? highPassHz;
 
+  /// Recording behavior applied for this session (`full`, `detections`, `off`).
+  final String? recordingMode;
+
+  /// Recording container/codec format applied for this session (`flac`, `wav`).
+  final String? recordingFormat;
+
+  /// Detection retention/sampling mode applied by survey-like workflows.
+  final String? detectionSamplingMode;
+
+  /// Per-species retention cap when [detectionSamplingMode] uses Top N/Smart.
+  final int? topNPerSpecies;
+
+  /// GPS sampling interval applied by Survey Mode.
+  final int? gpsIntervalSeconds;
+
+  /// Maximum survey duration applied by Survey Mode.
+  final int? maxDurationHours;
+
+  /// Target protocol duration applied by timer-based sessions.
+  final int? targetDurationSeconds;
+
+  /// Battery percentage threshold applied by Survey Mode (`0` disables).
+  final int? autoStopBatteryPercent;
+
+  /// Whether Survey Mode used background GPS tracking.
+  final bool? backgroundGps;
+
   /// Deserialize from JSON.
   factory SessionSettings.fromJson(Map<String, dynamic> json) {
     return SessionSettings(
@@ -146,6 +182,15 @@ class SessionSettings {
       poolingWindows: (json['poolingWindows'] as num?)?.toInt(),
       gainLinear: (json['gainLinear'] as num?)?.toDouble(),
       highPassHz: (json['highPassHz'] as num?)?.toDouble(),
+      recordingMode: json['recordingMode'] as String?,
+      recordingFormat: json['recordingFormat'] as String?,
+      detectionSamplingMode: json['detectionSamplingMode'] as String?,
+      topNPerSpecies: (json['topNPerSpecies'] as num?)?.toInt(),
+      gpsIntervalSeconds: (json['gpsIntervalSeconds'] as num?)?.toInt(),
+      maxDurationHours: (json['maxDurationHours'] as num?)?.toInt(),
+      targetDurationSeconds: (json['targetDurationSeconds'] as num?)?.toInt(),
+      autoStopBatteryPercent: (json['autoStopBatteryPercent'] as num?)?.toInt(),
+      backgroundGps: json['backgroundGps'] as bool?,
     );
   }
 
@@ -169,6 +214,18 @@ class SessionSettings {
     if (poolingWindows != null) 'poolingWindows': poolingWindows,
     if (gainLinear != null) 'gainLinear': gainLinear,
     if (highPassHz != null) 'highPassHz': highPassHz,
+    if (recordingMode != null) 'recordingMode': recordingMode,
+    if (recordingFormat != null) 'recordingFormat': recordingFormat,
+    if (detectionSamplingMode != null)
+      'detectionSamplingMode': detectionSamplingMode,
+    if (topNPerSpecies != null) 'topNPerSpecies': topNPerSpecies,
+    if (gpsIntervalSeconds != null) 'gpsIntervalSeconds': gpsIntervalSeconds,
+    if (maxDurationHours != null) 'maxDurationHours': maxDurationHours,
+    if (targetDurationSeconds != null)
+      'targetDurationSeconds': targetDurationSeconds,
+    if (autoStopBatteryPercent != null)
+      'autoStopBatteryPercent': autoStopBatteryPercent,
+    if (backgroundGps != null) 'backgroundGps': backgroundGps,
   };
 }
 

@@ -78,6 +78,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
   void initState() {
     super.initState();
     _observerController.text = ref.read(lastObserverProvider);
+    _stationController.text = ref.read(aruLastStationIdProvider);
     _scheduleEnd = _defaultScheduleEnd();
     _fetchGpsLocation();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -248,9 +249,13 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
     if (observer.isNotEmpty) {
       await ref.read(lastObserverProvider.notifier).set(observer);
     }
+    final stationId = _stationController.text.trim();
+    if (stationId.isNotEmpty) {
+      await ref.read(aruLastStationIdProvider.notifier).set(stationId);
+    }
     final metadata = AruDeploymentMetadata(
       deploymentName: _emptyToNull(_deploymentController.text),
-      stationId: _emptyToNull(_stationController.text),
+      stationId: _emptyToNull(stationId),
       scheduleStart: now,
       cycleDurationSeconds: _cycleDuration.inSeconds,
       repeatIntervalSeconds: _repeatInterval.inSeconds,
@@ -281,6 +286,13 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       poolingWindows: ref.read(scorePoolingWindowsProvider),
       gainLinear: ref.read(audioGainProvider),
       highPassHz: ref.read(highPassFilterProvider),
+      recordingMode: _recordingMode.name,
+      recordingFormat: ref.read(recordingFormatProvider),
+      detectionSamplingMode:
+          _recordingMode == RecordingMode.detectionsOnly
+              ? _samplingMode.name
+              : SamplingMode.all.name,
+      topNPerSpecies: _topNPerSpecies,
     );
 
     final repo = ref.read(sessionRepositoryProvider);

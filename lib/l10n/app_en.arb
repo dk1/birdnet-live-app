@@ -642,6 +642,18 @@
   "@aruTabStatus": {
     "description": "Tab label for the active ARU status dashboard"
   },
+  "aruTabSpectrogram": "Audio",
+  "@aruTabSpectrogram": {
+    "description": "Short tab label for the active ARU spectrogram dashboard"
+  },
+  "aruTabSchedule": "Plan",
+  "@aruTabSchedule": {
+    "description": "Short tab label for the active ARU schedule dashboard"
+  },
+  "aruTabSummary": "Summary",
+  "@aruTabSummary": {
+    "description": "Short tab label for the active ARU summary dashboard"
+  },
   "aruActiveWaiting": "Waiting for next cycle",
   "@aruActiveWaiting": {
     "description": "Status text when ARU is waiting"
@@ -693,6 +705,26 @@
   "aruElapsedTime": "Elapsed time",
   "@aruElapsedTime": {
     "description": "Label for elapsed wall-clock time on the active ARU summary tab"
+  },
+  "aruSummaryElapsed": "Time",
+  "@aruSummaryElapsed": {
+    "description": "Short label for elapsed time on the compact ARU summary tab"
+  },
+  "aruSummaryAudio": "Audio",
+  "@aruSummaryAudio": {
+    "description": "Short label for recorded audio duration on the compact ARU summary tab"
+  },
+  "aruCyclesShort": "Cycles",
+  "@aruCyclesShort": {
+    "description": "Short label for ARU cycle counts"
+  },
+  "aruCycleProgress": "Cycle progress",
+  "@aruCycleProgress": {
+    "description": "Label for ARU cycle completion progress"
+  },
+  "aruNextIn": "Next in",
+  "@aruNextIn": {
+    "description": "Label for the time remaining until the next ARU cycle"
   },
   "aruStopDeployment": "Stop Deployment",
   "@aruStopDeployment": {

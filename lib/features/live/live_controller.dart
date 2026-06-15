@@ -326,6 +326,7 @@ class LiveController {
     double sensitivity = 1.0,
     double? gainLinear,
     double? highPassHz,
+    int? targetDurationSeconds,
     double? latitude,
     double? longitude,
     bool clearRingBuffer = true,
@@ -349,6 +350,9 @@ class LiveController {
         poolingWindows: poolingWindows,
         gainLinear: gainLinear,
         highPassHz: highPassHz,
+        recordingMode: recordingMode.name,
+        recordingFormat: recordingFormat,
+        targetDurationSeconds: targetDurationSeconds,
       ),
     );
 
