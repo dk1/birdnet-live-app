@@ -16,11 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated ARU help and user documentation to reflect current behavior: cycle-level Full Audio or retained detection clips, live inference during active cycles, and Android foreground notification controls.
 - Improved ARU setup summaries and storage estimates to consistently show effective recording and sampling modes when combined-session deployments cannot use Full Audio.
+- Improved locale-aware time/date formatting helpers to prefer localized `intl` formats with safe fallbacks when locale data is unavailable.
+- Optimized ARU schedule evaluation for far-future open-ended deployments by jumping directly to the candidate cycle index instead of scanning from deployment start.
 
 ### Fixed
 
 - Restored unfinished ARU deployments from persisted sessions after app relaunch and resumed schedule evaluation instead of leaving deployments stranded.
 - Serialized ARU detection-sync updates during active deployment and guarded finalization to prevent race conditions while stopping.
+- Fixed long-running diel ARU schedules so they continue evaluating correctly beyond large raw interval counts instead of prematurely completing.
 
 ## [0.17.4] - 2026-06-15
 

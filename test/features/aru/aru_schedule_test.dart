@@ -210,6 +210,49 @@ void main() {
       expect(windows.last.isClamped, isTrue);
     });
 
+    test(
+      'evaluates far-future open-ended schedules without scanning old cycles',
+      () {
+        final deployedAt = DateTime.utc(2026, 1, 1);
+        final calc = AruScheduleCalculator(
+          AruScheduleConfig(
+            startTime: deployedAt,
+            cycleDuration: const Duration(seconds: 30),
+            repeatInterval: const Duration(seconds: 30),
+          ),
+        );
+        final now = deployedAt.add(const Duration(days: 365));
+
+        final snapshot = calc.snapshotAt(now);
+        final windows = calc.nextWindows(now, count: 2);
+
+        expect(snapshot.status, AruScheduleStatus.recording);
+        expect(snapshot.currentWindow?.index, 1051200);
+        expect(snapshot.skippedCycles, 1051200);
+        expect(windows.map((w) => w.index), <int>[1051200, 1051201]);
+      },
+    );
+
+    test('handles far-future diel schedules beyond 200k raw intervals', () {
+      final deployedAt = DateTime.utc(2026, 1, 1);
+      final calc = AruScheduleCalculator(
+        AruScheduleConfig(
+          startTime: deployedAt,
+          cycleDuration: const Duration(seconds: 30),
+          repeatInterval: const Duration(seconds: 30),
+          dielPattern: AruDielPattern.dayOnly,
+        ),
+      );
+      final now = deployedAt.add(const Duration(days: 120));
+
+      final snapshot = calc.snapshotAt(now);
+      final windows = calc.nextWindows(now, count: 2);
+
+      expect(snapshot.status, isNot(AruScheduleStatus.completed));
+      expect(snapshot.nextWindow ?? snapshot.currentWindow, isNotNull);
+      expect(windows, isNotEmpty);
+    });
+
     test('uses 6am and 6pm fallback for daylight windows without location', () {
       final midnight = DateTime.utc(2026, 1, 1);
       final calc = AruScheduleCalculator(

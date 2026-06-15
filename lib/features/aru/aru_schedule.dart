@@ -197,7 +197,8 @@ AruSunTimes estimateAruSunTimes({
 }
 
 int _dayOfYear(DateTime date) {
-  final startOfYear = date.isUtc ? DateTime.utc(date.year) : DateTime(date.year);
+  final startOfYear =
+      date.isUtc ? DateTime.utc(date.year) : DateTime(date.year);
   return date.difference(startOfYear).inDays + 1;
 }
 
@@ -270,7 +271,7 @@ class AruScheduleCalculator {
 
     final candidateIndex = _cycleIndexAt(now);
     final current = _windowAt(candidateIndex);
-    final skipped = _skippedCyclesAt(now);
+    final skipped = candidateIndex;
 
     if (current == null) {
       return AruScheduleSnapshot(
@@ -323,7 +324,31 @@ class AruScheduleCalculator {
   }
 
   int _cycleIndexAt(DateTime time) {
-    var index = 0;
+    if (config.dielPattern == AruDielPattern.anyTime) {
+      return _cycleIndexAtAnyTime(time);
+    }
+    return _cycleIndexAtDiel(time);
+  }
+
+  int _cycleIndexAtAnyTime(DateTime time) {
+    final testWindow = config.testCycleEnabled ? _windowAt(0) : null;
+    if (testWindow != null && testWindow.end.isAfter(time)) return 0;
+
+    final indexOffset = config.testCycleEnabled ? 1 : 0;
+    final firstRegular = _firstClockAlignedStart();
+    if (time.isBefore(firstRegular.add(config.cycleDuration))) {
+      return indexOffset;
+    }
+
+    final elapsedMicros = time.difference(firstRegular).inMicroseconds;
+    final intervalMicros = config.repeatInterval.inMicroseconds;
+    final rawIndex = elapsedMicros ~/ intervalMicros;
+    final rawStart = _regularCycleStart(rawIndex);
+    final rawEnd = rawStart.add(config.cycleDuration);
+    var index = indexOffset + (rawEnd.isAfter(time) ? rawIndex : rawIndex + 1);
+
+    // A deployment end can clamp the current window earlier than
+    // start+duration, so verify the computed candidate before returning.
     while (true) {
       final window = _windowAt(index);
       if (window == null || window.end.isAfter(time)) return index;
@@ -331,12 +356,32 @@ class AruScheduleCalculator {
     }
   }
 
-  int _skippedCyclesAt(DateTime time) {
-    var skipped = 0;
+  int _cycleIndexAtDiel(DateTime time) {
+    var index = 0;
+    if (config.testCycleEnabled) {
+      final testWindow = _windowAt(0);
+      if (testWindow != null && testWindow.end.isAfter(time)) return 0;
+      index = 1;
+    }
+
+    var acceptedRegular = 0;
+    var rawIndex = 0;
     while (true) {
-      final window = _windowAt(skipped);
-      if (window == null || window.end.isAfter(time)) return skipped;
-      skipped++;
+      if (config.maxCycles != null && acceptedRegular >= config.maxCycles!) {
+        return index;
+      }
+
+      final candidate = _candidateWindow(
+        rawIndex: rawIndex,
+        windowIndex: index,
+      );
+      if (candidate == null) return index;
+      if (_isAllowedStart(candidate.start)) {
+        if (candidate.end.isAfter(time)) return index;
+        acceptedRegular++;
+        index++;
+      }
+      rawIndex++;
     }
   }
 
@@ -372,7 +417,7 @@ class AruScheduleCalculator {
 
     var accepted = 0;
     var rawIndex = 0;
-    while (rawIndex < 200000) {
+    while (true) {
       final candidate = _candidateWindow(
         rawIndex: rawIndex,
         windowIndex: config.testCycleEnabled ? accepted + 1 : accepted,
@@ -384,7 +429,6 @@ class AruScheduleCalculator {
       }
       rawIndex++;
     }
-    return null;
   }
 
   AruCycleWindow? _candidateWindow({
@@ -416,9 +460,10 @@ class AruScheduleCalculator {
   }
 
   DateTime _firstClockAlignedStart() {
-    final baseTime = config.testCycleEnabled
-        ? config.startTime.add(const Duration(minutes: 1))
-        : config.startTime;
+    final baseTime =
+        config.testCycleEnabled
+            ? config.startTime.add(const Duration(minutes: 1))
+            : config.startTime;
     final midnight =
         baseTime.isUtc
             ? DateTime.utc(baseTime.year, baseTime.month, baseTime.day)
