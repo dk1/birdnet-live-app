@@ -2270,7 +2270,74 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     });
   }
 
+  bool get _usePlaybackOverlay {
+    // Never show on sessions that have full audio.
+    if (_audioAvailable) return false;
+
+    // Event-driven check; read current setting without creating a watch.
+    return ref.read(sessionReviewPlaybackOverlayProvider);
+  }
+
+  Future<void> _triggerPlaybackOverlay(_DetectionCluster cluster) async {
+    final clip = cluster.records
+        .where((r) => r.audioClipPath != null && File(r.audioClipPath!).existsSync())
+        .firstOrNull;
+    if (clip == null) return;
+
+    final playable = _detections
+        .where((d) => d.audioClipPath != null && File(d.audioClipPath!).existsSync())
+        .toList()
+      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+    Future<void> showOverlayForRecord(DetectionRecord record) async {
+      if (!mounted) return;
+
+      final idx = playable.indexOf(record);
+      final prev = idx > 0 ? playable[idx - 1] : null;
+      final next = idx >= 0 && idx < playable.length - 1 ? playable[idx + 1] : null;
+
+      await showClipPlayerSheet(
+        context,
+        detection: record,
+        session: widget.session,
+        onPrevious: prev == null
+            ? null
+            : () {
+                if (mounted) showOverlayForRecord(prev);
+              },
+        onNext: next == null
+            ? null
+            : () {
+                if (mounted) showOverlayForRecord(next);
+              },
+        onConfirmChanged: () {
+          if (mounted) setState(() {});
+          _isDirty = true;
+        },
+        onNoteChanged: () {
+          if (mounted) setState(() {});
+          _isDirty = true;
+        },
+        onVoiceMemoChanged: () {
+          if (mounted) setState(() {});
+          _isDirty = true;
+        },
+        onDelete: () {
+          _deleteDetectionWithUndo(_DetectionCluster([record]));
+        },
+      );
+    }
+
+    await showOverlayForRecord(clip);
+  }
+
   void _seekToCluster(_DetectionCluster cluster) {
+    if (_usePlaybackOverlay) {
+      _pausePlayer();
+      _triggerPlaybackOverlay(cluster);
+      return;
+    }
+
     // Full recording available — seek the main player.
     if (_audioAvailable && _duration != Duration.zero) {
       final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());

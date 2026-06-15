@@ -352,6 +352,17 @@ final showSciNamesProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
   return BoolSettingNotifier(prefs, PrefKeys.showSciNames, true);
 });
 
+/// Whether to show the playback overlay (clip player sheet) in session review (default true).
+final sessionReviewPlaybackOverlayProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(
+        prefs,
+        PrefKeys.sessionReviewPlaybackOverlay,
+        true,
+      );
+    });
+
 /// Timestamp display mode: `'relative'` (session-relative `MM:SS`) or
 /// `'absolute'` (local clock `HH:mm:ss`).  Default `'relative'`.
 ///

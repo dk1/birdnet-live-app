@@ -296,14 +296,17 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                           ),
                           (SessionType.aru, l10n.sessionTypeAru),
                         ],
-                        onToggle:
-                            (t) => update(() {
-                              if (!_typeFilters.add(t)) _typeFilters.remove(t);
-                            }),
+                        onToggle: (t) {
+                          if (!_typeFilters.add(t)) _typeFilters.remove(t);
+                          update(() {});
+                        },
                         onClear:
                             _typeFilters.isEmpty
                                 ? null
-                                : () => update(_typeFilters.clear),
+                                : () {
+                                    _typeFilters.clear();
+                                    update(() {});
+                                  },
                         clearLabel: l10n.exploreFilterAll,
                       ),
                     ],

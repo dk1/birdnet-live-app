@@ -237,6 +237,9 @@ abstract final class PrefKeys {
   /// the most likely identifications.
   static const String sessionReviewSpeciesSort = 'session_review_species_sort';
 
+  /// Whether to show the playback overlay (clip player sheet) in session review.
+  static const String sessionReviewPlaybackOverlay = 'session_review_playback_overlay';
+
   // --- Announcements (spoken detections, post-v1.0) ---------------------
   // See [dev/announcements.md] for the full design. The user-facing
   // surface is two preset enums (`announcementsVerbosity`,

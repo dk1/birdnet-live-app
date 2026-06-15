@@ -162,6 +162,16 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged:
                     (v) => ref.read(showSciNamesProvider.notifier).set(v),
               ),
+              SwitchListTile(
+                title: _TitleWithHelp(
+                  title: l10n.settingsPlaybackOverlay,
+                  helpBody: l10n.settingsHelpPlaybackOverlay,
+                ),
+                subtitle: Text(l10n.settingsPlaybackOverlayDescription),
+                value: ref.watch(sessionReviewPlaybackOverlayProvider),
+                onChanged:
+                    (v) => ref.read(sessionReviewPlaybackOverlayProvider.notifier).set(v),
+              ),
               ListTile(
                 title: _TitleWithHelp(
                   title: l10n.settingsTimestampDisplayMode,
