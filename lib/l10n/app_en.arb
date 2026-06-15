@@ -473,23 +473,23 @@
   "@aruSetupHelpBody": {
     "description": "Help text for the first ARU setup implementation"
   },
-  "aruSessionGrouping": "Session Grouping",
+  "aruSessionGrouping": "Session grouping",
   "@aruSessionGrouping": {
     "description": "Label for session grouping setting in ARU parameters"
   },
-  "aruSessionGroupingAll": "All cycles in one session",
+  "aruSessionGroupingAll": "Combined Session",
   "@aruSessionGroupingAll": {
     "description": "Option to group all recording cycles into a single session"
   },
-  "aruSessionGroupingEach": "Separate session per cycle",
+  "aruSessionGroupingEach": "Per-cycle Session",
   "@aruSessionGroupingEach": {
     "description": "Switch title for saving each recording cycle as its own session"
   },
-  "aruSessionGroupingEachDesc": "Each recording cycle is saved as its own session",
+  "aruSessionGroupingEachDesc": "One Session per cycle",
   "@aruSessionGroupingEachDesc": {
     "description": "Subtitle shown when the per-cycle session switch is on"
   },
-  "aruSessionGroupingAllDesc": "All cycles are combined into one session",
+  "aruSessionGroupingAllDesc": "One combined Session",
   "@aruSessionGroupingAllDesc": {
     "description": "Subtitle shown when the per-cycle session switch is off"
   },
@@ -533,6 +533,15 @@
   "aruStorageEstimate": "Estimated audio storage",
   "@aruStorageEstimate": {
     "description": "Label for ARU storage estimate"
+  },
+  "aruClipStorageEstimateNote": "Clip estimate assumes up to {count} retained clips across 50 species; actual use depends on detections.",
+  "@aruClipStorageEstimateNote": {
+    "description": "ARU storage estimate note for detection-only clip recording",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "aruOptionalTestCycle": "Run a one-minute test cycle first",
   "@aruOptionalTestCycle": {

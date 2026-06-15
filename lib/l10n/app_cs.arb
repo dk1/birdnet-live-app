@@ -198,6 +198,7 @@
   "@aruStorageEstimate": {
     "description": "Label for ARU storage estimate"
   },
+  "aruClipStorageEstimateNote": "Odhad klipů předpokládá až {count} uložených klipů napříč 50 druhy; skutečné využití závisí na detekcích.",
   "aruPerHourEstimate": "Za hodinu",
   "@aruPerHourEstimate": {
     "description": "Label for ARU storage estimate per hour"
@@ -314,11 +315,11 @@
   "aruDielAroundSunset": "Kolem západu slunce",
   "aruSunTimesEstimate": "Východ {sunrise} · západ {sunset}",
   "aruCycleCount": "{count, plural, =1{1 cyklus} few{{count} cykly} other{{count} cyklů}}",
-  "aruSessionGrouping": "Seskupování Session",
-  "aruSessionGroupingAll": "Všechny cykly v jedné Session",
-  "aruSessionGroupingEach": "Samostatná Session na cyklus",
-  "aruSessionGroupingEachDesc": "Každý nahrávací cyklus se uloží jako vlastní Session",
-  "aruSessionGroupingAllDesc": "Všechny cykly jsou sloučeny do jedné Session",
+  "aruSessionGrouping": "Seskupení",
+  "aruSessionGroupingAll": "Jedna Session",
+  "aruSessionGroupingEach": "Session na cyklus",
+  "aruSessionGroupingEachDesc": "Jedna Session na cyklus",
+  "aruSessionGroupingAllDesc": "Jedna společná Session",
   "comingSoon": "Již brzy",
   "exploreMode": "Prozkoumejte",
   "exploreModeDescription": "Prozkoumat druhy ve vaší studijní oblasti",

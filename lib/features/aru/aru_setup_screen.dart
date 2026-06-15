@@ -331,6 +331,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       confidenceThreshold: ref.read(confidenceThresholdProvider),
       inferenceRate: ref.read(inferenceRateProvider),
       speciesFilterMode: ref.read(speciesFilterModeProvider),
+      clipContextSeconds: ref.read(clipContextProvider),
       sensitivity: ref.read(sensitivityProvider),
       poolingMode: ref.read(scorePoolingProvider),
       poolingWindows: ref.read(scorePoolingWindowsProvider),
@@ -489,6 +490,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
             testCycleEnabled: _testCycleEnabled,
             eachCycleIsSession: _eachCycleIsSession,
             recordingMode: _recordingMode,
+            topNPerSpecies: _topNPerSpecies,
             onCycleDurationChanged:
                 (value) => setState(() {
                   _cycleDuration = value;
@@ -552,6 +554,8 @@ Duration _nearestRepeatInterval(Duration minimum) {
     orElse: () => AruDefaults.repeatIntervalOptions.last,
   );
 }
+
+const _aruStorageEstimateSpeciesAssumption = 50;
 
 class _DetailsStep extends ConsumerWidget {
   const _DetailsStep({
@@ -1056,6 +1060,7 @@ class _ScheduleStep extends ConsumerWidget {
     required this.testCycleEnabled,
     required this.eachCycleIsSession,
     required this.recordingMode,
+    required this.topNPerSpecies,
     required this.onCycleDurationChanged,
     required this.onRepeatIntervalChanged,
     required this.onScheduleEndModeChanged,
@@ -1080,6 +1085,7 @@ class _ScheduleStep extends ConsumerWidget {
   final bool testCycleEnabled;
   final bool eachCycleIsSession;
   final RecordingMode recordingMode;
+  final int topNPerSpecies;
   final ValueChanged<Duration> onCycleDurationChanged;
   final ValueChanged<Duration> onRepeatIntervalChanged;
   final ValueChanged<_ScheduleEndMode> onScheduleEndModeChanged;
@@ -1101,6 +1107,12 @@ class _ScheduleStep extends ConsumerWidget {
       eachCycleIsSession: eachCycleIsSession,
       recordingMode: recordingMode,
     );
+    final windowDuration = ref.watch(windowDurationProvider);
+    final clipContext = ref.watch(clipContextProvider);
+    final assumedRetainedClips =
+        effectiveRecordingMode == RecordingMode.detectionsOnly
+            ? topNPerSpecies * _aruStorageEstimateSpeciesAssumption
+            : null;
     final estimate = ref
         .watch(aruStorageEstimatorProvider)
         .estimate(
@@ -1128,6 +1140,8 @@ class _ScheduleStep extends ConsumerWidget {
                 ).toScheduleConfig(),
             recordingMode: effectiveRecordingMode,
             format: ref.watch(recordingFormatProvider),
+            expectedRetainedClips: assumedRetainedClips,
+            clipDurationSeconds: windowDuration + clipContext * 2,
           ),
         );
 
@@ -1160,10 +1174,15 @@ class _ScheduleStep extends ConsumerWidget {
           child: ListTile(
             leading: const Icon(AppIcons.sdStorage),
             title: Text(l10n.aruStorageEstimate),
-            subtitle: Text(
-              estimate.hasFiniteTotal
-                  ? _formatBytes(estimate.totalBytes ?? 0)
-                  : '${l10n.aruPerDayEstimate}: ${_formatBytes(estimate.bytesPerScheduledDay)}',
+            subtitle: _StorageEstimateSubtitle(
+              value:
+                  estimate.hasFiniteTotal
+                      ? _formatBytes(estimate.totalBytes ?? 0)
+                      : '${l10n.aruPerDayEstimate}: ${_formatBytes(estimate.bytesPerScheduledDay)}',
+              note:
+                  assumedRetainedClips == null
+                      ? null
+                      : l10n.aruClipStorageEstimateNote(assumedRetainedClips),
             ),
           ),
         ),
@@ -1489,6 +1508,12 @@ class _ReadyStep extends ConsumerWidget {
       recordingMode: recordingMode,
       samplingMode: samplingMode,
     );
+    final windowDuration = ref.watch(windowDurationProvider);
+    final clipContext = ref.watch(clipContextProvider);
+    final assumedRetainedClips =
+        effectiveRecordingMode == RecordingMode.detectionsOnly
+            ? topNPerSpecies * _aruStorageEstimateSpeciesAssumption
+            : null;
     final estimate = ref
         .watch(aruStorageEstimatorProvider)
         .estimate(
@@ -1512,6 +1537,8 @@ class _ReadyStep extends ConsumerWidget {
                 ).toScheduleConfig(),
             recordingMode: effectiveRecordingMode,
             format: ref.watch(recordingFormatProvider),
+            expectedRetainedClips: assumedRetainedClips,
+            clipDurationSeconds: windowDuration + clipContext * 2,
           ),
         );
     final micLabel = _selectedDeviceLabel(
@@ -1570,12 +1597,6 @@ class _ReadyStep extends ConsumerWidget {
           rows: [
             (l10n.aruCycleDuration, _formatDuration(cycleDuration)),
             (l10n.aruRepeatInterval, _formatDuration(repeatInterval)),
-            (
-              l10n.aruOptionalTestCycle,
-              testCycleEnabled
-                  ? _formatDuration(const Duration(minutes: 1))
-                  : l10n.settingsFilterOff,
-            ),
             (l10n.aruRecordingWindow, _dielPatternLabel(l10n, dielPattern)),
             (
               l10n.aruScheduleEnd,
@@ -1639,6 +1660,42 @@ class _ReadyStep extends ConsumerWidget {
                   : l10n.aruSessionGroupingAll,
             ),
           ],
+          footer:
+              assumedRetainedClips == null
+                  ? null
+                  : Text(
+                    l10n.aruClipStorageEstimateNote(assumedRetainedClips),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StorageEstimateSubtitle extends StatelessWidget {
+  const _StorageEstimateSubtitle({required this.value, this.note});
+
+  final String value;
+  final String? note;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final note = this.note;
+    if (note == null) return Text(value);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(value),
+        const SizedBox(height: 4),
+        Text(
+          note,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

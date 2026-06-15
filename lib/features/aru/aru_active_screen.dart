@@ -7,7 +7,6 @@ import 'package:birdnet_live/shared/widgets/app_help_bottom_sheet.dart';
 import 'package:birdnet_live/shared/widgets/confirm_destructive.dart';
 import 'package:birdnet_live/shared/widgets/stat_chip.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:birdnet_live/core/theme/app_semantic_colors.dart';
@@ -31,9 +30,12 @@ import 'aru_controller.dart';
 import 'aru_notification.dart';
 import 'aru_providers.dart';
 import 'aru_schedule.dart';
+import 'aru_storage_estimator.dart';
 
 class AruActiveScreen extends ConsumerStatefulWidget {
-  const AruActiveScreen({super.key});
+  const AruActiveScreen({this.confirmStopOnOpen = false, super.key});
+
+  final bool confirmStopOnOpen;
 
   @override
   ConsumerState<AruActiveScreen> createState() => _AruActiveScreenState();
@@ -46,6 +48,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   final AruNotificationService _notificationService = AruNotificationService();
   final Battery _battery = Battery();
   bool _stopping = false;
+  bool _stopDialogShowing = false;
   bool _tickBusy = false;
   bool _inferenceStarting = false;
   bool _aruInferenceActive = false;
@@ -61,12 +64,14 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       if (mounted) setState(() {});
     });
     ref.read(liveControllerProvider).onStateChanged = _onInferenceStateChanged;
-    FlutterForegroundTask.addTaskDataCallback(_onNotificationData);
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _tick();
       if (!mounted) return;
       await _syncNotification();
+      if (widget.confirmStopOnOpen && mounted) {
+        await _confirmStop();
+      }
     });
   }
 
@@ -78,7 +83,6 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       liveController.onStateChanged = null;
     }
     _tabController.dispose();
-    FlutterForegroundTask.removeTaskDataCallback(_onNotificationData);
     super.dispose();
   }
 
@@ -107,12 +111,6 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     if (!mounted) return;
     ref.read(aruSessionProvider.notifier).state = controller.session;
     setState(() {});
-  }
-
-  void _onNotificationData(Object data) {
-    if (data is Map && data['action'] == 'aruStop') {
-      _confirmStop();
-    }
   }
 
   Future<void> _tick() async {
@@ -216,16 +214,22 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   }
 
   Future<void> _confirmStop() async {
+    if (_stopDialogShowing || _stopping || _finishingDeployment) return;
+    _stopDialogShowing = true;
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await confirmDestructive(
-      context,
-      title: l10n.aruStopConfirmTitle,
-      body: l10n.aruStopConfirmBody,
-      confirmLabel: l10n.aruStopDeployment,
-      cancelLabel: l10n.cancel,
-    );
-    if (confirmed && mounted) {
-      await _stopDeployment();
+    try {
+      final confirmed = await confirmDestructive(
+        context,
+        title: l10n.aruStopConfirmTitle,
+        body: l10n.aruStopConfirmBody,
+        confirmLabel: l10n.aruStopDeployment,
+        cancelLabel: l10n.cancel,
+      );
+      if (confirmed && mounted) {
+        await _stopDeployment();
+      }
+    } finally {
+      _stopDialogShowing = false;
     }
   }
 
@@ -889,12 +893,7 @@ class _StatusPanel extends StatelessWidget {
     final nextWindow = snapshot?.nextWindow;
     final elapsed = (session.endTime ?? now).difference(session.startTime);
     final completed = _completedCycleCount(session);
-    final totalCycles =
-        metadata == null
-            ? null
-            : metadata.maxCycles == null
-            ? null
-            : metadata.maxCycles! + (metadata.testCycleEnabled ? 1 : 0);
+    final totalCycles = _estimatedCycleCount(metadata);
     final progress =
         totalCycles == null || totalCycles == 0
             ? null
@@ -1560,6 +1559,13 @@ int _completedCycleCount(LiveSession session) {
             cycle.status == AruCycleStatus.partial,
       )
       .length;
+}
+
+int? _estimatedCycleCount(AruDeploymentMetadata? metadata) {
+  if (metadata == null) return null;
+  return const AruStorageEstimator().estimateTotalCycles(
+    metadata.toScheduleConfig(),
+  );
 }
 
 bool _isTestWindow(LiveSession session, AruCycleWindow window) {

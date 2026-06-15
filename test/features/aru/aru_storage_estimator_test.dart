@@ -75,6 +75,31 @@ void main() {
       expect(estimate.totalBytes, 11 * 60 * 64000);
     });
 
+    test('estimates total cycles for date-time deployment ends', () {
+      final cycles = estimator.estimateTotalCycles(
+        schedule(
+          endTime: start.add(const Duration(hours: 3, minutes: 5)),
+          cycleDuration: const Duration(minutes: 30),
+        ),
+      );
+
+      expect(cycles, 4);
+    });
+
+    test('includes optional test cycle in total cycle estimates', () {
+      final cycles = estimator.estimateTotalCycles(
+        AruScheduleConfig(
+          startTime: start,
+          cycleDuration: const Duration(minutes: 10),
+          repeatInterval: const Duration(hours: 1),
+          endTime: start.add(const Duration(hours: 1, minutes: 5)),
+          testCycleEnabled: true,
+        ),
+      );
+
+      expect(cycles, 2);
+    });
+
     test('clamps active duration at schedule end', () {
       final estimate = estimator.estimate(
         AruStorageEstimateInput(
@@ -161,8 +186,39 @@ void main() {
 
       expect(estimate.totalBytes, isNull);
       expect(estimate.bytesPerScheduledDay, 64000 * 3600 * 2);
-      expect(estimate.bytesPerScheduledDay, lessThan(estimate.bytesPerDayAtFullDuty));
+      expect(
+        estimate.bytesPerScheduledDay,
+        lessThan(estimate.bytesPerDayAtFullDuty),
+      );
     });
+
+    test(
+      'estimates long short-interval deployments without UI-scale stalls',
+      () {
+        final midnight = DateTime.utc(2026, 1, 1);
+        final stopwatch = Stopwatch()..start();
+
+        final estimate = estimator.estimate(
+          AruStorageEstimateInput(
+            schedule: AruScheduleConfig(
+              startTime: midnight,
+              cycleDuration: const Duration(seconds: 30),
+              repeatInterval: const Duration(seconds: 30),
+              endTime: midnight.add(const Duration(days: 365)),
+              dielPattern: AruDielPattern.dayOnly,
+            ),
+            recordingMode: RecordingMode.full,
+            format: 'wav',
+          ),
+        );
+
+        stopwatch.stop();
+        expect(estimate.totalBytes, isNotNull);
+        expect(estimate.totalRecordedDuration, isNotNull);
+        expect(estimate.totalCycles, greaterThan(100000));
+        expect(stopwatch.elapsedMilliseconds, lessThan(500));
+      },
+    );
 
     test(
       'estimates detection-only clips when retained clip count is known',
@@ -179,9 +235,47 @@ void main() {
 
         expect(estimate.totalRecordedDuration, const Duration(seconds: 100));
         expect(estimate.totalBytes, 100 * 64000);
-        expect(estimate.totalCycles, isNull);
+        expect(estimate.totalCycles, 12);
       },
     );
+
+    test(
+      'estimates detection-only finite clip storage from retained clips',
+      () {
+        final estimate = estimator.estimate(
+          AruStorageEstimateInput(
+            schedule: schedule(maxCycles: 3),
+            recordingMode: RecordingMode.detectionsOnly,
+            format: 'wav',
+            clipDurationSeconds: 7,
+            retainedClipsPerSpecies: 10,
+            assumedSpeciesCount: 50,
+          ),
+        );
+
+        expect(estimate.totalCycles, 3);
+        expect(estimate.totalRecordedDuration, const Duration(minutes: 30));
+        expect(estimate.totalBytes, 30 * 60 * 64000);
+        expect(estimate.hasFiniteTotal, isTrue);
+      },
+    );
+
+    test('estimates detection-only open-ended per-day clip storage', () {
+      final estimate = estimator.estimate(
+        AruStorageEstimateInput(
+          schedule: schedule(),
+          recordingMode: RecordingMode.detectionsOnly,
+          format: 'wav',
+          clipDurationSeconds: 5,
+          retainedClipsPerSpecies: 10,
+          assumedSpeciesCount: 50,
+        ),
+      );
+
+      expect(estimate.totalBytes, isNull);
+      expect(estimate.bytesPerHour, 2500 * 64000);
+      expect(estimate.bytesPerScheduledDay, 2500 * 64000);
+    });
 
     test('off mode reports zero storage', () {
       final estimate = estimator.estimate(

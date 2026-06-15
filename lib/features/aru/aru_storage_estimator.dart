@@ -18,6 +18,8 @@ class AruStorageEstimateInput {
     this.flacCompressionRatio = 0.55,
     this.expectedRetainedClips,
     this.clipDurationSeconds = 5,
+    this.retainedClipsPerSpecies = 10,
+    this.assumedSpeciesCount = 50,
   });
 
   final AruScheduleConfig schedule;
@@ -37,6 +39,14 @@ class AruStorageEstimateInput {
 
   /// Expected length of each retained clip.
   final int clipDurationSeconds;
+
+  /// Assumed retained clips per species when [expectedRetainedClips] is not
+  /// supplied.
+  final int retainedClipsPerSpecies;
+
+  /// Assumed number of species with retained clips when
+  /// [expectedRetainedClips] is not supplied.
+  final int assumedSpeciesCount;
 }
 
 /// Storage estimate for an ARU deployment.
@@ -79,16 +89,27 @@ class AruStorageEstimate {
 class AruStorageEstimator {
   const AruStorageEstimator();
 
+  static const _dielExactRawCandidateLimit = 20000;
+  static const _dielApproximationSampleDays = 7;
+
+  /// Estimated number of scheduled cycles, or null when the deployment has no
+  /// finite schedule end.
+  int? estimateTotalCycles(AruScheduleConfig schedule) {
+    schedule.validateOrThrow();
+    return _finiteActiveDuration(schedule)?.cycles;
+  }
+
   AruStorageEstimate estimate(AruStorageEstimateInput input) {
     input.schedule.validateOrThrow();
 
     final bytesPerSecond = _bytesPerSecond(input);
+    final scheduledDayActiveDuration = _scheduledDayActiveDuration(
+      input.schedule,
+    );
     final bytesPerHour = bytesPerSecond * 3600;
     final bytesPerDay = bytesPerHour * 24;
-    final scheduledBytesPerDay = _scheduledDayBytes(
-      input.schedule,
-      bytesPerSecond,
-    );
+    final scheduledBytesPerDay =
+        scheduledDayActiveDuration.inSeconds * bytesPerSecond;
 
     if (input.recordingMode == RecordingMode.off) {
       return const AruStorageEstimate(
@@ -103,23 +124,50 @@ class AruStorageEstimator {
     }
 
     if (input.recordingMode == RecordingMode.detectionsOnly) {
-      final clips = input.expectedRetainedClips;
-      if (clips == null) {
+      final retainedClips =
+          input.expectedRetainedClips ??
+          input.retainedClipsPerSpecies * input.assumedSpeciesCount;
+      final retainedClipSeconds = retainedClips * input.clipDurationSeconds;
+      final clipBytesPerHour =
+          _clipEstimateSeconds(
+            retainedClipSeconds: retainedClipSeconds,
+            activeDuration: const Duration(hours: 1),
+          ) *
+          bytesPerSecond;
+      final clipBytesPerDay =
+          _clipEstimateSeconds(
+            retainedClipSeconds: retainedClipSeconds,
+            activeDuration: const Duration(days: 1),
+          ) *
+          bytesPerSecond;
+      final scheduledClipBytesPerDay =
+          _clipEstimateSeconds(
+            retainedClipSeconds: retainedClipSeconds,
+            activeDuration: scheduledDayActiveDuration,
+          ) *
+          bytesPerSecond;
+      final active = _finiteActiveDuration(input.schedule);
+      if (active == null) {
         return AruStorageEstimate(
           bytesPerRecordedSecond: bytesPerSecond,
-          bytesPerHour: bytesPerHour,
-          bytesPerDayAtFullDuty: bytesPerDay,
-          bytesPerScheduledDay: scheduledBytesPerDay,
+          bytesPerHour: clipBytesPerHour,
+          bytesPerDayAtFullDuty: clipBytesPerDay,
+          bytesPerScheduledDay: scheduledClipBytesPerDay,
         );
       }
-      final seconds = clips * input.clipDurationSeconds;
+
+      final seconds = _clipEstimateSeconds(
+        retainedClipSeconds: retainedClipSeconds,
+        activeDuration: active.duration,
+      );
       return AruStorageEstimate(
         bytesPerRecordedSecond: bytesPerSecond,
-        bytesPerHour: bytesPerHour,
-        bytesPerDayAtFullDuty: bytesPerDay,
-        bytesPerScheduledDay: scheduledBytesPerDay,
+        bytesPerHour: clipBytesPerHour,
+        bytesPerDayAtFullDuty: clipBytesPerDay,
+        bytesPerScheduledDay: scheduledClipBytesPerDay,
         totalBytes: seconds * bytesPerSecond,
         totalRecordedDuration: Duration(seconds: seconds),
+        totalCycles: active.cycles,
       );
     }
 
@@ -164,7 +212,7 @@ class AruStorageEstimator {
     return (wavBytes * input.flacCompressionRatio).ceil();
   }
 
-  int _scheduledDayBytes(AruScheduleConfig schedule, int bytesPerSecond) {
+  Duration _scheduledDayActiveDuration(AruScheduleConfig schedule) {
     final start = schedule.startTime;
     final end = start.add(const Duration(days: 1));
     final daySchedule = AruScheduleConfig(
@@ -182,29 +230,260 @@ class AruStorageEstimator {
       longitude: schedule.longitude,
     );
     final active = _finiteActiveDuration(daySchedule);
-    return (active?.duration.inSeconds ?? 0) * bytesPerSecond;
+    return active?.duration ?? Duration.zero;
+  }
+
+  int _clipEstimateSeconds({
+    required int retainedClipSeconds,
+    required Duration activeDuration,
+  }) {
+    if (retainedClipSeconds <= 0 || activeDuration <= Duration.zero) return 0;
+    final activeSeconds = activeDuration.inSeconds;
+    return retainedClipSeconds < activeSeconds
+        ? retainedClipSeconds
+        : activeSeconds;
   }
 
   _FiniteActiveDuration? _finiteActiveDuration(AruScheduleConfig schedule) {
     if (schedule.maxCycles == null && schedule.endTime == null) return null;
 
+    if (schedule.dielPattern == AruDielPattern.anyTime) {
+      return _finiteAnyTimeActiveDuration(schedule);
+    }
+
+    final end = schedule.endTime;
+    if (schedule.maxCycles != null) {
+      return _scanDielActiveDuration(schedule);
+    }
+
+    if (end != null) {
+      final rawCandidates = _rawCandidateCountBefore(
+        _firstClockAlignedStart(schedule),
+        end,
+        schedule.repeatInterval,
+      );
+      if (rawCandidates <= _dielExactRawCandidateLimit) {
+        return _scanDielActiveDuration(schedule);
+      }
+    }
+
+    return _approximateDielActiveDuration(schedule);
+  }
+
+  _FiniteActiveDuration _finiteAnyTimeActiveDuration(
+    AruScheduleConfig schedule,
+  ) {
     var cycles = 0;
     var duration = Duration.zero;
-    final calculator = AruScheduleCalculator(schedule);
-    var windows = calculator.nextWindows(schedule.startTime, count: 1000);
+    final end = schedule.endTime;
 
-    while (windows.isNotEmpty) {
-      for (final window in windows) {
-        cycles++;
-        duration += window.end.difference(window.start);
+    final testDuration = _testCycleDuration(schedule, end);
+    if (testDuration > Duration.zero) {
+      cycles++;
+      duration += testDuration;
+    }
+
+    final maxCycles = schedule.maxCycles;
+    final firstRegular = _firstClockAlignedStart(schedule);
+    final countBeforeEnd =
+        end == null
+            ? maxCycles
+            : _rawCandidateCountBefore(
+              firstRegular,
+              end,
+              schedule.repeatInterval,
+            );
+    final regularCycles =
+        maxCycles == null
+            ? countBeforeEnd ?? 0
+            : countBeforeEnd == null
+            ? maxCycles
+            : _minInt(maxCycles, countBeforeEnd);
+
+    if (regularCycles <= 0) {
+      return _FiniteActiveDuration(cycles: cycles, duration: duration);
+    }
+
+    cycles += regularCycles;
+    if (end == null) {
+      duration += schedule.cycleDuration * regularCycles;
+      return _FiniteActiveDuration(cycles: cycles, duration: duration);
+    }
+
+    if (regularCycles > 1) {
+      duration += schedule.cycleDuration * (regularCycles - 1);
+    }
+    final lastStart = _regularCycleStart(schedule, regularCycles - 1);
+    final lastEnd = lastStart.add(schedule.cycleDuration);
+    final effectiveLastEnd = lastEnd.isAfter(end) ? end : lastEnd;
+    duration += effectiveLastEnd.difference(lastStart);
+
+    return _FiniteActiveDuration(cycles: cycles, duration: duration);
+  }
+
+  _FiniteActiveDuration _scanDielActiveDuration(AruScheduleConfig schedule) {
+    var cycles = 0;
+    var acceptedRegular = 0;
+    var duration = Duration.zero;
+    final end = schedule.endTime;
+
+    final testDuration = _testCycleDuration(schedule, end);
+    if (testDuration > Duration.zero) {
+      cycles++;
+      duration += testDuration;
+    }
+
+    var rawIndex = 0;
+    while (true) {
+      final maxCycles = schedule.maxCycles;
+      if (maxCycles != null && acceptedRegular >= maxCycles) break;
+
+      final start = _regularCycleStart(schedule, rawIndex);
+      if (end != null && !start.isBefore(end)) break;
+      if (_isAllowedStart(schedule, start)) {
+        final plannedEnd = start.add(schedule.cycleDuration);
+        final effectiveEnd =
+            end != null && plannedEnd.isAfter(end) ? end : plannedEnd;
+        if (effectiveEnd.isAfter(start)) {
+          acceptedRegular++;
+          cycles++;
+          duration += effectiveEnd.difference(start);
+        }
       }
-      if (windows.length < 1000) break;
-      final nextStart = windows.last.end.add(const Duration(microseconds: 1));
-      windows = calculator.nextWindows(nextStart, count: 1000);
+      rawIndex++;
     }
 
     return _FiniteActiveDuration(cycles: cycles, duration: duration);
   }
+
+  _FiniteActiveDuration _approximateDielActiveDuration(
+    AruScheduleConfig schedule,
+  ) {
+    final end = schedule.endTime;
+    if (end == null) return _scanDielActiveDuration(schedule);
+
+    var cycles = 0;
+    var duration = Duration.zero;
+    final testDuration = _testCycleDuration(schedule, end);
+    if (testDuration > Duration.zero) {
+      cycles++;
+      duration += testDuration;
+    }
+
+    final firstRegular = _firstClockAlignedStart(schedule);
+    if (!firstRegular.isBefore(end)) {
+      return _FiniteActiveDuration(cycles: cycles, duration: duration);
+    }
+
+    final sampleEnd = _minDateTime(
+      end,
+      firstRegular.add(Duration(days: _dielApproximationSampleDays)),
+    );
+    final sample = _scanDielActiveDuration(
+      AruScheduleConfig(
+        startTime: firstRegular,
+        cycleDuration: schedule.cycleDuration,
+        repeatInterval: schedule.repeatInterval,
+        endTime: sampleEnd,
+        lowBatteryStopPercent: schedule.lowBatteryStopPercent,
+        dielPattern: schedule.dielPattern,
+        testCycleEnabled: false,
+        latitude: schedule.latitude,
+        longitude: schedule.longitude,
+      ),
+    );
+    final sampleSpanSeconds = sampleEnd.difference(firstRegular).inSeconds;
+    if (sampleSpanSeconds <= 0) {
+      return _FiniteActiveDuration(cycles: cycles, duration: duration);
+    }
+
+    final totalSpanSeconds = end.difference(firstRegular).inSeconds;
+    final regularCycles =
+        (sample.cycles * totalSpanSeconds / sampleSpanSeconds).round();
+    final regularSeconds =
+        (sample.duration.inSeconds * totalSpanSeconds / sampleSpanSeconds)
+            .round();
+
+    return _FiniteActiveDuration(
+      cycles: cycles + regularCycles,
+      duration: duration + Duration(seconds: regularSeconds),
+    );
+  }
+
+  Duration _testCycleDuration(AruScheduleConfig schedule, DateTime? end) {
+    if (!schedule.testCycleEnabled) return Duration.zero;
+    final plannedEnd = schedule.startTime.add(const Duration(minutes: 1));
+    final effectiveEnd =
+        end != null && plannedEnd.isAfter(end) ? end : plannedEnd;
+    if (!schedule.startTime.isBefore(effectiveEnd)) return Duration.zero;
+    return effectiveEnd.difference(schedule.startTime);
+  }
+
+  DateTime _regularCycleStart(AruScheduleConfig schedule, int rawIndex) {
+    final first = _firstClockAlignedStart(schedule);
+    return first.add(schedule.repeatInterval * rawIndex);
+  }
+
+  DateTime _firstClockAlignedStart(AruScheduleConfig schedule) {
+    final baseTime =
+        schedule.testCycleEnabled
+            ? schedule.startTime.add(const Duration(minutes: 1))
+            : schedule.startTime;
+    final midnight =
+        baseTime.isUtc
+            ? DateTime.utc(baseTime.year, baseTime.month, baseTime.day)
+            : DateTime(baseTime.year, baseTime.month, baseTime.day);
+    final elapsed = baseTime.difference(midnight);
+    final intervalMicros = schedule.repeatInterval.inMicroseconds;
+    final remainder = elapsed.inMicroseconds % intervalMicros;
+    if (remainder == 0) return baseTime;
+    return baseTime.add(Duration(microseconds: intervalMicros - remainder));
+  }
+
+  bool _isAllowedStart(AruScheduleConfig schedule, DateTime start) {
+    final sunTimes = estimateAruSunTimes(
+      date: start,
+      latitude: schedule.latitude,
+      longitude: schedule.longitude,
+    );
+
+    return switch (schedule.dielPattern) {
+      AruDielPattern.anyTime => true,
+      AruDielPattern.dayOnly =>
+        !start.isBefore(sunTimes.sunrise) && start.isBefore(sunTimes.sunset),
+      AruDielPattern.nightOnly =>
+        start.isBefore(sunTimes.sunrise) || !start.isBefore(sunTimes.sunset),
+      AruDielPattern.aroundSunrise => _isInWindow(
+        start,
+        sunTimes.sunrise.subtract(const Duration(hours: 1)),
+        sunTimes.sunrise.add(const Duration(hours: 1)),
+      ),
+      AruDielPattern.aroundSunset => _isInWindow(
+        start,
+        sunTimes.sunset.subtract(const Duration(hours: 1)),
+        sunTimes.sunset.add(const Duration(hours: 1)),
+      ),
+    };
+  }
+
+  bool _isInWindow(DateTime time, DateTime start, DateTime end) {
+    return !time.isBefore(start) && time.isBefore(end);
+  }
+
+  int _rawCandidateCountBefore(
+    DateTime firstRegular,
+    DateTime end,
+    Duration repeatInterval,
+  ) {
+    if (!firstRegular.isBefore(end)) return 0;
+    final elapsedMicros = end.difference(firstRegular).inMicroseconds;
+    final intervalMicros = repeatInterval.inMicroseconds;
+    return ((elapsedMicros - 1) ~/ intervalMicros) + 1;
+  }
+
+  int _minInt(int a, int b) => a < b ? a : b;
+
+  DateTime _minDateTime(DateTime a, DateTime b) => a.isBefore(b) ? a : b;
 }
 
 class _FiniteActiveDuration {

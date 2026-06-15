@@ -13,17 +13,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Active by default for sessions that have clips only and no full recording/spectrogram, and bypassed (never shown) for sessions with full audio recordings.
 
 ### Changed
+- Added support for launching the ARU active screen directly from Android foreground notification actions with optional stop confirmation.
+- Added `AruNotificationRoute` to restore unfinished ARU deployments when app launches from notification before routing to active screen or setup.
 
+- Updated ARU help and user documentation to reflect current behavior: cycle-level Full Audio or retained detection clips, live inference during active cycles, and Android foreground notification controls.
+- Updated ARU help and user documentation to reflect current behavior: cycle-level Full Audio or retained detection clips, live inference during active cycles, and Android foreground notification controls.
 - Updated ARU help and user documentation to reflect current behavior: cycle-level Full Audio or retained detection clips, live inference during active cycles, and Android foreground notification controls.
 - Improved ARU setup summaries and storage estimates to consistently show effective recording and sampling modes when combined-session deployments cannot use Full Audio.
 - Improved locale-aware time/date formatting helpers to prefer localized `intl` formats with safe fallbacks when locale data is unavailable.
 - Optimized ARU schedule evaluation for far-future open-ended deployments by jumping directly to the candidate cycle index instead of scanning from deployment start.
+- Refactored Android foreground task notification callbacks to be handled at app root instead of individual screens, enabling route-based navigation on notification action.
+- Updated ARU help and user documentation to reflect current behavior: cycle-level Full Audio or retained detection clips, live inference during active cycles, and Android foreground notification controls.
+- Improved ARU setup summaries and storage estimates to consistently show effective recording and sampling modes when combined-session deployments cannot use Full Audio.
+- Improved locale-aware time/date formatting helpers to prefer localized `intl` formats with safe fallbacks when locale data is unavailable.
+- Optimized ARU schedule evaluation for far-future open-ended deployments by jumping directly to the candidate cycle index instead of scanning from deployment start.
+- Refactored Android foreground task notification callbacks to be handled at app root instead of individual screens, enabling route-based navigation on notification action.
 
 ### Fixed
 
 - Restored unfinished ARU deployments from persisted sessions after app relaunch and resumed schedule evaluation instead of leaving deployments stranded.
 - Serialized ARU detection-sync updates during active deployment and guarded finalization to prevent race conditions while stopping.
 - Fixed long-running diel ARU schedules so they continue evaluating correctly beyond large raw interval counts instead of prematurely completing.
+- Fixed ARU deployment storage estimates so long, short-interval schedules no longer freeze the setup UI.
+- Fixed ARU active deployment cycle progress so date/time-ended schedules show the estimated total cycle count instead of "Until stopped".
+- Fixed ARU clip-only storage estimates to use retained clip assumptions, window duration, and clip context instead of prediction-window upper bounds.
+- Refined ARU setup review copy by removing duplicate test-run details and shortening Session grouping labels.
 
 ## [0.17.4] - 2026-06-15
 

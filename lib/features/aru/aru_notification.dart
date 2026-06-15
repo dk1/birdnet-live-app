@@ -6,8 +6,10 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/core/constants/app_constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 @pragma('vm:entry-point')
 void aruTaskCallback() {
@@ -34,15 +36,18 @@ class _AruTaskHandler extends TaskHandler {
   @override
   void onNotificationButtonPressed(String id) {
     if (id == 'stop') {
+      FlutterForegroundTask.launchApp(AruNotificationService.stopRoute);
       FlutterForegroundTask.sendDataToMain({'action': 'aruStop'});
     } else if (id == 'open') {
-      FlutterForegroundTask.launchApp();
+      FlutterForegroundTask.launchApp(AruNotificationService.openRoute);
+      FlutterForegroundTask.sendDataToMain({'action': 'aruOpen'});
     }
   }
 
   @override
   void onNotificationPressed() {
-    FlutterForegroundTask.launchApp();
+    FlutterForegroundTask.launchApp(AruNotificationService.openRoute);
+    FlutterForegroundTask.sendDataToMain({'action': 'aruOpen'});
   }
 
   @override
@@ -50,6 +55,9 @@ class _AruTaskHandler extends TaskHandler {
 }
 
 class AruNotificationService {
+  static const String openRoute = '/aru-active';
+  static const String stopRoute = '/aru-stop';
+
   static String _notificationTitle = '';
   static String _stopButtonText = '';
   static String _openButtonText = '';
@@ -63,9 +71,7 @@ class AruNotificationService {
 
   static Future<void> init() async {
     final l10n = await _loadAppLocalizations();
-    _notificationTitle = l10n.aruNotificationTitle;
-    _stopButtonText = l10n.notificationStop;
-    _openButtonText = l10n.notificationOpen;
+    _applyLocalizedStrings(l10n);
 
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
@@ -125,6 +131,7 @@ class AruNotificationService {
         serviceId: 512,
         notificationTitle: title,
         notificationText: text,
+        notificationInitialRoute: openRoute,
         notificationIcon: const NotificationIcon(
           metaDataName: 'com.birdnet.live.notification_icon',
         ),
@@ -153,12 +160,18 @@ class AruNotificationService {
 
   Future<void> update({required String title, required String text}) async {
     if (!_running) return;
+    _applyLocalizedStrings(await _loadAppLocalizations());
     await FlutterForegroundTask.updateService(
       notificationTitle: title,
       notificationText: text,
+      notificationInitialRoute: openRoute,
       notificationIcon: const NotificationIcon(
         metaDataName: 'com.birdnet.live.notification_icon',
       ),
+      notificationButtons: [
+        NotificationButton(id: 'stop', text: _stopButtonText),
+        NotificationButton(id: 'open', text: _openButtonText),
+      ],
     );
   }
 
@@ -170,10 +183,19 @@ class AruNotificationService {
   }
 }
 
+void _applyLocalizedStrings(AppLocalizations l10n) {
+  AruNotificationService._notificationTitle = l10n.aruNotificationTitle;
+  AruNotificationService._stopButtonText = l10n.notificationStop;
+  AruNotificationService._openButtonText = l10n.notificationOpen;
+}
+
 Future<AppLocalizations> _loadAppLocalizations() async {
+  final prefs = await SharedPreferences.getInstance();
+  final savedLocaleCode = prefs.getString(PrefKeys.locale);
   final deviceLocale = PlatformDispatcher.instance.locale;
   final supportedLocale = AppLocalizations.supportedLocales.firstWhere(
-    (locale) => locale.languageCode == deviceLocale.languageCode,
+    (locale) =>
+        locale.languageCode == (savedLocaleCode ?? deviceLocale.languageCode),
     orElse: () => const Locale('en'),
   );
   return AppLocalizations.delegate.load(supportedLocale);
