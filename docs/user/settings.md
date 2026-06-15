@@ -27,6 +27,10 @@ Controls the language used for species names. **Follow app language** uses the s
 
 Shows scientific names below common names across the app.
 
+### Observer name
+
+Survey, Point Count, and ARU setup remember the latest non-empty observer name entered in any of those modes and prefill it the next time you set up a field session. This keeps repeat use quick on a personal field phone while still letting you edit or clear the observer before starting a session.
+
 ### Timestamp display
 
 Controls how per-detection times appear in session review.

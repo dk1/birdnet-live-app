@@ -435,12 +435,43 @@ final pointCountDurationProvider =
       return IntSettingNotifier(prefs, PrefKeys.pointCountDuration, 5);
     });
 
-/// Last used observer name in Point Count (persisted for convenience).
+/// Last used observer name in Point Count (shared across field modes).
 final pointCountLastObserverProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return StringSettingNotifier(prefs, PrefKeys.pointCountLastObserver, '');
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.lastObserver,
+        _legacyLastObserver(prefs),
+      );
     });
+
+/// Last used observer name across field-session modes.
+final lastObserverProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.lastObserver,
+        _legacyLastObserver(prefs),
+      );
+    });
+
+String _legacyLastObserver(SharedPreferences prefs) {
+  final surveyObserver = prefs.getString(PrefKeys.legacySurveyLastObserver);
+  if (surveyObserver != null && surveyObserver.trim().isNotEmpty) {
+    return surveyObserver;
+  }
+
+  final pointCountObserver = prefs.getString(
+    PrefKeys.legacyPointCountLastObserver,
+  );
+  if (pointCountObserver != null && pointCountObserver.trim().isNotEmpty) {
+    return pointCountObserver;
+  }
+
+  return '';
+}
 
 // ---------------------------------------------------------------------------
 // Survey Mode
@@ -512,11 +543,15 @@ final surveyTopNPerSpeciesProvider =
       return IntSettingNotifier(prefs, PrefKeys.surveyTopNPerSpecies, 10);
     });
 
-/// Last used observer name (persisted for convenience).
+/// Last used observer name (shared across field modes).
 final surveyLastObserverProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return StringSettingNotifier(prefs, PrefKeys.surveyLastObserver, '');
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.lastObserver,
+        _legacyLastObserver(prefs),
+      );
     });
 
 /// Last used transect ID (persisted for convenience).

@@ -11,11 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Refined ARU Mode deployment setup, schedule previews, active status tabs, per-cycle recording options, and localized user documentation.
 - Updated ARU scheduling options so short test cycles can run immediately without overlapping regular clock-aligned cycles.
+- Reused the latest Survey, Point Count, or ARU observer name across field-session setup screens.
 
 ### Fixed
 
 - Fixed ARU deployment completion so natural schedule endings open Session Review like manual and low-battery stops.
 - Fixed ARU recording cleanup so empty full-cycle audio files are discarded instead of being kept as review artifacts.
+- Fixed ARU per-cycle sessions so cycle recordings remain attached for review and names include both deployment and cycle numbers.
 
 ## [0.17.1] - 2026-06-11
 

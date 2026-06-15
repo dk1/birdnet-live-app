@@ -10,6 +10,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import 'package:birdnet_live/core/theme/app_semantic_colors.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
@@ -178,6 +179,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
         highPassHz: session.settings.highPassHz,
         latitude: session.latitude,
         longitude: session.longitude,
+        clearRingBuffer: false,
       );
       _aruInferenceActive = controller.state == LiveState.active;
       _onInferenceStateChanged();
@@ -478,7 +480,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
         _SummaryPanel(session: session),
       ],
     );
-    final statsBar = _AruStatsBar(session: session);
+    final statsBar = _AruStatsBar(session: session, state: state);
     final detectionPane = Padding(
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
       child: ClipRRect(
@@ -502,11 +504,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
               children: [
                 Expanded(
                   child: Column(
-                    children: [
-                      tabBar,
-                      Expanded(child: tabContent),
-                      statsBar,
-                    ],
+                    children: [tabBar, Expanded(child: tabContent), statsBar],
                   ),
                 ),
                 Expanded(child: detectionPane),
@@ -596,12 +594,11 @@ class _AruStatusBarState extends State<_AruStatusBar> {
     final current = snapshot?.currentWindow;
     final next = snapshot?.nextWindow;
     final now = DateTime.now();
-    final label =
-        switch (widget.state) {
-          AruControllerState.recording => l10n.aruStatusRecording,
-          AruControllerState.completed => l10n.aruActiveCompleted,
-          _ => l10n.aruStatusWaiting,
-        };
+    final label = switch (widget.state) {
+      AruControllerState.recording => l10n.aruStatusRecording,
+      AruControllerState.completed => l10n.aruActiveCompleted,
+      _ => l10n.aruStatusWaiting,
+    };
     final detail =
         current != null
             ? _formatDuration(current.end.difference(now))
@@ -696,10 +693,57 @@ class _AruStatusBarState extends State<_AruStatusBar> {
   }
 }
 
-class _AruStatsBar extends StatelessWidget {
-  const _AruStatsBar({required this.session});
+enum _AudioQuality { bad, marginal, good }
+
+class _AruStatsBar extends ConsumerStatefulWidget {
+  const _AruStatsBar({required this.session, required this.state});
 
   final LiveSession session;
+  final AruControllerState state;
+
+  @override
+  ConsumerState<_AruStatsBar> createState() => _AruStatsBarState();
+}
+
+class _AruStatsBarState extends ConsumerState<_AruStatsBar> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isRecording) {
+      _startTimer();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _AruStatsBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_isRecording && _timer == null) {
+      _startTimer();
+    } else if (!_isRecording && _timer != null) {
+      _stopTimer();
+    }
+  }
+
+  bool get _isRecording => widget.state == AruControllerState.recording;
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  @override
+  void dispose() {
+    _stopTimer();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -708,6 +752,30 @@ class _AruStatsBar extends StatelessWidget {
       color: theme.colorScheme.onSurface,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
+
+    final ringBuffer = ref.watch(ringBufferProvider);
+    final audioLevel = _isRecording ? ringBuffer.rmsLevel() : 0.0;
+    final peakLevel = _isRecording ? ringBuffer.peakLevel() : 0.0;
+
+    final semanticColors = AppSemanticColors.of(context);
+    final _AudioQuality quality;
+    if (audioLevel < 0.0005) {
+      quality = _AudioQuality.bad;
+    } else if (peakLevel > 0.95) {
+      quality = _AudioQuality.bad;
+    } else if (audioLevel > 0.15) {
+      quality = _AudioQuality.bad;
+    } else if (audioLevel < 0.001 || audioLevel > 0.08) {
+      quality = _AudioQuality.marginal;
+    } else {
+      quality = _AudioQuality.good;
+    }
+
+    final levelColor = switch (quality) {
+      _AudioQuality.bad => theme.colorScheme.error,
+      _AudioQuality.marginal => theme.colorScheme.tertiary,
+      _AudioQuality.good => semanticColors.success,
+    };
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -718,19 +786,26 @@ class _AruStatsBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
+          _AudioLevelChip(
+            isActive: _isRecording,
+            level: audioLevel,
+            quality: quality,
+            color: levelColor,
+            style: style,
+          ),
           StatChip(
             icon: AppIcons.checkCircleRounded,
-            value: '${_completedCycleCount(session)}',
+            value: '${_completedCycleCount(widget.session)}',
             style: style,
           ),
           StatChip(
             icon: AppIcons.detections,
-            value: '${session.detections.length}',
+            value: '${widget.session.detections.length}',
             style: style,
           ),
           StatChip(
             icon: AppIcons.species,
-            value: '${session.uniqueSpeciesCount}',
+            value: '${widget.session.uniqueSpeciesCount}',
             style: style,
           ),
         ],
@@ -739,11 +814,57 @@ class _AruStatsBar extends StatelessWidget {
   }
 }
 
-class _StatusPanel extends StatelessWidget {
-  const _StatusPanel({
-    required this.session,
-    required this.state,
+class _AudioLevelChip extends StatelessWidget {
+  const _AudioLevelChip({
+    required this.isActive,
+    required this.level,
+    required this.quality,
+    required this.color,
+    this.style,
   });
+
+  final bool isActive;
+  final double level;
+  final _AudioQuality quality;
+  final Color color;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final filledBars =
+        isActive
+            ? switch (quality) {
+              _AudioQuality.good => 3,
+              _AudioQuality.marginal => 2,
+              _AudioQuality.bad => 1,
+            }
+            : 0;
+    final muted = theme.colorScheme.onSurface.withAlpha(40);
+    final activeColor = isActive ? color : muted;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Icon(AppIcons.mic, size: 16, color: activeColor),
+        const SizedBox(width: 3),
+        for (int i = 0; i < 3; i++)
+          Container(
+            width: 4,
+            height: 6.0 + i * 4, // 6, 10, 14
+            margin: const EdgeInsets.only(right: 1.5),
+            decoration: BoxDecoration(
+              color: i < filledBars ? color : muted,
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _StatusPanel extends StatelessWidget {
+  const _StatusPanel({required this.session, required this.state});
 
   final LiveSession session;
   final AruControllerState state;
@@ -838,7 +959,8 @@ class _ScheduleFocusCard extends StatelessWidget {
     final isRecording = state == AruControllerState.recording;
     final currentIsTest =
         currentWindow != null && _isTestWindow(session, currentWindow!);
-    final nextIsTest = nextWindow != null && _isTestWindow(session, nextWindow!);
+    final nextIsTest =
+        nextWindow != null && _isTestWindow(session, nextWindow!);
     final icon =
         isRecording
             ? AppIcons.fiberManualRecordRounded
@@ -907,8 +1029,8 @@ class _SpectrogramPanel extends ConsumerWidget {
             state == AruControllerState.recording
                 ? l10n.surveyStarting
                 : state == AruControllerState.completed
-                    ? l10n.aruActiveCompleted
-                    : l10n.aruActiveWaiting,
+                ? l10n.aruActiveCompleted
+                : l10n.aruActiveWaiting,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,

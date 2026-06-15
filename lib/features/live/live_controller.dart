@@ -328,6 +328,7 @@ class LiveController {
     double? highPassHz,
     double? latitude,
     double? longitude,
+    bool clearRingBuffer = true,
   }) async {
     if (_state != LiveState.ready) return;
 
@@ -362,7 +363,9 @@ class LiveController {
     _isolate.setPoolingMode(poolingMode);
     _isolate.resetPooling();
     _inferenceCycleCount = 0;
-    ringBuffer.clear();
+    if (clearRingBuffer) {
+      ringBuffer.clear();
+    }
 
     _notifyListeners();
 

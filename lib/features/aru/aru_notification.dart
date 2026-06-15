@@ -163,7 +163,6 @@ class AruNotificationService {
   }
 
   Future<void> stop() async {
-    if (!_running) return;
     await FlutterForegroundTask.stopService();
     _running = false;
     _nextStartAttempt = null;

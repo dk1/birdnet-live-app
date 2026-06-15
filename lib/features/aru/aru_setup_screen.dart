@@ -77,6 +77,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
   @override
   void initState() {
     super.initState();
+    _observerController.text = ref.read(lastObserverProvider);
     _scheduleEnd = _defaultScheduleEnd();
     _fetchGpsLocation();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -243,6 +244,10 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
     final latitude = _locationChoice == _LocationChoice.skip ? null : _latitude;
     final longitude =
         _locationChoice == _LocationChoice.skip ? null : _longitude;
+    final observer = _observerController.text.trim();
+    if (observer.isNotEmpty) {
+      await ref.read(lastObserverProvider.notifier).set(observer);
+    }
     final metadata = AruDeploymentMetadata(
       deploymentName: _emptyToNull(_deploymentController.text),
       stationId: _emptyToNull(_stationController.text),
@@ -286,7 +291,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       sessionId: 'aru-${now.toUtc().toIso8601String().replaceAll(':', '-')}',
       settings: settings,
       metadata: metadata,
-      observerName: _emptyToNull(_observerController.text),
+      observerName: observer.isEmpty ? null : observer,
       latitude: latitude,
       longitude: longitude,
       sessionNumber: sessionNumber,

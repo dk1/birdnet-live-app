@@ -87,12 +87,16 @@ class AruController {
     double? longitude,
     int? sessionNumber,
   }) async {
-    if (_state != AruControllerState.idle) {
+    if (_state != AruControllerState.idle &&
+        _state != AruControllerState.completed &&
+        _state != AruControllerState.error) {
       throw StateError('ARU deployment already started');
     }
 
     _state = AruControllerState.preparing;
     _errorMessage = null;
+    _activeCycleIndex = null;
+    _activeCycleStart = null;
 
     try {
       _calculator = AruScheduleCalculator(metadata.toScheduleConfig());
@@ -431,12 +435,10 @@ class AruController {
       final cycleSession = LiveSession(
         id: '${session.id}_cycle_$index',
         type: SessionType.aru,
+        sessionNumber: session.sessionNumber,
         startTime: startedAt,
         endTime: effectiveEnd,
-        customName:
-            (session.customName != null && session.customName!.isNotEmpty)
-                ? '${session.customName} - Cycle ${index + 1}'
-                : 'ARU - Cycle ${index + 1}',
+        customName: _cycleSessionName(session, index),
         settings: session.settings,
         observerName: session.observerName,
         latitude: session.latitude,
@@ -509,5 +511,32 @@ class AruController {
   Future<void> _persist() async {
     final session = _session;
     if (session != null) await _saveSession(session);
+  }
+
+  String _cycleSessionName(LiveSession session, int cycleIndex) {
+    final isTestRun =
+        session.aruMetadata?.testCycleEnabled == true && cycleIndex == 0;
+    final cyclePart =
+        isTestRun
+            ? 'Test Run'
+            : 'Cycle ${_displayCycleNumber(session, cycleIndex)}';
+    final name = session.customName?.trim();
+    if (name != null && name.isNotEmpty) {
+      return '$name - $cyclePart';
+    }
+
+    final deploymentNumber = session.sessionNumber;
+    final deploymentPart =
+        deploymentNumber != null
+            ? 'Deployment #$deploymentNumber'
+            : 'Deployment';
+    return 'ARU $deploymentPart - $cyclePart';
+  }
+
+  int _displayCycleNumber(LiveSession session, int cycleIndex) {
+    if (session.aruMetadata?.testCycleEnabled == true) {
+      return cycleIndex;
+    }
+    return cycleIndex + 1;
   }
 }

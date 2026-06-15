@@ -334,34 +334,90 @@ void main() {
           sessionId: 'aru-1',
           settings: settings,
           metadata: AruDeploymentMetadata(
-            deploymentName: 'Per-Cycle Test',
+            deploymentName: 'eBird plot',
             scheduleStart: start,
             cycleDurationSeconds: 600,
             repeatIntervalSeconds: 3600,
-            maxCycles: 2,
+            maxCycles: 3,
             eachCycleIsSession: true,
           ),
+          sessionNumber: 12,
         );
 
-        // Enter and leave cycle 0.
+        // Enter and leave cycles 0, 1, and 2.
         await controller.evaluate(now: start.add(const Duration(minutes: 5)));
         await controller.evaluate(now: start.add(const Duration(minutes: 30)));
+        await controller.evaluate(
+          now: start.add(const Duration(hours: 1, minutes: 5)),
+        );
+        await controller.evaluate(
+          now: start.add(const Duration(hours: 1, minutes: 30)),
+        );
+        await controller.evaluate(
+          now: start.add(const Duration(hours: 2, minutes: 5)),
+        );
+        await controller.evaluate(
+          now: start.add(const Duration(hours: 2, minutes: 30)),
+        );
 
-        // The saved list should contain the main session saves AND a per-cycle
-        // session whose id ends with '_cycle_0'.
+        // The saved list should contain the main session saves AND one
+        // per-cycle session for each completed cycle.
         final cycleSessions =
             saved.where((s) => s.id.contains('_cycle_')).toList();
-        expect(cycleSessions, hasLength(1));
+        expect(cycleSessions, hasLength(3));
         expect(cycleSessions.first.id, 'aru-1_cycle_0');
-        expect(cycleSessions.first.customName, 'Per-Cycle Test - Cycle 1');
+        expect(cycleSessions.first.sessionNumber, 12);
+        expect(cycleSessions.first.customName, 'eBird plot - Cycle 1');
+        expect(cycleSessions.last.id, 'aru-1_cycle_2');
+        expect(cycleSessions.last.sessionNumber, 12);
+        expect(cycleSessions.last.customName, 'eBird plot - Cycle 3');
         expect(cycleSessions.first.startTime, start);
         expect(
           cycleSessions.first.endTime,
           start.add(const Duration(minutes: 10)),
         );
-        expect(controller.reviewSession, cycleSessions.first);
+        expect(controller.reviewSession, cycleSessions.last);
       },
     );
+
+    test('names per-cycle test run from deployment name', () async {
+      final saved = <LiveSession>[];
+      final controller = AruController(
+        saveSession: (session) async => saved.add(session),
+        now: () => start,
+      );
+
+      await controller.startDeployment(
+        sessionId: 'aru-1',
+        settings: settings,
+        metadata: AruDeploymentMetadata(
+          deploymentName: 'test',
+          scheduleStart: start,
+          cycleDurationSeconds: 600,
+          repeatIntervalSeconds: 3600,
+          maxCycles: 1,
+          testCycleEnabled: true,
+          eachCycleIsSession: true,
+        ),
+        sessionNumber: 12,
+      );
+
+      await controller.evaluate(now: start.add(const Duration(minutes: 2)));
+      await controller.evaluate(
+        now: start.add(const Duration(hours: 1, minutes: 5)),
+      );
+      await controller.evaluate(
+        now: start.add(const Duration(hours: 1, minutes: 30)),
+      );
+
+      final cycleSessions =
+          saved.where((s) => s.id.contains('_cycle_')).toList();
+      expect(cycleSessions, hasLength(2));
+      expect(cycleSessions.first.id, 'aru-1_cycle_0');
+      expect(cycleSessions.first.customName, 'test - Test Run');
+      expect(cycleSessions.last.id, 'aru-1_cycle_1');
+      expect(cycleSessions.last.customName, 'test - Cycle 1');
+    });
 
     test(
       'does not save per-cycle sessions when eachCycleIsSession is false',
