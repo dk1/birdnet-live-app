@@ -9,11 +9,11 @@ import 'package:birdnet_live/shared/widgets/stat_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import 'package:birdnet_live/core/theme/app_semantic_colors.dart';
 import 'package:birdnet_live/core/theme/score_colors.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/utils/locale_time_format.dart';
 import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../audio/ring_buffer.dart';
@@ -310,7 +310,12 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     }
 
     final l10n = AppLocalizations.of(context)!;
-    final text = _notificationText(l10n, state, session);
+    final text = _notificationText(
+      l10n,
+      state,
+      session,
+      alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
+    );
     if (_notificationService.isRunning) {
       await _notificationService.update(
         title: l10n.aruNotificationTitle,
@@ -1063,6 +1068,7 @@ class _SchedulePanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final alwaysUse24HourFormat = MediaQuery.of(context).alwaysUse24HourFormat;
     final metadata = session.aruMetadata;
     final schedule =
         metadata == null
@@ -1098,9 +1104,19 @@ class _SchedulePanel extends StatelessWidget {
               title: Text(
                 _isTestWindow(session, window)
                     ? l10n.aruTestRun
-                    : DateFormat.yMMMd().add_jm().format(window.start),
+                    : formatLocaleDateTime(
+                      window.start,
+                      l10n.localeName,
+                      alwaysUse24HourFormat: alwaysUse24HourFormat,
+                    ),
               ),
-              subtitle: Text(_windowLabel(window)),
+              subtitle: Text(
+                _windowLabel(
+                  l10n.localeName,
+                  window,
+                  alwaysUse24HourFormat: alwaysUse24HourFormat,
+                ),
+              ),
             ),
       ],
     );
@@ -1124,6 +1140,7 @@ class _ScheduleFocusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final alwaysUse24HourFormat = MediaQuery.of(context).alwaysUse24HourFormat;
     final isRecording = state == AruControllerState.recording;
     final currentIsTest =
         currentWindow != null && _isTestWindow(session, currentWindow!);
@@ -1143,9 +1160,9 @@ class _ScheduleFocusCard extends StatelessWidget {
             : l10n.aruActiveWaiting;
     final body =
         currentWindow != null
-            ? '${_windowLabel(currentWindow!)} - ${l10n.fileAnalysisEtaRemaining(_formatDuration(currentWindow!.end.difference(DateTime.now())))}'
+            ? '${_windowLabel(l10n.localeName, currentWindow!, alwaysUse24HourFormat: alwaysUse24HourFormat)} - ${l10n.fileAnalysisEtaRemaining(_formatDuration(currentWindow!.end.difference(DateTime.now())))}'
             : nextWindow != null
-            ? '${DateFormat.yMMMd().add_jm().format(nextWindow!.start)} - ${l10n.fileAnalysisEtaRemaining(_formatDuration(nextWindow!.start.difference(DateTime.now())))}'
+            ? '${formatLocaleDateTime(nextWindow!.start, l10n.localeName, alwaysUse24HourFormat: alwaysUse24HourFormat)} - ${l10n.fileAnalysisEtaRemaining(_formatDuration(nextWindow!.start.difference(DateTime.now())))}'
             : l10n.aruActiveCompleted;
 
     return Card(
@@ -1530,9 +1547,12 @@ bool _isTestWindow(LiveSession session, AruCycleWindow window) {
   return session.aruMetadata?.testCycleEnabled == true && window.index == 0;
 }
 
-String _windowLabel(AruCycleWindow window) {
-  final formatter = DateFormat.jm();
-  return '${formatter.format(window.start)} - ${formatter.format(window.end)}';
+String _windowLabel(
+  String localeName,
+  AruCycleWindow window, {
+  required bool alwaysUse24HourFormat,
+}) {
+  return '${formatLocaleTime(window.start, localeName, alwaysUse24HourFormat: alwaysUse24HourFormat)} - ${formatLocaleTime(window.end, localeName, alwaysUse24HourFormat: alwaysUse24HourFormat)}';
 }
 
 String _formatDuration(Duration duration) {
@@ -1554,8 +1574,9 @@ String _formatDuration(Duration duration) {
 String _notificationText(
   AppLocalizations l10n,
   AruControllerState state,
-  LiveSession session,
-) {
+  LiveSession session, {
+  required bool alwaysUse24HourFormat,
+}) {
   final status = switch (state) {
     AruControllerState.recording => l10n.aruActiveRecording,
     AruControllerState.completed => l10n.aruActiveCompleted,
@@ -1563,10 +1584,10 @@ String _notificationText(
   };
   final snapshot = _scheduleSnapshot(session);
   if (snapshot?.currentWindow != null) {
-    return '$status - ${_windowLabel(snapshot!.currentWindow!)}';
+    return '$status - ${_windowLabel(l10n.localeName, snapshot!.currentWindow!, alwaysUse24HourFormat: alwaysUse24HourFormat)}';
   }
   if (snapshot?.nextWindow != null) {
-    return '$status - ${DateFormat.Hm().format(snapshot!.nextWindow!.start)}';
+    return '$status - ${formatLocaleTime(snapshot!.nextWindow!.start, l10n.localeName, alwaysUse24HourFormat: alwaysUse24HourFormat)}';
   }
   return '$status - ${l10n.aruCompletedCycles}: ${_completedCycleCount(session)}';
 }

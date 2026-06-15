@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refined ARU active deployment dashboards with compact status metrics, clearer tab labels, localized species summaries, and shared destructive confirmation behavior.
 - Reused the latest ARU/station ID in ARU setup, included it in ARU session names, and kept ARU deployment metadata with shared exports.
 - Expanded session export provenance to include session-retained runtime settings and type-specific metadata while limiting export preference snapshots to relevant keys.
+- Updated session, ARU, and Point Count time displays to follow the device 12-hour or 24-hour clock preference consistently.
 
 ## [0.17.2] - 2026-06-15
 

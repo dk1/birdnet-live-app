@@ -11,10 +11,10 @@ import 'package:birdnet_live/shared/widgets/wizard_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../audio/audio_providers.dart';
+import '../../shared/utils/locale_time_format.dart';
 import '../explore/explore_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
@@ -1137,6 +1137,7 @@ class _ScheduleStep extends ConsumerWidget {
             date: DateTime.now(),
             latitude: latitude,
             longitude: longitude,
+            alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
           ),
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -1210,7 +1211,14 @@ class _ScheduleStep extends ConsumerWidget {
               );
             },
             icon: const Icon(AppIcons.calendarTodayRounded),
-            label: Text(DateFormat.yMMMd().add_jm().format(scheduleEnd)),
+            label: Text(
+              formatLocaleDateTime(
+                scheduleEnd,
+                l10n.localeName,
+                alwaysUse24HourFormat:
+                    MediaQuery.of(context).alwaysUse24HourFormat,
+              ),
+            ),
           ),
         ] else ...[
           Card(
@@ -1496,6 +1504,8 @@ class _ReadyStep extends ConsumerWidget {
                 mode: scheduleEndMode,
                 scheduleEnd: scheduleEnd,
                 maxCycles: maxCycles,
+                alwaysUse24HourFormat:
+                    MediaQuery.of(context).alwaysUse24HourFormat,
               ),
             ),
           ],
@@ -1732,16 +1742,24 @@ String _sunTimesSummary({
   required DateTime date,
   required double? latitude,
   required double? longitude,
+  required bool alwaysUse24HourFormat,
 }) {
   final sunTimes = estimateAruSunTimes(
     date: date,
     latitude: latitude,
     longitude: longitude,
   );
-  final formatter = DateFormat.jm();
   return l10n.aruSunTimesEstimate(
-    formatter.format(sunTimes.sunrise),
-    formatter.format(sunTimes.sunset),
+    formatLocaleTime(
+      sunTimes.sunrise,
+      l10n.localeName,
+      alwaysUse24HourFormat: alwaysUse24HourFormat,
+    ),
+    formatLocaleTime(
+      sunTimes.sunset,
+      l10n.localeName,
+      alwaysUse24HourFormat: alwaysUse24HourFormat,
+    ),
   );
 }
 
@@ -1750,6 +1768,7 @@ String _scheduleEndSummary({
   required _ScheduleEndMode mode,
   required DateTime? scheduleEnd,
   required int? maxCycles,
+  required bool alwaysUse24HourFormat,
 }) {
   return switch (mode) {
     _ScheduleEndMode.manual => l10n.aruScheduleEndManual,
@@ -1757,9 +1776,11 @@ String _scheduleEndSummary({
       maxCycles != null
           ? l10n.aruCycleCount(maxCycles)
           : l10n.aruScheduleNoLimit,
-    _ScheduleEndMode.dateTime when scheduleEnd != null => DateFormat.yMMMd()
-        .add_jm()
-        .format(scheduleEnd),
+    _ScheduleEndMode.dateTime when scheduleEnd != null => formatLocaleDateTime(
+      scheduleEnd,
+      l10n.localeName,
+      alwaysUse24HourFormat: alwaysUse24HourFormat,
+    ),
     _ => l10n.aruScheduleNoLimit,
   };
 }

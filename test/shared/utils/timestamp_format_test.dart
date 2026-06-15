@@ -59,14 +59,42 @@ void main() {
   });
 
   group('formatDetectionTime — absolute', () {
-    test('renders local clock time as HH:mm:ss', () {
+    test('renders English local clock time with AM/PM', () {
       // Use a local DateTime so the rendering is deterministic regardless of
       // the test runner's timezone.
       final start = DateTime(2026, 5, 6, 8, 0, 0);
-      final ts = DateTime(2026, 5, 6, 8, 42, 17);
+      final ts = DateTime(2026, 5, 6, 15, 42, 17);
       expect(
         formatDetectionTime(ts, start, TimestampDisplayMode.absolute),
-        '08:42:17',
+        '3:42:17 PM',
+      );
+    });
+
+    test('uses 12-hour time when platform 24-hour preference is false', () {
+      final start = DateTime(2026, 5, 6, 8, 0, 0);
+      final ts = DateTime(2026, 5, 6, 15, 42, 17);
+      expect(
+        formatDetectionTime(
+          ts,
+          start,
+          TimestampDisplayMode.absolute,
+          localeName: 'de',
+        ),
+        '3:42:17 PM',
+      );
+    });
+
+    test('respects platform 24-hour preference for English absolute time', () {
+      final start = DateTime(2026, 5, 6, 8, 0, 0);
+      final ts = DateTime(2026, 5, 6, 15, 42, 17);
+      expect(
+        formatDetectionTime(
+          ts,
+          start,
+          TimestampDisplayMode.absolute,
+          alwaysUse24HourFormat: true,
+        ),
+        '15:42:17',
       );
     });
 
@@ -75,7 +103,7 @@ void main() {
       final ts = DateTime(2026, 5, 7, 0, 5, 0);
       expect(
         formatDetectionTime(ts, start, TimestampDisplayMode.absolute),
-        '00:05:00 +1d',
+        '12:05:00 AM +1d',
       );
     });
 
@@ -89,7 +117,7 @@ void main() {
           TimestampDisplayMode.absolute,
           clipOffset: const Duration(minutes: 1),
         ),
-        '08:05:00',
+        '8:05:00 AM',
       );
     });
   });
@@ -109,9 +137,9 @@ void main() {
       );
     });
 
-    test('absolute renders as HH:mm', () {
+    test('English absolute renders without seconds as h:mm a', () {
       final start = DateTime(2026, 5, 6, 8, 0, 0);
-      final ts = DateTime(2026, 5, 6, 8, 42, 17);
+      final ts = DateTime(2026, 5, 6, 15, 42, 17);
       expect(
         formatDetectionTime(
           ts,
@@ -119,7 +147,40 @@ void main() {
           TimestampDisplayMode.absolute,
           showSeconds: false,
         ),
-        '08:42',
+        '3:42 PM',
+      );
+    });
+
+    test(
+      'uses 12-hour time without seconds when platform 24-hour preference is false',
+      () {
+        final start = DateTime(2026, 5, 6, 8, 0, 0);
+        final ts = DateTime(2026, 5, 6, 15, 42, 17);
+        expect(
+          formatDetectionTime(
+            ts,
+            start,
+            TimestampDisplayMode.absolute,
+            showSeconds: false,
+            localeName: 'de',
+          ),
+          '3:42 PM',
+        );
+      },
+    );
+
+    test('platform 24-hour preference applies without seconds', () {
+      final start = DateTime(2026, 5, 6, 8, 0, 0);
+      final ts = DateTime(2026, 5, 6, 15, 42, 17);
+      expect(
+        formatDetectionTime(
+          ts,
+          start,
+          TimestampDisplayMode.absolute,
+          showSeconds: false,
+          alwaysUse24HourFormat: true,
+        ),
+        '15:42',
       );
     });
 
@@ -133,7 +194,7 @@ void main() {
           TimestampDisplayMode.absolute,
           showSeconds: false,
         ),
-        '00:05 +1d',
+        '12:05 AM +1d',
       );
     });
   });

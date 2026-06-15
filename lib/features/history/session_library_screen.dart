@@ -22,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/utils/app_icons.dart';
+import '../../shared/utils/locale_time_format.dart';
 import '../../shared/utils/session_type_visuals.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
@@ -978,8 +979,13 @@ class _SessionTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final dateStr = DateFormat.yMMMd().format(session.startTime.toLocal());
-    final timeStr = DateFormat.jm().format(session.startTime.toLocal());
+    final timeStr = formatLocaleTime(
+      session.startTime,
+      l10n.localeName,
+      alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
+    );
 
     final duration = session.duration;
     final speciesCount = session.uniqueSpeciesCount;
