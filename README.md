@@ -25,6 +25,8 @@ Built for field researchers, conservationists, and birders, BirdNET Live identif
 <p align="center">
   <a href="https://play.google.com/store/apps/details?id=de.tu_chemnitz.mi.kahst.birdnet_live"><b>Google Play</b></a>
   &nbsp;·&nbsp;
+  <a href="https://apps.apple.com/us/app/birdnet-live/id6776168518"><b>App Store</b></a>
+  &nbsp;·&nbsp;
   <a href="https://github.com/birdnet-team/birdnet-live-app/releases/latest"><b>Download APK</b></a>
   &nbsp;·&nbsp;
   <a href="https://birdnet-team.github.io/birdnet-live-app/"><b>Documentation</b></a>
