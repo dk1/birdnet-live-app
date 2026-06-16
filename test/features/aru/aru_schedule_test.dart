@@ -253,7 +253,7 @@ void main() {
       expect(windows, isNotEmpty);
     });
 
-    test('uses 6am and 6pm fallback for daylight windows without location', () {
+    test('uses one-hour margins for daylight windows without location', () {
       final midnight = DateTime.utc(2026, 1, 1);
       final calc = AruScheduleCalculator(
         AruScheduleConfig(
@@ -267,7 +267,7 @@ void main() {
 
       final windows = calc.nextWindows(midnight, count: 3);
 
-      expect(windows.map((w) => w.start.hour), <int>[6, 7, 8]);
+      expect(windows.map((w) => w.start.hour), <int>[5, 6, 7]);
     });
 
     test('uses fallback sunrise window when location is unavailable', () {
@@ -286,5 +286,25 @@ void main() {
 
       expect(windows.map((w) => w.start.hour), <int>[5, 6]);
     });
+
+    test(
+      'uses fallback sunrise and sunset windows when location is unavailable',
+      () {
+        final midnight = DateTime.utc(2026, 1, 1);
+        final calc = AruScheduleCalculator(
+          AruScheduleConfig(
+            startTime: midnight,
+            cycleDuration: const Duration(minutes: 10),
+            repeatInterval: const Duration(hours: 1),
+            maxCycles: 4,
+            dielPattern: AruDielPattern.aroundSunriseAndSunset,
+          ),
+        );
+
+        final windows = calc.nextWindows(midnight, count: 4);
+
+        expect(windows.map((w) => w.start.hour), <int>[5, 6, 17, 18]);
+      },
+    );
   });
 }

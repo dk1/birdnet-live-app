@@ -48,6 +48,7 @@ final aruControllerProvider = Provider<AruController>((ref) {
 
   return AruController(
     saveSession: repository.save,
+    discardSession: repository.deleteMetadataOnly,
     startCycleRecording: (session, window) async {
       final metadata = session.aruMetadata;
       final mode = recordingModeFromString(metadata?.recordingMode ?? 'off');

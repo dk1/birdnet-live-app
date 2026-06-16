@@ -145,7 +145,10 @@ void main() {
       );
 
       expect(allDay.totalRecordedDuration, const Duration(hours: 4));
-      expect(daylight.totalRecordedDuration, const Duration(hours: 2));
+      expect(
+        daylight.totalRecordedDuration,
+        const Duration(hours: 2, minutes: 20),
+      );
       expect(daylight.totalBytes, lessThan(allDay.totalBytes!));
     });
 
@@ -185,7 +188,7 @@ void main() {
       );
 
       expect(estimate.totalBytes, isNull);
-      expect(estimate.bytesPerScheduledDay, 64000 * 3600 * 2);
+      expect(estimate.bytesPerScheduledDay, 64000 * 60 * 140);
       expect(
         estimate.bytesPerScheduledDay,
         lessThan(estimate.bytesPerDayAtFullDuty),

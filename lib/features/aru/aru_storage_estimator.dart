@@ -441,33 +441,12 @@ class AruStorageEstimator {
   }
 
   bool _isAllowedStart(AruScheduleConfig schedule, DateTime start) {
-    final sunTimes = estimateAruSunTimes(
-      date: start,
+    return isAruStartAllowedByDielPattern(
+      pattern: schedule.dielPattern,
+      start: start,
       latitude: schedule.latitude,
       longitude: schedule.longitude,
     );
-
-    return switch (schedule.dielPattern) {
-      AruDielPattern.anyTime => true,
-      AruDielPattern.dayOnly =>
-        !start.isBefore(sunTimes.sunrise) && start.isBefore(sunTimes.sunset),
-      AruDielPattern.nightOnly =>
-        start.isBefore(sunTimes.sunrise) || !start.isBefore(sunTimes.sunset),
-      AruDielPattern.aroundSunrise => _isInWindow(
-        start,
-        sunTimes.sunrise.subtract(const Duration(hours: 1)),
-        sunTimes.sunrise.add(const Duration(hours: 1)),
-      ),
-      AruDielPattern.aroundSunset => _isInWindow(
-        start,
-        sunTimes.sunset.subtract(const Duration(hours: 1)),
-        sunTimes.sunset.add(const Duration(hours: 1)),
-      ),
-    };
-  }
-
-  bool _isInWindow(DateTime time, DateTime start, DateTime end) {
-    return !time.isBefore(start) && time.isBefore(end);
   }
 
   int _rawCandidateCountBefore(

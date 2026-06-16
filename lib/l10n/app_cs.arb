@@ -313,6 +313,8 @@
   "aruDielNightOnly": "Noc",
   "aruDielAroundSunrise": "Kolem východu slunce",
   "aruDielAroundSunset": "Kolem západu slunce",
+  "aruDielAroundSunriseAndSunset": "Kolem východu a západu slunce",
+  "aruRecordingWindowEstimate": "Nahrává {ranges}",
   "aruSunTimesEstimate": "Východ {sunrise} · západ {sunset}",
   "aruCycleCount": "{count, plural, =1{1 cyklus} few{{count} cykly} other{{count} cyklů}}",
   "aruSessionGrouping": "Seskupení",

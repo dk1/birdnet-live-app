@@ -1216,11 +1216,14 @@ class _ScheduleStep extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          _sunTimesSummary(
+          _recordingWindowSummary(
             l10n: l10n,
             date: DateTime.now(),
+            dielPattern: dielPattern,
             latitude: latitude,
             longitude: longitude,
+            repeatInterval: repeatInterval,
+            cycleDuration: cycleDuration,
             alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
           ),
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -1882,6 +1885,7 @@ String _dielPatternLabel(AppLocalizations l10n, AruDielPattern pattern) {
     AruDielPattern.nightOnly => l10n.aruDielNightOnly,
     AruDielPattern.aroundSunrise => l10n.aruDielAroundSunrise,
     AruDielPattern.aroundSunset => l10n.aruDielAroundSunset,
+    AruDielPattern.aroundSunriseAndSunset => l10n.aruDielAroundSunriseAndSunset,
   };
 }
 
@@ -1892,32 +1896,91 @@ IconData _dielPatternIcon(AruDielPattern pattern) {
     AruDielPattern.nightOnly => AppIcons.darkMode,
     AruDielPattern.aroundSunrise => AppIcons.wbTwilightRounded,
     AruDielPattern.aroundSunset => AppIcons.wbTwilightRounded,
+    AruDielPattern.aroundSunriseAndSunset => AppIcons.wbTwilightRounded,
   };
 }
 
-String _sunTimesSummary({
+String _recordingWindowSummary({
   required AppLocalizations l10n,
   required DateTime date,
+  required AruDielPattern dielPattern,
   required double? latitude,
   required double? longitude,
+  required Duration repeatInterval,
+  required Duration cycleDuration,
   required bool alwaysUse24HourFormat,
 }) {
-  final sunTimes = estimateAruSunTimes(
+  final windows = aruDielWindowsForDate(
     date: date,
+    pattern: dielPattern,
     latitude: latitude,
     longitude: longitude,
   );
-  return l10n.aruSunTimesEstimate(
-    formatLocaleTime(
-      sunTimes.sunrise,
-      l10n.localeName,
-      alwaysUse24HourFormat: alwaysUse24HourFormat,
-    ),
-    formatLocaleTime(
-      sunTimes.sunset,
-      l10n.localeName,
-      alwaysUse24HourFormat: alwaysUse24HourFormat,
-    ),
+  final visibleWindows =
+      dielPattern == AruDielPattern.nightOnly && windows.length > 1
+          ? windows.skip(1)
+          : windows;
+  final ranges = visibleWindows
+      .map((window) {
+        final aligned = _alignedRecordingRange(
+          window,
+          repeatInterval: repeatInterval,
+          cycleDuration: cycleDuration,
+        );
+        return '${_formatWindowTime(aligned.start, l10n, alwaysUse24HourFormat)}-${_formatWindowTime(aligned.end, l10n, alwaysUse24HourFormat)}';
+      })
+      .join('; ');
+
+  return l10n.aruRecordingWindowEstimate(ranges);
+}
+
+AruDielWindow _alignedRecordingRange(
+  AruDielWindow window, {
+  required Duration repeatInterval,
+  required Duration cycleDuration,
+}) {
+  final firstStart = _ceilToInterval(window.start, repeatInterval);
+  final lastStart = _lastIntervalStartBefore(window.end, repeatInterval);
+  if (lastStart == null || lastStart.isBefore(firstStart)) {
+    return window;
+  }
+  return AruDielWindow(start: firstStart, end: lastStart.add(cycleDuration));
+}
+
+DateTime _ceilToInterval(DateTime time, Duration interval) {
+  final midnight =
+      time.isUtc
+          ? DateTime.utc(time.year, time.month, time.day)
+          : DateTime(time.year, time.month, time.day);
+  final elapsedMicros = time.difference(midnight).inMicroseconds;
+  final intervalMicros = interval.inMicroseconds;
+  final remainder = elapsedMicros % intervalMicros;
+  if (remainder == 0) return time;
+  return time.add(Duration(microseconds: intervalMicros - remainder));
+}
+
+DateTime? _lastIntervalStartBefore(DateTime time, Duration interval) {
+  final midnight =
+      time.isUtc
+          ? DateTime.utc(time.year, time.month, time.day)
+          : DateTime(time.year, time.month, time.day);
+  final elapsedMicros = time.difference(midnight).inMicroseconds;
+  if (elapsedMicros <= 0) return null;
+  final intervalMicros = interval.inMicroseconds;
+  final previousMicros =
+      ((elapsedMicros - 1) ~/ intervalMicros) * intervalMicros;
+  return midnight.add(Duration(microseconds: previousMicros));
+}
+
+String _formatWindowTime(
+  DateTime time,
+  AppLocalizations l10n,
+  bool alwaysUse24HourFormat,
+) {
+  return formatLocaleTime(
+    time,
+    l10n.localeName,
+    alwaysUse24HourFormat: alwaysUse24HourFormat,
   );
 }
 

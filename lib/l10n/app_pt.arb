@@ -154,6 +154,8 @@
   "aruDielNightOnly": "Noite",
   "aruDielAroundSunrise": "Ao redor do nascer do sol",
   "aruDielAroundSunset": "Ao redor do pôr do sol",
+  "aruDielAroundSunriseAndSunset": "Ao redor do nascer e do pôr do sol",
+  "aruRecordingWindowEstimate": "Grava {ranges}",
   "aruSunTimesEstimate": "Nascer {sunrise} · pôr {sunset}",
   "aruStartDeployment": "Instalar gravador",
   "aruActiveTitle": "Estação ARU",

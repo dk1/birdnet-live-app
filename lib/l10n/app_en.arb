@@ -631,6 +631,17 @@
   "@aruDielAroundSunset": {
     "description": "ARU recording window option around estimated sunset"
   },
+  "aruDielAroundSunriseAndSunset": "Around sunrise and sunset",
+  "@aruDielAroundSunriseAndSunset": {
+    "description": "ARU recording window option around estimated sunrise and sunset"
+  },
+  "aruRecordingWindowEstimate": "Records {ranges}",
+  "@aruRecordingWindowEstimate": {
+    "description": "ARU setup estimate of the schedule-aligned recording ranges for the selected recording window",
+    "placeholders": {
+      "ranges": { "type": "String" }
+    }
+  },
   "aruSunTimesEstimate": "Sunrise {sunrise} · sunset {sunset}",
   "@aruSunTimesEstimate": {
     "description": "ARU setup estimate of local sunrise and sunset used for recording windows",
@@ -655,7 +666,7 @@
   "@aruTabSpectrogram": {
     "description": "Short tab label for the active ARU spectrogram dashboard"
   },
-  "aruTabSchedule": "Plan",
+  "aruTabSchedule": "Schedule",
   "@aruTabSchedule": {
     "description": "Short tab label for the active ARU schedule dashboard"
   },

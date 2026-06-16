@@ -283,9 +283,13 @@ class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final gridWidth = constraints.maxWidth.clamp(0.0, maxWidth);
-          final cellWidth = (gridWidth - spacing) / 2;
+          final pageOuterSpacing = spacing / 2;
+          final pageWidth =
+              gridWidth > spacing ? gridWidth - spacing : gridWidth;
+          final cellWidth = (pageWidth - spacing) / 2;
           final cellHeight = cellWidth / aspectRatio;
           final gridHeight = cellHeight * 2 + spacing;
+          final pageMargin = EdgeInsets.symmetric(horizontal: pageOuterSpacing);
 
           return Column(
             mainAxisSize: MainAxisSize.min,
@@ -301,97 +305,105 @@ class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
                   },
                   children: [
                     // Page 1 — Active Modes
-                    GridView.count(
-                      padding: EdgeInsets.zero,
-                      crossAxisCount: 2,
-                      crossAxisSpacing: spacing,
-                      mainAxisSpacing: spacing,
-                      physics: const NeverScrollableScrollPhysics(),
-                      childAspectRatio: aspectRatio,
-                      children: [
-                        _ModeCard(
-                          icon: sessionTypeIcon(SessionType.live),
-                          label: widget.l10n.liveMode,
-                          description: widget.l10n.liveModeDescription,
-                          accentColor: sessionTypeAccentColor(
-                            widget.theme,
-                            SessionType.live,
+                    Padding(
+                      padding: pageMargin,
+                      child: GridView.count(
+                        padding: EdgeInsets.zero,
+                        crossAxisCount: 2,
+                        crossAxisSpacing: spacing,
+                        mainAxisSpacing: spacing,
+                        physics: const NeverScrollableScrollPhysics(),
+                        childAspectRatio: aspectRatio,
+                        children: [
+                          _ModeCard(
+                            icon: sessionTypeIcon(SessionType.live),
+                            label: widget.l10n.liveMode,
+                            description: widget.l10n.liveModeDescription,
+                            accentColor: sessionTypeAccentColor(
+                              widget.theme,
+                              SessionType.live,
+                            ),
+                            isTablet: widget.isTablet,
+                            onTap: () => _openLive(context),
                           ),
-                          isTablet: widget.isTablet,
-                          onTap: () => _openLive(context),
-                        ),
-                        _ModeCard(
-                          icon: sessionTypeIcon(SessionType.pointCount),
-                          label: widget.l10n.pointCountMode,
-                          description: widget.l10n.pointCountModeDescription,
-                          accentColor: sessionTypeAccentColor(
-                            widget.theme,
-                            SessionType.pointCount,
+                          _ModeCard(
+                            icon: sessionTypeIcon(SessionType.pointCount),
+                            label: widget.l10n.pointCountMode,
+                            description: widget.l10n.pointCountModeDescription,
+                            accentColor: sessionTypeAccentColor(
+                              widget.theme,
+                              SessionType.pointCount,
+                            ),
+                            isTablet: widget.isTablet,
+                            onTap: () => _openPointCount(context),
                           ),
-                          isTablet: widget.isTablet,
-                          onTap: () => _openPointCount(context),
-                        ),
-                        _ModeCard(
-                          icon: sessionTypeIcon(SessionType.survey),
-                          label: widget.l10n.surveyMode,
-                          description: widget.l10n.surveyModeDescription,
-                          accentColor: sessionTypeAccentColor(
-                            widget.theme,
-                            SessionType.survey,
+                          _ModeCard(
+                            icon: sessionTypeIcon(SessionType.survey),
+                            label: widget.l10n.surveyMode,
+                            description: widget.l10n.surveyModeDescription,
+                            accentColor: sessionTypeAccentColor(
+                              widget.theme,
+                              SessionType.survey,
+                            ),
+                            isTablet: widget.isTablet,
+                            onTap: () => _openSurvey(context),
                           ),
-                          isTablet: widget.isTablet,
-                          onTap: () => _openSurvey(context),
-                        ),
-                        _ModeCard(
-                          icon: sessionTypeIcon(SessionType.fileUpload),
-                          label: widget.l10n.fileAnalysisMode,
-                          description: widget.l10n.fileAnalysisModeDescription,
-                          accentColor: sessionTypeAccentColor(
-                            widget.theme,
-                            SessionType.fileUpload,
+                          _ModeCard(
+                            icon: sessionTypeIcon(SessionType.fileUpload),
+                            label: widget.l10n.fileAnalysisMode,
+                            description:
+                                widget.l10n.fileAnalysisModeDescription,
+                            accentColor: sessionTypeAccentColor(
+                              widget.theme,
+                              SessionType.fileUpload,
+                            ),
+                            isTablet: widget.isTablet,
+                            onTap: () => _openFileAnalysis(context),
                           ),
-                          isTablet: widget.isTablet,
-                          onTap: () => _openFileAnalysis(context),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     // Page 2 — Coming Soon Modes & Placeholders
-                    GridView.count(
-                      padding: EdgeInsets.zero,
-                      crossAxisCount: 2,
-                      crossAxisSpacing: spacing,
-                      mainAxisSpacing: spacing,
-                      physics: const NeverScrollableScrollPhysics(),
-                      childAspectRatio: aspectRatio,
-                      children: [
-                        _ModeCard(
-                          icon: sessionTypeIcon(SessionType.batchAnalysis),
-                          label: widget.l10n.batchAnalysisMode,
-                          description: widget.l10n.batchAnalysisModeDescription,
-                          accentColor: sessionTypeAccentColor(
-                            widget.theme,
-                            SessionType.batchAnalysis,
+                    Padding(
+                      padding: pageMargin,
+                      child: GridView.count(
+                        padding: EdgeInsets.zero,
+                        crossAxisCount: 2,
+                        crossAxisSpacing: spacing,
+                        mainAxisSpacing: spacing,
+                        physics: const NeverScrollableScrollPhysics(),
+                        childAspectRatio: aspectRatio,
+                        children: [
+                          _ModeCard(
+                            icon: sessionTypeIcon(SessionType.batchAnalysis),
+                            label: widget.l10n.batchAnalysisMode,
+                            description:
+                                widget.l10n.batchAnalysisModeDescription,
+                            accentColor: sessionTypeAccentColor(
+                              widget.theme,
+                              SessionType.batchAnalysis,
+                            ),
+                            isTablet: widget.isTablet,
+                            comingSoon: true,
+                            onTap:
+                                () => _showComingSoonSnackBar(
+                                  context,
+                                  widget.l10n.batchAnalysisMode,
+                                ),
                           ),
-                          isTablet: widget.isTablet,
-                          comingSoon: true,
-                          onTap:
-                              () => _showComingSoonSnackBar(
-                                context,
-                                widget.l10n.batchAnalysisMode,
-                              ),
-                        ),
-                        _ModeCard(
-                          icon: sessionTypeIcon(SessionType.aru),
-                          label: widget.l10n.aruMode,
-                          description: widget.l10n.aruModeDescription,
-                          accentColor: sessionTypeAccentColor(
-                            widget.theme,
-                            SessionType.aru,
+                          _ModeCard(
+                            icon: sessionTypeIcon(SessionType.aru),
+                            label: widget.l10n.aruMode,
+                            description: widget.l10n.aruModeDescription,
+                            accentColor: sessionTypeAccentColor(
+                              widget.theme,
+                              SessionType.aru,
+                            ),
+                            isTablet: widget.isTablet,
+                            onTap: () => _openAru(context, ref),
                           ),
-                          isTablet: widget.isTablet,
-                          onTap: () => _openAru(context, ref),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -456,13 +468,13 @@ class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
     if (session != null &&
         state != AruControllerState.completed &&
         state != AruControllerState.idle) {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const AruActiveScreen()),
-      );
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => const AruActiveScreen()));
     } else {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const AruSetupScreen()),
-      );
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => const AruSetupScreen()));
     }
   }
 

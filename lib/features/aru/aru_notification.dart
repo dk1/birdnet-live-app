@@ -8,6 +8,7 @@ import 'dart:ui';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/core/constants/app_constants.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,10 +36,12 @@ class _AruTaskHandler extends TaskHandler {
 
   @override
   void onNotificationButtonPressed(String id) {
-    if (id == 'stop') {
+    if (id == AruNotificationService.stopActionId) {
+      FlutterForegroundTask.wakeUpScreen();
       FlutterForegroundTask.launchApp(AruNotificationService.stopRoute);
       FlutterForegroundTask.sendDataToMain({'action': 'aruStop'});
-    } else if (id == 'open') {
+    } else if (id == AruNotificationService.openActionId) {
+      FlutterForegroundTask.wakeUpScreen();
       FlutterForegroundTask.launchApp(AruNotificationService.openRoute);
       FlutterForegroundTask.sendDataToMain({'action': 'aruOpen'});
     }
@@ -46,7 +49,6 @@ class _AruTaskHandler extends TaskHandler {
 
   @override
   void onNotificationPressed() {
-    FlutterForegroundTask.launchApp(AruNotificationService.openRoute);
     FlutterForegroundTask.sendDataToMain({'action': 'aruOpen'});
   }
 
@@ -55,8 +57,17 @@ class _AruTaskHandler extends TaskHandler {
 }
 
 class AruNotificationService {
+  static const String stopActionId = 'aruStop';
+  static const String openActionId = 'aruOpen';
   static const String openRoute = '/aru-active';
   static const String stopRoute = '/aru-stop';
+  static const int serviceId = 512;
+  static const MethodChannel _notificationChannel = MethodChannel(
+    'com.birdnet/aru_notification',
+  );
+  static const MethodChannel _intentChannel = MethodChannel(
+    'com.birdnet/aru_notification_intents',
+  );
 
   static String _notificationTitle = '';
   static String _stopButtonText = '';
@@ -128,22 +139,19 @@ class AruNotificationService {
       }
 
       final result = await FlutterForegroundTask.startService(
-        serviceId: 512,
+        serviceId: serviceId,
         notificationTitle: title,
         notificationText: text,
         notificationInitialRoute: openRoute,
         notificationIcon: const NotificationIcon(
           metaDataName: 'com.birdnet.live.notification_icon',
         ),
-        notificationButtons: [
-          NotificationButton(id: 'stop', text: _stopButtonText),
-          NotificationButton(id: 'open', text: _openButtonText),
-        ],
         callback: aruTaskCallback,
       );
       if (result is ServiceRequestSuccess) {
         _running = true;
         _nextStartAttempt = null;
+        await _updateNativeNotificationActions(title: title, text: text);
         debugPrint('[AruNotification] started');
       } else {
         _running = false;
@@ -168,11 +176,8 @@ class AruNotificationService {
       notificationIcon: const NotificationIcon(
         metaDataName: 'com.birdnet.live.notification_icon',
       ),
-      notificationButtons: [
-        NotificationButton(id: 'stop', text: _stopButtonText),
-        NotificationButton(id: 'open', text: _openButtonText),
-      ],
     );
+    await _updateNativeNotificationActions(title: title, text: text);
   }
 
   Future<void> stop() async {
@@ -180,6 +185,48 @@ class AruNotificationService {
     _running = false;
     _nextStartAttempt = null;
     debugPrint('[AruNotification] stopped');
+  }
+
+  static Future<String?> takePendingNativeAction() async {
+    if (!Platform.isAndroid) return null;
+    final action = await _intentChannel.invokeMethod<String>(
+      'takePendingAction',
+    );
+    return action;
+  }
+
+  static void setNativeActionHandler(void Function(String action)? handler) {
+    if (!Platform.isAndroid) return;
+    _intentChannel.setMethodCallHandler((call) async {
+      if (call.method == 'onNotificationAction' && call.arguments is String) {
+        final action = call.arguments as String;
+        handler?.call(action);
+        await _intentChannel.invokeMethod<void>('clearPendingAction', action);
+      }
+    });
+  }
+
+  static Future<void> _updateNativeNotificationActions({
+    required String title,
+    required String text,
+  }) async {
+    if (!Platform.isAndroid) return;
+    try {
+      await _notificationChannel.invokeMethod<void>('update', {
+        'serviceId': serviceId,
+        'channelId': 'birdnet_aru_fg',
+        'title': title,
+        'text': text,
+        'stopText': _stopButtonText,
+        'openText': _openButtonText,
+        'openAction': openActionId,
+        'stopAction': stopActionId,
+        'openRoute': openRoute,
+        'stopRoute': stopRoute,
+      });
+    } catch (error, stackTrace) {
+      debugPrint('[AruNotification] native update failed: $error\n$stackTrace');
+    }
   }
 }
 

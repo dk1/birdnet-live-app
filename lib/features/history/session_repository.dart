@@ -102,19 +102,29 @@ class SessionRepository {
   ///
   /// Also deletes any associated recording directory.
   Future<void> delete(String id) async {
-    final basePath = await _getBasePath();
-    final file = File('$basePath/${_sanitiseId(id)}.json');
-    if (await file.exists()) {
-      await file.delete();
-    }
+    await deleteMetadataOnly(id);
 
     // Also try to delete associated recordings.
     // Derive recordings dir as a sibling of the sessions dir.
+    final basePath = await _getBasePath();
     final sessionsDir = Directory(basePath);
     final parentDir = sessionsDir.parent.path;
     final recordingsDir = Directory('$parentDir/recordings/${_sanitiseId(id)}');
     if (await recordingsDir.exists()) {
       await recordingsDir.delete(recursive: true);
+    }
+  }
+
+  /// Delete only the saved session JSON by ID.
+  ///
+  /// Leaves associated recording files in place. ARU per-cycle sessions use
+  /// this to discard a completed deployment aggregate without deleting cycle
+  /// clip directories that are still referenced by the cycle sessions.
+  Future<void> deleteMetadataOnly(String id) async {
+    final basePath = await _getBasePath();
+    final file = File('$basePath/${_sanitiseId(id)}.json');
+    if (await file.exists()) {
+      await file.delete();
     }
   }
 

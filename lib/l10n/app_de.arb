@@ -154,6 +154,8 @@
   "aruDielNightOnly": "Nacht",
   "aruDielAroundSunrise": "Um Sonnenaufgang",
   "aruDielAroundSunset": "Um Sonnenuntergang",
+  "aruDielAroundSunriseAndSunset": "Um Sonnenaufgang und Sonnenuntergang",
+  "aruRecordingWindowEstimate": "Aufnahmen {ranges}",
   "aruSunTimesEstimate": "Sonnenaufgang {sunrise} · Sonnenuntergang {sunset}",
   "aruStartDeployment": "Rekorder ausbringen",
   "aruActiveTitle": "ARU-Station",

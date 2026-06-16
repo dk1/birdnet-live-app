@@ -24,6 +24,9 @@ enum AruControllerState {
 /// Persists an ARU session after a state transition.
 typedef AruSessionSaver = Future<void> Function(LiveSession session);
 
+/// Deletes a saved ARU session record without touching shared recordings.
+typedef AruSessionDiscarder = Future<void> Function(String sessionId);
+
 /// Starts audio capture for a scheduled ARU cycle.
 typedef AruCycleRecordingStarter =
     Future<String?> Function(LiveSession session, AruCycleWindow window);
@@ -48,17 +51,20 @@ typedef AruDetectionClipSaver =
 class AruController {
   AruController({
     required AruSessionSaver saveSession,
+    AruSessionDiscarder? discardSession,
     AruCycleRecordingStarter? startCycleRecording,
     AruCycleRecordingStopper? stopCycleRecording,
     AruDetectionClipSaver? saveDetectionClip,
     DateTime Function()? now,
   }) : _saveSession = saveSession,
+       _discardSession = discardSession,
        _startCycleRecording = startCycleRecording,
        _stopCycleRecording = stopCycleRecording,
        _saveDetectionClip = saveDetectionClip,
        _now = now ?? DateTime.now;
 
   final AruSessionSaver _saveSession;
+  final AruSessionDiscarder? _discardSession;
   final AruCycleRecordingStarter? _startCycleRecording;
   final AruCycleRecordingStopper? _stopCycleRecording;
   final AruDetectionClipSaver? _saveDetectionClip;
@@ -526,11 +532,25 @@ class AruController {
   int _samplingTimeBucketFor(DetectionRecord record) {
     final metadata = _session?.aruMetadata;
     final cycle = _cycleFor(record);
-    if (metadata?.eachCycleIsSession == true) {
-      final base = cycle?.plannedStart ?? _activeCycleStart ?? record.timestamp;
-      return record.timestamp.difference(base).inMinutes;
-    }
-    return cycle?.index ?? (record.timestamp.millisecondsSinceEpoch ~/ 60000);
+    final base =
+        metadata?.eachCycleIsSession == true
+            ? cycle?.plannedStart ?? _activeCycleStart ?? record.timestamp
+            : metadata?.scheduleStart ?? record.timestamp;
+    return record.timestamp.difference(base).inMinutes;
+  }
+
+  bool _shouldDiscardAggregateSession(LiveSession session) {
+    final metadata = session.aruMetadata;
+    if (metadata == null) return false;
+    return metadata.eachCycleIsSession &&
+        recordingModeFromString(metadata.recordingMode) ==
+            RecordingMode.detectionsOnly;
+  }
+
+  Future<void> _discardAggregateSession(LiveSession session) async {
+    final discard = _discardSession;
+    if (discard == null || !_shouldDiscardAggregateSession(session)) return;
+    await discard(session.id);
   }
 
   void _upsertCycle(AruCycleMetadata cycle) {
@@ -572,7 +592,13 @@ class AruController {
 
   Future<void> _persist() async {
     final session = _session;
-    if (session != null) await _saveSession(session);
+    if (session == null) return;
+    if (_state == AruControllerState.completed &&
+        _shouldDiscardAggregateSession(session)) {
+      await _discardAggregateSession(session);
+      return;
+    }
+    await _saveSession(session);
   }
 
   AruDeploymentMetadata? _cycleDeploymentMetadata(

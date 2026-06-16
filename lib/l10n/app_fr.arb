@@ -154,6 +154,8 @@
   "aruDielNightOnly": "Nuit",
   "aruDielAroundSunrise": "Autour du lever du soleil",
   "aruDielAroundSunset": "Autour du coucher du soleil",
+  "aruDielAroundSunriseAndSunset": "Autour du lever et du coucher du soleil",
+  "aruRecordingWindowEstimate": "Enregistre {ranges}",
   "aruSunTimesEstimate": "Lever {sunrise} · coucher {sunset}",
   "aruStartDeployment": "Déployer l'enregistreur",
   "aruActiveTitle": "Station ARU",

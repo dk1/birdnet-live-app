@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -134,17 +136,37 @@ class _AruNotificationActionListenerState
   void initState() {
     super.initState();
     FlutterForegroundTask.addTaskDataCallback(_onTaskData);
+    AruNotificationService.setNativeActionHandler(_onNativeAction);
+    unawaited(_takePendingNativeAction());
   }
 
   @override
   void dispose() {
+    AruNotificationService.setNativeActionHandler(null);
     FlutterForegroundTask.removeTaskDataCallback(_onTaskData);
     super.dispose();
+  }
+
+  Future<void> _takePendingNativeAction() async {
+    final action = await AruNotificationService.takePendingNativeAction();
+    if (!mounted || action == null) return;
+    _handleAruAction(action);
+  }
+
+  void _onNativeAction(String action) {
+    if (!mounted) return;
+    _handleAruAction(action);
   }
 
   void _onTaskData(Object data) {
     if (data is! Map) return;
     final action = data['action'];
+    if (action is String) {
+      _handleAruAction(action);
+    }
+  }
+
+  void _handleAruAction(String action) {
     if (action == 'aruOpen') {
       _openAruRoute(requestStop: false);
     } else if (action == 'aruStop') {

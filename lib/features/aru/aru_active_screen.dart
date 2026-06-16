@@ -45,8 +45,10 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     with SingleTickerProviderStateMixin {
   Timer? _timer;
   late final TabController _tabController;
+  late final LiveController _liveController;
   final AruNotificationService _notificationService = AruNotificationService();
   final Battery _battery = Battery();
+  bool _routeActive = true;
   bool _stopping = false;
   bool _stopDialogShowing = false;
   bool _tickBusy = false;
@@ -63,38 +65,52 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     _tabController.addListener(() {
       if (mounted) setState(() {});
     });
-    ref.read(liveControllerProvider).onStateChanged = _onInferenceStateChanged;
+    _liveController = ref.read(liveControllerProvider);
+    _liveController.onStateChanged = _onInferenceStateChanged;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _tick();
-      if (!mounted) return;
+      if (!mounted || !_routeActive) return;
       await _syncNotification();
-      if (widget.confirmStopOnOpen && mounted) {
+      if (widget.confirmStopOnOpen && mounted && _routeActive) {
         await _confirmStop();
       }
     });
   }
 
   @override
+  void activate() {
+    super.activate();
+    _routeActive = true;
+    _timer ??= Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  }
+
+  @override
+  void deactivate() {
+    _routeActive = false;
+    _timer?.cancel();
+    _timer = null;
+    super.deactivate();
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
-    final liveController = ref.read(liveControllerProvider);
-    if (liveController.onStateChanged == _onInferenceStateChanged) {
-      liveController.onStateChanged = null;
+    if (_liveController.onStateChanged == _onInferenceStateChanged) {
+      _liveController.onStateChanged = null;
     }
     _tabController.dispose();
     super.dispose();
   }
 
   void _onInferenceStateChanged() {
-    if (!mounted) return;
+    if (!mounted || !_routeActive) return;
     if (_finishingDeployment) return;
     unawaited(_syncDetectionsFromInference());
   }
 
   Future<void> _syncDetectionsFromInference() async {
-    final liveController = ref.read(liveControllerProvider);
-    await _syncDetections(liveController.sessionDetections);
+    await _syncDetections(_liveController.sessionDetections);
   }
 
   Future<void> _syncDetections(List<DetectionRecord> detections) async {
@@ -108,15 +124,16 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   Future<void> _syncDetectionsNow(List<DetectionRecord> detections) async {
     final controller = ref.read(aruControllerProvider);
     await controller.syncDetections(detections);
-    if (!mounted) return;
+    if (!mounted || !_routeActive) return;
     ref.read(aruSessionProvider.notifier).state = controller.session;
     setState(() {});
   }
 
   Future<void> _tick() async {
-    if (!mounted || _stopping || _tickBusy) return;
+    if (!mounted || !_routeActive || _stopping || _tickBusy) return;
     _tickBusy = true;
     try {
+      if (!mounted || !_routeActive) return;
       final controller = ref.read(aruControllerProvider);
       final session = controller.session;
       if (session == null || controller.state == AruControllerState.completed) {
@@ -130,7 +147,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
         return;
       }
       await controller.evaluate();
-      if (!mounted) return;
+      if (!mounted || !_routeActive) return;
       ref.read(aruStateProvider.notifier).state = controller.state;
       ref.read(aruSessionProvider.notifier).state = controller.session;
       if (controller.state == AruControllerState.completed) {
@@ -138,7 +155,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
         final reviewSession = await _finishDeployment(
           reason: SessionStopReason.maxDuration,
         );
-        if (!mounted) return;
+        if (!mounted || !_routeActive) return;
         setState(() => _stopping = false);
         _openReview(reviewSession);
         return;
@@ -166,11 +183,22 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     if (_aruInferenceActive || _inferenceStarting) return;
     _inferenceStarting = true;
     try {
-      final controller = ref.read(liveControllerProvider);
+      if (!mounted || !_routeActive) return;
+      final controller = _liveController;
       if (controller.state == LiveState.idle) {
         await controller.loadModel();
       }
       if (controller.state != LiveState.ready) return;
+      if (!mounted || !_routeActive) return;
+
+      final geoScoresFuture = ref.read(geoScoresProvider.future);
+      final geoThreshold = ref.read(geoThresholdProvider);
+      final geoModelSpeciesNamesFuture = ref.read(
+        geoModelSpeciesNamesProvider.future,
+      );
+      final geoScores = await geoScoresFuture;
+      final geoModelSpeciesNames = await geoModelSpeciesNamesFuture;
+      if (!mounted || !_routeActive) return;
 
       await controller.startSession(
         windowDuration: session.settings.windowDuration,
@@ -178,11 +206,9 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
         confidenceThreshold: session.settings.confidenceThreshold,
         speciesFilterMode: session.settings.speciesFilterMode,
         recordingMode: RecordingMode.off,
-        geoScores: await ref.read(geoScoresProvider.future),
-        geoThreshold: ref.read(geoThresholdProvider),
-        geoModelSpeciesNames: await ref.read(
-          geoModelSpeciesNamesProvider.future,
-        ),
+        geoScores: geoScores,
+        geoThreshold: geoThreshold,
+        geoModelSpeciesNames: geoModelSpeciesNames,
         poolingWindows: session.settings.poolingWindows,
         poolingMode: session.settings.poolingMode ?? 'lme',
         sensitivity: session.settings.sensitivity ?? 1.0,
@@ -201,7 +227,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
 
   Future<void> _stopInference() async {
     if (!_aruInferenceActive) return;
-    final controller = ref.read(liveControllerProvider);
+    final controller = _liveController;
     await _syncDetectionsFromInference();
     if (controller.state == LiveState.active ||
         controller.state == LiveState.paused) {
@@ -225,7 +251,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
         confirmLabel: l10n.aruStopDeployment,
         cancelLabel: l10n.cancel,
       );
-      if (confirmed && mounted) {
+      if (confirmed && mounted && _routeActive) {
         await _stopDeployment();
       }
     } finally {
@@ -239,7 +265,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     final reviewSession = await _finishDeployment(
       reason: SessionStopReason.manual,
     );
-    if (!mounted) return;
+    if (!mounted || !_routeActive) return;
     setState(() => _stopping = false);
     _openReview(reviewSession);
   }
@@ -254,7 +280,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       await _stopInference();
       await _syncDetectionsTail;
       await controller.stop(reason: reason, reasonValue: reasonValue);
-      if (!mounted) return controller.reviewSession;
+      if (!mounted || !_routeActive) return controller.reviewSession;
       ref.read(aruStateProvider.notifier).state = controller.state;
       ref.read(aruSessionProvider.notifier).state = controller.session;
       await _notificationService.stop();
@@ -268,7 +294,8 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   }
 
   void _openReview(LiveSession? session) {
-    if (!mounted || session == null) {
+    if (!mounted || !_routeActive) return;
+    if (session == null) {
       Navigator.of(context).pop();
       return;
     }
@@ -302,12 +329,12 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       final level = await _battery.batteryLevel;
       if (level > threshold) return false;
 
-      if (mounted) setState(() => _stopping = true);
+      if (mounted && _routeActive) setState(() => _stopping = true);
       final reviewSession = await _finishDeployment(
         reason: SessionStopReason.lowBattery,
         reasonValue: level,
       );
-      if (!mounted) return true;
+      if (!mounted || !_routeActive) return true;
       setState(() => _stopping = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

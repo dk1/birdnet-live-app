@@ -154,6 +154,8 @@
   "aruDielNightOnly": "Noche",
   "aruDielAroundSunrise": "Alrededor del amanecer",
   "aruDielAroundSunset": "Alrededor del atardecer",
+  "aruDielAroundSunriseAndSunset": "Alrededor del amanecer y el atardecer",
+  "aruRecordingWindowEstimate": "Graba {ranges}",
   "aruSunTimesEstimate": "Amanecer {sunrise} · atardecer {sunset}",
   "aruStartDeployment": "Desplegar grabador",
   "aruActiveTitle": "Estación ARU",

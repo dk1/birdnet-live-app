@@ -5,21 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.6] - 2026-06-16
+
+### Added
+
+- Added an ARU schedule option for recording around both sunrise and sunset.
+- Added native Android handling for ARU foreground notification actions so Stop and Open work reliably from notification taps.
+
+### Changed
+
+- Refined ARU setup recording-window summaries to show the effective aligned recording ranges for each diel pattern.
+- Adjusted the home mode carousel spacing and Live Mode tip height to avoid cramped text at larger accessibility scales.
+
+### Fixed
+
+- Fixed clip-only ARU per-cycle deployments so the completed aggregate session metadata is discarded without deleting cycle recording directories.
+- Fixed ARU Smart sampling buckets for combined deployments so retained detections are grouped relative to deployment start.
+
 ## [0.17.5] - 2026-06-15
 
 ### Added
 
 - Added a new setting "Playback overlay in review" to trigger the modal player sheet with a spectrogram when reviewing clips from clips-only Session reviews.
 - Active by default for sessions that have clips only and no full recording/spectrogram, and bypassed (never shown) for sessions with full audio recordings.
-
-### Changed
 - Added support for launching the ARU active screen directly from Android foreground notification actions with optional stop confirmation.
 - Added `AruNotificationRoute` to restore unfinished ARU deployments when app launches from notification before routing to active screen or setup.
+
+### Changed
+
+- Updated ARU help and user documentation to reflect current behavior: cycle-level Full Audio or retained detection clips, live inference during active cycles, and Android foreground notification controls.
 - Improved ARU setup summaries and storage estimates to consistently show effective recording and sampling modes when combined-session deployments cannot use Full Audio.
 - Improved locale-aware time/date formatting helpers to prefer localized `intl` formats with safe fallbacks when locale data is unavailable.
 - Optimized ARU schedule evaluation for far-future open-ended deployments by jumping directly to the candidate cycle index instead of scanning from deployment start.
 - Refactored Android foreground task notification callbacks to be handled at app root instead of individual screens, enabling route-based navigation on notification action.
-- Updated ARU help and user documentation to reflect current behavior: cycle-level Full Audio or retained detection clips, live inference during active cycles, and Android foreground
 
 ### Fixed
 

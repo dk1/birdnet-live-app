@@ -37,6 +37,9 @@ enum AruDielPattern {
 
   /// Windows around local sunset.
   aroundSunset,
+
+  /// Windows around local sunrise and sunset.
+  aroundSunriseAndSunset,
 }
 
 /// User-configured repeating ARU schedule.
@@ -129,6 +132,110 @@ class AruSunTimes {
 
   final DateTime sunrise;
   final DateTime sunset;
+}
+
+/// One allowed diel interval for ARU recording starts.
+class AruDielWindow {
+  const AruDielWindow({required this.start, required this.end});
+
+  final DateTime start;
+  final DateTime end;
+
+  bool contains(DateTime time) => !time.isBefore(start) && time.isBefore(end);
+}
+
+List<AruDielWindow> aruDielWindowsForDate({
+  required DateTime date,
+  required AruDielPattern pattern,
+  double? latitude,
+  double? longitude,
+}) {
+  final localMidnight =
+      date.isUtc
+          ? DateTime.utc(date.year, date.month, date.day)
+          : DateTime(date.year, date.month, date.day);
+  final sunTimes = estimateAruSunTimes(
+    date: localMidnight,
+    latitude: latitude,
+    longitude: longitude,
+  );
+
+  switch (pattern) {
+    case AruDielPattern.anyTime:
+      return [
+        AruDielWindow(
+          start: localMidnight,
+          end: localMidnight.add(const Duration(days: 1)),
+        ),
+      ];
+    case AruDielPattern.dayOnly:
+      return [
+        AruDielWindow(
+          start: sunTimes.sunrise.subtract(const Duration(hours: 1)),
+          end: sunTimes.sunset.add(const Duration(hours: 1)),
+        ),
+      ];
+    case AruDielPattern.nightOnly:
+      final previousSunTimes = estimateAruSunTimes(
+        date: localMidnight.subtract(const Duration(days: 1)),
+        latitude: latitude,
+        longitude: longitude,
+      );
+      final nextSunTimes = estimateAruSunTimes(
+        date: localMidnight.add(const Duration(days: 1)),
+        latitude: latitude,
+        longitude: longitude,
+      );
+      return [
+        AruDielWindow(
+          start: previousSunTimes.sunset.subtract(const Duration(hours: 1)),
+          end: sunTimes.sunrise.add(const Duration(hours: 1)),
+        ),
+        AruDielWindow(
+          start: sunTimes.sunset.subtract(const Duration(hours: 1)),
+          end: nextSunTimes.sunrise.add(const Duration(hours: 1)),
+        ),
+      ];
+    case AruDielPattern.aroundSunrise:
+      return [
+        AruDielWindow(
+          start: sunTimes.sunrise.subtract(const Duration(hours: 1)),
+          end: sunTimes.sunrise.add(const Duration(hours: 1)),
+        ),
+      ];
+    case AruDielPattern.aroundSunset:
+      return [
+        AruDielWindow(
+          start: sunTimes.sunset.subtract(const Duration(hours: 1)),
+          end: sunTimes.sunset.add(const Duration(hours: 1)),
+        ),
+      ];
+    case AruDielPattern.aroundSunriseAndSunset:
+      return [
+        AruDielWindow(
+          start: sunTimes.sunrise.subtract(const Duration(hours: 1)),
+          end: sunTimes.sunrise.add(const Duration(hours: 1)),
+        ),
+        AruDielWindow(
+          start: sunTimes.sunset.subtract(const Duration(hours: 1)),
+          end: sunTimes.sunset.add(const Duration(hours: 1)),
+        ),
+      ];
+  }
+}
+
+bool isAruStartAllowedByDielPattern({
+  required AruDielPattern pattern,
+  required DateTime start,
+  required double? latitude,
+  required double? longitude,
+}) {
+  return aruDielWindowsForDate(
+    date: start,
+    pattern: pattern,
+    latitude: latitude,
+    longitude: longitude,
+  ).any((window) => window.contains(start));
 }
 
 /// Estimate local sunrise/sunset for ARU schedule previews.
@@ -476,32 +583,11 @@ class AruScheduleCalculator {
   }
 
   bool _isAllowedStart(DateTime start) {
-    final sunTimes = estimateAruSunTimes(
-      date: start,
+    return isAruStartAllowedByDielPattern(
+      pattern: config.dielPattern,
+      start: start,
       latitude: config.latitude,
       longitude: config.longitude,
     );
-
-    return switch (config.dielPattern) {
-      AruDielPattern.anyTime => true,
-      AruDielPattern.dayOnly =>
-        !start.isBefore(sunTimes.sunrise) && start.isBefore(sunTimes.sunset),
-      AruDielPattern.nightOnly =>
-        start.isBefore(sunTimes.sunrise) || !start.isBefore(sunTimes.sunset),
-      AruDielPattern.aroundSunrise => _isInWindow(
-        start,
-        sunTimes.sunrise.subtract(const Duration(hours: 1)),
-        sunTimes.sunrise.add(const Duration(hours: 1)),
-      ),
-      AruDielPattern.aroundSunset => _isInWindow(
-        start,
-        sunTimes.sunset.subtract(const Duration(hours: 1)),
-        sunTimes.sunset.add(const Duration(hours: 1)),
-      ),
-    };
-  }
-
-  bool _isInWindow(DateTime time, DateTime start, DateTime end) {
-    return !time.isBefore(start) && time.isBefore(end);
   }
 }

@@ -470,6 +470,45 @@ void main() {
       },
     );
 
+    test(
+      'discards aggregate session after clip-only per-cycle deployment completes',
+      () async {
+        final saved = <LiveSession>[];
+        final discarded = <String>[];
+        final controller = AruController(
+          saveSession: (session) async => saved.add(session),
+          discardSession: (sessionId) async => discarded.add(sessionId),
+          now: () => start.subtract(const Duration(minutes: 5)),
+        );
+
+        await controller.startDeployment(
+          sessionId: 'aru-1',
+          settings: settings,
+          metadata: AruDeploymentMetadata(
+            deploymentName: 'eBird plot',
+            scheduleStart: start,
+            cycleDurationSeconds: 600,
+            repeatIntervalSeconds: 3600,
+            maxCycles: 1,
+            recordingMode: RecordingMode.detectionsOnly.name,
+            eachCycleIsSession: true,
+          ),
+          sessionNumber: 12,
+        );
+
+        await controller.evaluate(now: start.add(const Duration(minutes: 5)));
+        await controller.evaluate(now: start.add(const Duration(minutes: 30)));
+        await controller.evaluate(now: start.add(const Duration(hours: 2)));
+
+        final cycleSessions =
+            saved.where((s) => s.id.contains('_cycle_')).toList();
+        expect(cycleSessions, hasLength(1));
+        expect(cycleSessions.single.id, 'aru-1_cycle_0');
+        expect(discarded, ['aru-1']);
+        expect(controller.reviewSession, cycleSessions.single);
+      },
+    );
+
     test('names per-cycle test run from deployment name', () async {
       final saved = <LiveSession>[];
       final controller = AruController(

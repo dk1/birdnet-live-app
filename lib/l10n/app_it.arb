@@ -154,6 +154,8 @@
   "aruDielNightOnly": "Notte",
   "aruDielAroundSunrise": "Intorno all'alba",
   "aruDielAroundSunset": "Intorno al tramonto",
+  "aruDielAroundSunriseAndSunset": "Intorno all'alba e al tramonto",
+  "aruRecordingWindowEstimate": "Registra {ranges}",
   "aruSunTimesEstimate": "Alba {sunrise} · tramonto {sunset}",
   "aruStartDeployment": "Installa registratore",
   "aruActiveTitle": "Stazione ARU",
