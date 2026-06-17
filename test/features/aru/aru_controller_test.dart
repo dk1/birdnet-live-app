@@ -1,6 +1,7 @@
 import 'package:birdnet_live/features/aru/aru_controller.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:birdnet_live/features/recording/recording_service.dart';
+import 'package:birdnet_live/features/survey/detection_sampler.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -15,6 +16,8 @@ void main() {
   AruDeploymentMetadata metadata({
     int maxCycles = 2,
     String recordingMode = 'full',
+    String samplingMode = 'smart',
+    int topNPerSpecies = 10,
   }) {
     return AruDeploymentMetadata(
       deploymentName: 'Dawn Station',
@@ -24,6 +27,8 @@ void main() {
       repeatIntervalSeconds: 3600,
       maxCycles: maxCycles,
       recordingMode: recordingMode,
+      samplingMode: samplingMode,
+      topNPerSpecies: topNPerSpecies,
       cycles: [],
     );
   }
@@ -405,6 +410,183 @@ void main() {
     );
 
     test(
+      'syncDetections keeps saved clip paths attached to their timestamps',
+      () async {
+        final controller = AruController(
+          saveSession: (session) async {},
+          saveDetectionClip: (session, record) async {
+            final timestamp = record.timestamp.toUtc().millisecondsSinceEpoch;
+            return '/recordings/clip_$timestamp.flac';
+          },
+          now: () => start.subtract(const Duration(minutes: 5)),
+        );
+
+        await controller.startDeployment(
+          sessionId: 'aru-1',
+          settings: settings,
+          metadata: metadata(
+            maxCycles: 3,
+            recordingMode: RecordingMode.detectionsOnly.name,
+            samplingMode: SamplingMode.smart.name,
+            topNPerSpecies: 1,
+          ),
+        );
+
+        await controller.evaluate(now: start.add(const Duration(minutes: 1)));
+        final firstAt = start.add(const Duration(minutes: 2));
+        await controller.syncDetections([
+          DetectionRecord(
+            scientificName: 'Turdus merula',
+            commonName: 'Eurasian Blackbird',
+            confidence: 0.8,
+            timestamp: firstAt,
+          ),
+        ]);
+        await controller.syncDetections([
+          DetectionRecord(
+            scientificName: 'Turdus merula',
+            commonName: 'Eurasian Blackbird',
+            confidence: 0.9,
+            timestamp: firstAt,
+            endTimestamp: firstAt.add(const Duration(seconds: 20)),
+          ),
+        ]);
+
+        await controller.evaluate(now: start.add(const Duration(minutes: 30)));
+        await controller.evaluate(
+          now: start.add(const Duration(hours: 1, minutes: 1)),
+        );
+        final secondAt = start.add(const Duration(hours: 1, minutes: 2));
+        await controller.syncDetections([
+          DetectionRecord(
+            scientificName: 'Turdus merula',
+            commonName: 'Eurasian Blackbird',
+            confidence: 0.95,
+            timestamp: secondAt,
+            endTimestamp: secondAt.add(const Duration(seconds: 20)),
+          ),
+        ]);
+
+        final detections = controller.session!.detections;
+        expect(detections, hasLength(2));
+        for (final detection in detections) {
+          final expectedTimestamp =
+              detection.timestamp.toUtc().millisecondsSinceEpoch;
+          if (detection.audioClipPath == null) continue;
+          expect(detection.audioClipPath, contains('$expectedTimestamp'));
+        }
+        expect(
+          detections.where((detection) => detection.audioClipPath != null),
+          hasLength(1),
+        );
+        expect(detections.first.audioClipPath, isNull);
+        expect(
+          detections.last.audioClipPath,
+          contains('${secondAt.toUtc().millisecondsSinceEpoch}'),
+        );
+      },
+    );
+
+    test(
+      'smart clip sampling spreads each species across ARU cycles in one session',
+      () async {
+        final controller = AruController(
+          saveSession: (session) async {},
+          saveDetectionClip: (session, record) async {
+            final timestamp = record.timestamp.toUtc().millisecondsSinceEpoch;
+            final species = record.scientificName.replaceAll(' ', '_');
+            return '/recordings/clip_${timestamp}_$species.flac';
+          },
+          now: () => start.subtract(const Duration(minutes: 5)),
+        );
+
+        await controller.startDeployment(
+          sessionId: 'aru-1',
+          settings: settings,
+          metadata: metadata(
+            maxCycles: 3,
+            recordingMode: RecordingMode.detectionsOnly.name,
+            samplingMode: SamplingMode.smart.name,
+            topNPerSpecies: 2,
+          ),
+        );
+
+        await controller.evaluate(now: start.add(const Duration(minutes: 1)));
+        final cycle0Low = start.add(const Duration(minutes: 2));
+        final cycle0Mid = start.add(const Duration(minutes: 3));
+        await controller.syncDetections([
+          DetectionRecord(
+            scientificName: 'Turdus merula',
+            commonName: 'Eurasian Blackbird',
+            confidence: 0.4,
+            timestamp: cycle0Low,
+            endTimestamp: cycle0Low.add(const Duration(seconds: 20)),
+          ),
+          DetectionRecord(
+            scientificName: 'Turdus merula',
+            commonName: 'Eurasian Blackbird',
+            confidence: 0.5,
+            timestamp: cycle0Mid,
+            endTimestamp: cycle0Mid.add(const Duration(seconds: 20)),
+          ),
+        ]);
+
+        await controller.evaluate(now: start.add(const Duration(minutes: 30)));
+        await controller.evaluate(
+          now: start.add(const Duration(hours: 1, minutes: 1)),
+        );
+        final cycle1 = start.add(const Duration(hours: 1, minutes: 2));
+        await controller.syncDetections([
+          DetectionRecord(
+            scientificName: 'Turdus merula',
+            commonName: 'Eurasian Blackbird',
+            confidence: 0.6,
+            timestamp: cycle1,
+            endTimestamp: cycle1.add(const Duration(seconds: 20)),
+          ),
+          DetectionRecord(
+            scientificName: 'Erithacus rubecula',
+            commonName: 'European Robin',
+            confidence: 0.3,
+            timestamp: cycle1.add(const Duration(minutes: 1)),
+            endTimestamp: cycle1.add(const Duration(minutes: 1, seconds: 20)),
+          ),
+        ]);
+
+        final detections = controller.session!.detections;
+        final retainedBlackbirds =
+            detections
+                .where(
+                  (detection) =>
+                      detection.scientificName == 'Turdus merula' &&
+                      detection.audioClipPath != null,
+                )
+                .toList();
+        final retainedRobin =
+            detections
+                .where(
+                  (detection) =>
+                      detection.scientificName == 'Erithacus rubecula' &&
+                      detection.audioClipPath != null,
+                )
+                .toList();
+
+        expect(retainedBlackbirds, hasLength(2));
+        expect(
+          retainedBlackbirds.map((detection) => detection.timestamp),
+          containsAll([cycle0Mid, cycle1]),
+        );
+        expect(
+          detections
+              .singleWhere((detection) => detection.timestamp == cycle0Low)
+              .audioClipPath,
+          isNull,
+        );
+        expect(retainedRobin, hasLength(1));
+      },
+    );
+
+    test(
       'saves a separate session per cycle when eachCycleIsSession is true',
       () async {
         final saved = <LiveSession>[];
@@ -471,7 +653,7 @@ void main() {
     );
 
     test(
-      'discards aggregate session after clip-only per-cycle deployment completes',
+      'does not persist aggregate session for clip-only per-cycle deployment',
       () async {
         final saved = <LiveSession>[];
         final discarded = <String>[];
@@ -497,13 +679,25 @@ void main() {
         );
 
         await controller.evaluate(now: start.add(const Duration(minutes: 5)));
+        await controller.syncDetections([
+          DetectionRecord(
+            scientificName: 'Turdus merula',
+            commonName: 'Eurasian Blackbird',
+            confidence: 0.8,
+            timestamp: start.add(const Duration(minutes: 6)),
+          ),
+        ]);
         await controller.evaluate(now: start.add(const Duration(minutes: 30)));
         await controller.evaluate(now: start.add(const Duration(hours: 2)));
 
         final cycleSessions =
             saved.where((s) => s.id.contains('_cycle_')).toList();
+        final aggregateSessions =
+            saved.where((s) => !s.id.contains('_cycle_')).toList();
         expect(cycleSessions, hasLength(1));
         expect(cycleSessions.single.id, 'aru-1_cycle_0');
+        expect(cycleSessions.single.detections, hasLength(1));
+        expect(aggregateSessions, isEmpty);
         expect(discarded, ['aru-1']);
         expect(controller.reviewSession, cycleSessions.single);
       },

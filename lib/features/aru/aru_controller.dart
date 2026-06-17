@@ -224,6 +224,7 @@ class AruController {
         changed = true;
       } else if (!_sameDetectionPayload(existing!, synced)) {
         session.detections[existingIndex] = synced;
+        _sampler?.replaceRecord(existing, synced);
         changed = true;
       }
     }
@@ -523,20 +524,24 @@ class AruController {
 
   String _samplingScopeKeyFor(DetectionRecord record) {
     final metadata = _session?.aruMetadata;
+    final sessionId = _session?.id ?? 'active';
     if (metadata?.eachCycleIsSession == true) {
-      return 'cycle:${_cycleFor(record)?.index ?? _activeCycleIndex ?? 0}';
+      return 'session:${sessionId}_cycle_${_cycleFor(record)?.index ?? _activeCycleIndex ?? 0}';
     }
-    return 'deployment';
+    return 'session:$sessionId';
   }
 
   int _samplingTimeBucketFor(DetectionRecord record) {
     final metadata = _session?.aruMetadata;
     final cycle = _cycleFor(record);
-    final base =
-        metadata?.eachCycleIsSession == true
-            ? cycle?.plannedStart ?? _activeCycleStart ?? record.timestamp
-            : metadata?.scheduleStart ?? record.timestamp;
-    return record.timestamp.difference(base).inMinutes;
+    if (metadata?.eachCycleIsSession == true) {
+      final base = cycle?.plannedStart ?? _activeCycleStart ?? record.timestamp;
+      return record.timestamp.difference(base).inMinutes;
+    }
+    if (cycle != null) return cycle.index;
+
+    final base = metadata?.scheduleStart ?? record.timestamp;
+    return record.timestamp.difference(base).inHours;
   }
 
   bool _shouldDiscardAggregateSession(LiveSession session) {
@@ -593,9 +598,10 @@ class AruController {
   Future<void> _persist() async {
     final session = _session;
     if (session == null) return;
-    if (_state == AruControllerState.completed &&
-        _shouldDiscardAggregateSession(session)) {
-      await _discardAggregateSession(session);
+    if (_shouldDiscardAggregateSession(session)) {
+      if (_state == AruControllerState.completed) {
+        await _discardAggregateSession(session);
+      }
       return;
     }
     await _saveSession(session);

@@ -161,5 +161,72 @@ void main() {
       expect(minute1High.audioClipPath, isNotNull);
       expect(sampler.keptClipCount, 2);
     });
+
+    test(
+      'smart mode distributes one species across multi-day buckets',
+      () async {
+        final sampler = AruDetectionSampler(
+          mode: SamplingMode.smart,
+          topN: 2,
+          minKeepPerSpecies: 10,
+          timeBucketFor: (record) => record.timestamp.difference(start).inDays,
+        );
+        final day0Low = record(confidence: 0.4, cycle: 0, clip: 'day0-a.flac');
+        final day0Mid = record(confidence: 0.5, cycle: 1, clip: 'day0-b.flac');
+        final day1High = record(confidence: 0.6, cycle: 24, clip: 'day1.flac');
+
+        expect(await sampler.onRecordClosed(day0Low), isTrue);
+        expect(await sampler.onRecordClosed(day0Mid), isTrue);
+        expect(await sampler.onRecordClosed(day1High), isTrue);
+
+        expect(day0Low.audioClipPath, isNull);
+        expect(day0Mid.audioClipPath, isNotNull);
+        expect(day1High.audioClipPath, isNotNull);
+        expect(day0Mid.audioClipPath, contains('day0-b.flac'));
+        expect(day1High.audioClipPath, contains('day1.flac'));
+        expect(day0Mid.timestamp, start.add(const Duration(hours: 1)));
+        expect(day1High.timestamp, start.add(const Duration(hours: 24)));
+        expect(sampler.keptClipCount, 2);
+      },
+    );
+
+    test(
+      'replaceRecord keeps later evictions linked to session record',
+      () async {
+        final sampler = AruDetectionSampler(
+          mode: SamplingMode.smart,
+          topN: 1,
+          minKeepPerSpecies: 10,
+          timeBucketFor: cycleIndexFor,
+        );
+        final original = record(
+          confidence: 0.8,
+          cycle: 0,
+          clip: 'original.flac',
+        );
+        final replacement = DetectionRecord(
+          scientificName: original.scientificName,
+          commonName: original.commonName,
+          confidence: 0.9,
+          timestamp: original.timestamp,
+          endTimestamp: original.timestamp.add(const Duration(seconds: 20)),
+          audioClipPath: original.audioClipPath,
+        );
+        final stronger = record(
+          confidence: 0.95,
+          cycle: 1,
+          clip: 'stronger.flac',
+        );
+
+        expect(await sampler.onRecordClosed(original), isTrue);
+        sampler.replaceRecord(original, replacement);
+        expect(await sampler.onRecordClosed(stronger), isTrue);
+
+        expect(replacement.audioClipPath, isNull);
+        expect(stronger.audioClipPath, isNotNull);
+        expect(stronger.audioClipPath, contains('stronger.flac'));
+        expect(sampler.keptClipCount, 1);
+      },
+    );
   });
 }

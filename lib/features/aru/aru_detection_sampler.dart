@@ -82,6 +82,27 @@ class AruDetectionSampler {
     return false;
   }
 
+  void replaceRecord(DetectionRecord previous, DetectionRecord replacement) {
+    final groupKey = _groupKey(previous);
+    final kept = _keptClips[groupKey];
+    if (kept == null) return;
+
+    final existingIndex = kept.indexWhere(
+      (clip) => identical(clip.record, previous),
+    );
+    if (existingIndex == -1) return;
+
+    kept.removeAt(existingIndex);
+    final replacementGroupKey = _groupKey(replacement);
+    final replacementClip = _KeptAruClip(
+      record: replacement,
+      timeBucket: _timeBucketFor(replacement),
+    );
+    final target = _keptClips.putIfAbsent(replacementGroupKey, () => []);
+    _insertSorted(target, replacementClip);
+    if (kept.isEmpty) _keptClips.remove(groupKey);
+  }
+
   String _groupKey(DetectionRecord record) {
     final scope = _scopeKeyFor?.call(record) ?? 'deployment';
     return '$scope\u0000${record.scientificName}';
