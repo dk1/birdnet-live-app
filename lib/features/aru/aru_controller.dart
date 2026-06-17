@@ -82,7 +82,28 @@ class AruController {
   AruControllerState get state => _state;
   LiveSession? get session => _session;
   String? get errorMessage => _errorMessage;
-  LiveSession? get reviewSession => _lastReviewSession ?? _session;
+
+  /// Session to open in review after the deployment ends, or null when there is
+  /// nothing reviewable.
+  ///
+  /// For per-cycle deployments whose aggregate is discarded on completion
+  /// ([_shouldDiscardAggregateSession]), the aggregate must never be offered for
+  /// review. `_lastReviewSession` is pre-seeded with the aggregate at start and
+  /// only replaced by a real per-cycle session once a cycle completes; if none
+  /// did (e.g. the user stops during the first `waiting` window), the resolved
+  /// candidate is still the aggregate, so this returns null instead of the
+  /// just-discarded session.
+  LiveSession? get reviewSession {
+    final candidate = _lastReviewSession ?? _session;
+    if (candidate == null) return null;
+    final aggregate = _session;
+    if (aggregate != null &&
+        identical(candidate, aggregate) &&
+        _shouldDiscardAggregateSession(aggregate)) {
+      return null;
+    }
+    return candidate;
+  }
 
   Future<void> restoreDeployment(LiveSession session, {DateTime? now}) async {
     if (session.type != SessionType.aru || session.aruMetadata == null) {

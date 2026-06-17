@@ -703,6 +703,48 @@ void main() {
       },
     );
 
+    test(
+      'has no review session when a clip-only per-cycle deployment is stopped '
+      'before any cycle completes',
+      () async {
+        final saved = <LiveSession>[];
+        final discarded = <String>[];
+        final controller = AruController(
+          saveSession: (session) async => saved.add(session),
+          discardSession: (sessionId) async => discarded.add(sessionId),
+          now: () => start.subtract(const Duration(minutes: 5)),
+        );
+
+        await controller.startDeployment(
+          sessionId: 'aru-1',
+          settings: settings,
+          metadata: AruDeploymentMetadata(
+            deploymentName: 'eBird plot',
+            scheduleStart: start,
+            cycleDurationSeconds: 600,
+            repeatIntervalSeconds: 3600,
+            maxCycles: 1,
+            recordingMode: RecordingMode.detectionsOnly.name,
+            eachCycleIsSession: true,
+          ),
+          sessionNumber: 12,
+        );
+
+        // Stop while still in the initial waiting window (the first cycle has
+        // not started, so no per-cycle session exists yet).
+        await controller.stop(
+          now: start.subtract(const Duration(minutes: 1)),
+        );
+
+        final cycleSessions =
+            saved.where((s) => s.id.contains('_cycle_')).toList();
+        expect(cycleSessions, isEmpty);
+        expect(discarded, ['aru-1']);
+        // The aggregate was discarded, so review must not open it.
+        expect(controller.reviewSession, isNull);
+      },
+    );
+
     test('names per-cycle test run from deployment name', () async {
       final saved = <LiveSession>[];
       final controller = AruController(
