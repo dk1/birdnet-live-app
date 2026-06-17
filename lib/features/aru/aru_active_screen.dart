@@ -178,6 +178,10 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     final theme = Theme.of(context);
     final state = ref.watch(aruStateProvider);
     final session = ref.watch(aruSessionProvider);
+    // The active session is mutated in place as detections arrive, so watch the
+    // revision counter to rebuild when its contents change without a new
+    // instance (otherwise detections only appear after a tab switch).
+    ref.watch(aruSessionRevisionProvider);
     final ringBuffer = ref.watch(ringBufferProvider);
     final captureState = ref.watch(captureStateProvider);
     final isRecording = state == AruControllerState.recording;

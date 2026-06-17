@@ -157,6 +157,15 @@ final aruStateProvider = StateProvider<AruControllerState>(
 /// Currently active ARU session, if any.
 final aruSessionProvider = StateProvider<LiveSession?>((ref) => null);
 
+/// Monotonic revision bumped whenever the active ARU session is mutated in
+/// place (e.g. new detections synced) without changing its instance identity.
+///
+/// [aruSessionProvider] holds the long-lived, mutable [LiveSession] that the
+/// controller updates in place, so reassigning the same instance does not
+/// notify a [StateProvider]. The active screen watches this counter to rebuild
+/// reactively as detections arrive, without the user having to switch tabs.
+final aruSessionRevisionProvider = StateProvider<int>((ref) => 0);
+
 /// Long-lived driver for the active ARU deployment.
 ///
 /// Kept alive for the app's lifetime so the deployment loop survives screen

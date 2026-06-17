@@ -177,6 +177,7 @@ class AruRunner {
   void _publishState(AruController controller) {
     _ref.read(aruStateProvider.notifier).state = controller.state;
     _ref.read(aruSessionProvider.notifier).state = controller.session;
+    _bumpSessionRevision();
   }
 
   // ── Inference orchestration ───────────────────────────────────────────────
@@ -204,6 +205,15 @@ class AruRunner {
     await controller.syncDetections(detections);
     if (!_running) return;
     _ref.read(aruSessionProvider.notifier).state = controller.session;
+    _bumpSessionRevision();
+  }
+
+  /// Force a rebuild of widgets watching the active session. The controller
+  /// mutates the [LiveSession] in place, so reassigning the same instance to
+  /// [aruSessionProvider] does not notify listeners on its own.
+  void _bumpSessionRevision() {
+    final notifier = _ref.read(aruSessionRevisionProvider.notifier);
+    notifier.state = notifier.state + 1;
   }
 
   Future<void> _syncInferenceSession(
