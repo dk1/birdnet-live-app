@@ -576,9 +576,11 @@ class AruController {
   bool _shouldDiscardAggregateSession(LiveSession session) {
     final metadata = session.aruMetadata;
     if (metadata == null) return false;
-    return metadata.eachCycleIsSession &&
-        recordingModeFromString(metadata.recordingMode) ==
-            RecordingMode.detectionsOnly;
+    // "One session per cycle" deployments keep only their per-cycle sessions;
+    // the aggregate is never part of the final library, regardless of recording
+    // mode. (It is still persisted while the deployment runs so it can be
+    // restored after a process kill — see _persist.)
+    return metadata.eachCycleIsSession;
   }
 
   Future<void> _discardAggregateSession(LiveSession session) async {
@@ -627,9 +629,15 @@ class AruController {
   Future<void> _persist() async {
     final session = _session;
     if (session == null) return;
+    // Per-cycle deployments persist the aggregate while in progress so an
+    // interrupted deployment can be restored from disk (restore looks for an
+    // ARU session with endTime == null). Once completed, the aggregate is
+    // discarded so only the per-cycle sessions remain in the library.
     if (_shouldDiscardAggregateSession(session)) {
       if (_state == AruControllerState.completed) {
         await _discardAggregateSession(session);
+      } else {
+        await _saveSession(session);
       }
       return;
     }

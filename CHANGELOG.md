@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed ARU deployments stalling when the active screen was backgrounded or covered by another screen; the schedule and recording now keep running in the background so cycles fire on time while the phone is in your pocket.
 - Hardened ARU audio capture so the microphone has a single owner across a deployment, ensuring it is reliably released when a deployment stops and avoiding rare start/stop races.
 - Prevented ARU and Survey from starting their foreground recording service at the same time, so the two modes can no longer contend over the same background service.
+- Fixed "one session per cycle" ARU deployments so they no longer leave behind an extra combined session in your history; only the individual per-cycle sessions are kept once the deployment finishes.
 
 ## [0.17.7] - 2026-06-17
 

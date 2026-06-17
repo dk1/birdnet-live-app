@@ -590,11 +590,13 @@ void main() {
     );
 
     test(
-      'saves a separate session per cycle when eachCycleIsSession is true',
+      'saves a separate session per cycle and keeps no aggregate when '
+      'eachCycleIsSession is true',
       () async {
-        final saved = <LiveSession>[];
+        final store = <String, LiveSession>{};
         final controller = AruController(
-          saveSession: (session) async => saved.add(session),
+          saveSession: (session) async => store[session.id] = session,
+          discardSession: (sessionId) async => store.remove(sessionId),
           now: () => start.subtract(const Duration(minutes: 5)),
         );
 
@@ -628,10 +630,13 @@ void main() {
           now: start.add(const Duration(hours: 2, minutes: 30)),
         );
 
-        // The saved list should contain the main session saves AND one
-        // per-cycle session for each completed cycle.
+        // Only the per-cycle sessions remain; the aggregate (full-audio mode
+        // included) is discarded so it never lingers in the library.
         final cycleSessions =
-            saved.where((s) => s.id.contains('_cycle_')).toList();
+            store.values.where((s) => s.id.contains('_cycle_')).toList();
+        final aggregateSessions =
+            store.values.where((s) => !s.id.contains('_cycle_')).toList();
+        expect(aggregateSessions, isEmpty);
         expect(cycleSessions, hasLength(3));
         expect(cycleSessions.first.id, 'aru-1_cycle_0');
         expect(cycleSessions.first.sessionNumber, 12);
@@ -658,11 +663,14 @@ void main() {
     test(
       'does not persist aggregate session for clip-only per-cycle deployment',
       () async {
-        final saved = <LiveSession>[];
+        final store = <String, LiveSession>{};
         final discarded = <String>[];
         final controller = AruController(
-          saveSession: (session) async => saved.add(session),
-          discardSession: (sessionId) async => discarded.add(sessionId),
+          saveSession: (session) async => store[session.id] = session,
+          discardSession: (sessionId) async {
+            discarded.add(sessionId);
+            store.remove(sessionId);
+          },
           now: () => start.subtract(const Duration(minutes: 5)),
         );
 
@@ -694,9 +702,9 @@ void main() {
         await controller.evaluate(now: start.add(const Duration(hours: 2)));
 
         final cycleSessions =
-            saved.where((s) => s.id.contains('_cycle_')).toList();
+            store.values.where((s) => s.id.contains('_cycle_')).toList();
         final aggregateSessions =
-            saved.where((s) => !s.id.contains('_cycle_')).toList();
+            store.values.where((s) => !s.id.contains('_cycle_')).toList();
         expect(cycleSessions, hasLength(1));
         expect(cycleSessions.single.id, 'aru-1_cycle_0');
         expect(cycleSessions.single.detections, hasLength(1));

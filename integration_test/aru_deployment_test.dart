@@ -313,4 +313,61 @@ void main() {
       expect(File(strong.audioClipPath!).existsSync(), isTrue);
     },
   );
+
+  testWidgets(
+    'leaves no aggregate session on disk for a full per-cycle deployment',
+    (tester) async {
+      final controller = AruController(
+        saveSession: repository.save,
+        discardSession: repository.deleteMetadataOnly,
+        now: () => scheduleStart.subtract(const Duration(minutes: 5)),
+      );
+
+      await controller.startDeployment(
+        sessionId: 'aru-it-percycle',
+        settings: settings,
+        metadata: AruDeploymentMetadata(
+          deploymentName: 'Per-cycle Plot',
+          stationId: 'ARU-IT',
+          scheduleStart: scheduleStart,
+          eachCycleIsSession: true,
+          cycleDurationSeconds: 600,
+          repeatIntervalSeconds: 3600,
+          maxCycles: 2,
+          recordingMode: 'full',
+        ),
+      );
+
+      // While in progress the aggregate is persisted so it can be restored
+      // after a process kill.
+      var aggregate = await repository.load('aru-it-percycle');
+      expect(aggregate, isNotNull);
+      expect(aggregate!.endTime, isNull);
+
+      // Run both cycles to completion.
+      await controller.evaluate(
+        now: scheduleStart.add(const Duration(minutes: 5)),
+      );
+      await controller.evaluate(
+        now: scheduleStart.add(const Duration(minutes: 30)),
+      );
+      await controller.evaluate(
+        now: scheduleStart.add(const Duration(hours: 1, minutes: 5)),
+      );
+      await controller.evaluate(
+        now: scheduleStart.add(const Duration(hours: 2)),
+      );
+      expect(controller.state, AruControllerState.completed);
+
+      // The aggregate JSON is gone; only the per-cycle sessions remain on disk.
+      aggregate = await repository.load('aru-it-percycle');
+      expect(aggregate, isNull);
+      final cycle0 = await repository.load('aru-it-percycle_cycle_0');
+      final cycle1 = await repository.load('aru-it-percycle_cycle_1');
+      expect(cycle0, isNotNull);
+      expect(cycle1, isNotNull);
+      expect(cycle0!.endTime, isNotNull);
+      expect(cycle1!.endTime, isNotNull);
+    },
+  );
 }
