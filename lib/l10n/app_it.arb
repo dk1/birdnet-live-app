@@ -719,7 +719,7 @@
   "helpBatchAnalysisTitle": "Analisi batch",
   "helpBatchAnalysisBody": "L'analisi batch è pensata per elaborare molti file in una sola esecuzione. Seleziona più registrazioni, conferma i parametri condivisi e avvia una coda unica che elabora ogni file e salva i risultati per una revisione successiva.",
   "helpAruTitle": "Modalità ARU",
-  "helpAruBody": "La modalità ARU pianifica cicli di registrazione in un sito fisso e salva ogni installazione come una Session ARU. Registra l'audio completo dei cicli o clip di rilevamento conservate durante i cicli attivi, esegue inferenza live durante i cicli e mostra controlli di notifica in primo piano su Android.",
+  "helpAruBody": "La modalità ARU pianifica cicli di registrazione in un sito fisso con supporto per modelli diel (finestre di giorno, notte, alba/tramonto), riattivazione automatica per batteria scarica, opzioni di raggruppamento delle Session e conservazione intelligente dei clip. Esegue inferenza sul dispositivo durante i cicli attivi e mostra controlli di notifica in primo piano.",
   "helpExploreTitle": "Esplora",
   "helpExploreBody": "Explore costruisce un elenco di specie basato sulla posizione dal geomodello BirdNET. Usa aggiorna per ricostruire l'elenco, il pulsante di aiuto nell'intestazione della posizione per il contesto e tocca una scheda specie per aprire immagini, descrizioni, link e il grafico stagionale.",
   "helpSessionsTitle": "Sessions e revisione",

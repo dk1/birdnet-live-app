@@ -3227,7 +3227,7 @@
   "@helpAruTitle": {
     "description": "Section title for ARU help"
   },
-  "helpAruBody": "ARU Mode schedules fixed-site recording cycles and saves each deployment as an ARU Session. It records full cycle audio or retained detection clips during active cycles, runs live inference during cycles, and shows Android foreground notification controls.",
+  "helpAruBody": "ARU Mode schedules fixed-site recording cycles with support for diel patterns (day, night, sunrise/sunset windows), low-battery auto-resume, session grouping choices, and smart clip retention. It runs on-device inference during active cycles and shows foreground notification controls.",
   "@helpAruBody": {
     "description": "Help body text for ARU mode"
   },

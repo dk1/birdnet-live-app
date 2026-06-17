@@ -854,7 +854,7 @@
   "helpBatchAnalysisTitle": "Dávková analýza",
   "helpBatchAnalysisBody": "Dávková analýza je určená pro zpracování mnoha souborů najednou. Vyberte více nahrávek, potvrďte společné parametry a spusťte jednu frontu, která zpracuje každý soubor a uloží výsledky pro pozdější kontrolu.",
   "helpAruTitle": "Režim ARU",
-  "helpAruBody": "Režim ARU plánuje pevné nahrávací cykly a ukládá každé nasazení jako ARU Session. Během aktivních cyklů nahrává úplný zvuk cyklu nebo ponechané detekční klipy, spouští živou inferenci a v Androidu zobrazuje ovládání oznámení v popředí.",
+  "helpAruBody": "Režim ARU plánuje pevné nahrávací cykly s podporou dielních vzorců (okna pro den, noc, východ/západ slunce), automatického obnovení při vybité baterii, možností seskupování relací a chytrého uchovávání klipů. Během aktivních cyklů spouští inferenci přímo v zařízení a zobrazuje ovládací prvky oznámení v popředí.",
   "helpExploreTitle": "Prozkoumejte",
   "helpExploreBody": "Explore vytváří seznam druhů podle polohy z geomodelu BirdNET. Pomocí aktualizace seznam přepočítáte, tlačítko nápovědy v záhlaví polohy poskytne kontext a klepnutím na kartu otevřete obrázky, popisy, odkazy a sezónní graf.",
   "helpSessionsTitle": "Sessions a kontrola",

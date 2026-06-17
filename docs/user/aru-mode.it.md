@@ -7,21 +7,40 @@ La modalità ARU (Autonomous Recording Unit) è il flusso di lavoro per distribu
 
 ## Flusso di configurazione attuale
 
-- **Distribuzione e audio**: inserisci nome della distribuzione, ID ARU/stazione, osservatore, sito fisso, modalità di registrazione, formato di registrazione e regole di conservazione delle clip di rilevamento. La configurazione riusa il selettore microfono condiviso e mostra l'anteprima meteo quando la ricerca meteo è consentita.
-- **Pianificazione**: scegli durata del ciclo, intervallo di ripetizione, come deve terminare la distribuzione e una soglia di arresto per batteria scarica. Puoi arrestare manualmente, dopo un numero fisso di cicli pianificati o a una data e ora fisse. I cicli regolari sono ancorati ai confini dell'orologio, quindi un ciclo di 10 minuti ogni ora parte all'ora esatta invece che relativamente al momento in cui hai avviato la configurazione. Il test di un minuto è attivo per impostazione predefinita, parte subito e non consuma il conteggio dei cicli pianificati.
-- **Pronto**: controlla pianificazione e stima dello spazio audio, quindi avvia la distribuzione.
+- **Distribuzione e audio**: 
+    - **Metadati**: inserisci il nome della distribuzione, l'ID ARU/stazione e il nome dell'osservatore.
+    - **Posizione**: fornisci le coordinate del sito tramite acquisizione automatica del GPS, immissione manuale di latitudine/longitudine o salta l'impostazione della posizione. La latitudine e la longitudine sono richieste se utilizzi la pianificazione vincolata al sole.
+    - **Formato di registrazione**: scegli tra i formati FLAC (compresso senza perdita) e WAV (non compresso).
+    - **Modalità di registrazione**:
+        - *Completo*: registra l'intera durata di ciascun ciclo attivo.
+        - *Solo rilevamenti*: salva brevi clip audio attorno ai canti degli uccelli rilevati. Puoi personalizzare il contesto del clip (aggiungendo da 0 a 5 secondi di buffer audio prima e dopo il rilevamento) e scegliere il metodo di campionamento (*Tutto*, *Top N* o campionamento *Intelligente* per limitare l'uso della memoria).
+        - *Disattivato*: esegue inferenza in tempo reale durante i cicli e registra i rilevamenti, ma non salva file audio.
+- **Pianificazione (Programma)**:
+    - **Durata e ripetizione**: seleziona la durata di ciascun ciclo di registrazione attivo e la frequenza di ripetizione.
+    - **Finestra di registrazione (modello diel)**: scegli di registrare 24 ore su 24 (*In qualsiasi momento*) o limita i cicli a *Solo giorno*, *Solo notte* o a intervalli specifici *Intorno all'alba*, *Intorno al tramonto* o *Intorno all'alba e al tramonto*. Gli intervalli di alba/tramonto vengono calcolati in modo dinamico in base alle coordinate della distribuzione.
+    - **Fine pianificazione**: scegli se arrestare la distribuzione manualmente, dopo un numero fisso di cicli completati o automaticamente a una data e ora specificate.
+    - **Gestione della batteria**: imposta una soglia di arresto per batteria scarica (0-50%) per mettere in pausa la distribuzione ed evitare lo scaricamento completo della batteria. Se configurata, puoi impostare una soglia di riattivazione per riprendere automaticamente i cicli di registrazione quando il livello della batteria si ripristina (ad esempio, tramite ricarica solare).
+    - **Test run**: un ciclo di prova facoltativo di un minuto è abilitato per impostazione predefinita per verificare l'ingresso del microfono e l'inferenza immediatamente all'avvio, senza contare ai fini del limite dei cicli pianificati.
+    - **Raggruppamento Session**: configura se salvare ogni ciclo como una Session separata (consigliato per tempi di caricamento più rapidi e visualizzazione modulare) o combinare tutti i cicli in un'unica Session a segmenti multipli.
+- **Pronto**: verifica il programma, la stima del consumo di memoria audio e i vincoli legati al sole, quindi avvia la distribuzione.
 
 All'avvio viene salvata subito una Session `SessionType.aru` con metadati del programma ARU, così lo stato dei cicli potrà essere recuperato in seguito.
 
 Le esportazioni JSON e ZIP includono i metadati della distribuzione ARU. Le esportazioni ZIP raggruppano i file di registrazione salvati per ciclo sotto `aru_cycles/`.
 
-## Distribuzione attiva
+## Schermata di distribuzione attiva
 
-La schermata ARU attiva mostra se la distribuzione è in attesa, in registrazione o completata. Il layout usa quattro schede: **Stato** per lo stato corrente della distribuzione e i rilevamenti, **Spettrogramma** per verificare che l'audio arrivi mantenendo i rilevamenti sotto, **Pianificazione** per i prossimi 10 orari di ciclo pianificati e **Riepilogo** per tempo trascorso, durata dell'audio registrato e totali dei rilevamenti. Su Android, le distribuzioni attive mostrano una notifica in primo piano con azioni Interrompi e Apri.
+La schermata ARU attiva mostra se la distribuzione è in attesa, in registrazione o completata. Il layout usa quattro schede:
+- **Stato**: mostra lo stato attuale della distribuzione, il timer della pianificazione attiva e un elenco dei rilevamenti in tempo reale.
+- **Audio**: mostra uno spettrogramma in tempo reale per verificare l'ingresso audio, mantenendo visibili i rilevamenti sotto.
+- **Pianificazione**: elenca i prossimi 10 cicli pianificati, indicando gli allineamenti alba/tramonto se sono attivi vincoli diel.
+- **Riepilogo**: riassume il tempo trascorso, la durata totale dell'audio registrato e le statistiche dei rilevamenti.
 
-Interrompere una distribuzione apre Session Review per la distribuzione salvata quando i cicli sono raggruppati in una sessione. Quando la configurazione salva ogni ciclo come Session separata, l'interruzione apre la Session del ciclo più recente.
+Su Android, le distribuzioni attive mostrano una notifica in primo piano con azioni Interrompi e Apri.
 
-Su iOS questa implementazione iniziale deve essere trattata come flusso in primo piano finché audio pianificato e comportamento in background non saranno validati su iOS.
+Interrompere una distribuzione apre la Revisione Session. Se i cicli sono stati raggruppati in un'unica Session, viene aperta quella Session combinata; se salvati come Session separate, si apre l'ultima Session di ciclo completata.
+
+Su iOS, questa implementazione iniziale deve essere trattata come un flusso di lavoro in primo piano finché il comportamento di audio/background pianificato non sia stato validato su iOS.
 
 ## Ancora pianificato
 
