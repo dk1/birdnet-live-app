@@ -276,7 +276,10 @@ class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
         widget.landscape
             ? (widget.isTablet ? 1.3 : 1.6)
             : (widget.isTablet ? 1.2 : 1.0);
-    final double spacing = widget.landscape ? 12 : 16;
+    final double spacing =
+        widget.landscape
+            ? (widget.isTablet ? 10 : 8)
+            : (widget.isTablet ? 12 : 10);
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: maxWidth),
@@ -546,7 +549,10 @@ class _ModeCard extends StatelessWidget {
         customBorder: shape,
         onTap: onTap,
         child: Padding(
-          padding: EdgeInsets.all(isTablet ? 20 : 16),
+          padding: EdgeInsets.symmetric(
+            horizontal: isTablet ? 20 : 14,
+            vertical: isTablet ? 18 : 12,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -591,7 +597,7 @@ class _ModeCard extends StatelessWidget {
                     ),
                 ],
               ),
-              const Spacer(),
+              SizedBox(height: isTablet ? 18 : 12),
               Text(
                 label,
                 style: theme.textTheme.titleSmall?.copyWith(
@@ -614,7 +620,7 @@ class _ModeCard extends StatelessWidget {
                     ),
                     fontSize: isTablet ? 12 : 11,
                   ),
-                  maxLines: isTablet ? 3 : 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -646,7 +652,7 @@ class _Footer extends StatelessWidget {
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: isTablet ? 24 : 12,
-      runSpacing: isTablet ? 12 : 8,
+      runSpacing: isTablet ? 8 : 4,
       children: [
         // Sessions first — it's the more frequently used destination
         // (every recording produces one) so it deserves the leftmost

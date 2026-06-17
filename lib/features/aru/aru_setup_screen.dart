@@ -527,8 +527,10 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
             onLowBatteryResumeChanged:
                 (value) => setState(
                   () =>
-                      _lowBatteryResume =
-                          _effectiveLowBatteryResume(value, _lowBatteryStop),
+                      _lowBatteryResume = _effectiveLowBatteryResume(
+                        value,
+                        _lowBatteryStop,
+                      ),
                 ),
             onDielPatternChanged:
                 (value) => setState(() => _dielPattern = value),
@@ -1745,10 +1747,7 @@ class _ReadyStep extends ConsumerWidget {
               lowBatteryStop > 0 ? '$lowBatteryStop%' : l10n.settingsFilterOff,
             ),
             if (lowBatteryStop > 0)
-              (
-                l10n.aruLowBatteryResume,
-                '$effectiveLowBatteryResume%',
-              ),
+              (l10n.aruLowBatteryResume, '$effectiveLowBatteryResume%'),
             (
               l10n.aruSessionGrouping,
               eachCycleIsSession
