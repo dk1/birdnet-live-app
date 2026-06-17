@@ -87,6 +87,11 @@ final aruControllerProvider = Provider<AruController>((ref) {
   final ringBuffer = ref.watch(ringBufferProvider);
   final capture = ref.watch(audioCaptureServiceProvider);
   final captureState = ref.watch(captureStateProvider.notifier);
+  // Single owner of ARU audio capture. The cycle hooks below are the only place
+  // that starts/stops the mic for a deployment; the runner never touches capture
+  // directly. [aruCaptureActive] is the explicit ownership flag: it is true only
+  // when this cycle started capture (so we release exactly what we acquired and
+  // never stop a capture session some other feature owns).
   var aruCaptureActive = false;
 
   return AruController(

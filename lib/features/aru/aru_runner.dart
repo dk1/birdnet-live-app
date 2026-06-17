@@ -25,7 +25,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/utils/locale_time_format.dart';
-import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
 import '../live/live_controller.dart';
 import '../live/live_providers.dart';
@@ -376,7 +375,12 @@ class AruRunner {
     _finishing = true;
     final controller = _ref.read(aruControllerProvider);
     try {
-      await _ref.read(captureStateProvider.notifier).stop();
+      // Finalize inference while capture is still running, then let the
+      // controller close the active cycle. Audio capture is owned solely by the
+      // cycle hooks (startCycleRecording / stopCycleRecording); controller.stop
+      // routes through _leaveActiveCycle -> stopCycleRecording, which releases
+      // capture. The runner must not stop capture independently or the two
+      // owners can race (double stop / stop-before-start).
       await _stopInference();
       await _syncDetectionsTail;
       await controller.stop(reason: reason, reasonValue: reasonValue);
