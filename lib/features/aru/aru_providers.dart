@@ -136,6 +136,14 @@ final aruControllerProvider = Provider<AruController>((ref) {
         await captureState.stop();
         aruCaptureActive = false;
       }
+      // Only tear down a file recording if this deployment actually started one.
+      // When recordingMode == off the cycle never opened a recording, so calling
+      // stopRecording() would rely on it being a silent no-op; guard explicitly
+      // to mirror startCycleRecording and keep ownership symmetric.
+      final mode = recordingModeFromString(
+        session.aruMetadata?.recordingMode ?? 'off',
+      );
+      if (mode == RecordingMode.off) return null;
       return recordingService.stopRecording();
     },
   );
