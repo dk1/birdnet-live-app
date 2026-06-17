@@ -23,6 +23,13 @@ abstract final class AruDefaults {
   /// low-battery pause. Should be greater than [defaultLowBatteryStopPercent] to
   /// avoid flapping (hysteresis), e.g. for occasional solar charging.
   static const int defaultLowBatteryResumePercent = 20;
+  static const int minLowBatteryResumePercent = 5;
+  static const int maxLowBatteryResumePercent = 55;
+  static const int lowBatteryResumeStepPercent = 5;
+  static const int lowBatteryResumeGapPercent = 5;
+  static const int lowBatteryResumeDivisions =
+      (maxLowBatteryResumePercent - minLowBatteryResumePercent) ~/
+      lowBatteryResumeStepPercent;
   static const int defaultStorageSafetyMarginBytes = 250 * 1024 * 1024;
   static const int defaultTestCycleSeconds = 60;
 

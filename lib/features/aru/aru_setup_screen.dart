@@ -232,9 +232,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
   // Resume threshold only applies when battery management (stop) is enabled.
   int? get _selectedLowBatteryResume =>
       _lowBatteryStop > 0
-          ? (_lowBatteryResume > _lowBatteryStop
-              ? _lowBatteryResume
-              : _lowBatteryStop)
+          ? _effectiveLowBatteryResume(_lowBatteryResume, _lowBatteryStop)
           : null;
 
   Future<void> _restoreActiveDeployment() async {
@@ -521,13 +519,16 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
             onLowBatteryStopChanged:
                 (value) => setState(() {
                   _lowBatteryStop = value;
-                  if (_lowBatteryResume < value) _lowBatteryResume = value;
+                  _lowBatteryResume = _effectiveLowBatteryResume(
+                    _lowBatteryResume,
+                    value,
+                  );
                 }),
             onLowBatteryResumeChanged:
                 (value) => setState(
                   () =>
                       _lowBatteryResume =
-                          value < _lowBatteryStop ? _lowBatteryStop : value,
+                          _effectiveLowBatteryResume(value, _lowBatteryStop),
                 ),
             onDielPatternChanged:
                 (value) => setState(() => _dielPattern = value),
@@ -576,6 +577,17 @@ Duration _nearestRepeatInterval(Duration minimum) {
     (duration) => duration >= minimum,
     orElse: () => AruDefaults.repeatIntervalOptions.last,
   );
+}
+
+int _effectiveLowBatteryResume(int resume, int stop) {
+  var min = AruDefaults.minLowBatteryResumePercent;
+  final stopWithGap = stop + AruDefaults.lowBatteryResumeGapPercent;
+  if (stopWithGap > min) min = stopWithGap;
+  if (resume < min) return min;
+  if (resume > AruDefaults.maxLowBatteryResumePercent) {
+    return AruDefaults.maxLowBatteryResumePercent;
+  }
+  return resume;
 }
 
 const _aruStorageEstimateSpeciesAssumption = 50;
@@ -1222,6 +1234,7 @@ class _ScheduleStep extends ConsumerWidget {
         const SizedBox(height: 12),
         DropdownButtonFormField<AruDielPattern>(
           initialValue: dielPattern,
+          isExpanded: true,
           decoration: const InputDecoration(),
           items: [
             for (final pattern in AruDielPattern.values)
@@ -1231,7 +1244,13 @@ class _ScheduleStep extends ConsumerWidget {
                   children: [
                     Icon(_dielPatternIcon(pattern), size: 18),
                     const SizedBox(width: 12),
-                    Text(_dielPatternLabel(l10n, pattern)),
+                    Expanded(
+                      child: Text(
+                        _dielPatternLabel(l10n, pattern),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -1354,22 +1373,28 @@ class _ScheduleStep extends ConsumerWidget {
           onChanged: (value) => onLowBatteryStopChanged(value.round()),
         ),
         if (lowBatteryStop > 0) ...[
-          Text(
-            '${l10n.aruLowBatteryResume}: '
-            '${lowBatteryResume > lowBatteryStop ? lowBatteryResume : lowBatteryStop}%',
-          ),
-          Slider(
-            value:
-                (lowBatteryResume > lowBatteryStop
-                        ? lowBatteryResume
-                        : lowBatteryStop)
-                    .toDouble(),
-            min: lowBatteryStop.toDouble(),
-            max: 100,
-            divisions: (100 - lowBatteryStop) > 0 ? 100 - lowBatteryStop : 1,
-            label:
-                '${lowBatteryResume > lowBatteryStop ? lowBatteryResume : lowBatteryStop}%',
-            onChanged: (value) => onLowBatteryResumeChanged(value.round()),
+          Builder(
+            builder: (_) {
+              final effectiveResume = _effectiveLowBatteryResume(
+                lowBatteryResume,
+                lowBatteryStop,
+              );
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${l10n.aruLowBatteryResume}: $effectiveResume%'),
+                  Slider(
+                    value: effectiveResume.toDouble(),
+                    min: AruDefaults.minLowBatteryResumePercent.toDouble(),
+                    max: AruDefaults.maxLowBatteryResumePercent.toDouble(),
+                    divisions: AruDefaults.lowBatteryResumeDivisions,
+                    label: '$effectiveResume%',
+                    onChanged:
+                        (value) => onLowBatteryResumeChanged(value.round()),
+                  ),
+                ],
+              );
+            },
           ),
           Padding(
             padding: const EdgeInsets.only(top: 4, bottom: 4),
@@ -1616,6 +1641,10 @@ class _ReadyStep extends ConsumerWidget {
         estimate.hasFiniteTotal
             ? l10n.aruStorageEstimate
             : l10n.aruPerDayEstimate;
+    final effectiveLowBatteryResume = _effectiveLowBatteryResume(
+      lowBatteryResume,
+      lowBatteryStop,
+    );
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -1718,7 +1747,7 @@ class _ReadyStep extends ConsumerWidget {
             if (lowBatteryStop > 0)
               (
                 l10n.aruLowBatteryResume,
-                '${lowBatteryResume > lowBatteryStop ? lowBatteryResume : lowBatteryStop}%',
+                '$effectiveLowBatteryResume%',
               ),
             (
               l10n.aruSessionGrouping,
