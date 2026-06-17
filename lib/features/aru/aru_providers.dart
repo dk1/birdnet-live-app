@@ -2,6 +2,7 @@
 // ARU Providers - Riverpod wiring for autonomous recording deployments
 // =============================================================================
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
@@ -9,11 +10,51 @@ import '../../core/constants/app_constants.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
+import '../audio/ring_buffer.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../recording/recording_service.dart';
 import 'aru_controller.dart';
 import 'aru_storage_estimator.dart';
+
+typedef AruCycleRecordingStart =
+    Future<String?> Function({
+      required String sessionId,
+      required RecordingMode mode,
+      required String format,
+    });
+
+@visibleForTesting
+Future<String?> startAruCycleAudio({
+  required RingBuffer ringBuffer,
+  required CaptureState captureState,
+  required Future<void> Function() startCapture,
+  required void Function(double value) setGain,
+  required void Function(double value) setHighPassCutoff,
+  required AruCycleRecordingStart startRecording,
+  required RecordingMode recordingMode,
+  required String recordingSessionId,
+  required String recordingFormat,
+  required double gainLinear,
+  required double highPassHz,
+}) async {
+  setGain(gainLinear);
+  setHighPassCutoff(highPassHz);
+  ringBuffer.clear();
+
+  String? path;
+  if (recordingMode != RecordingMode.off) {
+    path = await startRecording(
+      sessionId: recordingSessionId,
+      mode: recordingMode,
+      format: recordingFormat,
+    );
+  }
+  if (captureState != CaptureState.capturing) {
+    await startCapture();
+  }
+  return path;
+}
 
 /// Pure storage estimator used by ARU setup readiness checks.
 final aruStorageEstimatorProvider = Provider<AruStorageEstimator>((ref) {
@@ -42,6 +83,7 @@ final aruRecordingServiceProvider = Provider<RecordingService>((ref) {
 final aruControllerProvider = Provider<AruController>((ref) {
   final repository = ref.watch(sessionRepositoryProvider);
   final recordingService = ref.watch(aruRecordingServiceProvider);
+  final ringBuffer = ref.watch(ringBufferProvider);
   final capture = ref.watch(audioCaptureServiceProvider);
   final captureState = ref.watch(captureStateProvider.notifier);
   var aruCaptureActive = false;
@@ -52,21 +94,25 @@ final aruControllerProvider = Provider<AruController>((ref) {
     startCycleRecording: (session, window) async {
       final metadata = session.aruMetadata;
       final mode = recordingModeFromString(metadata?.recordingMode ?? 'off');
-      if (mode == RecordingMode.off) return null;
-
-      capture.setGain(session.settings.gainLinear ?? 1.0);
-      capture.setHighPassCutoff(session.settings.highPassHz ?? 0.0);
-
-      final path = await recordingService.startRecording(
-        sessionId:
+      final captureWasRunning = capture.state == CaptureState.capturing;
+      final path = await startAruCycleAudio(
+        ringBuffer: ringBuffer,
+        captureState: capture.state,
+        startCapture: () async {
+          await captureState.start(deviceId: ref.read(selectedDeviceProvider));
+        },
+        setGain: capture.setGain,
+        setHighPassCutoff: capture.setHighPassCutoff,
+        startRecording: recordingService.startRecording,
+        recordingMode: mode,
+        recordingSessionId:
             '${session.id}/cycle_${window.index.toString().padLeft(3, '0')}',
-        mode: mode,
-        format: metadata?.recordingFormat ?? ref.read(recordingFormatProvider),
+        recordingFormat:
+            metadata?.recordingFormat ?? ref.read(recordingFormatProvider),
+        gainLinear: session.settings.gainLinear ?? 1.0,
+        highPassHz: session.settings.highPassHz ?? 0.0,
       );
-      if (capture.state != CaptureState.capturing) {
-        await captureState.start(deviceId: ref.read(selectedDeviceProvider));
-        aruCaptureActive = true;
-      }
+      aruCaptureActive = !captureWasRunning;
       return path;
     },
     saveDetectionClip: (session, record) async {

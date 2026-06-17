@@ -226,17 +226,25 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   }
 
   Future<void> _stopInference() async {
-    if (!_aruInferenceActive) return;
     final controller = _liveController;
+    if (controller.session == null &&
+        controller.state != LiveState.active &&
+        controller.state != LiveState.paused) {
+      _aruInferenceActive = false;
+      return;
+    }
+
     await _syncDetectionsFromInference();
-    if (controller.state == LiveState.active ||
-        controller.state == LiveState.paused) {
-      final completedSession = await controller.finalizeSession();
-      if (completedSession != null) {
-        await _syncDetections(completedSession.detections);
-      }
+    final completedSession = await controller.finalizeSession();
+    if (completedSession != null) {
+      await _syncDetections(completedSession.detections);
     }
     _aruInferenceActive = false;
+  }
+
+  Future<void> _stopCaptureAndInference() async {
+    await ref.read(captureStateProvider.notifier).stop();
+    await _stopInference();
   }
 
   Future<void> _confirmStop() async {
@@ -277,7 +285,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     _finishingDeployment = true;
     final controller = ref.read(aruControllerProvider);
     try {
-      await _stopInference();
+      await _stopCaptureAndInference();
       await _syncDetectionsTail;
       await controller.stop(reason: reason, reasonValue: reasonValue);
       if (!mounted || !_routeActive) return controller.reviewSession;
