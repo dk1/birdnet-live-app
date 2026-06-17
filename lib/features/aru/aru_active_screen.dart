@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:battery_plus/battery_plus.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:birdnet_live/shared/widgets/app_help_bottom_sheet.dart';
@@ -19,16 +18,14 @@ import '../audio/ring_buffer.dart';
 import '../explore/explore_providers.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
-import '../live/live_controller.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../live/widgets/detection_list_widget.dart';
-import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
 import 'aru_controller.dart';
-import 'aru_notification.dart';
 import 'aru_providers.dart';
+import 'aru_runner.dart';
 import 'aru_schedule.dart';
 import 'aru_storage_estimator.dart';
 
@@ -43,20 +40,10 @@ class AruActiveScreen extends ConsumerStatefulWidget {
 
 class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     with SingleTickerProviderStateMixin {
-  Timer? _timer;
   late final TabController _tabController;
-  late final LiveController _liveController;
-  final AruNotificationService _notificationService = AruNotificationService();
-  final Battery _battery = Battery();
-  bool _routeActive = true;
+  late final AruRunner _runner;
   bool _stopping = false;
   bool _stopDialogShowing = false;
-  bool _tickBusy = false;
-  bool _inferenceStarting = false;
-  bool _aruInferenceActive = false;
-  bool _finishingDeployment = false;
-  Future<void> _syncDetectionsTail = Future<void>.value();
-  DateTime? _lastBatteryCheck;
 
   @override
   void initState() {
@@ -65,190 +52,52 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     _tabController.addListener(() {
       if (mounted) setState(() {});
     });
-    _liveController = ref.read(liveControllerProvider);
-    _liveController.onStateChanged = _onInferenceStateChanged;
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _tick();
-      if (!mounted || !_routeActive) return;
-      await _syncNotification();
-      if (widget.confirmStopOnOpen && mounted && _routeActive) {
-        await _confirmStop();
+    _runner = ref.read(aruRunnerProvider);
+    _runner.onFinished = _onRunnerFinished;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // Attach the long-lived runner so the deployment loop keeps advancing
+      // even while this screen is backgrounded or covered by another route.
+      _runner.attach(
+        AppLocalizations.of(context)!,
+        use24Hour: MediaQuery.of(context).alwaysUse24HourFormat,
+      );
+      if (widget.confirmStopOnOpen) {
+        unawaited(_confirmStop());
       }
     });
   }
 
   @override
-  void activate() {
-    super.activate();
-    _routeActive = true;
-    _timer ??= Timer.periodic(const Duration(seconds: 1), (_) => _tick());
-  }
-
-  @override
-  void deactivate() {
-    _routeActive = false;
-    _timer?.cancel();
-    _timer = null;
-    super.deactivate();
-  }
-
-  @override
   void dispose() {
-    _timer?.cancel();
-    if (_liveController.onStateChanged == _onInferenceStateChanged) {
-      _liveController.onStateChanged = null;
+    if (_runner.onFinished == _onRunnerFinished) {
+      _runner.onFinished = null;
     }
     _tabController.dispose();
     super.dispose();
   }
 
-  void _onInferenceStateChanged() {
-    if (!mounted || !_routeActive) return;
-    if (_finishingDeployment) return;
-    unawaited(_syncDetectionsFromInference());
-  }
-
-  Future<void> _syncDetectionsFromInference() async {
-    await _syncDetections(_liveController.sessionDetections);
-  }
-
-  Future<void> _syncDetections(List<DetectionRecord> detections) async {
-    final snapshot = List<DetectionRecord>.of(detections);
-    final previous = _syncDetectionsTail.catchError((_) {});
-    final next = previous.then((_) => _syncDetectionsNow(snapshot));
-    _syncDetectionsTail = next.catchError((_) {});
-    await next;
-  }
-
-  Future<void> _syncDetectionsNow(List<DetectionRecord> detections) async {
-    final controller = ref.read(aruControllerProvider);
-    await controller.syncDetections(detections);
-    if (!mounted || !_routeActive) return;
-    ref.read(aruSessionProvider.notifier).state = controller.session;
-    setState(() {});
-  }
-
-  Future<void> _tick() async {
-    if (!mounted || !_routeActive || _stopping || _tickBusy) return;
-    _tickBusy = true;
-    try {
-      if (!mounted || !_routeActive) return;
-      final controller = ref.read(aruControllerProvider);
-      final session = controller.session;
-      if (session == null || controller.state == AruControllerState.completed) {
-        return;
-      }
-      if (controller.state == AruControllerState.recording &&
-          _scheduleSnapshot(session)?.currentWindow == null) {
-        await _stopInference();
-      }
-      if (await _stopIfBatteryBelowThreshold(controller)) {
-        return;
-      }
-      await controller.evaluate();
-      if (!mounted || !_routeActive) return;
-      ref.read(aruStateProvider.notifier).state = controller.state;
-      ref.read(aruSessionProvider.notifier).state = controller.session;
-      if (controller.state == AruControllerState.completed) {
-        setState(() => _stopping = true);
-        final reviewSession = await _finishDeployment(
-          reason: SessionStopReason.maxDuration,
-        );
-        if (!mounted || !_routeActive) return;
-        setState(() => _stopping = false);
-        _openReview(reviewSession);
-        return;
-      }
-      await _syncInferenceSession(controller.state, controller.session);
-      await _syncNotification();
-    } finally {
-      _tickBusy = false;
-    }
-  }
-
-  Future<void> _syncInferenceSession(
-    AruControllerState state,
-    LiveSession? session,
-  ) async {
-    if (session == null) return;
-    if (state == AruControllerState.recording) {
-      await _startInference(session);
-    } else {
-      await _stopInference();
-    }
-  }
-
-  Future<void> _startInference(LiveSession session) async {
-    if (_aruInferenceActive || _inferenceStarting) return;
-    _inferenceStarting = true;
-    try {
-      if (!mounted || !_routeActive) return;
-      final controller = _liveController;
-      if (controller.state == LiveState.idle) {
-        await controller.loadModel();
-      }
-      if (controller.state != LiveState.ready) return;
-      if (!mounted || !_routeActive) return;
-
-      final geoScoresFuture = ref.read(geoScoresProvider.future);
-      final geoThreshold = ref.read(geoThresholdProvider);
-      final geoModelSpeciesNamesFuture = ref.read(
-        geoModelSpeciesNamesProvider.future,
+  void _onRunnerFinished(AruFinishResult result) {
+    if (!mounted) return;
+    setState(() => _stopping = false);
+    if (result.reason == SessionStopReason.lowBattery &&
+        result.batteryLevel != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(
+              context,
+            )!.sessionAutoStopLowBattery(result.batteryLevel!),
+          ),
+          duration: const Duration(seconds: 3),
+        ),
       );
-      final geoScores = await geoScoresFuture;
-      final geoModelSpeciesNames = await geoModelSpeciesNamesFuture;
-      if (!mounted || !_routeActive) return;
-
-      await controller.startSession(
-        windowDuration: session.settings.windowDuration,
-        inferenceRate: session.settings.inferenceRate,
-        confidenceThreshold: session.settings.confidenceThreshold,
-        speciesFilterMode: session.settings.speciesFilterMode,
-        recordingMode: RecordingMode.off,
-        geoScores: geoScores,
-        geoThreshold: geoThreshold,
-        geoModelSpeciesNames: geoModelSpeciesNames,
-        poolingWindows: session.settings.poolingWindows,
-        poolingMode: session.settings.poolingMode ?? 'lme',
-        sensitivity: session.settings.sensitivity ?? 1.0,
-        gainLinear: session.settings.gainLinear,
-        highPassHz: session.settings.highPassHz,
-        latitude: session.latitude,
-        longitude: session.longitude,
-        clearRingBuffer: false,
-      );
-      _aruInferenceActive = controller.state == LiveState.active;
-      _onInferenceStateChanged();
-    } finally {
-      _inferenceStarting = false;
     }
-  }
-
-  Future<void> _stopInference() async {
-    final controller = _liveController;
-    if (controller.session == null &&
-        controller.state != LiveState.active &&
-        controller.state != LiveState.paused) {
-      _aruInferenceActive = false;
-      return;
-    }
-
-    await _syncDetectionsFromInference();
-    final completedSession = await controller.finalizeSession();
-    if (completedSession != null) {
-      await _syncDetections(completedSession.detections);
-    }
-    _aruInferenceActive = false;
-  }
-
-  Future<void> _stopCaptureAndInference() async {
-    await ref.read(captureStateProvider.notifier).stop();
-    await _stopInference();
+    _openReview(result.reviewSession);
   }
 
   Future<void> _confirmStop() async {
-    if (_stopDialogShowing || _stopping || _finishingDeployment) return;
+    if (_stopDialogShowing || _stopping) return;
     _stopDialogShowing = true;
     final l10n = AppLocalizations.of(context)!;
     try {
@@ -259,7 +108,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
         confirmLabel: l10n.aruStopDeployment,
         cancelLabel: l10n.cancel,
       );
-      if (confirmed && mounted && _routeActive) {
+      if (confirmed && mounted) {
         await _stopDeployment();
       }
     } finally {
@@ -270,39 +119,13 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   Future<void> _stopDeployment() async {
     if (_stopping || !mounted) return;
     setState(() => _stopping = true);
-    final reviewSession = await _finishDeployment(
-      reason: SessionStopReason.manual,
-    );
-    if (!mounted || !_routeActive) return;
-    setState(() => _stopping = false);
-    _openReview(reviewSession);
-  }
-
-  Future<LiveSession?> _finishDeployment({
-    required SessionStopReason reason,
-    num? reasonValue,
-  }) async {
-    _finishingDeployment = true;
-    final controller = ref.read(aruControllerProvider);
-    try {
-      await _stopCaptureAndInference();
-      await _syncDetectionsTail;
-      await controller.stop(reason: reason, reasonValue: reasonValue);
-      if (!mounted || !_routeActive) return controller.reviewSession;
-      ref.read(aruStateProvider.notifier).state = controller.state;
-      ref.read(aruSessionProvider.notifier).state = controller.session;
-      await _notificationService.stop();
-      ref.invalidate(sessionListProvider);
-      return controller.reviewSession;
-    } finally {
-      if (controller.state != AruControllerState.completed) {
-        _finishingDeployment = false;
-      }
-    }
+    // The runner finalizes the deployment and invokes [_onRunnerFinished],
+    // which clears the spinner and opens review.
+    await _runner.requestStop();
   }
 
   void _openReview(LiveSession? session) {
-    if (!mounted || !_routeActive) return;
+    if (!mounted) return;
     if (session == null) {
       Navigator.of(context).pop();
       return;
@@ -320,71 +143,6 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
         builder: (_) => SessionReviewScreen(session: session),
       ),
     );
-  }
-
-  Future<bool> _stopIfBatteryBelowThreshold(AruController controller) async {
-    final threshold = controller.session?.aruMetadata?.lowBatteryStopPercent;
-    if (threshold == null || threshold <= 0) return false;
-
-    final now = DateTime.now();
-    if (_lastBatteryCheck != null &&
-        now.difference(_lastBatteryCheck!) < const Duration(minutes: 1)) {
-      return false;
-    }
-    _lastBatteryCheck = now;
-
-    try {
-      final level = await _battery.batteryLevel;
-      if (level > threshold) return false;
-
-      if (mounted && _routeActive) setState(() => _stopping = true);
-      final reviewSession = await _finishDeployment(
-        reason: SessionStopReason.lowBattery,
-        reasonValue: level,
-      );
-      if (!mounted || !_routeActive) return true;
-      setState(() => _stopping = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context)!.sessionAutoStopLowBattery(level),
-          ),
-          duration: const Duration(seconds: 3),
-        ),
-      );
-      _openReview(reviewSession);
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  Future<void> _syncNotification() async {
-    final session = ref.read(aruSessionProvider);
-    final state = ref.read(aruStateProvider);
-    if (session == null || state == AruControllerState.completed) {
-      await _notificationService.stop();
-      return;
-    }
-
-    final l10n = AppLocalizations.of(context)!;
-    final text = _notificationText(
-      l10n,
-      state,
-      session,
-      alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
-    );
-    if (_notificationService.isRunning) {
-      await _notificationService.update(
-        title: l10n.aruNotificationTitle,
-        text: text,
-      );
-    } else {
-      await _notificationService.start(
-        title: l10n.aruNotificationTitle,
-        text: text,
-      );
-    }
   }
 
   void _showHelp() {
@@ -428,6 +186,13 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
         captureState == CaptureState.capturing &&
         _tabController.index == 1;
 
+    // Keep the background runner's notification text localized to the
+    // current locale / clock format.
+    _runner.refreshLocalization(
+      l10n,
+      use24Hour: MediaQuery.of(context).alwaysUse24HourFormat,
+    );
+
     ref.listen<int>(confidenceThresholdProvider, (_, next) {
       ref.read(liveControllerProvider).setConfidenceThreshold(next);
     });
@@ -447,6 +212,11 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       ref.read(audioCaptureServiceProvider).setHighPassCutoff(next);
     });
 
+    // While a deployment is active the user cannot navigate elsewhere WITHIN
+    // the app (the deployment owns the foreground). Leaving the app entirely
+    // (e.g. the device home button) is an OS action this guard does not block,
+    // and the deployment keeps running in the background via [AruRunner] and
+    // the foreground service.
     return PopScope(
       canPop: session == null || state == AruControllerState.completed,
       onPopInvokedWithResult: (didPop, _) async {
@@ -1629,25 +1399,4 @@ String _formatDuration(Duration duration) {
     return '${duration.inMinutes} min $seconds s';
   }
   return '${duration.inSeconds} s';
-}
-
-String _notificationText(
-  AppLocalizations l10n,
-  AruControllerState state,
-  LiveSession session, {
-  required bool alwaysUse24HourFormat,
-}) {
-  final status = switch (state) {
-    AruControllerState.recording => l10n.aruActiveRecording,
-    AruControllerState.completed => l10n.aruActiveCompleted,
-    _ => l10n.aruActiveWaiting,
-  };
-  final snapshot = _scheduleSnapshot(session);
-  if (snapshot?.currentWindow != null) {
-    return '$status - ${_windowLabel(l10n.localeName, snapshot!.currentWindow!, alwaysUse24HourFormat: alwaysUse24HourFormat)}';
-  }
-  if (snapshot?.nextWindow != null) {
-    return '$status - ${formatLocaleTime(snapshot!.nextWindow!.start, l10n.localeName, alwaysUse24HourFormat: alwaysUse24HourFormat)}';
-  }
-  return '$status - ${l10n.aruCompletedCycles}: ${_completedCycleCount(session)}';
 }

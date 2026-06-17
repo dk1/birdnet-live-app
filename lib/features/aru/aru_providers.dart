@@ -15,6 +15,7 @@ import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../recording/recording_service.dart';
 import 'aru_controller.dart';
+import 'aru_runner.dart';
 import 'aru_storage_estimator.dart';
 
 typedef AruCycleRecordingStart =
@@ -142,3 +143,15 @@ final aruStateProvider = StateProvider<AruControllerState>(
 
 /// Currently active ARU session, if any.
 final aruSessionProvider = StateProvider<LiveSession?>((ref) => null);
+
+/// Long-lived driver for the active ARU deployment.
+///
+/// Kept alive for the app's lifetime so the deployment loop survives screen
+/// disposal and backgrounding (the ARU foreground service keeps the isolate
+/// running on Android). The active screen attaches to this runner as a passive
+/// observer rather than owning the loop itself.
+final aruRunnerProvider = Provider<AruRunner>((ref) {
+  final runner = AruRunner(ref);
+  ref.onDispose(runner.dispose);
+  return runner;
+});
