@@ -324,10 +324,10 @@ void main() {
           'stop:0:${start.add(const Duration(minutes: 10)).toIso8601String()}',
         ]);
         expect(cycle.recordingPath, '/recordings/aru/cycle_0.flac.closed');
-        expect(
-          controller.session!.recordingPath,
-          '/recordings/aru/cycle_0.flac.closed',
-        );
+        // Combined deployments stay clips-only: per-cycle audio lives on the
+        // cycle metadata, and the aggregate session must not claim a single
+        // recordingPath that would point at only the last cycle.
+        expect(controller.session!.recordingPath, isNull);
         expect(cycle.status, AruCycleStatus.completed);
       },
     );

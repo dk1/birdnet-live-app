@@ -460,9 +460,14 @@ class AruController {
     _upsertCycle(finalizedCycle);
 
     final eachCycleIsSession = session.aruMetadata?.eachCycleIsSession ?? false;
-    if (stoppedPath != null && !eachCycleIsSession) {
-      session.recordingPath = stoppedPath;
-    }
+    // Combined deployments deliberately record detections-only (see
+    // _effectiveAruRecordingMode in aru_setup_screen.dart), so they never own a
+    // single full-length recording. Per-cycle audio, when present, is tracked on
+    // each cycle's metadata (finalizedCycle.recordingPath); the aggregate session
+    // stays clips-only and must not claim a single recordingPath that would point
+    // at just the last cycle. Segmented playback of combined cycles is a separate
+    // future feature (see dev/aru_mode_todo.md). Per-cycle sessions below get
+    // their own standalone recordingPath instead.
 
     if (eachCycleIsSession) {
       final cycleDetections = _detectionsInWindow(
