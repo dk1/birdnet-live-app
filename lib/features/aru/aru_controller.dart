@@ -411,8 +411,11 @@ class AruController {
     _activeCycleIndex = window.index;
     _activeCycleStart = window.start;
     session.segments.add(SessionSegment(startTime: window.start));
+    final recordingMode = recordingModeFromString(
+      session.aruMetadata?.recordingMode ?? RecordingMode.off.name,
+    );
     final recordingPath =
-        session.aruMetadata?.recordingMode == 'off'
+        recordingMode == RecordingMode.off
             ? null
             : await _startCycleRecording?.call(session, window);
     _upsertCycle(

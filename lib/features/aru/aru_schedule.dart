@@ -358,15 +358,50 @@ class AruScheduleSnapshot {
   bool get isCompleted => status == AruScheduleStatus.completed;
 }
 
+/// Clock-aligns the first regular cycle start for [config].
+///
+/// Shared by [AruScheduleCalculator] and `AruStorageEstimator` so schedule
+/// generation and storage estimation stay in lockstep. When a test cycle is
+/// enabled, the base time is offset by [AruDefaults.testCycleDuration]; the
+/// result is then snapped forward to the next multiple of the repeat interval
+/// past local midnight.
+DateTime aruFirstClockAlignedStart(AruScheduleConfig config) {
+  final baseTime =
+      config.testCycleEnabled
+          ? config.startTime.add(AruDefaults.testCycleDuration)
+          : config.startTime;
+  final midnight =
+      baseTime.isUtc
+          ? DateTime.utc(baseTime.year, baseTime.month, baseTime.day)
+          : DateTime(baseTime.year, baseTime.month, baseTime.day);
+  final elapsed = baseTime.difference(midnight);
+  final intervalMicros = config.repeatInterval.inMicroseconds;
+  final remainder = elapsed.inMicroseconds % intervalMicros;
+  if (remainder == 0) return baseTime;
+  return baseTime.add(Duration(microseconds: intervalMicros - remainder));
+}
+
+/// Start time of the regular cycle at [rawIndex] (ignoring diel filtering).
+DateTime aruRegularCycleStart(AruScheduleConfig config, int rawIndex) =>
+    aruFirstClockAlignedStart(config).add(config.repeatInterval * rawIndex);
+
+/// Whether a cycle starting at [start] is permitted by the config's diel
+/// pattern.
+bool aruIsStartAllowed(AruScheduleConfig config, DateTime start) =>
+    isAruStartAllowedByDielPattern(
+      pattern: config.dielPattern,
+      start: start,
+      latitude: config.latitude,
+      longitude: config.longitude,
+    );
+
 /// Pure ARU schedule calculator.
 class AruScheduleCalculator {
   AruScheduleCalculator(this.config) {
     config.validateOrThrow();
   }
 
-  final AruScheduleConfig config;
-
-  /// Evaluate the deployment state at [now].
+  final AruScheduleConfig config;  /// Evaluate the deployment state at [now].
   AruScheduleSnapshot snapshotAt(DateTime now) {
     if (now.isBefore(config.startTime)) {
       return AruScheduleSnapshot(
@@ -561,33 +596,10 @@ class AruScheduleCalculator {
     );
   }
 
-  DateTime _regularCycleStart(int rawIndex) {
-    final first = _firstClockAlignedStart();
-    return first.add(config.repeatInterval * rawIndex);
-  }
+  DateTime _regularCycleStart(int rawIndex) =>
+      aruRegularCycleStart(config, rawIndex);
 
-  DateTime _firstClockAlignedStart() {
-    final baseTime =
-        config.testCycleEnabled
-            ? config.startTime.add(AruDefaults.testCycleDuration)
-            : config.startTime;
-    final midnight =
-        baseTime.isUtc
-            ? DateTime.utc(baseTime.year, baseTime.month, baseTime.day)
-            : DateTime(baseTime.year, baseTime.month, baseTime.day);
-    final elapsed = baseTime.difference(midnight);
-    final intervalMicros = config.repeatInterval.inMicroseconds;
-    final remainder = elapsed.inMicroseconds % intervalMicros;
-    if (remainder == 0) return baseTime;
-    return baseTime.add(Duration(microseconds: intervalMicros - remainder));
-  }
+  DateTime _firstClockAlignedStart() => aruFirstClockAlignedStart(config);
 
-  bool _isAllowedStart(DateTime start) {
-    return isAruStartAllowedByDielPattern(
-      pattern: config.dielPattern,
-      start: start,
-      latitude: config.latitude,
-      longitude: config.longitude,
-    );
-  }
+  bool _isAllowedStart(DateTime start) => aruIsStartAllowed(config, start);
 }

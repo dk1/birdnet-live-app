@@ -2,10 +2,6 @@
 // ARU Detection Sampler - Clip retention across scheduled cycles
 // =============================================================================
 
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
-
 import '../live/live_session.dart';
 import '../survey/detection_sampler.dart';
 
@@ -14,6 +10,12 @@ import '../survey/detection_sampler.dart';
 /// Detection records are always retained. This sampler only clears
 /// [DetectionRecord.audioClipPath] and deletes the clip file when retention
 /// limits require a clip to be dropped.
+///
+/// Shares clip-file teardown with the Survey [DetectionSampler] via
+/// [deleteDetectionClipFile], but keeps a deliberately different *selection*
+/// strategy: ARU buckets by time (and optional deployment scope) and supports
+/// mid-session [replaceRecord], whereas Survey buckets by spatial "same spot"
+/// (distance + time). The two are intentionally not merged into one engine.
 class AruDetectionSampler {
   AruDetectionSampler({
     required this.mode,
@@ -144,13 +146,7 @@ class AruDetectionSampler {
     final path = record.audioClipPath;
     record.audioClipPath = null;
     _droppedClipCount++;
-    if (path == null) return;
-    try {
-      final file = File(path);
-      if (await file.exists()) await file.delete();
-    } catch (e) {
-      debugPrint('[AruDetectionSampler] failed to delete clip: $e');
-    }
+    await deleteDetectionClipFile(path, logTag: 'AruDetectionSampler');
   }
 
   static void _insertSorted(List<_KeptAruClip> list, _KeptAruClip item) {

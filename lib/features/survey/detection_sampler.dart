@@ -50,6 +50,22 @@ SamplingMode samplingModeFromString(String value) {
   };
 }
 
+/// Deletes a detection clip file from disk, swallowing and logging I/O errors.
+///
+/// Shared by [DetectionSampler] and `AruDetectionSampler` so the two retention
+/// engines (which use deliberately different *selection* strategies) never
+/// diverge on the actual file teardown. Callers are responsible for clearing
+/// the owning record's `audioClipPath` and updating their own drop counters.
+Future<void> deleteDetectionClipFile(String? path, {required String logTag}) async {
+  if (path == null) return;
+  try {
+    final file = File(path);
+    if (await file.exists()) await file.delete();
+  } catch (e) {
+    debugPrint('[$logTag] failed to delete clip: $e');
+  }
+}
+
 /// Controls which detection audio clips are retained during a survey.
 ///
 /// All [DetectionRecord]s are kept in the session regardless of mode; the
@@ -165,13 +181,7 @@ class DetectionSampler {
     final path = record.audioClipPath;
     record.audioClipPath = null;
     _droppedClipCount++;
-    if (path == null) return;
-    try {
-      final file = File(path);
-      if (await file.exists()) await file.delete();
-    } catch (e) {
-      debugPrint('[DetectionSampler] failed to delete clip: $e');
-    }
+    await deleteDetectionClipFile(path, logTag: 'DetectionSampler');
   }
 
   /// Find an already-kept record at the "same spot" as [candidate], or null.

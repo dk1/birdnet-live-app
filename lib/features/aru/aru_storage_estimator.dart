@@ -419,35 +419,14 @@ class AruStorageEstimator {
     return effectiveEnd.difference(schedule.startTime);
   }
 
-  DateTime _regularCycleStart(AruScheduleConfig schedule, int rawIndex) {
-    final first = _firstClockAlignedStart(schedule);
-    return first.add(schedule.repeatInterval * rawIndex);
-  }
+  DateTime _regularCycleStart(AruScheduleConfig schedule, int rawIndex) =>
+      aruRegularCycleStart(schedule, rawIndex);
 
-  DateTime _firstClockAlignedStart(AruScheduleConfig schedule) {
-    final baseTime =
-        schedule.testCycleEnabled
-            ? schedule.startTime.add(AruDefaults.testCycleDuration)
-            : schedule.startTime;
-    final midnight =
-        baseTime.isUtc
-            ? DateTime.utc(baseTime.year, baseTime.month, baseTime.day)
-            : DateTime(baseTime.year, baseTime.month, baseTime.day);
-    final elapsed = baseTime.difference(midnight);
-    final intervalMicros = schedule.repeatInterval.inMicroseconds;
-    final remainder = elapsed.inMicroseconds % intervalMicros;
-    if (remainder == 0) return baseTime;
-    return baseTime.add(Duration(microseconds: intervalMicros - remainder));
-  }
+  DateTime _firstClockAlignedStart(AruScheduleConfig schedule) =>
+      aruFirstClockAlignedStart(schedule);
 
-  bool _isAllowedStart(AruScheduleConfig schedule, DateTime start) {
-    return isAruStartAllowedByDielPattern(
-      pattern: schedule.dielPattern,
-      start: start,
-      latitude: schedule.latitude,
-      longitude: schedule.longitude,
-    );
-  }
+  bool _isAllowedStart(AruScheduleConfig schedule, DateTime start) =>
+      aruIsStartAllowed(schedule, start);
 
   int _rawCandidateCountBefore(
     DateTime firstRegular,
