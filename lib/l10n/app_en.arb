@@ -526,9 +526,36 @@
       }
     }
   },
-  "aruLowBatteryStop": "Low-battery stop",
+  "aruLowBatteryStop": "Pause recording below",
   "@aruLowBatteryStop": {
-    "description": "Label for ARU low battery stop threshold"
+    "description": "Label for the ARU battery level at or below which recording cycles pause"
+  },
+  "aruLowBatteryResume": "Resume recording at",
+  "@aruLowBatteryResume": {
+    "description": "Label for the ARU battery level at or above which recording cycles resume after a low-battery pause"
+  },
+  "aruLowBatteryHint": "Recording cycles pause when the battery falls to the pause level and resume once it charges back to the resume level. The deployment keeps running in between, which is useful with an occasional charge source such as a solar panel.",
+  "@aruLowBatteryHint": {
+    "description": "Explanation for the ARU low-battery pause/resume thresholds"
+  },
+  "aruBatteryPaused": "Paused (low battery)",
+  "@aruBatteryPaused": {
+    "description": "ARU status shown while recording cycles are paused for low battery"
+  },
+  "aruNotificationStats": "{cycles} cycles · {species} species · {detections} detections",
+  "@aruNotificationStats": {
+    "description": "Compact ARU deployment progress shown in the foreground notification",
+    "placeholders": {
+      "cycles": {
+        "type": "int"
+      },
+      "species": {
+        "type": "int"
+      },
+      "detections": {
+        "type": "int"
+      }
+    }
   },
   "aruStorageEstimate": "Estimated audio storage",
   "@aruStorageEstimate": {

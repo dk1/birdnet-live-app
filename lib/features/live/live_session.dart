@@ -548,6 +548,10 @@ enum AruCycleStatus {
 
   /// Stopped by the user or an expected guard such as low battery/storage.
   stopped,
+
+  /// Skipped without recording because the battery was below the pause
+  /// threshold for the whole cycle window (see ARU low-battery pause/resume).
+  skipped,
 }
 
 /// Persisted metadata for one ARU cycle.
@@ -630,6 +634,7 @@ class AruDeploymentMetadata {
     this.scheduleEnd,
     this.maxCycles,
     this.lowBatteryStopPercent,
+    this.lowBatteryResumePercent,
     this.dielPattern = AruDielPattern.anyTime,
     this.latitude,
     this.longitude,
@@ -650,6 +655,7 @@ class AruDeploymentMetadata {
   final DateTime? scheduleEnd;
   final int? maxCycles;
   final int? lowBatteryStopPercent;
+  final int? lowBatteryResumePercent;
   final AruDielPattern dielPattern;
   final double? latitude;
   final double? longitude;
@@ -689,6 +695,8 @@ class AruDeploymentMetadata {
               : null,
       maxCycles: (json['maxCycles'] as num?)?.toInt(),
       lowBatteryStopPercent: (json['lowBatteryStopPercent'] as num?)?.toInt(),
+      lowBatteryResumePercent:
+          (json['lowBatteryResumePercent'] as num?)?.toInt(),
       dielPattern: AruDielPattern.values.firstWhere(
         (p) => p.name == (json['dielPattern'] as String?),
         orElse: () => AruDielPattern.anyTime,
@@ -722,6 +730,8 @@ class AruDeploymentMetadata {
     if (maxCycles != null) 'maxCycles': maxCycles,
     if (lowBatteryStopPercent != null)
       'lowBatteryStopPercent': lowBatteryStopPercent,
+    if (lowBatteryResumePercent != null)
+      'lowBatteryResumePercent': lowBatteryResumePercent,
     if (dielPattern != AruDielPattern.anyTime) 'dielPattern': dielPattern.name,
     if (latitude != null) 'latitude': latitude,
     if (longitude != null) 'longitude': longitude,

@@ -189,7 +189,14 @@ class AruController {
   }
 
   /// Re-evaluate the schedule and transition between waiting/recording states.
-  Future<void> evaluate({DateTime? now}) async {
+  ///
+  /// When [recordingSuppressed] is true (e.g. the runner has paused for low
+  /// battery), a scheduled recording window is skipped without starting capture
+  /// or inference: the cycle is recorded as [AruCycleStatus.skipped] and the
+  /// controller stays in a non-recording state until the next window. The
+  /// decision is made once per window — a window already entered or skipped is
+  /// never re-recorded even if the battery recovers mid-window.
+  Future<void> evaluate({DateTime? now, bool recordingSuppressed = false}) async {
     if (_state == AruControllerState.completed ||
         _state == AruControllerState.stopping) {
       return;
@@ -213,8 +220,27 @@ class AruController {
         _state = AruControllerState.waiting;
         break;
       case AruScheduleStatus.recording:
-        await _enterCycle(snapshot.currentWindow!);
-        _state = AruControllerState.recording;
+        final window = snapshot.currentWindow!;
+        final existing = _cycleAt(window.index);
+        final alreadyDecided =
+            existing != null &&
+            existing.status != AruCycleStatus.scheduled &&
+            existing.status != AruCycleStatus.recording;
+        if (alreadyDecided) {
+          // This window was already finalized (recorded or skipped); do not
+          // re-enter it. Wait for the next scheduled window.
+          await _leaveActiveCycle(
+            status: AruCycleStatus.completed,
+            endedAt: evalTime,
+          );
+          _state = AruControllerState.waiting;
+        } else if (recordingSuppressed) {
+          await _skipCycle(window, evalTime);
+          _state = AruControllerState.waiting;
+        } else {
+          await _enterCycle(window);
+          _state = AruControllerState.recording;
+        }
         break;
       case AruScheduleStatus.completed:
         await _leaveActiveCycle(
@@ -428,6 +454,33 @@ class AruController {
         recordingPath: recordingPath,
       ),
     );
+  }
+
+  /// Skip a scheduled recording window because recording is currently
+  /// suppressed (low battery). Finalizes any in-progress cycle as partial and
+  /// records the window as [AruCycleStatus.skipped] without starting capture or
+  /// inference or producing a per-cycle session.
+  Future<void> _skipCycle(AruCycleWindow window, DateTime now) async {
+    final session = _session;
+    if (session == null) return;
+
+    if (_activeCycleIndex != null) {
+      await _leaveActiveCycle(
+        status: AruCycleStatus.partial,
+        endedAt: now,
+      );
+    }
+
+    if (_cycleAt(window.index) == null) {
+      _upsertCycle(
+        AruCycleMetadata(
+          index: window.index,
+          plannedStart: window.start,
+          plannedEnd: window.plannedEnd,
+          status: AruCycleStatus.skipped,
+        ),
+      );
+    }
   }
 
   Future<void> _leaveActiveCycle({
@@ -661,6 +714,7 @@ class AruController {
       scheduleEnd: cycle.actualEnd,
       maxCycles: 1,
       lowBatteryStopPercent: metadata.lowBatteryStopPercent,
+      lowBatteryResumePercent: metadata.lowBatteryResumePercent,
       dielPattern: metadata.dielPattern,
       latitude: metadata.latitude,
       longitude: metadata.longitude,

@@ -66,6 +66,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
   late DateTime _scheduleEnd;
   int _maxCycles = AruDefaults.defaultMaxCycles;
   int _lowBatteryStop = AruDefaults.defaultLowBatteryStopPercent;
+  int _lowBatteryResume = AruDefaults.defaultLowBatteryResumePercent;
   AruDielPattern _dielPattern = AruDielPattern.anyTime;
   RecordingMode _recordingMode = RecordingMode.full;
   SamplingMode _samplingMode = SamplingMode.smart;
@@ -228,6 +229,14 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
   int? get _selectedLowBatteryStop =>
       _lowBatteryStop > 0 ? _lowBatteryStop : null;
 
+  // Resume threshold only applies when battery management (stop) is enabled.
+  int? get _selectedLowBatteryResume =>
+      _lowBatteryStop > 0
+          ? (_lowBatteryResume > _lowBatteryStop
+              ? _lowBatteryResume
+              : _lowBatteryStop)
+          : null;
+
   Future<void> _restoreActiveDeployment() async {
     if (_recovering) return;
     _recovering = true;
@@ -313,6 +322,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       scheduleEnd: _selectedScheduleEnd,
       maxCycles: _selectedMaxCycles,
       lowBatteryStopPercent: _selectedLowBatteryStop,
+      lowBatteryResumePercent: _selectedLowBatteryResume,
       dielPattern: _dielPattern,
       latitude: latitude,
       longitude: longitude,
@@ -484,6 +494,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
             scheduleEnd: _scheduleEnd,
             maxCycles: _maxCycles,
             lowBatteryStop: _lowBatteryStop,
+            lowBatteryResume: _lowBatteryResume,
             dielPattern: _dielPattern,
             latitude:
                 _locationChoice == _LocationChoice.skip ? null : _latitude,
@@ -508,7 +519,16 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
                 (value) => setState(() => _scheduleEnd = value),
             onMaxCyclesChanged: (value) => setState(() => _maxCycles = value),
             onLowBatteryStopChanged:
-                (value) => setState(() => _lowBatteryStop = value),
+                (value) => setState(() {
+                  _lowBatteryStop = value;
+                  if (_lowBatteryResume < value) _lowBatteryResume = value;
+                }),
+            onLowBatteryResumeChanged:
+                (value) => setState(
+                  () =>
+                      _lowBatteryResume =
+                          value < _lowBatteryStop ? _lowBatteryStop : value,
+                ),
             onDielPatternChanged:
                 (value) => setState(() => _dielPattern = value),
             onTestCycleEnabledChanged:
@@ -532,6 +552,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
             scheduleEnd: _selectedScheduleEnd,
             maxCycles: _selectedMaxCycles,
             lowBatteryStop: _lowBatteryStop,
+            lowBatteryResume: _lowBatteryResume,
             dielPattern: _dielPattern,
             recordingMode: _recordingMode,
             samplingMode: _samplingMode,
@@ -1056,6 +1077,7 @@ class _ScheduleStep extends ConsumerWidget {
     required this.scheduleEnd,
     required this.maxCycles,
     required this.lowBatteryStop,
+    required this.lowBatteryResume,
     required this.dielPattern,
     required this.latitude,
     required this.longitude,
@@ -1069,6 +1091,7 @@ class _ScheduleStep extends ConsumerWidget {
     required this.onScheduleEndChanged,
     required this.onMaxCyclesChanged,
     required this.onLowBatteryStopChanged,
+    required this.onLowBatteryResumeChanged,
     required this.onDielPatternChanged,
     required this.onTestCycleEnabledChanged,
     required this.onEachCycleIsSessionChanged,
@@ -1081,6 +1104,7 @@ class _ScheduleStep extends ConsumerWidget {
   final DateTime scheduleEnd;
   final int maxCycles;
   final int lowBatteryStop;
+  final int lowBatteryResume;
   final AruDielPattern dielPattern;
   final double? latitude;
   final double? longitude;
@@ -1094,6 +1118,7 @@ class _ScheduleStep extends ConsumerWidget {
   final ValueChanged<DateTime> onScheduleEndChanged;
   final ValueChanged<int> onMaxCyclesChanged;
   final ValueChanged<int> onLowBatteryStopChanged;
+  final ValueChanged<int> onLowBatteryResumeChanged;
   final ValueChanged<AruDielPattern> onDielPatternChanged;
   final ValueChanged<bool> onTestCycleEnabledChanged;
   final ValueChanged<bool> onEachCycleIsSessionChanged;
@@ -1328,6 +1353,34 @@ class _ScheduleStep extends ConsumerWidget {
           label: '$lowBatteryStop%',
           onChanged: (value) => onLowBatteryStopChanged(value.round()),
         ),
+        if (lowBatteryStop > 0) ...[
+          Text(
+            '${l10n.aruLowBatteryResume}: '
+            '${lowBatteryResume > lowBatteryStop ? lowBatteryResume : lowBatteryStop}%',
+          ),
+          Slider(
+            value:
+                (lowBatteryResume > lowBatteryStop
+                        ? lowBatteryResume
+                        : lowBatteryStop)
+                    .toDouble(),
+            min: lowBatteryStop.toDouble(),
+            max: 100,
+            divisions: (100 - lowBatteryStop) > 0 ? 100 - lowBatteryStop : 1,
+            label:
+                '${lowBatteryResume > lowBatteryStop ? lowBatteryResume : lowBatteryStop}%',
+            onChanged: (value) => onLowBatteryResumeChanged(value.round()),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 4, bottom: 4),
+            child: Text(
+              l10n.aruLowBatteryHint,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
         const Divider(height: 32),
 
         SwitchListTile(
@@ -1471,6 +1524,7 @@ class _ReadyStep extends ConsumerWidget {
     required this.scheduleEnd,
     required this.maxCycles,
     required this.lowBatteryStop,
+    required this.lowBatteryResume,
     required this.dielPattern,
     required this.recordingMode,
     required this.samplingMode,
@@ -1491,6 +1545,7 @@ class _ReadyStep extends ConsumerWidget {
   final DateTime? scheduleEnd;
   final int? maxCycles;
   final int lowBatteryStop;
+  final int lowBatteryResume;
   final AruDielPattern dielPattern;
   final RecordingMode recordingMode;
   final SamplingMode samplingMode;
@@ -1660,6 +1715,11 @@ class _ReadyStep extends ConsumerWidget {
               l10n.aruLowBatteryStop,
               lowBatteryStop > 0 ? '$lowBatteryStop%' : l10n.settingsFilterOff,
             ),
+            if (lowBatteryStop > 0)
+              (
+                l10n.aruLowBatteryResume,
+                '${lowBatteryResume > lowBatteryStop ? lowBatteryResume : lowBatteryStop}%',
+              ),
             (
               l10n.aruSessionGrouping,
               eachCycleIsSession

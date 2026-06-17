@@ -70,6 +70,7 @@ class AruRunner {
   bool _disposed = false;
   bool _inferenceStarting = false;
   bool _aruInferenceActive = false;
+  bool _batteryPaused = false;
   DateTime? _lastBatteryCheck;
   Future<void> _syncDetectionsTail = Future<void>.value();
 
@@ -117,6 +118,7 @@ class AruRunner {
     _finishing = false;
     _tickBusy = false;
     _aruInferenceActive = false;
+    _batteryPaused = false;
     _lastBatteryCheck = null;
     _running = true;
     _timer ??= Timer.periodic(const Duration(seconds: 1), (_) => _tick());
@@ -152,10 +154,8 @@ class AruRunner {
           _scheduleSnapshot(session)?.currentWindow == null) {
         await _stopInference();
       }
-      if (await _stopIfBatteryBelowThreshold(controller)) {
-        return;
-      }
-      await controller.evaluate();
+      await _updateBatteryPause(controller);
+      await controller.evaluate(recordingSuppressed: _batteryPaused);
       if (!_running) return;
       _publishState(controller);
       if (controller.state == AruControllerState.completed) {
@@ -278,40 +278,46 @@ class AruRunner {
     _aruInferenceActive = false;
   }
 
-  // ── Battery auto-stop ─────────────────────────────────────────────────────
+  // ── Battery pause / resume ────────────────────────────────────────────────
 
-  Future<bool> _stopIfBatteryBelowThreshold(AruController controller) async {
-    final threshold = controller.session?.aruMetadata?.lowBatteryStopPercent;
-    if (threshold == null || threshold <= 0) return false;
+  /// Updates [_batteryPaused] from the current battery level using hysteresis:
+  /// recording pauses at or below `lowBatteryStopPercent` and only resumes once
+  /// the battery recovers to `lowBatteryResumePercent`. The deployment keeps
+  /// running across a pause (cycles are skipped, not the whole deployment), so
+  /// an occasional charge source such as a solar panel can resume it
+  /// automatically. Throttled to one read per minute.
+  Future<void> _updateBatteryPause(AruController controller) async {
+    final metadata = controller.session?.aruMetadata;
+    final stop = metadata?.lowBatteryStopPercent;
+    if (stop == null || stop <= 0) {
+      _batteryPaused = false;
+      return;
+    }
 
     final now = DateTime.now();
     if (_lastBatteryCheck != null &&
         now.difference(_lastBatteryCheck!) < const Duration(minutes: 1)) {
-      return false;
+      return;
     }
     _lastBatteryCheck = now;
 
     try {
       final level = await _battery.batteryLevel;
-      if (level > threshold) return false;
-
-      _stopping = true;
-      final result = await _finishDeployment(
-        reason: SessionStopReason.lowBattery,
-        reasonValue: level,
-      );
-      _stopping = false;
-      _notifyFinished(
-        AruFinishResult(
-          reviewSession: result.reviewSession,
-          reason: SessionStopReason.lowBattery,
-          batteryLevel: level,
-        ),
-      );
-      return true;
+      final resume = metadata?.lowBatteryResumePercent;
+      if (level <= stop) {
+        if (!_batteryPaused) {
+          debugPrint('[AruRunner] battery $level% <= $stop% - pausing cycles');
+        }
+        _batteryPaused = true;
+      } else if (resume == null || resume <= stop || level >= resume) {
+        if (_batteryPaused) {
+          debugPrint('[AruRunner] battery $level% recovered - resuming cycles');
+        }
+        _batteryPaused = false;
+      }
+      // Between stop and resume thresholds: hold the current pause state.
     } catch (error) {
       debugPrint('[AruRunner] battery check failed: $error');
-      return false;
     }
   }
 
@@ -346,24 +352,40 @@ class AruRunner {
     AruControllerState state,
     LiveSession session,
   ) {
-    final status = switch (state) {
-      AruControllerState.recording => l10n.aruActiveRecording,
-      AruControllerState.completed => l10n.aruActiveCompleted,
-      _ => l10n.aruActiveWaiting,
-    };
+    final status =
+        _batteryPaused
+            ? l10n.aruBatteryPaused
+            : switch (state) {
+              AruControllerState.recording => l10n.aruActiveRecording,
+              AruControllerState.completed => l10n.aruActiveCompleted,
+              _ => l10n.aruActiveWaiting,
+            };
     final snapshot = _scheduleSnapshot(session);
     final current = snapshot?.currentWindow;
     final next = snapshot?.nextWindow;
-    if (current != null) {
+    final String headline;
+    if (!_batteryPaused && current != null) {
       final label =
           '${formatLocaleTime(current.start, l10n.localeName, alwaysUse24HourFormat: _use24Hour)} - '
           '${formatLocaleTime(current.end, l10n.localeName, alwaysUse24HourFormat: _use24Hour)}';
-      return '$status - $label';
+      headline = '$status - $label';
+    } else if (next != null) {
+      headline =
+          '$status - ${formatLocaleTime(next.start, l10n.localeName, alwaysUse24HourFormat: _use24Hour)}';
+    } else {
+      headline = status;
     }
-    if (next != null) {
-      return '$status - ${formatLocaleTime(next.start, l10n.localeName, alwaysUse24HourFormat: _use24Hour)}';
-    }
-    return '$status - ${l10n.aruCompletedCycles}: ${_completedCycleCount(session)}';
+    return '$headline\n${_notificationStats(l10n, session)}';
+  }
+
+  /// Compact deployment progress for the notification: completed cycles, unique
+  /// species, and total detections so far.
+  String _notificationStats(AppLocalizations l10n, LiveSession session) {
+    final cycles = _completedCycleCount(session);
+    final detections = session.detections.length;
+    final species =
+        session.detections.map((d) => d.scientificName).toSet().length;
+    return l10n.aruNotificationStats(cycles, species, detections);
   }
 
   // ── Finish / teardown ─────────────────────────────────────────────────────

@@ -186,7 +186,11 @@
   "@aruMaxCycles": {
     "description": "Label for ARU maximum cycle count control"
   },
-  "aruLowBatteryStop": "Zastavení při nízké baterii",
+  "aruLowBatteryStop": "Pozastavit nahrávání pod",
+  "aruLowBatteryResume": "Obnovit nahrávání při",
+  "aruLowBatteryHint": "Nahrávací cykly se pozastaví, když baterie klesne na úroveň pozastavení, a obnoví se, jakmile se nabije zpět na úroveň obnovení. Nasazení mezitím běží dál, což se hodí s občasným zdrojem nabíjení, jako je solární panel.",
+  "aruBatteryPaused": "Pozastaveno (nízká baterie)",
+  "aruNotificationStats": "{cycles} cyklů · {species} druhů · {detections} detekcí",
   "@aruLowBatteryStop": {
     "description": "Label for ARU low battery stop threshold"
   },

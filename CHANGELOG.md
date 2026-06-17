@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.17.8] - 2026-06-17
 
+### Added
+
+- Added live progress to the ARU foreground notification, showing completed cycles, species, and detections so far for the running deployment.
+- Added a "Resume recording at" battery threshold to ARU setup. Recording cycles now pause when the battery falls to the pause level and resume once it charges back to the resume level, while the deployment keeps running in between — useful with an occasional charge source such as a solar panel. Defaults are 10% pause and 20% resume.
+
 ### Changed
 
 - Updated the ARU live status display to use the dedicated ARU accent color for the recording and schedule indicators, so it is no longer confused with Live Mode's red or Point Count's blue.
+- Changed the ARU low-battery behavior from stopping the whole deployment to pausing and resuming recording cycles, so a deployment can ride out low-battery periods and continue once charged.
 
 ### Fixed
 

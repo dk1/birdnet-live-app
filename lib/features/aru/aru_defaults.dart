@@ -13,7 +13,16 @@ abstract final class AruDefaults {
   static const Duration defaultCycleDuration = Duration(minutes: 10);
   static const Duration defaultRepeatInterval = Duration(hours: 1);
   static const int defaultMaxCycles = 12;
-  static const int defaultLowBatteryStopPercent = 15;
+
+  /// Battery percentage at or below which ARU pauses recording cycles (the
+  /// deployment keeps running and resumes once the battery recovers to
+  /// [defaultLowBatteryResumePercent]). 0 disables battery management.
+  static const int defaultLowBatteryStopPercent = 10;
+
+  /// Battery percentage at or above which ARU resumes recording cycles after a
+  /// low-battery pause. Should be greater than [defaultLowBatteryStopPercent] to
+  /// avoid flapping (hysteresis), e.g. for occasional solar charging.
+  static const int defaultLowBatteryResumePercent = 20;
   static const int defaultStorageSafetyMarginBytes = 250 * 1024 * 1024;
   static const int defaultTestCycleSeconds = 60;
 

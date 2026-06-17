@@ -818,5 +818,122 @@ void main() {
         expect(cycleSessions, isEmpty);
       },
     );
+
+    test(
+      'skips a scheduled cycle without recording when recording is suppressed',
+      () async {
+        var starts = 0;
+        final controller = AruController(
+          saveSession: (session) async {},
+          startCycleRecording: (session, window) async {
+            starts++;
+            return '/recordings/aru/cycle_${window.index}.flac';
+          },
+          now: () => start.subtract(const Duration(minutes: 5)),
+        );
+
+        await controller.startDeployment(
+          sessionId: 'aru-1',
+          settings: settings,
+          metadata: metadata(),
+        );
+        await controller.evaluate(
+          now: start.add(const Duration(minutes: 5)),
+          recordingSuppressed: true,
+        );
+
+        final cycle = controller.session!.aruMetadata!.cycles.single;
+        expect(controller.state, AruControllerState.waiting);
+        expect(cycle.index, 0);
+        expect(cycle.status, AruCycleStatus.skipped);
+        expect(cycle.actualStart, isNull);
+        expect(starts, 0);
+        expect(controller.session!.segments, isEmpty);
+      },
+    );
+
+    test(
+      'does not re-record a window already skipped after battery recovers',
+      () async {
+        final controller = AruController(
+          saveSession: (session) async {},
+          now: () => start.subtract(const Duration(minutes: 5)),
+        );
+
+        await controller.startDeployment(
+          sessionId: 'aru-1',
+          settings: settings,
+          metadata: metadata(),
+        );
+        // Battery low at the start of cycle 0: skip it.
+        await controller.evaluate(
+          now: start.add(const Duration(minutes: 1)),
+          recordingSuppressed: true,
+        );
+        // Battery recovers later in the same window: must not re-enter it.
+        await controller.evaluate(
+          now: start.add(const Duration(minutes: 5)),
+        );
+
+        final cycle = controller.session!.aruMetadata!.cycles.single;
+        expect(controller.state, AruControllerState.waiting);
+        expect(cycle.status, AruCycleStatus.skipped);
+        expect(controller.session!.segments, isEmpty);
+      },
+    );
+
+    test('records the next cycle once recording is no longer suppressed', () async {
+      final controller = AruController(
+        saveSession: (session) async {},
+        now: () => start.subtract(const Duration(minutes: 5)),
+      );
+
+      await controller.startDeployment(
+        sessionId: 'aru-1',
+        settings: settings,
+        metadata: metadata(),
+      );
+      // Cycle 0 skipped for low battery.
+      await controller.evaluate(
+        now: start.add(const Duration(minutes: 5)),
+        recordingSuppressed: true,
+      );
+      // Cycle 1 records normally after recovery.
+      await controller.evaluate(
+        now: start.add(const Duration(hours: 1, minutes: 1)),
+      );
+
+      final cycles = controller.session!.aruMetadata!.cycles;
+      expect(cycles.map((c) => c.index), <int>[0, 1]);
+      expect(cycles.first.status, AruCycleStatus.skipped);
+      expect(cycles.last.status, AruCycleStatus.recording);
+      expect(controller.state, AruControllerState.recording);
+      expect(controller.session!.segments, hasLength(1));
+    });
+
+    test('marks an in-progress cycle partial when battery drops mid-cycle', () async {
+      final controller = AruController(
+        saveSession: (session) async {},
+        now: () => start.subtract(const Duration(minutes: 5)),
+      );
+
+      await controller.startDeployment(
+        sessionId: 'aru-1',
+        settings: settings,
+        metadata: metadata(),
+      );
+      // Cycle 0 starts recording normally.
+      await controller.evaluate(now: start.add(const Duration(minutes: 2)));
+      // Battery drops mid-cycle: suppress recording.
+      await controller.evaluate(
+        now: start.add(const Duration(minutes: 5)),
+        recordingSuppressed: true,
+      );
+
+      final cycle = controller.session!.aruMetadata!.cycles.single;
+      expect(controller.state, AruControllerState.waiting);
+      expect(cycle.status, AruCycleStatus.partial);
+      expect(cycle.actualEnd, start.add(const Duration(minutes: 5)));
+    });
   });
 }
