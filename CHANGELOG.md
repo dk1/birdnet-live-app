@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.7] - 2026-06-17
+
+### Fixed
+
+- Fixed a rare race when a Live session was restarted while the previous one was still starting, so a recording can no longer attach to the wrong session.
+- Fixed ARU cycle audio to clear stale buffered audio and start file recording before capture, keeping each cycle's clips aligned to that cycle.
+- Fixed ARU Smart clip sampling for combined deployments so retained clips spread across cycles within a single session instead of clustering.
+- Fixed clip retention when a detection is updated mid-session so the kept clip stays linked to the correct record.
+
 ## [0.17.6] - 2026-06-16
 
 ### Added
