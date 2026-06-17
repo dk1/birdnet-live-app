@@ -355,6 +355,7 @@ class LiveController {
         targetDurationSeconds: targetDurationSeconds,
       ),
     );
+    final startingSession = _session!;
 
     _sessionDetections.clear();
     _latestDetections = const [];
@@ -398,14 +399,20 @@ class LiveController {
         mode: recordingMode,
         format: recordingFormat,
       );
-      _session!.recordingPath = dir;
+      if (_session != startingSession) {
+        await recordingService.stopRecording();
+        return;
+      }
+      startingSession.recordingPath = dir;
     }
+
+    if (_session != startingSession) return;
 
     _state = LiveState.active;
     onSessionStarted?.call();
     _notifyListeners();
 
-    _session!.startSegment();
+    startingSession.startSegment();
     _segmentStart = DateTime.now();
 
     debugPrint(
