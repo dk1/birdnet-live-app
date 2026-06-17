@@ -21,9 +21,8 @@ class AruDetectionSampler {
     this.minKeepPerSpecies = 3,
     String Function(DetectionRecord record)? scopeKeyFor,
     int Function(DetectionRecord record)? timeBucketFor,
-    int Function(DetectionRecord record)? cycleIndexFor,
   }) : _scopeKeyFor = scopeKeyFor,
-       _timeBucketFor = timeBucketFor ?? cycleIndexFor ?? _defaultTimeBucketFor;
+       _timeBucketFor = timeBucketFor ?? _defaultTimeBucketFor;
 
   final SamplingMode mode;
   final int topN;

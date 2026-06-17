@@ -546,14 +546,8 @@ enum AruCycleStatus {
   /// Partially recorded before a stop, crash, or deployment end.
   partial,
 
-  /// Skipped because the app/device was unavailable.
-  missed,
-
   /// Stopped by the user or an expected guard such as low battery/storage.
   stopped,
-
-  /// Failed unexpectedly.
-  failed,
 }
 
 /// Persisted metadata for one ARU cycle.

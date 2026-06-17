@@ -495,7 +495,7 @@ class AruScheduleCalculator {
   AruCycleWindow? _windowAt(int index) {
     if (index < 0) return null;
     if (config.testCycleEnabled && index == 0) {
-      final plannedEnd = config.startTime.add(const Duration(minutes: 1));
+      final plannedEnd = config.startTime.add(AruDefaults.testCycleDuration);
       final deploymentEnd = config.endTime;
       if (deploymentEnd != null && !config.startTime.isBefore(deploymentEnd)) {
         return null;
@@ -569,7 +569,7 @@ class AruScheduleCalculator {
   DateTime _firstClockAlignedStart() {
     final baseTime =
         config.testCycleEnabled
-            ? config.startTime.add(const Duration(minutes: 1))
+            ? config.startTime.add(AruDefaults.testCycleDuration)
             : config.startTime;
     final midnight =
         baseTime.isUtc

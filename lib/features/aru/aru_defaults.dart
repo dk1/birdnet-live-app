@@ -17,6 +17,11 @@ abstract final class AruDefaults {
   static const int defaultStorageSafetyMarginBytes = 250 * 1024 * 1024;
   static const int defaultTestCycleSeconds = 60;
 
+  /// Fixed length of the optional one-off test cycle (see [defaultTestCycleSeconds]).
+  static const Duration testCycleDuration = Duration(
+    seconds: defaultTestCycleSeconds,
+  );
+
   static const List<Duration> cycleDurationOptions = <Duration>[
     Duration(seconds: 30),
     Duration(minutes: 1),

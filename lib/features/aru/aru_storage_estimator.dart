@@ -412,7 +412,7 @@ class AruStorageEstimator {
 
   Duration _testCycleDuration(AruScheduleConfig schedule, DateTime? end) {
     if (!schedule.testCycleEnabled) return Duration.zero;
-    final plannedEnd = schedule.startTime.add(const Duration(minutes: 1));
+    final plannedEnd = schedule.startTime.add(AruDefaults.testCycleDuration);
     final effectiveEnd =
         end != null && plannedEnd.isAfter(end) ? end : plannedEnd;
     if (!schedule.startTime.isBefore(effectiveEnd)) return Duration.zero;
@@ -427,7 +427,7 @@ class AruStorageEstimator {
   DateTime _firstClockAlignedStart(AruScheduleConfig schedule) {
     final baseTime =
         schedule.testCycleEnabled
-            ? schedule.startTime.add(const Duration(minutes: 1))
+            ? schedule.startTime.add(AruDefaults.testCycleDuration)
             : schedule.startTime;
     final midnight =
         baseTime.isUtc

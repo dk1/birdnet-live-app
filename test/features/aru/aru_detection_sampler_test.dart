@@ -27,7 +27,7 @@ void main() {
     test('all mode keeps every clip', () async {
       final sampler = AruDetectionSampler(
         mode: SamplingMode.all,
-        cycleIndexFor: cycleIndexFor,
+        timeBucketFor: cycleIndexFor,
       );
       final det = record(confidence: 0.5, cycle: 0);
 
@@ -42,7 +42,7 @@ void main() {
       final sampler = AruDetectionSampler(
         mode: SamplingMode.topN,
         topN: 2,
-        cycleIndexFor: cycleIndexFor,
+        timeBucketFor: cycleIndexFor,
       );
       final low = record(confidence: 0.3, cycle: 0);
       final mid = record(confidence: 0.6, cycle: 1);
@@ -64,7 +64,7 @@ void main() {
         mode: SamplingMode.smart,
         topN: 3,
         minKeepPerSpecies: 0,
-        cycleIndexFor: cycleIndexFor,
+        timeBucketFor: cycleIndexFor,
       );
       final weaker = record(confidence: 0.4, cycle: 0);
       final stronger = record(confidence: 0.8, cycle: 0);
@@ -82,7 +82,7 @@ void main() {
         mode: SamplingMode.smart,
         topN: 3,
         minKeepPerSpecies: 10,
-        cycleIndexFor: cycleIndexFor,
+        timeBucketFor: cycleIndexFor,
       );
       final cycle0Low = record(confidence: 0.4, cycle: 0, clip: 'a.flac');
       final cycle0Mid = record(confidence: 0.5, cycle: 0, clip: 'b.flac');
@@ -105,7 +105,7 @@ void main() {
       final sampler = AruDetectionSampler(
         mode: SamplingMode.smart,
         topN: 1,
-        cycleIndexFor: cycleIndexFor,
+        timeBucketFor: cycleIndexFor,
       );
       final blackbird = record(confidence: 0.4, cycle: 0);
       final robin = record(
