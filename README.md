@@ -67,6 +67,7 @@ Built for field researchers, conservationists, and birders, BirdNET Live identif
 - **Point Count Mode** — Timed survey sessions with countdown timer and station metadata
 - **Survey Mode** — Long-running transect surveys with GPS tracking, background monitoring, and detection sampling
 - **File Analysis Mode** — Analyze existing audio files (WAV, FLAC, MP3, OGG, and more)
+- **ARU Mode** — Turn your device into an acoustic recording unit for multi-day deployments
 - **Explore** — Browse species expected at your location using the BirdNET geo-model
 - **Session Library** — Review, edit, and export past sessions with audio playback
 - **Export** — Raven Pro, CSV, JSON, GPX, and ZIP bundle formats
@@ -240,7 +241,7 @@ If you use this app in your scientific work, please cite it using the following 
 
 ```bibtex
 @software{BirdNET_Live_2026,
-  author = {Kahl, Stefan and Börner, Andy and Mauermann, Max and Seifert, Raja Charlotte and Wilhelm-Stein, Thomas and Wood, Connor M. and Eibl, Maximilian and Klinck, Holger},
+  author = {Kahl, Stefan and Börner, Andy and Mauermann, Max and Seifert, Raja Charlotte and Lasseck, Mario and Wilhelm-Stein, Thomas and Wood, Connor M. and Eibl, Maximilian and Klinck, Holger},
   title = {{BirdNET Live app - Professional bioacoustics in your pocket}},
   url = {https://github.com/birdnet-team/birdnet-live-app},
   year = {2026}
