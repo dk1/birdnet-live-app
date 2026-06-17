@@ -424,6 +424,8 @@ class FileAnalysisController {
           inferenceRate: 0, // Not applicable for file analysis.
           speciesFilterMode: speciesFilterMode,
           sensitivity: sensitivity,
+          poolingMode: poolingMode,
+          poolingWindows: maxPoolWindows,
         ),
         latitude: latitude,
         longitude: longitude,

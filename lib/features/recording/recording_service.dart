@@ -218,7 +218,29 @@ class RecordingService {
       await _flushBuffer();
       await _writer!.close();
       final path = _writer!.filePath;
+
+      int samples = 0;
+      final writer = _writer;
+      if (writer is FlacEncoder) {
+        samples = writer.totalSamples;
+      } else if (writer is WavWriter) {
+        samples = writer.samplesWritten;
+      }
+
       _writer = null;
+      _sessionDir = null;
+      _mode = RecordingMode.off;
+
+      if (samples == 0) {
+        try {
+          final file = File(path);
+          if (file.existsSync()) {
+            await file.delete();
+          }
+        } catch (_) {}
+        return null;
+      }
+
       return path;
     }
 

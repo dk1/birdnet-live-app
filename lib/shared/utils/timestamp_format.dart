@@ -22,6 +22,8 @@
 // out-of-order detection still renders sensibly.
 // =============================================================================
 
+import 'locale_time_format.dart';
+
 /// Modes for [formatDetectionTime].
 enum TimestampDisplayMode {
   /// Session-relative offset (`MM:SS` or `H:MM:SS`).
@@ -68,6 +70,8 @@ String formatDetectionTime(
   double Function(DateTime timestamp)? absoluteToRelative,
   Duration clipOffset = Duration.zero,
   bool showSeconds = true,
+  String localeName = 'en',
+  bool alwaysUse24HourFormat = false,
 }) {
   switch (mode) {
     case TimestampDisplayMode.relative:
@@ -83,6 +87,8 @@ String formatDetectionTime(
         timestamp.toLocal(),
         sessionStart.toLocal(),
         showSeconds: showSeconds,
+        localeName: localeName,
+        alwaysUse24HourFormat: alwaysUse24HourFormat,
       );
   }
 }
@@ -103,13 +109,15 @@ String _formatAbsolute(
   DateTime localTs,
   DateTime localStart, {
   required bool showSeconds,
+  required String localeName,
+  required bool alwaysUse24HourFormat,
 }) {
-  final h = localTs.hour.toString().padLeft(2, '0');
-  final m = localTs.minute.toString().padLeft(2, '0');
-  final base =
-      showSeconds
-          ? '$h:$m:${localTs.second.toString().padLeft(2, '0')}'
-          : '$h:$m';
+  final base = formatLocaleTime(
+    localTs,
+    localeName,
+    showSeconds: showSeconds,
+    alwaysUse24HourFormat: alwaysUse24HourFormat,
+  );
   // Day-rollover suffix (e.g. session started 23:50, detection at 00:05 next
   // day → "00:05:00 +1d").  Compare calendar dates, not raw differences.
   final tsDay = DateTime(localTs.year, localTs.month, localTs.day);

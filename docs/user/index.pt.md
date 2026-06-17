@@ -54,7 +54,7 @@ Processar e analisar múltiplos arquivos de áudio em lote. (Em breve)
 
 ### [Modo ARU](aru-mode.md)
 
-Transforme seu dispositivo em uma unidade de gravação autónoma. (Em breve)
+Crie uma Session de implantação ARU agendada, grave áudio completo do ciclo ou clipes de detecção retidos, execute inferência ao vivo durante ciclos ativos e acompanhe os ciclos de gravação planejados.
 
 ## Referência
 

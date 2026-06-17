@@ -326,8 +326,10 @@ class LiveController {
     double sensitivity = 1.0,
     double? gainLinear,
     double? highPassHz,
+    int? targetDurationSeconds,
     double? latitude,
     double? longitude,
+    bool clearRingBuffer = true,
   }) async {
     if (_state != LiveState.ready) return;
 
@@ -348,8 +350,12 @@ class LiveController {
         poolingWindows: poolingWindows,
         gainLinear: gainLinear,
         highPassHz: highPassHz,
+        recordingMode: recordingMode.name,
+        recordingFormat: recordingFormat,
+        targetDurationSeconds: targetDurationSeconds,
       ),
     );
+    final startingSession = _session!;
 
     _sessionDetections.clear();
     _latestDetections = const [];
@@ -362,7 +368,9 @@ class LiveController {
     _isolate.setPoolingMode(poolingMode);
     _isolate.resetPooling();
     _inferenceCycleCount = 0;
-    ringBuffer.clear();
+    if (clearRingBuffer) {
+      ringBuffer.clear();
+    }
 
     _notifyListeners();
 
@@ -391,14 +399,20 @@ class LiveController {
         mode: recordingMode,
         format: recordingFormat,
       );
-      _session!.recordingPath = dir;
+      if (_session != startingSession) {
+        await recordingService.stopRecording();
+        return;
+      }
+      startingSession.recordingPath = dir;
     }
+
+    if (_session != startingSession) return;
 
     _state = LiveState.active;
     onSessionStarted?.call();
     _notifyListeners();
 
-    _session!.startSegment();
+    startingSession.startSegment();
     _segmentStart = DateTime.now();
 
     debugPrint(

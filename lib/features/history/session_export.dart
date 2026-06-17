@@ -34,6 +34,7 @@ import 'package:archive/archive.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 
+import '../../core/constants/app_constants.dart';
 import '../../shared/services/taxonomy_service.dart';
 import '../live/live_session.dart';
 import '../recording/audio_decoder.dart';
@@ -403,10 +404,11 @@ String buildCsvExport(
 /// months later can answer: which app version, which model, which user
 /// settings. All fields are optional — callers pass whatever they have.
 ///
-/// `prefs` should be a flat map of every relevant SharedPreferences key/value
-/// (the caller supplies it; the export module has no Riverpod / SharedPrefs
-/// dependency on purpose). `audioModel` typically contains `name`, `version`,
-/// `description`, `speciesCount`, `sampleRate` from `model_config.json`.
+/// `prefs` should be a flat map of relevant SharedPreferences key/value pairs
+/// that are not already persisted on the session itself. The export module has
+/// no Riverpod / SharedPrefs dependency on purpose. `audioModel` typically
+/// contains `name`, `version`, `description`, `speciesCount`, `sampleRate` from
+/// `model_config.json`.
 Map<String, dynamic> buildExportMetadata({
   String? appVersion,
   String? appBuildNumber,
@@ -436,25 +438,11 @@ Map<String, dynamic> buildExportMetadata({
       ..remove('defaultThreshold');
   }
 
-  // Snapshot of the actually-applied audio + geomodel settings for this
-  // session. Pulled from `session.settings`, which the controller fills
-  // with the runtime values (not the model_config defaults).
-  Map<String, dynamic>? appliedSettings;
-  if (session != null) {
-    final s = session.settings;
-    appliedSettings = <String, dynamic>{
-      'windowDurationSeconds': s.windowDuration,
-      'confidenceThresholdPercent': s.confidenceThreshold,
-      'inferenceRateHz': s.inferenceRate,
-      'speciesFilterMode': s.speciesFilterMode,
-      if (s.sensitivity != null) 'sensitivity': s.sensitivity,
-      if (s.poolingMode != null) 'poolingMode': s.poolingMode,
-      if (s.poolingWindows != null) 'poolingWindows': s.poolingWindows,
-      if (s.gainLinear != null) 'gainLinear': s.gainLinear,
-      if (s.highPassHz != null) 'highPassHz': s.highPassHz,
-      if (s.clipContextSeconds > 0) 'clipContextSeconds': s.clipContextSeconds,
-    };
-  }
+  final sessionMetadata =
+      session == null ? null : _commonSessionExportMetadata(session);
+  final typeMetadata =
+      session == null ? null : _typeSpecificExportMetadata(session);
+  final settingsMetadata = _settingsExportMetadata(session, prefs);
 
   return {
     'exportedAt': DateTime.now().toUtc().toIso8601String(),
@@ -464,30 +452,196 @@ Map<String, dynamic> buildExportMetadata({
       if (appBuildNumber != null) 'buildNumber': appBuildNumber,
       if (appPackageName != null) 'packageName': appPackageName,
     },
-    if (session != null)
-      'session': {
-        'id': session.id,
-        'type': session.type.name,
-        'startTime': session.startTime.toUtc().toIso8601String(),
-        if (session.endTime != null)
-          'endTime': session.endTime!.toUtc().toIso8601String(),
-        if (session.customName != null && session.customName!.isNotEmpty)
-          'customName': session.customName,
-        if (session.sessionNumber != null)
-          'sessionNumber': session.sessionNumber,
-        if (session.observerName != null && session.observerName!.isNotEmpty)
-          'observerName': session.observerName,
-        if (session.transectId != null && session.transectId!.isNotEmpty)
-          'transectId': session.transectId,
-        if (session.weather != null) 'weather': session.weather!.toJson(),
-        'detectionCount': session.detections.length,
-      },
+    if (sessionMetadata != null) 'session': sessionMetadata,
+    if (typeMetadata != null && typeMetadata.isNotEmpty)
+      'typeMetadata': typeMetadata,
     if (slimAudioModel != null) 'audioModel': slimAudioModel,
     if (slimGeoModel != null) 'geoModel': slimGeoModel,
-    if (appliedSettings != null) 'appliedSettings': appliedSettings,
     if (speciesLocale != null) 'speciesLocale': speciesLocale,
-    if (prefs != null && prefs.isNotEmpty) 'settings': prefs,
+    if (settingsMetadata.isNotEmpty) 'settings': settingsMetadata,
   };
+}
+
+Map<String, dynamic> _settingsExportMetadata(
+  LiveSession? session,
+  Map<String, dynamic>? prefs,
+) {
+  final settings = <String, dynamic>{};
+
+  if (session != null) {
+    final s = session.settings;
+    settings['analysis'] = <String, dynamic>{
+      'windowDurationSeconds': s.windowDuration,
+      'confidenceThresholdPercent': s.confidenceThreshold,
+      'inferenceRateHz': s.inferenceRate,
+      'speciesFilterMode': s.speciesFilterMode,
+      if (s.sensitivity != null) 'sensitivity': s.sensitivity,
+      if (s.poolingMode != null) 'poolingMode': s.poolingMode,
+      if (s.poolingWindows != null) 'poolingWindows': s.poolingWindows,
+    };
+
+    final audio = <String, dynamic>{
+      if (s.gainLinear != null) 'gainLinear': s.gainLinear,
+      if (s.highPassHz != null) 'highPassHz': s.highPassHz,
+      'clipContextSeconds': s.clipContextSeconds,
+    };
+    if (audio.isNotEmpty) settings['audio'] = audio;
+
+    final capture = <String, dynamic>{
+      if (s.recordingMode != null) 'recordingMode': s.recordingMode,
+      if (s.recordingFormat != null) 'recordingFormat': s.recordingFormat,
+    };
+    if (capture.isNotEmpty) settings['capture'] = capture;
+
+    final protocol = <String, dynamic>{
+      if (s.detectionSamplingMode != null)
+        'detectionSamplingMode': s.detectionSamplingMode,
+      if (s.topNPerSpecies != null) 'topNPerSpecies': s.topNPerSpecies,
+      if (s.gpsIntervalSeconds != null)
+        'gpsIntervalSeconds': s.gpsIntervalSeconds,
+      if (s.maxDurationHours != null) 'maxDurationHours': s.maxDurationHours,
+      if (s.targetDurationSeconds != null)
+        'targetDurationSeconds': s.targetDurationSeconds,
+      if (s.autoStopBatteryPercent != null)
+        'autoStopBatteryPercent': s.autoStopBatteryPercent,
+      if (s.backgroundGps != null) 'backgroundGps': s.backgroundGps,
+      if (session.type == SessionType.survey) ...{
+        'alertMode': s.alertMode,
+        'alertRareThreshold': s.alertRareThreshold,
+        'alertWatchlistName': s.alertWatchlistName,
+        'alertMinConfidence': s.alertMinConfidence,
+        'alertStartupGraceSeconds': s.alertStartupGraceSeconds,
+        'alertMinIntervalSeconds': s.alertMinIntervalSeconds,
+        'alertMaxPerMinute': s.alertMaxPerMinute,
+        'alertCoalesce': s.alertCoalesce,
+      },
+    };
+    if (protocol.isNotEmpty) settings['protocol'] = protocol;
+  }
+
+  final export = _pickPrefs(prefs, const [
+    PrefKeys.exportHtmlReport,
+    PrefKeys.exportSelection,
+    PrefKeys.includeAudio,
+    PrefKeys.timestampDisplayMode,
+    PrefKeys.timestampShowSeconds,
+  ]);
+  if (export.isNotEmpty) settings['exportPreferences'] = export;
+
+  return settings;
+}
+
+Map<String, dynamic> _pickPrefs(
+  Map<String, dynamic>? prefs,
+  List<String> keys,
+) {
+  if (prefs == null || prefs.isEmpty) return const {};
+  return {
+    for (final key in keys)
+      if (prefs.containsKey(key)) key: prefs[key],
+  };
+}
+
+Map<String, dynamic> _commonSessionExportMetadata(LiveSession session) {
+  final endTime = session.endTime;
+  final durationSeconds =
+      endTime == null
+          ? null
+          : endTime.difference(session.startTime).inMilliseconds / 1000.0;
+  return {
+    'id': session.id,
+    'type': session.type.name,
+    'displayName': session.displayName,
+    'startTime': session.startTime.toUtc().toIso8601String(),
+    if (endTime != null) 'endTime': endTime.toUtc().toIso8601String(),
+    if (durationSeconds != null)
+      'durationSeconds': num.parse(durationSeconds.toStringAsFixed(3)),
+    if (session.recordedDurationSeconds != null)
+      'recordedDurationSeconds': session.recordedDurationSeconds,
+    if (session.customName != null && session.customName!.isNotEmpty)
+      'customName': session.customName,
+    if (session.sessionNumber != null) 'sessionNumber': session.sessionNumber,
+    if (session.observerName != null && session.observerName!.isNotEmpty)
+      'observerName': session.observerName,
+    if (session.latitude != null) 'latitude': session.latitude,
+    if (session.longitude != null) 'longitude': session.longitude,
+    if (session.locationName != null && session.locationName!.isNotEmpty)
+      'locationName': session.locationName,
+    if (session.stopReason != null) 'stopReason': session.stopReason!.name,
+    if (session.stopReasonValue != null)
+      'stopReasonValue': session.stopReasonValue,
+    if (session.weather != null) 'weather': session.weather!.toJson(),
+    'detectionCount': session.detections.length,
+    'uniqueSpeciesCount': session.uniqueSpeciesCount,
+    'annotationCount': session.annotations.length,
+    'segmentCount': session.segments.length,
+    'hasRecording': session.recordingPath != null,
+  };
+}
+
+Map<String, dynamic>? _typeSpecificExportMetadata(LiveSession session) {
+  return switch (session.type) {
+    SessionType.aru => _aruExportMetadata(session),
+    SessionType.survey => _surveyExportMetadata(session),
+    SessionType.pointCount => _pointCountExportMetadata(session),
+    SessionType.fileUpload => _fileUploadExportMetadata(session),
+    SessionType.batchAnalysis => _batchAnalysisExportMetadata(session),
+    SessionType.live => null,
+  };
+}
+
+Map<String, dynamic>? _aruExportMetadata(LiveSession session) {
+  final aru = session.aruMetadata;
+  if (aru == null) return null;
+  return {'aru': aru.toJson()};
+}
+
+Map<String, dynamic>? _surveyExportMetadata(LiveSession session) {
+  if (session.transectId == null &&
+      session.distanceMeters == null &&
+      session.gpsTrack.isEmpty) {
+    return null;
+  }
+  return {
+    if (session.transectId != null && session.transectId!.isNotEmpty)
+      'transectId': session.transectId,
+    if (session.distanceMeters != null)
+      'distanceMeters': session.distanceMeters,
+    'gpsPointCount': session.gpsTrack.length,
+    if (session.gpsTrack.isNotEmpty)
+      'gpsTrack': session.gpsTrack.map((p) => p.toJson()).toList(),
+  };
+}
+
+Map<String, dynamic> _pointCountExportMetadata(LiveSession session) {
+  final endTime = session.endTime;
+  final durationSeconds =
+      endTime == null
+          ? null
+          : endTime.difference(session.startTime).inMilliseconds / 1000.0;
+  return {
+    if (durationSeconds != null)
+      'countDurationSeconds': num.parse(durationSeconds.toStringAsFixed(3)),
+  };
+}
+
+Map<String, dynamic>? _fileUploadExportMetadata(LiveSession session) {
+  if (session.trimStartSec == null &&
+      session.trimEndSec == null &&
+      session.recordingPath == null) {
+    return null;
+  }
+  return {
+    if (session.recordingPath != null)
+      'sourceFileName': p.basename(session.recordingPath!),
+    if (session.trimStartSec != null) 'trimStartSec': session.trimStartSec,
+    if (session.trimEndSec != null) 'trimEndSec': session.trimEndSec,
+  };
+}
+
+Map<String, dynamic>? _batchAnalysisExportMetadata(LiveSession session) {
+  if (session.recordingPath == null) return null;
+  return {'sourceFileName': p.basename(session.recordingPath!)};
 }
 
 /// Generates a JSON representation of the session and its detections.
@@ -520,6 +674,9 @@ String buildJsonExport(LiveSession session, {Map<String, dynamic>? metadata}) {
     'settings': session.settings.toJson(),
     if (session.trimStartSec != null) 'trimStartSec': session.trimStartSec,
     if (session.trimEndSec != null) 'trimEndSec': session.trimEndSec,
+    if (session.segments.isNotEmpty)
+      'segments': session.segments.map((s) => s.toJson()).toList(),
+    if (session.aruMetadata != null) 'aru': session.aruMetadata!.toJson(),
     'detections':
         session.detections.map((d) {
           final beginSec =
@@ -594,6 +751,18 @@ Future<Map<String, dynamic>?> _withAudioIntegrityMetadata(
   }
 }
 
+Map<String, dynamic> _withAruCycleExportFiles(
+  Map<String, dynamic>? metadata,
+  Map<int, ({File file, String name})> cycleAudioEntries,
+) {
+  final enriched = <String, dynamic>{...?metadata};
+  enriched['aruCycleAudioFiles'] = {
+    for (final entry in cycleAudioEntries.entries)
+      entry.key.toString(): entry.value.name,
+  };
+  return enriched;
+}
+
 String _formatLabelForPath(String path) {
   final lower = path.toLowerCase();
   if (lower.endsWith('.mp3')) return 'MP3';
@@ -642,9 +811,14 @@ Future<String?> buildSessionExport(
 
   // Full recording: single file at recordingPath.
   final hasFullRecording = audioPath != null && File(audioPath).existsSync();
-  final exportMetadata = await _withAudioIntegrityMetadata(
+  final baseMetadata =
+      metadata ??
+      (session.aruMetadata != null
+          ? buildExportMetadata(session: session, speciesLocale: speciesLocale)
+          : null);
+  var exportMetadata = await _withAudioIntegrityMetadata(
     session,
-    metadata,
+    baseMetadata,
     hasFullRecording ? audioPath : null,
   );
 
@@ -689,6 +863,25 @@ Future<String?> buildSessionExport(
       seq++;
     }
     clipFileMap = clipExportNames;
+  }
+
+  final aruCycleAudioEntries = <int, ({File file, String name})>{};
+  final aruCycles = session.aruMetadata?.cycles ?? const <AruCycleMetadata>[];
+  for (final cycle in aruCycles) {
+    final path = cycle.recordingPath;
+    if (path == null || path.isEmpty) continue;
+    final file = File(path);
+    if (!file.existsSync()) continue;
+    final cycleName =
+        'aru_cycles/${prefix}_cycle_${cycle.index.toString().padLeft(3, '0')}${p.extension(path)}';
+    aruCycleAudioEntries[cycle.index] = (file: file, name: cycleName);
+  }
+  final hasAruCycleAudio = aruCycleAudioEntries.isNotEmpty;
+  if (hasAruCycleAudio) {
+    exportMetadata = _withAruCycleExportFiles(
+      exportMetadata,
+      aruCycleAudioEntries,
+    );
   }
 
   // ── Generate document content for every selected format ──────────
@@ -742,9 +935,6 @@ Future<String?> buildSessionExport(
     }
   }
 
-  final hasAudioIntegrityMetadata =
-      exportMetadata?.containsKey('audioIntegrity') ?? false;
-
   // Decide whether to ZIP. We zip when any of:
   //   • the user wants audio bundled and audio exists,
   //   • more than one format is selected (multiple docs need a container),
@@ -753,12 +943,10 @@ Future<String?> buildSessionExport(
   //     ZIP in that last case is what carries the weather snapshot or audio
   //     integrity warning alongside an otherwise plain CSV/Raven selection.
   final mustZip =
-      (includeAudio && hasAnyAudio) ||
+      (includeAudio && (hasAnyAudio || hasAruCycleAudio)) ||
       docs.length > 1 ||
       includeHtmlReport ||
-      (exportMetadata != null &&
-          (session.weather != null || hasAudioIntegrityMetadata) &&
-          !selected.contains('json'));
+      (exportMetadata != null && !selected.contains('json'));
 
   // ── Bundle into ZIP ───────────────────────────────────────────────
   if (mustZip) {
@@ -777,6 +965,13 @@ Future<String?> buildSessionExport(
             ArchiveFile(entry.value, clipBytes.length, clipBytes),
           );
         }
+      }
+    }
+
+    if (includeAudio && hasAruCycleAudio) {
+      for (final entry in aruCycleAudioEntries.values) {
+        final audioBytes = await entry.file.readAsBytes();
+        archive.addFile(ArchiveFile(entry.name, audioBytes.length, audioBytes));
       }
     }
 
@@ -885,7 +1080,9 @@ Future<String?> buildSessionExport(
             ? p.dirname(audioPath)
             : (hasClips
                 ? p.dirname(clipEntries.values.first.path)
-                : Directory.systemTemp.path);
+                : (hasAruCycleAudio
+                    ? p.dirname(aruCycleAudioEntries.values.first.file.path)
+                    : Directory.systemTemp.path));
     final zipPath = p.join(zipDir, '$prefix.zip');
     await File(zipPath).writeAsBytes(zipBytes);
 

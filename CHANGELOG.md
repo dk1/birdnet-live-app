@@ -5,11 +5,162 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.8] - 2026-06-17
+
+### Added
+
+- Added live progress to the ARU foreground notification, showing completed cycles, species, and detections so far for the running deployment.
+- Added a "Resume recording at" battery threshold to ARU setup. Recording cycles now pause when the battery falls to the pause level and resume once it charges back to the resume level, while the deployment keeps running in between — useful with an occasional charge source such as a solar panel. Defaults are 10% pause and 20% resume.
+
+### Changed
+
+- Updated the ARU live status display to use the dedicated ARU accent color for the recording and schedule indicators, so it is no longer confused with Live Mode's red or Point Count's blue.
+- Changed the ARU low-battery behavior from stopping the whole deployment to pausing and resuming recording cycles, so a deployment can ride out low-battery periods and continue once charged.
+- Limited the ARU "Resume recording at" setup slider to 5-55% in 5% increments, with the resume threshold kept at least 5% above the selected pause threshold.
+- Moved main menu mode titles higher inside their tiles, tightened tile padding and tile gaps, and reduced wrapped footer spacing so mode descriptions have room for three wrapped lines without making the home screen taller.
+
+### Fixed
+
+- Fixed ARU deployments stalling when the active screen was backgrounded or covered by another screen; the schedule and recording now keep running in the background so cycles fire on time while the phone is in your pocket.
+- Hardened ARU audio capture so the microphone has a single owner across a deployment, ensuring it is reliably released when a deployment stops and avoiding rare start/stop races.
+- Prevented ARU and Survey from starting their foreground recording service at the same time, so the two modes can no longer contend over the same background service.
+- Fixed "one session per cycle" ARU deployments so they no longer leave behind an extra combined session in your history; only the individual per-cycle sessions are kept once the deployment finishes.
+
+## [0.17.7] - 2026-06-17
+
+### Fixed
+
+- Fixed a rare race when a Live session was restarted while the previous one was still starting, so a recording can no longer attach to the wrong session.
+- Fixed ARU cycle audio to clear stale buffered audio and start file recording before capture, keeping each cycle's clips aligned to that cycle.
+- Fixed ARU Smart clip sampling for combined deployments so retained clips spread across cycles within a single session instead of clustering.
+- Fixed clip retention when a detection is updated mid-session so the kept clip stays linked to the correct record.
+
+## [0.17.6] - 2026-06-16
+
+### Added
+
+- Added an ARU schedule option for recording around both sunrise and sunset.
+- Added native Android handling for ARU foreground notification actions so Stop and Open work reliably from notification taps.
+
+### Changed
+
+- Refined ARU setup recording-window summaries to show the effective aligned recording ranges for each diel pattern.
+- Adjusted the home mode carousel spacing and Live Mode tip height to avoid cramped text at larger accessibility scales.
+
+### Fixed
+
+- Fixed clip-only ARU per-cycle deployments so the completed aggregate session metadata is discarded without deleting cycle recording directories.
+- Fixed ARU Smart sampling buckets for combined deployments so retained detections are grouped relative to deployment start.
+
+## [0.17.5] - 2026-06-15
+
+### Added
+
+- Added a new setting "Playback overlay in review" to trigger the modal player sheet with a spectrogram when reviewing clips from clips-only Session reviews.
+- Active by default for sessions that have clips only and no full recording/spectrogram, and bypassed (never shown) for sessions with full audio recordings.
+- Added support for launching the ARU active screen directly from Android foreground notification actions with optional stop confirmation.
+- Added `AruNotificationRoute` to restore unfinished ARU deployments when app launches from notification before routing to active screen or setup.
+
+### Changed
+
+- Updated ARU help and user documentation to reflect current behavior: cycle-level Full Audio or retained detection clips, live inference during active cycles, and Android foreground notification controls.
+- Improved ARU setup summaries and storage estimates to consistently show effective recording and sampling modes when combined-session deployments cannot use Full Audio.
+- Improved locale-aware time/date formatting helpers to prefer localized `intl` formats with safe fallbacks when locale data is unavailable.
+- Optimized ARU schedule evaluation for far-future open-ended deployments by jumping directly to the candidate cycle index instead of scanning from deployment start.
+- Refactored Android foreground task notification callbacks to be handled at app root instead of individual screens, enabling route-based navigation on notification action.
+
+### Fixed
+
+- Restored unfinished ARU deployments from persisted sessions after app relaunch and resumed schedule evaluation instead of leaving deployments stranded.
+- Serialized ARU detection-sync updates during active deployment and guarded finalization to prevent race conditions while stopping.
+- Fixed long-running diel ARU schedules so they continue evaluating correctly beyond large raw interval counts instead of prematurely completing.
+- Fixed ARU deployment storage estimates so long, short-interval schedules no longer freeze the setup UI.
+- Fixed ARU active deployment cycle progress so date/time-ended schedules show the estimated total cycle count instead of "Until stopped".
+- Fixed ARU clip-only storage estimates to use retained clip assumptions, window duration, and clip context instead of prediction-window upper bounds.
+- Refined ARU setup review copy by removing duplicate test-run details and shortening Session grouping labels.
+
+## [0.17.4] - 2026-06-15
+
+### Added
+
+- Added an in-app warning card when ARU combined-session mode is configured with Full Audio recording, explaining the automatic fallback to Smart-sampled clips.
+- Added background weather backfill so saved sessions with GPS coordinates but no weather data are automatically enriched on the next app launch.
+
+### Changed
+
+- Upgraded the weather cache to a per-observation-hour model supporting sessions up to 90 days old via the Open-Meteo forecast API, and older sessions via the archive API; stale entries (older than 30 days) are pruned on each write.
+- Refactor translations for improved readability and maintainability
+
+### Fixed
+
+- Fixed ARU combined-session deployments configured with Full Audio: the session is now saved with Detections Only + Smart sampling instead of an unsupported Full Audio mode.
+- Clear state-change callbacks on dispose to prevent updates on disposed widgets.
+
+## [0.17.3] - 2026-06-15
+
+### Changed
+
+- Refined ARU active deployment dashboards with compact status metrics, clearer tab labels, localized species summaries, and shared destructive confirmation behavior.
+- Reused the latest ARU/station ID in ARU setup, included it in ARU session names, and kept ARU deployment metadata with shared exports.
+- Expanded session export provenance to include session-retained runtime settings and type-specific metadata while limiting export preference snapshots to relevant keys.
+- Updated session, ARU, and Point Count time displays to follow the device 12-hour or 24-hour clock preference consistently.
+
+## [0.17.2] - 2026-06-15
+
+### Changed
+
+- Refined ARU Mode deployment setup, schedule previews, active status tabs, per-cycle recording options, and localized user documentation.
+- Updated ARU scheduling options so short test cycles can run immediately without overlapping regular clock-aligned cycles.
+- Reused the latest Survey, Point Count, or ARU observer name across field-session setup screens.
+
+### Fixed
+
+- Fixed ARU deployment completion so natural schedule endings open Session Review like manual and low-battery stops.
+- Fixed ARU recording cleanup so empty full-cycle audio files are discarded instead of being kept as review artifacts.
+- Fixed ARU per-cycle sessions so cycle recordings remain attached for review and names include both deployment and cycle numbers.
+
+## [0.17.1] - 2026-06-11
+
+### Added
+
+- Added broader ARU mode setup and active-deployment localization coverage across all supported locales.
+
+### Changed
+
+- Refined ARU setup, scheduling, notification, and active-state behavior to better align with long-running fixed-site deployments.
+- Improved ARU storage estimation and deployment flow ergonomics, including active status visibility and schedule handling polish.
+- Updated ARU and live detection list presentation details for clearer in-session monitoring.
+
+### Fixed
+
+- Fixed ARU deployment edge cases around stop/finalization handling, schedule transitions, and retained detection clip behavior.
+
+## [0.17.0] - 2026-06-11
+
+### Added
+
+- Added ARU Mode as a scheduled fixed-site recorder with localized setup, persisted deployment state, cycle metadata, schedule-aware storage estimates, active deployment status, Android foreground notification controls, documentation, and focused tests.
+- Added ARU site setup with GPS, manual/map-picked coordinates, skip-location handling, shared weather context, WAV/FLAC format selection, and JSON/ZIP export support for deployment metadata, segments, and cycle recordings.
+
+### Changed
+
+- Refined ARU setup and ready-state UX with Survey-style field tips, compact review cards, consolidated site/weather context, clearer deployment-end summaries, and schedule controls for manual stop, fixed cycles, fixed date/time, cycle duration, repeat interval, and recording windows.
+- Reworked active ARU deployment screens toward the Survey live layout with clearer recording/waiting state, live spectrogram and detections tabs, persistent detection feed, stats, and shared microphone handling.
+- Streamlined the active ARU deployment dashboard with a full-width spectrogram-first layout, persistent recent detections, and a consolidated runtime summary of recording, sampling, grouping, schedule, and battery settings.
+- Updated ARU scheduling so regular cycles align to wall-clock interval boundaries and a default-on one-minute immediate test run can run as a deployment sanity check.
+- Updated ARU detection sampling and session grouping so Smart/Top N retention distributes clips across cycles or time buckets instead of clustering retained clips in one short span.
+
+### Fixed
+
+- Fixed ARU stop handling, scheduled cycle recording, live inference, and detection-clip retention so deployments stop cleanly, record only at schedule boundaries, and save detections during active cycles.
+- Fixed ARU low-battery stop so the deployment now ends when the configured battery threshold is reached.
+- Fixed ARU stop navigation and full-audio review handoff so stopping opens Session Review for the combined deployment or latest per-cycle session with its recording path attached.
+
 ## [0.16.11] - 2026-06-10
 
 ### Added
 
-- Added dedicated in-app Help entries for Batch Analysis and ARU Mode across all supported locales.
+- Added dedicated in-app Help entries for Batch Analysis across all supported locales.
 - Added AGENTS.md with concise repository guidance for coding agents, including localization, documentation, style, and safety rules.
 
 ### Changed

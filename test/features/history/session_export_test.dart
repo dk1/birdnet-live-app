@@ -1,4 +1,4 @@
-﻿// =============================================================================
+// =============================================================================
 // Session Export Tests â€” Raven selection table and ZIP bundle
 // =============================================================================
 
@@ -748,6 +748,151 @@ void main() {
       final map = jsonDecode(jsonStr) as Map<String, dynamic>;
 
       expect(map.containsKey('annotations'), isFalse);
+    });
+
+    test('includes ARU metadata and segments when present', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(type: SessionType.aru);
+      session.segments.add(
+        SessionSegment(
+          startTime: start,
+          endTime: start.add(const Duration(minutes: 10)),
+        ),
+      );
+      session.aruMetadata = AruDeploymentMetadata(
+        deploymentName: 'Wetland ARU',
+        stationId: 'ARU-01',
+        scheduleStart: start,
+        eachCycleIsSession: false,
+        cycleDurationSeconds: 600,
+        repeatIntervalSeconds: 3600,
+        maxCycles: 2,
+        cycles: [
+          AruCycleMetadata(
+            index: 0,
+            plannedStart: start,
+            plannedEnd: start.add(const Duration(minutes: 10)),
+            status: AruCycleStatus.completed,
+          ),
+        ],
+      );
+
+      final map = jsonDecode(buildJsonExport(session)) as Map<String, dynamic>;
+
+      expect(map['type'], 'aru');
+      expect(map['segments'], isA<List<dynamic>>());
+      expect((map['aru'] as Map<String, dynamic>)['stationId'], 'ARU-01');
+      expect(
+        ((map['aru'] as Map<String, dynamic>)['cycles'] as List).single,
+        containsPair('status', 'completed'),
+      );
+    });
+  });
+
+  group('ARU segmented recording export', () {
+    late Directory tempDir;
+
+    setUp(() {
+      tempDir = Directory.systemTemp.createTempSync('aru_export_test_');
+    });
+
+    tearDown(() {
+      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+    });
+
+    test('bundles cycle recordings under aru_cycles', () async {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final cyclePath = p.join(tempDir.path, 'cycle_000.flac');
+      File(cyclePath).writeAsBytesSync([0x66, 0x4c, 0x61, 0x43]);
+
+      final session = _makeSession(type: SessionType.aru);
+      session.aruMetadata = AruDeploymentMetadata(
+        deploymentName: 'Wetland ARU',
+        scheduleStart: start,
+        eachCycleIsSession: false,
+        cycleDurationSeconds: 600,
+        repeatIntervalSeconds: 3600,
+        maxCycles: 1,
+        cycles: [
+          AruCycleMetadata(
+            index: 0,
+            plannedStart: start,
+            plannedEnd: start.add(const Duration(minutes: 10)),
+            status: AruCycleStatus.completed,
+            recordingPath: cyclePath,
+          ),
+        ],
+      );
+
+      final zipPath = await buildSessionExport(
+        session,
+        formats: const {'json'},
+        includeAudio: true,
+      );
+
+      expect(zipPath, isNotNull);
+      final archive = ZipDecoder().decodeBytes(
+        File(zipPath!).readAsBytesSync(),
+      );
+      final names = archive.map((f) => f.name).toList();
+
+      expect(names, contains(startsWith('aru_cycles/')));
+      expect(names, contains(endsWith('_cycle_000.flac')));
+      expect(names, contains(endsWith('.json')));
+      expect(names, contains(endsWith('.metadata.json')));
+
+      final metaFile = archive.firstWhere(
+        (f) => f.name.endsWith('.metadata.json'),
+      );
+      final meta =
+          jsonDecode(String.fromCharCodes(metaFile.content as List<int>))
+              as Map<String, dynamic>;
+      expect(
+        (meta['aruCycleAudioFiles'] as Map<String, dynamic>)['0'],
+        startsWith('aru_cycles/'),
+      );
+    });
+
+    test('keeps ARU metadata sidecar for non-JSON exports', () async {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(type: SessionType.aru);
+      session.aruMetadata = AruDeploymentMetadata(
+        deploymentName: 'Wetland ARU',
+        stationId: 'ARU-01',
+        scheduleStart: start,
+        eachCycleIsSession: false,
+        cycleDurationSeconds: 600,
+        repeatIntervalSeconds: 3600,
+        maxCycles: 1,
+      );
+
+      final zipPath = await buildSessionExport(
+        session,
+        formats: const {'raven'},
+        includeAudio: false,
+      );
+
+      expect(zipPath, isNotNull);
+      expect(p.extension(zipPath!), '.zip');
+
+      final archive = ZipDecoder().decodeBytes(File(zipPath).readAsBytesSync());
+      final names = archive.map((f) => f.name).toList();
+
+      expect(names, contains(endsWith('.selections.txt')));
+      expect(names, contains(endsWith('.metadata.json')));
+
+      final metaFile = archive.firstWhere(
+        (f) => f.name.endsWith('.metadata.json'),
+      );
+      final meta =
+          jsonDecode(String.fromCharCodes(metaFile.content as List<int>))
+              as Map<String, dynamic>;
+      final sessionMeta = meta['session'] as Map<String, dynamic>;
+      expect(sessionMeta['type'], 'aru');
+      expect(sessionMeta['displayName'], session.displayName);
+      final typeMetadata = meta['typeMetadata'] as Map<String, dynamic>;
+      final aru = typeMetadata['aru'] as Map<String, dynamic>;
+      expect(aru['stationId'], 'ARU-01');
     });
   });
 

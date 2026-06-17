@@ -171,7 +171,13 @@ abstract final class PrefKeys {
 
   // Point count settings
   static const String pointCountDuration = 'point_count_duration';
-  static const String pointCountLastObserver = 'point_count_last_observer';
+
+  // Shared field-session identity settings
+  static const String lastObserver = 'last_observer';
+  static const String aruLastStationId = 'aru_last_station_id';
+  static const String legacyPointCountLastObserver =
+      'point_count_last_observer';
+  static const String legacySurveyLastObserver = 'survey_last_observer';
 
   // Survey settings
   static const String surveyInferenceRate = 'survey_inference_rate';
@@ -186,7 +192,6 @@ abstract final class PrefKeys {
   static const String surveyDetectionSampling = 'survey_detection_sampling';
   static const String surveyTopNPerSpecies = 'survey_top_n_per_species';
   static const String micDeviceId = 'mic_device_id';
-  static const String surveyLastObserver = 'survey_last_observer';
   static const String surveyLastTransectId = 'survey_last_transect_id';
 
   // Survey species alerts (v0.7.0+)
@@ -231,6 +236,9 @@ abstract final class PrefKeys {
   /// confidence, firstSeen). Default `confidence` so review starts with
   /// the most likely identifications.
   static const String sessionReviewSpeciesSort = 'session_review_species_sort';
+
+  /// Whether to show the playback overlay (clip player sheet) in session review.
+  static const String sessionReviewPlaybackOverlay = 'session_review_playback_overlay';
 
   // --- Announcements (spoken detections, post-v1.0) ---------------------
   // See [dev/announcements.md] for the full design. The user-facing

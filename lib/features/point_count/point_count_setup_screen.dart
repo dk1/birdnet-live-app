@@ -24,10 +24,10 @@ import 'package:flutter/services.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/utils/locale_time_format.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/site_context_card.dart';
@@ -92,7 +92,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     // Pre-fill observer with the last value used.
-    _observerController.text = ref.read(pointCountLastObserverProvider);
+    _observerController.text = ref.read(lastObserverProvider);
     // Seed parameter state from the global app defaults.
     _windowDuration = ref.read(windowDurationProvider);
     _inferenceRate = ref.read(inferenceRateProvider);
@@ -234,7 +234,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
 
     // Persist observer for next time.
     if (observer.isNotEmpty) {
-      ref.read(pointCountLastObserverProvider.notifier).set(observer);
+      ref.read(lastObserverProvider.notifier).set(observer);
     }
 
     Navigator.of(context).pushReplacement(
@@ -486,7 +486,13 @@ class _DurationStep extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  DateFormat.yMMMMd().add_jm().format(DateTime.now()),
+                  formatLocaleDateTime(
+                    DateTime.now(),
+                    l10n.localeName,
+                    longMonth: true,
+                    alwaysUse24HourFormat:
+                        MediaQuery.of(context).alwaysUse24HourFormat,
+                  ),
                   style: theme.textTheme.bodyMedium,
                 ),
               ],

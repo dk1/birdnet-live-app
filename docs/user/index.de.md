@@ -54,7 +54,7 @@ Mehrere Audiodateien im Batch-Modus analysieren. (Demnächst)
 
 ### [ARU-Modus](aru-mode.md)
 
-Nutzen Sie Ihr Gerät als autonome Aufzeichnungseinheit. (Demnächst)
+Erstellen Sie eine geplante ARU-Einsatz-Session, zeichnen Sie vollständiges Zyklus-Audio oder beibehaltene Erkennungsclips auf, führen Sie während aktiver Zyklen Live-Inferenz aus und verfolgen Sie geplante Aufnahmezyklen.
 
 ## Referenz
 
