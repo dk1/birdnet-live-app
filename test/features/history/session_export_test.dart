@@ -763,6 +763,7 @@ void main() {
         deploymentName: 'Wetland ARU',
         stationId: 'ARU-01',
         scheduleStart: start,
+        eachCycleIsSession: false,
         cycleDurationSeconds: 600,
         repeatIntervalSeconds: 3600,
         maxCycles: 2,
@@ -808,6 +809,7 @@ void main() {
       session.aruMetadata = AruDeploymentMetadata(
         deploymentName: 'Wetland ARU',
         scheduleStart: start,
+        eachCycleIsSession: false,
         cycleDurationSeconds: 600,
         repeatIntervalSeconds: 3600,
         maxCycles: 1,
@@ -858,6 +860,7 @@ void main() {
         deploymentName: 'Wetland ARU',
         stationId: 'ARU-01',
         scheduleStart: start,
+        eachCycleIsSession: false,
         cycleDurationSeconds: 600,
         repeatIntervalSeconds: 3600,
         maxCycles: 1,

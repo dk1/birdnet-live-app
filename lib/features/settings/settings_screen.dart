@@ -37,6 +37,12 @@ enum SettingsContext {
   /// Survey mode (future).
   survey,
 
+  /// ARU (autonomous recording unit) deployment mode.
+  ///
+  /// Currently mirrors [survey]'s settings surface, but is kept distinct so
+  /// ARU and Survey can diverge without leaking each other's context.
+  aru,
+
   /// Point-count mode (future).
   pointCount,
 
@@ -123,7 +129,12 @@ class SettingsScreen extends ConsumerWidget {
   /// Returns `true` if [section] should be visible for the current context.
   bool _showSection(String section) {
     if (settingsContext == SettingsContext.all) return true;
-    return _sectionContexts[section]?.contains(settingsContext) ?? true;
+    // ARU currently shares Survey's settings surface.
+    final effective =
+        settingsContext == SettingsContext.aru
+            ? SettingsContext.survey
+            : settingsContext;
+    return _sectionContexts[section]?.contains(effective) ?? true;
   }
 
   @override

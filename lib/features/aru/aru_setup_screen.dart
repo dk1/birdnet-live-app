@@ -178,7 +178,8 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
         return;
       }
       _scheduleGpsRetryOrStop();
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[AruSetup] GPS fetch failed: $e');
       if (!mounted || serial != _gpsRequestSerial) return;
       _scheduleGpsRetryOrStop();
     }
@@ -368,6 +369,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
         MaterialPageRoute<void>(builder: (_) => const AruActiveScreen()),
       );
     } catch (e) {
+      debugPrint('[AruSetup] failed to start deployment: $e');
       if (!mounted) return;
       setState(() => _starting = false);
       ScaffoldMessenger.of(context)
@@ -418,7 +420,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
               MaterialPageRoute<void>(
                 builder:
                     (_) => const SettingsScreen(
-                      settingsContext: SettingsContext.survey,
+                      settingsContext: SettingsContext.aru,
                     ),
               ),
             );
@@ -1120,6 +1122,7 @@ class _ScheduleStep extends ConsumerWidget {
             schedule:
                 AruDeploymentMetadata(
                   scheduleStart: DateTime.now(),
+                  eachCycleIsSession: eachCycleIsSession,
                   cycleDurationSeconds: cycleDuration.inSeconds,
                   repeatIntervalSeconds: repeatInterval.inSeconds,
                   scheduleEnd:
@@ -1524,6 +1527,7 @@ class _ReadyStep extends ConsumerWidget {
             schedule:
                 AruDeploymentMetadata(
                   scheduleStart: DateTime.now(),
+                  eachCycleIsSession: eachCycleIsSession,
                   cycleDurationSeconds: cycleDuration.inSeconds,
                   repeatIntervalSeconds: repeatInterval.inSeconds,
                   scheduleEnd: scheduleEnd,

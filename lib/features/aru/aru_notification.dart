@@ -7,6 +7,7 @@ import 'dart:ui';
 
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/core/constants/app_constants.dart';
+import 'package:birdnet_live/shared/services/foreground_service_guard.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -120,6 +121,13 @@ class AruNotificationService {
   Future<void> start({required String title, required String text}) async {
     if (!Platform.isAndroid) return;
     if (_running || _starting) return;
+    if (!ForegroundServiceGuard.tryClaim(ForegroundServiceOwner.aru)) {
+      debugPrint(
+        '[AruNotification] foreground service already owned by '
+        '${ForegroundServiceGuard.owner}; not starting',
+      );
+      return;
+    }
 
     final now = DateTime.now();
     final nextAttempt = _nextStartAttempt;
@@ -155,6 +163,7 @@ class AruNotificationService {
         debugPrint('[AruNotification] started');
       } else {
         _running = false;
+        ForegroundServiceGuard.release(ForegroundServiceOwner.aru);
         _nextStartAttempt = now.add(_startRetryDelay);
         debugPrint(
           '[AruNotification] startService failed: $result. '
@@ -184,6 +193,7 @@ class AruNotificationService {
     await FlutterForegroundTask.stopService();
     _running = false;
     _nextStartAttempt = null;
+    ForegroundServiceGuard.release(ForegroundServiceOwner.aru);
     debugPrint('[AruNotification] stopped');
   }
 

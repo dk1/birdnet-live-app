@@ -31,6 +31,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/services/foreground_service_guard.dart';
 
 // =============================================================================
 // Task handler (runs in a separate isolate — kept minimal)
@@ -152,6 +153,14 @@ class SurveyNotificationService {
     if (!Platform.isAndroid) return;
     await init();
 
+    if (!ForegroundServiceGuard.tryClaim(ForegroundServiceOwner.survey)) {
+      debugPrint(
+        '[SurveyNotification] foreground service already owned by '
+        '${ForegroundServiceGuard.owner}; not starting',
+      );
+      return;
+    }
+
     // Best-effort permission check — don't bail if denied; Android will
     // still create a foreground service (just with a default notification
     // on some OEMs).
@@ -181,6 +190,7 @@ class SurveyNotificationService {
       debugPrint('[SurveyNotification] started');
     } else {
       _running = false;
+      ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
       debugPrint('[SurveyNotification] startService failed: $result');
     }
   }
@@ -202,6 +212,7 @@ class SurveyNotificationService {
     if (!_running) return;
     await FlutterForegroundTask.stopService();
     _running = false;
+    ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
     debugPrint('[SurveyNotification] stopped');
   }
 }

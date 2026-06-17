@@ -210,6 +210,7 @@ void main() {
             deploymentName: 'Wetland',
             stationId: 'ARU-01',
             scheduleStart: DateTime.utc(2026, 1, 1, 10),
+            eachCycleIsSession: false,
             cycleDurationSeconds: 600,
             repeatIntervalSeconds: 3600,
             maxCycles: 2,

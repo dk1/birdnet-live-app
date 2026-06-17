@@ -23,6 +23,7 @@ void main() {
       deploymentName: 'Dawn Station',
       stationId: 'ARU-07',
       scheduleStart: start,
+      eachCycleIsSession: false,
       cycleDurationSeconds: 600,
       repeatIntervalSeconds: 3600,
       maxCycles: maxCycles,
@@ -73,6 +74,7 @@ void main() {
           metadata: AruDeploymentMetadata(
             stationId: 'ARU-09',
             scheduleStart: start,
+            eachCycleIsSession: false,
             cycleDurationSeconds: 600,
             repeatIntervalSeconds: 3600,
             maxCycles: 1,
@@ -229,6 +231,7 @@ void main() {
         settings: settings,
         metadata: AruDeploymentMetadata(
           scheduleStart: deployedAt,
+          eachCycleIsSession: false,
           cycleDurationSeconds: 600,
           repeatIntervalSeconds: 3600,
           maxCycles: 1,

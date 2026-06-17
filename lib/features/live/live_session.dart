@@ -638,7 +638,7 @@ class AruDeploymentMetadata {
     this.samplingMode = 'smart',
     this.topNPerSpecies = 10,
     this.testCycleEnabled = false,
-    this.eachCycleIsSession = false,
+    required this.eachCycleIsSession,
     List<AruCycleMetadata>? cycles,
   }) : cycles = cycles ?? [];
 

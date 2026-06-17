@@ -454,8 +454,8 @@ class _AruStatusBarState extends State<_AruStatusBar> {
                     size: 18,
                     color:
                         widget.state == AruControllerState.recording
-                            ? theme.colorScheme.error
-                            : theme.colorScheme.primary,
+                            ? AppSemanticColors.of(context).sessionAru
+                            : theme.colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 6),
                   Flexible(
@@ -467,8 +467,8 @@ class _AruStatusBarState extends State<_AruStatusBar> {
                         fontFamily: 'monospace',
                         color:
                             widget.state == AruControllerState.recording
-                                ? theme.colorScheme.error
-                                : theme.colorScheme.primary,
+                                ? AppSemanticColors.of(context).sessionAru
+                                : theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -500,7 +500,7 @@ class _AruStatusBarState extends State<_AruStatusBar> {
                 MaterialPageRoute<void>(
                   builder:
                       (_) => const SettingsScreen(
-                        settingsContext: SettingsContext.survey,
+                        settingsContext: SettingsContext.aru,
                       ),
                 ),
               );
@@ -921,7 +921,7 @@ class _SchedulePanel extends StatelessWidget {
                     : AppIcons.scheduleRounded,
                 color:
                     window.contains(now)
-                        ? theme.colorScheme.error
+                        ? AppSemanticColors.of(context).sessionAru
                         : theme.colorScheme.onSurfaceVariant,
               ),
               title: Text(
@@ -974,7 +974,9 @@ class _ScheduleFocusCard extends StatelessWidget {
             ? AppIcons.fiberManualRecordRounded
             : AppIcons.scheduleRounded;
     final color =
-        isRecording ? theme.colorScheme.error : theme.colorScheme.primary;
+        isRecording
+            ? AppSemanticColors.of(context).sessionAru
+            : theme.colorScheme.onSurfaceVariant;
     final title =
         currentIsTest || nextIsTest
             ? l10n.aruTestRun
