@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.17.8] - 2026-06-17
 
+### Changed
+
+- Updated the ARU live status display to use the dedicated ARU accent color for the recording and schedule indicators, so it is no longer confused with Live Mode's red or Point Count's blue.
+
 ### Fixed
 
 - Fixed ARU deployments stalling when the active screen was backgrounded or covered by another screen; the schedule and recording now keep running in the background so cycles fire on time while the phone is in your pocket.
 - Hardened ARU audio capture so the microphone has a single owner across a deployment, ensuring it is reliably released when a deployment stops and avoiding rare start/stop races.
+- Prevented ARU and Survey from starting their foreground recording service at the same time, so the two modes can no longer contend over the same background service.
 
 ## [0.17.7] - 2026-06-17
 
