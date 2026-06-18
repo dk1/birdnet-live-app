@@ -1748,7 +1748,6 @@ class _ReadyStep extends ConsumerWidget {
           title: l10n.aruStorageEstimate,
           rows: [
             (primaryStorageLabel, primaryStorage),
-            (l10n.aruPerHourEstimate, _formatBytes(estimate.bytesPerHour)),
             (
               l10n.aruLowBatteryStop,
               lowBatteryStop > 0 ? '$lowBatteryStop%' : l10n.settingsFilterOff,
@@ -2009,6 +2008,20 @@ String _recordingWindowSummary({
   required Duration cycleDuration,
   required bool alwaysUse24HourFormat,
 }) {
+  if (dielPattern == AruDielPattern.anyTime) {
+    final localMidnight =
+        date.isUtc
+            ? DateTime.utc(date.year, date.month, date.day)
+            : DateTime(date.year, date.month, date.day);
+    final endOfDay = localMidnight
+        .add(const Duration(days: 1))
+        .subtract(const Duration(minutes: 1));
+    final range =
+        '${_formatWindowTime(localMidnight, l10n, alwaysUse24HourFormat)}-'
+        '${_formatWindowTime(endOfDay, l10n, alwaysUse24HourFormat)}';
+    return l10n.aruRecordingWindowEstimate(range);
+  }
+
   final windows = aruDielWindowsForDate(
     date: date,
     pattern: dielPattern,
