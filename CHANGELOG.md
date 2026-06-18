@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.9] - 2026-06-18
+
+### Changed
+
+- Reduced ARU waiting-state wakeups, unchanged session writes, and redundant foreground notification updates; new ARU deployments also default to 0.33 Hz inference to match Survey while leaving other inference and spectrogram settings unchanged.
+
+### Fixed
+
+- Fixed ARU detection clips so they now capture the moment a species is first heard, instead of grabbing later audio after the bird had already gone quiet — clips again contain the species they are labeled with, and review results are reliable.
+- Aligned ARU Smart and Top N clip retention with the Survey approach, keeping the strongest clips per species and spreading them across the deployment instead of clustering them on one repeating bird.
+
 ## [0.17.8] - 2026-06-17
 
 ### Added

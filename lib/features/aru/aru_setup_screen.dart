@@ -62,6 +62,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
   Timer? _gpsRetryTimer;
   Duration _cycleDuration = AruDefaults.defaultCycleDuration;
   Duration _repeatInterval = AruDefaults.defaultRepeatInterval;
+  double _inferenceRate = AruDefaults.defaultInferenceRateHz;
   _ScheduleEndMode _scheduleEndMode = _ScheduleEndMode.cycles;
   late DateTime _scheduleEnd;
   int _maxCycles = AruDefaults.defaultMaxCycles;
@@ -338,7 +339,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
     final settings = SessionSettings(
       windowDuration: ref.read(windowDurationProvider),
       confidenceThreshold: ref.read(confidenceThresholdProvider),
-      inferenceRate: ref.read(inferenceRateProvider),
+      inferenceRate: _inferenceRate,
       speciesFilterMode: ref.read(speciesFilterModeProvider),
       clipContextSeconds: ref.read(clipContextProvider),
       sensitivity: ref.read(sensitivityProvider),
@@ -483,6 +484,9 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
             topNPerSpecies: _topNPerSpecies,
             onTopNPerSpeciesChanged:
                 (value) => setState(() => _topNPerSpecies = value),
+            inferenceRate: _inferenceRate,
+            onInferenceRateChanged:
+                (value) => setState(() => _inferenceRate = value),
           ),
           2 => _ScheduleStep(
             key: const ValueKey(2),
@@ -816,6 +820,8 @@ class _ParametersStep extends ConsumerWidget {
     required this.onSamplingModeChanged,
     required this.topNPerSpecies,
     required this.onTopNPerSpeciesChanged,
+    required this.inferenceRate,
+    required this.onInferenceRateChanged,
     super.key,
   });
 
@@ -825,6 +831,8 @@ class _ParametersStep extends ConsumerWidget {
   final ValueChanged<SamplingMode> onSamplingModeChanged;
   final int topNPerSpecies;
   final ValueChanged<int> onTopNPerSpeciesChanged;
+  final double inferenceRate;
+  final ValueChanged<double> onInferenceRateChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -833,7 +841,6 @@ class _ParametersStep extends ConsumerWidget {
     final devicesAsync = ref.watch(inputDevicesProvider);
     final selectedDevice = ref.watch(selectedDeviceProvider);
 
-    final inferenceRate = ref.watch(inferenceRateProvider);
     final confidenceThreshold = ref.watch(confidenceThresholdProvider);
     final sensitivity = ref.watch(sensitivityProvider);
     final recordingFormat = ref.watch(recordingFormatProvider);
@@ -908,7 +915,7 @@ class _ParametersStep extends ConsumerWidget {
           max: 1.0,
           divisions: 9,
           label: '${inferenceRate.toStringAsFixed(2)} Hz',
-          onChanged: (v) => ref.read(inferenceRateProvider.notifier).set(v),
+          onChanged: onInferenceRateChanged,
         ),
 
         // Confidence threshold

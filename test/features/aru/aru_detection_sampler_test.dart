@@ -8,28 +8,27 @@ void main() {
 
   DetectionRecord record({
     required double confidence,
-    required int cycle,
+    int cycle = 0,
+    int secondsIntoCycle = 0,
     String species = 'Turdus merula',
     String clip = 'clip.flac',
   }) {
+    final timestamp = start.add(
+      Duration(hours: cycle, seconds: secondsIntoCycle),
+    );
     return DetectionRecord(
       scientificName: species,
       commonName: 'Eurasian Blackbird',
       confidence: confidence,
-      timestamp: start.add(Duration(hours: cycle)),
-      audioClipPath: '/tmp/$cycle-$confidence-$clip',
+      timestamp: timestamp,
+      audioClipPath: '/tmp/$cycle-$secondsIntoCycle-$confidence-$clip',
     );
   }
 
-  int cycleIndexFor(DetectionRecord r) => r.timestamp.difference(start).inHours;
-
   group('AruDetectionSampler', () {
     test('all mode keeps every clip', () async {
-      final sampler = AruDetectionSampler(
-        mode: SamplingMode.all,
-        timeBucketFor: cycleIndexFor,
-      );
-      final det = record(confidence: 0.5, cycle: 0);
+      final sampler = AruDetectionSampler(mode: SamplingMode.all);
+      final det = record(confidence: 0.5);
 
       final kept = await sampler.onRecordClosed(det);
 
@@ -39,11 +38,7 @@ void main() {
     });
 
     test('topN keeps highest-confidence clips per species', () async {
-      final sampler = AruDetectionSampler(
-        mode: SamplingMode.topN,
-        topN: 2,
-        timeBucketFor: cycleIndexFor,
-      );
+      final sampler = AruDetectionSampler(mode: SamplingMode.topN, topN: 2);
       final low = record(confidence: 0.3, cycle: 0);
       final mid = record(confidence: 0.6, cycle: 1);
       final high = record(confidence: 0.9, cycle: 2);
@@ -59,15 +54,15 @@ void main() {
       expect(sampler.droppedClipCount, 1);
     });
 
-    test('smart mode keeps stronger clip from the same cycle', () async {
+    test('smart mode keeps stronger clip from the same time window', () async {
       final sampler = AruDetectionSampler(
         mode: SamplingMode.smart,
         topN: 3,
         minKeepPerSpecies: 0,
-        timeBucketFor: cycleIndexFor,
       );
-      final weaker = record(confidence: 0.4, cycle: 0);
-      final stronger = record(confidence: 0.8, cycle: 0);
+      // Two detections seconds apart (within the same-spot time window).
+      final weaker = record(confidence: 0.4, secondsIntoCycle: 0);
+      final stronger = record(confidence: 0.8, secondsIntoCycle: 10);
 
       expect(await sampler.onRecordClosed(weaker), isTrue);
       expect(await sampler.onRecordClosed(stronger), isTrue);
@@ -77,42 +72,61 @@ void main() {
       expect(sampler.keptClipCount, 1);
     });
 
-    test('smart mode prefers replacing overrepresented cycles', () async {
+    test('smart mode honors the per-species minimum before rivalry', () async {
       final sampler = AruDetectionSampler(
         mode: SamplingMode.smart,
-        topN: 3,
-        minKeepPerSpecies: 10,
-        timeBucketFor: cycleIndexFor,
+        topN: 5,
+        minKeepPerSpecies: 3,
       );
-      final cycle0Low = record(confidence: 0.4, cycle: 0, clip: 'a.flac');
-      final cycle0Mid = record(confidence: 0.5, cycle: 0, clip: 'b.flac');
-      final cycle1Mid = record(confidence: 0.6, cycle: 1, clip: 'c.flac');
-      final cycle2High = record(confidence: 0.7, cycle: 2, clip: 'd.flac');
+      // All within the same time window, but the floor keeps the first three.
+      final a = record(confidence: 0.4, secondsIntoCycle: 0, clip: 'a.flac');
+      final b = record(confidence: 0.5, secondsIntoCycle: 10, clip: 'b.flac');
+      final c = record(confidence: 0.6, secondsIntoCycle: 20, clip: 'c.flac');
 
-      expect(await sampler.onRecordClosed(cycle0Low), isTrue);
-      expect(await sampler.onRecordClosed(cycle0Mid), isTrue);
-      expect(await sampler.onRecordClosed(cycle1Mid), isTrue);
-      expect(await sampler.onRecordClosed(cycle2High), isTrue);
+      expect(await sampler.onRecordClosed(a), isTrue);
+      expect(await sampler.onRecordClosed(b), isTrue);
+      expect(await sampler.onRecordClosed(c), isTrue);
 
-      expect(cycle0Low.audioClipPath, isNull);
-      expect(cycle0Mid.audioClipPath, isNotNull);
-      expect(cycle1Mid.audioClipPath, isNotNull);
-      expect(cycle2High.audioClipPath, isNotNull);
+      expect(a.audioClipPath, isNotNull);
+      expect(b.audioClipPath, isNotNull);
+      expect(c.audioClipPath, isNotNull);
       expect(sampler.keptClipCount, 3);
     });
 
-    test('smart mode does not mix species budgets', () async {
+    test('smart mode spreads clips across separate time windows', () async {
       final sampler = AruDetectionSampler(
         mode: SamplingMode.smart,
-        topN: 1,
-        timeBucketFor: cycleIndexFor,
+        topN: 2,
+        minKeepPerSpecies: 0,
       );
-      final blackbird = record(confidence: 0.4, cycle: 0);
-      final robin = record(
-        confidence: 0.3,
-        cycle: 0,
-        species: 'Erithacus rubecula',
+      // Same window: only the stronger survives.
+      final window0Low = record(
+        confidence: 0.4,
+        secondsIntoCycle: 0,
+        clip: 'a.flac',
       );
+      final window0High = record(
+        confidence: 0.5,
+        secondsIntoCycle: 10,
+        clip: 'b.flac',
+      );
+      // A different window (hours later): admitted to its own slot.
+      final window1 = record(confidence: 0.6, cycle: 1, clip: 'c.flac');
+
+      expect(await sampler.onRecordClosed(window0Low), isTrue);
+      expect(await sampler.onRecordClosed(window0High), isTrue);
+      expect(await sampler.onRecordClosed(window1), isTrue);
+
+      expect(window0Low.audioClipPath, isNull);
+      expect(window0High.audioClipPath, isNotNull);
+      expect(window1.audioClipPath, isNotNull);
+      expect(sampler.keptClipCount, 2);
+    });
+
+    test('smart mode does not mix species budgets', () async {
+      final sampler = AruDetectionSampler(mode: SamplingMode.smart, topN: 1);
+      final blackbird = record(confidence: 0.4);
+      final robin = record(confidence: 0.3, species: 'Erithacus rubecula');
 
       expect(await sampler.onRecordClosed(blackbird), isTrue);
       expect(await sampler.onRecordClosed(robin), isTrue);
@@ -127,8 +141,8 @@ void main() {
         mode: SamplingMode.smart,
         topN: 1,
         minKeepPerSpecies: 0,
-        scopeKeyFor: (record) => 'cycle-${cycleIndexFor(record)}',
-        timeBucketFor: (_) => 0,
+        scopeKeyFor:
+            (record) => 'cycle-${record.timestamp.difference(start).inHours}',
       );
       final cycle0 = record(confidence: 0.4, cycle: 0);
       final cycle1 = record(confidence: 0.3, cycle: 1);
@@ -141,55 +155,6 @@ void main() {
       expect(sampler.keptClipCount, 2);
     });
 
-    test('smart mode distributes clips across time buckets', () async {
-      final sampler = AruDetectionSampler(
-        mode: SamplingMode.smart,
-        topN: 2,
-        minKeepPerSpecies: 10,
-        timeBucketFor: cycleIndexFor,
-      );
-      final minute0Low = record(confidence: 0.4, cycle: 0, clip: 'a.flac');
-      final minute0Mid = record(confidence: 0.5, cycle: 0, clip: 'b.flac');
-      final minute1High = record(confidence: 0.6, cycle: 1, clip: 'c.flac');
-
-      expect(await sampler.onRecordClosed(minute0Low), isTrue);
-      expect(await sampler.onRecordClosed(minute0Mid), isTrue);
-      expect(await sampler.onRecordClosed(minute1High), isTrue);
-
-      expect(minute0Low.audioClipPath, isNull);
-      expect(minute0Mid.audioClipPath, isNotNull);
-      expect(minute1High.audioClipPath, isNotNull);
-      expect(sampler.keptClipCount, 2);
-    });
-
-    test(
-      'smart mode distributes one species across multi-day buckets',
-      () async {
-        final sampler = AruDetectionSampler(
-          mode: SamplingMode.smart,
-          topN: 2,
-          minKeepPerSpecies: 10,
-          timeBucketFor: (record) => record.timestamp.difference(start).inDays,
-        );
-        final day0Low = record(confidence: 0.4, cycle: 0, clip: 'day0-a.flac');
-        final day0Mid = record(confidence: 0.5, cycle: 1, clip: 'day0-b.flac');
-        final day1High = record(confidence: 0.6, cycle: 24, clip: 'day1.flac');
-
-        expect(await sampler.onRecordClosed(day0Low), isTrue);
-        expect(await sampler.onRecordClosed(day0Mid), isTrue);
-        expect(await sampler.onRecordClosed(day1High), isTrue);
-
-        expect(day0Low.audioClipPath, isNull);
-        expect(day0Mid.audioClipPath, isNotNull);
-        expect(day1High.audioClipPath, isNotNull);
-        expect(day0Mid.audioClipPath, contains('day0-b.flac'));
-        expect(day1High.audioClipPath, contains('day1.flac'));
-        expect(day0Mid.timestamp, start.add(const Duration(hours: 1)));
-        expect(day1High.timestamp, start.add(const Duration(hours: 24)));
-        expect(sampler.keptClipCount, 2);
-      },
-    );
-
     test(
       'replaceRecord keeps later evictions linked to session record',
       () async {
@@ -197,7 +162,6 @@ void main() {
           mode: SamplingMode.smart,
           topN: 1,
           minKeepPerSpecies: 10,
-          timeBucketFor: cycleIndexFor,
         );
         final original = record(
           confidence: 0.8,
