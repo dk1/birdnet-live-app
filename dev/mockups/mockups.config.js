@@ -24,9 +24,9 @@ window.BIRDNET_MOCKUPS = {
       name: 'English',
       slides: {
         menu: {
-          title: 'Four modes for every field workflow',
+          title: 'Field workflows in one app',
           subtitle:
-            'Move from real-time listening to timed counts, transect surveys, and file analysis without changing tools.',
+            'Move between live recording, structured field protocols, offline file analysis, and review without changing tools.',
         },
         live: {
           title: 'Identify calls in real time',
@@ -59,9 +59,9 @@ window.BIRDNET_MOCKUPS = {
       name: 'Deutsch',
       slides: {
         menu: {
-          title: 'Vier Modi für jede Feldarbeit',
+          title: 'Feldarbeit in einer App',
           subtitle:
-            'Wechseln Sie zwischen Live-Erkennung, Point Count, Survey und File Analysis, ohne das Werkzeug zu wechseln.',
+            'Wechseln Sie zwischen Live-Aufnahme, strukturierten Feldprotokollen, Offline-Dateianalyse und Überprüfung, ohne das Werkzeug zu wechseln.',
         },
         live: {
           title: 'Rufe in Echtzeit erkennen',
@@ -94,9 +94,9 @@ window.BIRDNET_MOCKUPS = {
       name: 'Español',
       slides: {
         menu: {
-          title: 'Cuatro modos para cada trabajo de campo',
+          title: 'Trabajo de campo en una sola app',
           subtitle:
-            'Pasa de escucha en directo a Point Count, Survey y File Analysis sin cambiar de herramienta.',
+            'Pasa entre grabación en directo, protocolos de campo estructurados, análisis offline de archivos y revisión sin cambiar de herramienta.',
         },
         live: {
           title: 'Identifica cantos en directo',
@@ -129,9 +129,9 @@ window.BIRDNET_MOCKUPS = {
       name: 'Français',
       slides: {
         menu: {
-          title: 'Quatre modes pour le terrain',
+          title: 'Le terrain dans une seule app',
           subtitle:
-            'Passez de l\'écoute en direct au Point Count, Survey et File Analysis sans changer d\'outil.',
+            'Passez de l\'enregistrement en direct aux protocoles de terrain structurés, à l\'analyse hors ligne et à la révision sans changer d\'outil.',
         },
         live: {
           title: 'Identifiez les chants en direct',
@@ -164,9 +164,9 @@ window.BIRDNET_MOCKUPS = {
       name: 'Italiano',
       slides: {
         menu: {
-          title: 'Quattro modalità per il campo',
+          title: 'Lavoro sul campo in un\'unica app',
           subtitle:
-            'Passa dall\'ascolto dal vivo a Point Count, Survey e File Analysis senza cambiare strumento.',
+            'Passa tra registrazione live, protocolli di campo strutturati, analisi offline dei file e revisione senza cambiare strumento.',
         },
         live: {
           title: 'Identifica i richiami dal vivo',
@@ -199,9 +199,9 @@ window.BIRDNET_MOCKUPS = {
       name: 'Português',
       slides: {
         menu: {
-          title: 'Quatro modos para o trabalho de campo',
+          title: 'Trabalho de campo numa só app',
           subtitle:
-            'Passe da escuta em direto para Point Count, Survey e File Analysis sem mudar de ferramenta.',
+            'Alterne entre gravação em direto, protocolos de campo estruturados, análise offline de ficheiros e revisão sem mudar de ferramenta.',
         },
         live: {
           title: 'Identifique sons em direto',
@@ -234,9 +234,9 @@ window.BIRDNET_MOCKUPS = {
       name: 'Čeština',
       slides: {
         menu: {
-          title: 'Čtyři režimy pro práci v terénu',
+          title: 'Terénní práce v jedné aplikaci',
           subtitle:
-            'Přecházejte mezi živým poslechem, Point Count, Survey a File Analysis bez změny nástroje.',
+            'Přecházejte mezi živým nahráváním, strukturovanými terénními protokoly, offline analýzou souborů a kontrolou výsledků bez změny nástroje.',
         },
         live: {
           title: 'Rozpoznávejte hlasy živě',
