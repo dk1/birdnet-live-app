@@ -12,7 +12,7 @@ Questa pagina spiega i controlli e i simboli ricorrenti utilizzati in BirdNET Li
 | :material-help-circle-outline: **Aiuto** | Piè di pagina iniziale, intestazione Esplora, dashboard del sondaggio, barra degli strumenti Revisione sessione | Apre la Guida o un foglio della guida specifico per la schermata. |
 | :materiale-informazioni-schema: **Informazioni / Informazioni** | Piè di pagina iniziale, barre informative, fogli di aiuto | Mostra informazioni generali o contesto di riepilogo. |
 | :material-arrow-left: **Indietro** | Modalità dal vivo | Ritorna alla schermata precedente. |
-| :material-open-in-new: **Apri esterno** | Informazioni sullo schermo, collegamenti alla documentazione | Apre una pagina esterna come la Guida per l'utente in linea. |
+| :material-open-in-new: **Apri esterno** | Informazioni sullo schermo, collegamenti alla documentazione | Apre una pagina esterna come la Guida all'uso in linea. |
 | :material-volunteer-activism: **Dona** | Schermata Informazioni | Apre la pagina per le donazioni a BirdNET. |
 
 ## Simboli meteo

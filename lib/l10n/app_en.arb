@@ -469,7 +469,7 @@
   "@aruSetupHelpTitle": {
     "description": "Title for ARU setup help"
   },
-  "aruSetupHelpBody": "ARU Mode schedules fixed-location recording cycles. Deployments save recoverable schedule state, record full audio or retained detection clips during active cycles, run live inference during cycles, and show Android foreground notification controls. iOS background behavior still needs field validation.",
+  "aruSetupHelpBody": "Use ARU Mode for unattended recordings at a fixed site. The app saves the deployment schedule so it can resume later, records full audio or selected detection clips during scheduled cycles, and identifies species on the device. Android shows a persistent notification while a deployment is active; iOS background behavior still needs field validation.",
   "@aruSetupHelpBody": {
     "description": "Help text for the first ARU setup implementation"
   },
@@ -493,9 +493,9 @@
   "@aruSessionGroupingAllDesc": {
     "description": "Subtitle shown when the per-cycle session switch is off"
   },
-  "aruDeploymentName": "Deployment name",
+  "aruDeploymentName": "Project name",
   "@aruDeploymentName": {
-    "description": "Label for ARU deployment name field"
+    "description": "Label for ARU project name field"
   },
   "aruStationId": "ARU / station ID",
   "@aruStationId": {
@@ -610,7 +610,7 @@
   "@aruReadyReminderMount": {
     "description": "ARU readiness reminder about mounting and protecting the recorder"
   },
-  "aruReadyPlatformNote": "Android can stay deployed with a foreground notification while waiting between cycles. On iOS, background recording and scheduled wakeups should still be treated as unvalidated.",
+  "aruReadyPlatformNote": "Android can keep the deployment active with a persistent notification while waiting between cycles. On iOS, background recording and scheduled wakeups should still be treated as unvalidated.",
   "@aruReadyPlatformNote": {
     "description": "ARU readiness note about current platform limitations"
   },
@@ -638,7 +638,7 @@
   "@aruRecordingWindow": {
     "description": "Label for choosing when ARU recording cycles are allowed during the day"
   },
-  "aruDielAnyTime": "Any time",
+  "aruDielAnyTime": "Continuous",
   "@aruDielAnyTime": {
     "description": "ARU recording window option with no day/night restriction"
   },
@@ -721,7 +721,7 @@
   "@aruWaitingDetectionsBody": {
     "description": "Empty-state body for ARU detections while waiting between recording cycles"
   },
-  "aruHelpStatusIcons": "Status icons: mic shows current audio level, checkmark shows completed cycles, list shows total detections, waveform shows unique species, red dot marks an active recording, clock marks waiting for the next scheduled cycle, and the test icon marks the immediate one-minute test run.",
+  "aruHelpStatusIcons": "Status icons show the current audio level, completed cycles, total detections, unique species, active recording state, waiting state, and the optional one-minute test run.",
   "@aruHelpStatusIcons": {
     "description": "Help text explaining icons on the active ARU screen"
   },
@@ -2994,9 +2994,9 @@
   "@surveyTabMap": {
     "description": "Tab label for map view in survey live screen"
   },
-  "surveyTabSpectrogram": "Spectrogram",
+  "surveyTabSpectrogram": "Audio",
   "@surveyTabSpectrogram": {
-    "description": "Tab label for spectrogram view in survey live screen"
+    "description": "Tab label for audio view in survey live screen"
   },
   "surveyTabSummary": "Summary",
   "@surveyTabSummary": {
@@ -3162,7 +3162,7 @@
   "@surveyLiveHelpSignal": {
     "description": "Help text explaining the audio quality signal bars"
   },
-  "surveyLiveHelpStats": "The stats bar shows distance walked, number of detections, and unique species count. Tap the tabs above to switch between the live map, spectrogram, and summary views.",
+  "surveyLiveHelpStats": "The stats bar shows distance walked, number of detections, and unique species count. Tap the tabs above to switch between the live map, audio, and summary views.",
   "@surveyLiveHelpStats": {
     "description": "Help text for the stats bar and tabs"
   },
@@ -3203,7 +3203,7 @@
   "@helpSurveyTitle": {
     "description": "Section title for Survey mode help"
   },
-  "helpSurveyBody": "Survey Mode starts with details and parameter steps, then opens a live dashboard with Map, Spectrogram, and Summary tabs. The top bar holds stop, help, and settings, and recent detections below the tabs open the species overlay when tapped.",
+  "helpSurveyBody": "Survey Mode starts with details and parameter steps, then opens a live dashboard with Map, Audio, and Summary tabs. The top bar holds stop, help, and settings, and recent detections below the tabs open the species overlay when tapped.",
   "@helpSurveyBody": {
     "description": "Help body text for Survey mode"
   },
@@ -3227,7 +3227,7 @@
   "@helpAruTitle": {
     "description": "Section title for ARU help"
   },
-  "helpAruBody": "ARU Mode schedules fixed-site recording cycles with support for diel patterns (day, night, sunrise/sunset windows), low-battery auto-resume, session grouping choices, and smart clip retention. It runs on-device inference during active cycles and shows foreground notification controls.",
+  "helpAruBody": "ARU Mode is for unattended recordings at one fixed site. Choose when the recorder should run, how cycles are grouped into Sessions, and whether to keep full audio or selected detection clips. During scheduled recording windows, the app records and identifies species on the device; on Android it keeps a persistent notification with Stop and Open controls.",
   "@helpAruBody": {
     "description": "Help body text for ARU mode"
   },
@@ -4241,7 +4241,7 @@
   "@surveyLiveHelpTopBar": {
     "description": "Explains the top bar on the Survey live help overlay"
   },
-  "surveyLiveHelpTabs": "Use the tabs to switch between the live map, spectrogram, and summary views while the survey keeps running.",
+  "surveyLiveHelpTabs": "Use the tabs to switch between the live map, audio, and summary views while the survey keeps running.",
   "@surveyLiveHelpTabs": {
     "description": "Explains the tab row on the Survey live help overlay"
   },

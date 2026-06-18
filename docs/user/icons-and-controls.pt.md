@@ -12,7 +12,7 @@ Esta página explica os controles e símbolos recorrentes usados ​​no BirdNE
 | :material-help-circle-outline: **Ajuda** | Rodapé inicial, cabeçalho Explorar, painel de pesquisa, barra de ferramentas de revisão da sessão | Abre a Ajuda ou uma planilha de ajuda específica da tela. |
 | :material-information-outline: **Informações / Sobre** | Rodapé inicial, barras de informações, folhas de ajuda | Mostra informações gerais ou contexto resumido. |
 | :material-seta-esquerda: **Voltar** | Modo ao vivo | Retorna à tela anterior. |
-| :material-aberto-em-novo: **Aberto externo** | Sobre a tela, links de documentação | Abre uma página externa, como o Guia do usuário on-line. |
+| :material-aberto-em-novo: **Aberto externo** | Sobre a tela, links de documentação | Abre uma página externa, como o Guia de uso on-line. |
 | :material-volunteer-activism: **Doar** | Tela Sobre | Abre a página de doações do BirdNET. |
 
 ## Símbolos de clima

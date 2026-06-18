@@ -1,4 +1,4 @@
-# Guida per l'utente
+# Guida all'uso
 
 Questa guida spiega BirdNET Live come strumento per il flusso di lavoro sul campo: cosa fa ciascuna schermata, cosa significano le icone ricorrenti e come le impostazioni modificano il comportamento dell'app.
 
