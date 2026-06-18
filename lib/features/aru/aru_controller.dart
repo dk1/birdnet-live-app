@@ -131,7 +131,6 @@ class AruController {
       mode: samplingModeFromString(session.aruMetadata!.samplingMode),
       topN: session.aruMetadata!.topNPerSpecies,
       scopeKeyFor: _samplingScopeKeyFor,
-      timeBucketFor: _samplingTimeBucketFor,
     );
 
     _normalizeRecoveredCycles(now ?? _now());
@@ -177,7 +176,6 @@ class AruController {
         mode: samplingModeFromString(metadata.samplingMode),
         topN: metadata.topNPerSpecies,
         scopeKeyFor: _samplingScopeKeyFor,
-        timeBucketFor: _samplingTimeBucketFor,
       );
       await _persist();
       await evaluate(now: _now());
@@ -287,13 +285,20 @@ class AruController {
     DetectionRecord? existing,
   ) async {
     var audioClipPath = existing?.audioClipPath ?? record.audioClipPath;
+    final isNew = existing == null;
     final closesNow =
         record.endTimestamp != null && existing?.endTimestamp == null;
     final mode = recordingModeFromString(
       session.aruMetadata?.recordingMode ?? RecordingMode.off.name,
     );
 
-    if (closesNow &&
+    // Save the detection clip the moment the species first appears, while the
+    // analyzed audio is still fresh in the ring buffer — matching how Live and
+    // Survey capture clips. Saving at close time (after the species had already
+    // disappeared) grabbed unrelated, later audio, producing clips that did not
+    // contain the detected species; the cycle's recording could also have
+    // stopped by then, yielding no clip at all.
+    if (isNew &&
         mode == RecordingMode.detectionsOnly &&
         audioClipPath == null) {
       audioClipPath = await _saveDetectionClip?.call(session, record);
@@ -611,19 +616,6 @@ class AruController {
       return 'session:${sessionId}_cycle_${_cycleFor(record)?.index ?? _activeCycleIndex ?? 0}';
     }
     return 'session:$sessionId';
-  }
-
-  int _samplingTimeBucketFor(DetectionRecord record) {
-    final metadata = _session?.aruMetadata;
-    final cycle = _cycleFor(record);
-    if (metadata?.eachCycleIsSession == true) {
-      final base = cycle?.plannedStart ?? _activeCycleStart ?? record.timestamp;
-      return record.timestamp.difference(base).inMinutes;
-    }
-    if (cycle != null) return cycle.index;
-
-    final base = metadata?.scheduleStart ?? record.timestamp;
-    return record.timestamp.difference(base).inHours;
   }
 
   bool _shouldDiscardAggregateSession(LiveSession session) {
