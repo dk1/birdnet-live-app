@@ -77,6 +77,8 @@ class AruNotificationService {
   bool _running = false;
   bool _starting = false;
   DateTime? _nextStartAttempt;
+  String? _lastTitle;
+  String? _lastText;
 
   bool get isRunning => _running;
   static String get notificationTitle => _notificationTitle;
@@ -158,6 +160,8 @@ class AruNotificationService {
       );
       if (result is ServiceRequestSuccess) {
         _running = true;
+        _lastTitle = title;
+        _lastText = text;
         _nextStartAttempt = null;
         await _updateNativeNotificationActions(title: title, text: text);
         debugPrint('[AruNotification] started');
@@ -177,7 +181,7 @@ class AruNotificationService {
 
   Future<void> update({required String title, required String text}) async {
     if (!_running) return;
-    _applyLocalizedStrings(await _loadAppLocalizations());
+    if (_lastTitle == title && _lastText == text) return;
     await FlutterForegroundTask.updateService(
       notificationTitle: title,
       notificationText: text,
@@ -187,14 +191,22 @@ class AruNotificationService {
       ),
     );
     await _updateNativeNotificationActions(title: title, text: text);
+    _lastTitle = title;
+    _lastText = text;
   }
 
   Future<void> stop() async {
     await FlutterForegroundTask.stopService();
     _running = false;
+    _lastTitle = null;
+    _lastText = null;
     _nextStartAttempt = null;
     ForegroundServiceGuard.release(ForegroundServiceOwner.aru);
     debugPrint('[AruNotification] stopped');
+  }
+
+  static void updateLocalizedStrings(AppLocalizations l10n) {
+    _applyLocalizedStrings(l10n);
   }
 
   static Future<String?> takePendingNativeAction() async {

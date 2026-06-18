@@ -13,6 +13,7 @@ abstract final class AruDefaults {
   static const Duration defaultCycleDuration = Duration(minutes: 10);
   static const Duration defaultRepeatInterval = Duration(hours: 1);
   static const int defaultMaxCycles = 12;
+  static const double defaultInferenceRateHz = 0.33;
 
   /// Battery percentage at or below which ARU pauses recording cycles (the
   /// deployment keeps running and resumes once the battery recovers to

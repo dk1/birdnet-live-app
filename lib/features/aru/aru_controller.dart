@@ -194,10 +194,13 @@ class AruController {
   /// controller stays in a non-recording state until the next window. The
   /// decision is made once per window — a window already entered or skipped is
   /// never re-recorded even if the battery recovers mid-window.
-  Future<void> evaluate({DateTime? now, bool recordingSuppressed = false}) async {
+  Future<bool> evaluate({
+    DateTime? now,
+    bool recordingSuppressed = false,
+  }) async {
     if (_state == AruControllerState.completed ||
         _state == AruControllerState.stopping) {
-      return;
+      return false;
     }
 
     final session = _requireSession();
@@ -208,14 +211,15 @@ class AruController {
 
     final evalTime = now ?? _now();
     final snapshot = calculator.snapshotAt(evalTime);
+    var changed = false;
     switch (snapshot.status) {
       case AruScheduleStatus.notStarted:
       case AruScheduleStatus.waiting:
-        await _leaveActiveCycle(
+        changed |= await _leaveActiveCycle(
           status: AruCycleStatus.completed,
           endedAt: evalTime,
         );
-        _state = AruControllerState.waiting;
+        changed |= _setState(AruControllerState.waiting);
         break;
       case AruScheduleStatus.recording:
         final window = snapshot.currentWindow!;
@@ -227,30 +231,34 @@ class AruController {
         if (alreadyDecided) {
           // This window was already finalized (recorded or skipped); do not
           // re-enter it. Wait for the next scheduled window.
-          await _leaveActiveCycle(
+          changed |= await _leaveActiveCycle(
             status: AruCycleStatus.completed,
             endedAt: evalTime,
           );
-          _state = AruControllerState.waiting;
+          changed |= _setState(AruControllerState.waiting);
         } else if (recordingSuppressed) {
-          await _skipCycle(window, evalTime);
-          _state = AruControllerState.waiting;
+          changed |= await _skipCycle(window, evalTime);
+          changed |= _setState(AruControllerState.waiting);
         } else {
-          await _enterCycle(window);
-          _state = AruControllerState.recording;
+          changed |= await _enterCycle(window);
+          changed |= _setState(AruControllerState.recording);
         }
         break;
       case AruScheduleStatus.completed:
-        await _leaveActiveCycle(
+        changed |= await _leaveActiveCycle(
           status: AruCycleStatus.completed,
           endedAt: evalTime,
         );
-        session.endTime = evalTime;
-        _state = AruControllerState.completed;
+        if (session.endTime != evalTime) {
+          session.endTime = evalTime;
+          changed = true;
+        }
+        changed |= _setState(AruControllerState.completed);
         break;
     }
 
-    await _persist();
+    if (changed) await _persist();
+    return changed;
   }
 
   Future<void> syncDetections(List<DetectionRecord> records) async {
@@ -430,11 +438,17 @@ class AruController {
     return session;
   }
 
-  Future<void> _enterCycle(AruCycleWindow window) async {
-    final session = _requireSession();
-    if (_activeCycleIndex == window.index) return;
+  bool _setState(AruControllerState state) {
+    if (_state == state) return false;
+    _state = state;
+    return true;
+  }
 
-    await _leaveActiveCycle(
+  Future<bool> _enterCycle(AruCycleWindow window) async {
+    final session = _requireSession();
+    if (_activeCycleIndex == window.index) return false;
+
+    var changed = await _leaveActiveCycle(
       status: AruCycleStatus.completed,
       endedAt: window.start,
     );
@@ -442,6 +456,7 @@ class AruController {
     _activeCycleIndex = window.index;
     _activeCycleStart = window.start;
     session.segments.add(SessionSegment(startTime: window.start));
+    changed = true;
     final recordingMode = recordingModeFromString(
       session.aruMetadata?.recordingMode ?? RecordingMode.off.name,
     );
@@ -459,18 +474,20 @@ class AruController {
         recordingPath: recordingPath,
       ),
     );
+    return changed;
   }
 
   /// Skip a scheduled recording window because recording is currently
   /// suppressed (low battery). Finalizes any in-progress cycle as partial and
   /// records the window as [AruCycleStatus.skipped] without starting capture or
   /// inference or producing a per-cycle session.
-  Future<void> _skipCycle(AruCycleWindow window, DateTime now) async {
+  Future<bool> _skipCycle(AruCycleWindow window, DateTime now) async {
     final session = _session;
-    if (session == null) return;
+    if (session == null) return false;
 
+    var changed = false;
     if (_activeCycleIndex != null) {
-      await _leaveActiveCycle(
+      changed |= await _leaveActiveCycle(
         status: AruCycleStatus.partial,
         endedAt: now,
       );
@@ -485,17 +502,19 @@ class AruController {
           status: AruCycleStatus.skipped,
         ),
       );
+      changed = true;
     }
+    return changed;
   }
 
-  Future<void> _leaveActiveCycle({
+  Future<bool> _leaveActiveCycle({
     required AruCycleStatus status,
     required DateTime endedAt,
   }) async {
     final session = _session;
     final index = _activeCycleIndex;
     final startedAt = _activeCycleStart;
-    if (session == null || index == null || startedAt == null) return;
+    if (session == null || index == null || startedAt == null) return false;
 
     final existing = _cycleAt(index);
     final effectiveEnd =
@@ -586,6 +605,7 @@ class AruController {
 
     _activeCycleIndex = null;
     _activeCycleStart = null;
+    return true;
   }
 
   AruCycleMetadata? _cycleAt(int index) {
