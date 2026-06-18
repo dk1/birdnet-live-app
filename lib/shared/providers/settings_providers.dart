@@ -352,6 +352,17 @@ final showSciNamesProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
   return BoolSettingNotifier(prefs, PrefKeys.showSciNames, true);
 });
 
+/// Whether to show the playback overlay (clip player sheet) in session review (default true).
+final sessionReviewPlaybackOverlayProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(
+        prefs,
+        PrefKeys.sessionReviewPlaybackOverlay,
+        true,
+      );
+    });
+
 /// Timestamp display mode: `'relative'` (session-relative `MM:SS`) or
 /// `'absolute'` (local clock `HH:mm:ss`).  Default `'relative'`.
 ///
@@ -435,12 +446,50 @@ final pointCountDurationProvider =
       return IntSettingNotifier(prefs, PrefKeys.pointCountDuration, 5);
     });
 
-/// Last used observer name in Point Count (persisted for convenience).
+/// Last used observer name in Point Count (shared across field modes).
 final pointCountLastObserverProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return StringSettingNotifier(prefs, PrefKeys.pointCountLastObserver, '');
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.lastObserver,
+        _legacyLastObserver(prefs),
+      );
     });
+
+/// Last used observer name across field-session modes.
+final lastObserverProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.lastObserver,
+        _legacyLastObserver(prefs),
+      );
+    });
+
+/// Last used ARU/station ID for fixed-site deployments.
+final aruLastStationIdProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return StringSettingNotifier(prefs, PrefKeys.aruLastStationId, '');
+    });
+
+String _legacyLastObserver(SharedPreferences prefs) {
+  final surveyObserver = prefs.getString(PrefKeys.legacySurveyLastObserver);
+  if (surveyObserver != null && surveyObserver.trim().isNotEmpty) {
+    return surveyObserver;
+  }
+
+  final pointCountObserver = prefs.getString(
+    PrefKeys.legacyPointCountLastObserver,
+  );
+  if (pointCountObserver != null && pointCountObserver.trim().isNotEmpty) {
+    return pointCountObserver;
+  }
+
+  return '';
+}
 
 // ---------------------------------------------------------------------------
 // Survey Mode
@@ -512,11 +561,15 @@ final surveyTopNPerSpeciesProvider =
       return IntSettingNotifier(prefs, PrefKeys.surveyTopNPerSpecies, 10);
     });
 
-/// Last used observer name (persisted for convenience).
+/// Last used observer name (shared across field modes).
 final surveyLastObserverProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return StringSettingNotifier(prefs, PrefKeys.surveyLastObserver, '');
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.lastObserver,
+        _legacyLastObserver(prefs),
+      );
     });
 
 /// Last used transect ID (persisted for convenience).

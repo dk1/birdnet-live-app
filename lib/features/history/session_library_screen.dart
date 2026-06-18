@@ -22,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/utils/app_icons.dart';
+import '../../shared/utils/locale_time_format.dart';
 import '../../shared/utils/session_type_visuals.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
@@ -30,6 +31,7 @@ import '../../shared/widgets/empty_view.dart';
 import '../../shared/widgets/error_view.dart';
 import '../../shared/widgets/loading_view.dart';
 import '../../shared/widgets/stat_chip.dart';
+import '../aru/aru_setup_screen.dart';
 import '../explore/explore_providers.dart';
 import '../file_analysis/file_analysis_screen.dart';
 import '../live/live_providers.dart';
@@ -288,15 +290,23 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                           (SessionType.pointCount, l10n.sessionTypePointCount),
                           (SessionType.fileUpload, l10n.sessionTypeFileUpload),
                           (SessionType.survey, l10n.sessionTypeSurvey),
+                          (
+                            SessionType.batchAnalysis,
+                            l10n.sessionTypeBatchAnalysis,
+                          ),
+                          (SessionType.aru, l10n.sessionTypeAru),
                         ],
-                        onToggle:
-                            (t) => update(() {
-                              if (!_typeFilters.add(t)) _typeFilters.remove(t);
-                            }),
+                        onToggle: (t) {
+                          if (!_typeFilters.add(t)) _typeFilters.remove(t);
+                          update(() {});
+                        },
                         onClear:
                             _typeFilters.isEmpty
                                 ? null
-                                : () => update(_typeFilters.clear),
+                                : () {
+                                    _typeFilters.clear();
+                                    update(() {});
+                                  },
                         clearLabel: l10n.exploreFilterAll,
                       ),
                     ],
@@ -622,9 +632,9 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                     final l10n = AppLocalizations.of(context)!;
                     final confirmed = await confirmDestructive(
                       context,
-                      title: l10n.sessionDiscardTitle,
+                      title: l10n.tooltipDeleteSession,
                       body: l10n.sessionDiscardMessage,
-                      confirmLabel: l10n.sessionDiscard,
+                      confirmLabel: l10n.tooltipDeleteSession,
                       cancelLabel: l10n.cancel,
                     );
                     if (!confirmed) return false;
@@ -682,8 +692,10 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       SessionType.fileUpload => MaterialPageRoute<void>(
         builder: (_) => const FileAnalysisScreen(),
       ),
-      SessionType.batchAnalysis ||
-      SessionType.aru => throw UnsupportedError('Coming soon'),
+      SessionType.aru => MaterialPageRoute<void>(
+        builder: (_) => const AruSetupScreen(),
+      ),
+      SessionType.batchAnalysis => throw UnsupportedError('Coming soon'),
     };
     navigator.pushReplacement(route);
   }
@@ -714,6 +726,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         type: SessionType.fileUpload,
         label: l10n.fileAnalysisMode,
         description: l10n.fileAnalysisModeDescription,
+      ),
+      _ModeOption(
+        type: SessionType.aru,
+        label: l10n.aruMode,
+        description: l10n.aruModeDescription,
       ),
     ];
 
@@ -772,9 +789,9 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await confirmDestructive(
       context,
-      title: l10n.sessionDiscardTitle,
+      title: l10n.tooltipDeleteSession,
       body: l10n.sessionDiscardMessage,
-      confirmLabel: l10n.sessionDiscard,
+      confirmLabel: l10n.tooltipDeleteSession,
       cancelLabel: l10n.cancel,
     );
     if (!confirmed) return;
@@ -965,8 +982,13 @@ class _SessionTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final dateStr = DateFormat.yMMMd().format(session.startTime.toLocal());
-    final timeStr = DateFormat.jm().format(session.startTime.toLocal());
+    final timeStr = formatLocaleTime(
+      session.startTime,
+      l10n.localeName,
+      alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
+    );
 
     final duration = session.duration;
     final speciesCount = session.uniqueSpeciesCount;

@@ -18,6 +18,7 @@ abstract final class AppIcons {
   static const IconData addRounded = Symbols.add_rounded;
   static const IconData air = Symbols.air;
   static const IconData airRounded = Symbols.air_rounded;
+  static const IconData airplaneTicket = Symbols.airplane_ticket;
   static const IconData arrowBackRounded = Symbols.arrow_back_rounded;
   static const IconData arrowDownward = Symbols.arrow_downward;
   static const IconData arrowDropUpRounded = Symbols.arrow_drop_up_rounded;
@@ -50,6 +51,7 @@ abstract final class AppIcons {
   static const IconData cloudy = Symbols.cloudy;
   static const IconData code = Symbols.code;
   static const IconData contentCut = Symbols.content_cut;
+  static const IconData darkMode = Symbols.dark_mode;
   static const IconData deleteOutline = Symbols.delete;
   static const IconData deleteOutlineRounded = Symbols.delete_outline_rounded;
   static const IconData deleteSweep = Symbols.delete_sweep;
@@ -119,6 +121,7 @@ abstract final class AppIcons {
   static const IconData notificationsActiveRounded =
       Symbols.notifications_active_rounded;
   static const IconData openInNew = Symbols.open_in_new;
+  static const IconData parkRounded = Symbols.park_rounded;
   static const IconData pause = Symbols.pause;
   static const IconData pauseRounded = Symbols.pause_rounded;
   static const IconData partlyCloudyDay = Symbols.partly_cloudy_day;

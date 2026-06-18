@@ -12,7 +12,7 @@ Auf dieser Seite werden die wiederkehrenden Steuerelemente und Symbole erläuter
 | :material-help-circle-outline: **Hilfe** | Start-Fußzeile, Kopfzeile „Erkunden“, Umfrage-Dashboard, Symbolleiste „Sitzungsüberprüfung“ | Öffnet die Hilfe oder ein bildschirmspezifisches Hilfeblatt. |
 | :material-information-outline: **Info / Über** | Start-Fußzeile, Infoleisten, Hilfeblätter | Zeigt allgemeine Informationen oder einen zusammenfassenden Kontext an. |
 | :material-arrow-left: **Zurück** | Live-Modus | Kehrt zum vorherigen Bildschirm zurück. |
-| :material-open-in-new: **Extern öffnen** | Über Bildschirm, Dokumentationslinks | Öffnet eine externe Seite, beispielsweise das Online-Benutzerhandbuch. |
+| :material-open-in-new: **Extern öffnen** | Über Bildschirm, Dokumentationslinks | Öffnet eine externe Seite, beispielsweise das Online-Benutzungshandbuch. |
 | :material-volunteer-activism: **Spenden** | Über-Bildschirm | Öffnet die BirdNET-Spendenseite. |
 
 ## Wettersymbole
@@ -100,4 +100,4 @@ Das Umfrage-Dashboard verwendet:
 
 ## Im Zweifelsfall
 
-Wenn Sie nicht sicher sind, was ein Steuerelement bewirkt, öffnen Sie das nächstgelegene Hilfeblatt in der App oder sehen Sie sich die Workflow-Seite für diesen Bildschirm in diesem Benutzerhandbuch an.
+Wenn Sie nicht sicher sind, was ein Steuerelement bewirkt, öffnen Sie das nächstgelegene Hilfeblatt in der App oder sehen Sie sich die Workflow-Seite für diesen Bildschirm in diesem Benutzungshandbuch an.

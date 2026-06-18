@@ -44,6 +44,15 @@ void main() {
         'confidenceThreshold': 50,
         'inferenceRate': 2.0,
         'speciesFilterMode': 'geoMerge',
+        'recordingMode': 'detectionsOnly',
+        'recordingFormat': 'flac',
+        'detectionSamplingMode': 'smart',
+        'topNPerSpecies': 7,
+        'gpsIntervalSeconds': 15,
+        'maxDurationHours': 4,
+        'targetDurationSeconds': 600,
+        'autoStopBatteryPercent': 25,
+        'backgroundGps': true,
       };
       final settings = SessionSettings.fromJson(json);
 
@@ -51,6 +60,15 @@ void main() {
       expect(settings.confidenceThreshold, 50);
       expect(settings.inferenceRate, 2.0);
       expect(settings.speciesFilterMode, 'geoMerge');
+      expect(settings.recordingMode, 'detectionsOnly');
+      expect(settings.recordingFormat, 'flac');
+      expect(settings.detectionSamplingMode, 'smart');
+      expect(settings.topNPerSpecies, 7);
+      expect(settings.gpsIntervalSeconds, 15);
+      expect(settings.maxDurationHours, 4);
+      expect(settings.targetDurationSeconds, 600);
+      expect(settings.autoStopBatteryPercent, 25);
+      expect(settings.backgroundGps, isTrue);
     });
 
     test('fromJson uses defaults for missing fields', () {
@@ -68,6 +86,15 @@ void main() {
         confidenceThreshold: 75,
         inferenceRate: 0.5,
         speciesFilterMode: 'customList',
+        recordingMode: 'full',
+        recordingFormat: 'wav',
+        detectionSamplingMode: 'topN',
+        topNPerSpecies: 5,
+        gpsIntervalSeconds: 30,
+        maxDurationHours: 8,
+        targetDurationSeconds: 300,
+        autoStopBatteryPercent: 10,
+        backgroundGps: false,
       );
       final json = settings.toJson();
       final roundTripped = SessionSettings.fromJson(json);
@@ -76,6 +103,15 @@ void main() {
       expect(roundTripped.confidenceThreshold, 75);
       expect(roundTripped.inferenceRate, 0.5);
       expect(roundTripped.speciesFilterMode, 'customList');
+      expect(roundTripped.recordingMode, 'full');
+      expect(roundTripped.recordingFormat, 'wav');
+      expect(roundTripped.detectionSamplingMode, 'topN');
+      expect(roundTripped.topNPerSpecies, 5);
+      expect(roundTripped.gpsIntervalSeconds, 30);
+      expect(roundTripped.maxDurationHours, 8);
+      expect(roundTripped.targetDurationSeconds, 300);
+      expect(roundTripped.autoStopBatteryPercent, 10);
+      expect(roundTripped.backgroundGps, isFalse);
     });
   });
 

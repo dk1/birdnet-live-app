@@ -223,6 +223,20 @@ void main() {
       // Should not throw.
       await repo.delete('nonexistent');
     });
+
+    test('deleteMetadataOnly keeps associated recording directory', () async {
+      await repo.save(makeSession(id: 'aru-1'));
+      final recordingsDir = Directory(
+        '${tempDir.parent.path}/recordings/aru-1',
+      );
+      await recordingsDir.create(recursive: true);
+      await File('${recordingsDir.path}/clip.flac').writeAsString('audio');
+
+      await repo.deleteMetadataOnly('aru-1');
+
+      expect(await repo.load('aru-1'), isNull);
+      expect(await recordingsDir.exists(), isTrue);
+    });
   });
 
   // ── deleteAll ────────────────────────────────────────────────────────

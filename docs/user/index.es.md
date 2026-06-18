@@ -1,4 +1,4 @@
-# Guía del usuario
+# Guía de uso
 
 Esta guía explica BirdNET Live como una herramienta de flujo de trabajo de campo: qué hace cada pantalla, qué significan los íconos recurrentes y cómo la configuración cambia el comportamiento de la aplicación.
 
@@ -54,7 +54,7 @@ Procesar y analizar varios archivos de audio en lote. (Próximamente)
 
 ### [Modo ARU](aru-mode.md)
 
-Convierta su dispositivo en una unidad de grabación autónoma. (Próximamente)
+Cree una sesión de despliegue ARU programada, grabe audio completo de ciclo o clips de detección retenidos, ejecute inferencia en vivo durante los ciclos activos y siga los ciclos de grabación planificados.
 
 ## Referencia
 

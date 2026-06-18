@@ -1,4 +1,4 @@
-# Guida per l'utente
+# Guida all'uso
 
 Questa guida spiega BirdNET Live come strumento per il flusso di lavoro sul campo: cosa fa ciascuna schermata, cosa significano le icone ricorrenti e come le impostazioni modificano il comportamento dell'app.
 
@@ -54,7 +54,7 @@ Elaborare e analizzare più file audio in batch. (Prossimamente)
 
 ### [Modalità ARU](aru-mode.md)
 
-Trasforma il tuo dispositivo in un'unità di registrazione autonoma. (Prossimamente)
+Crea una Session ARU programmata, registra l'audio completo dei cicli o clip di rilevamento conservate, esegui inferenza live durante i cicli attivi e segui i cicli di registrazione pianificati.
 
 ## Riferimento
 

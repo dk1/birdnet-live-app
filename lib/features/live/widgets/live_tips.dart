@@ -199,6 +199,9 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
     // "Listening…" headline above it.
     final faint = theme.colorScheme.onSurface.withAlpha(170);
     final fainter = theme.colorScheme.onSurface.withAlpha(145);
+    final textScale =
+        MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.4).toDouble();
+    final tipHeight = 140.0 + ((textScale - 1.0) * 70.0);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -217,11 +220,11 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
             onTap: _next,
             borderRadius: BorderRadius.circular(12),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+              constraints: const BoxConstraints(maxWidth: 460),
               // Fixed height so the "Listening…" header above doesn't
               // jump around when tips of different lengths cycle in.
               child: SizedBox(
-                height: 110,
+                height: tipHeight,
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 350),
                   transitionBuilder:
@@ -248,7 +251,7 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
                                   color: faint,
                                   fontWeight: FontWeight.w600,
                                 ),
-                                maxLines: 1,
+                                maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
@@ -257,7 +260,7 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: fainter,
                                 ),
-                                maxLines: 3,
+                                maxLines: 4,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],

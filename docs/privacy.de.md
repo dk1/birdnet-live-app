@@ -26,7 +26,7 @@ BirdNET Live sammelt, überträgt oder teilt **keine** personenbezogenen Daten. 
 | GPS-Koordinaten | Geotagging von Detektionen, Survey-Tracks, Geo-Modell-Vorhersagen | Lokale JSON-Sitzungsdateien |
 | Sitzungs-Metadaten | Sitzungsverlauf, Überprüfung, Export | Lokale JSON-Sitzungsdateien |
 | Wetter-Snapshot (optional) | Einmalige Aufnahme von Temperatur, Niederschlag, Wind, Bewölkung und Wettercode pro Sitzung, wenn **Wetterabfrage erlauben** aktiv ist | Lokale JSON-Sitzungsdateien |
-| App-Einstellungen | Benutzereinstellungen | SharedPreferences |
+| App-Einstellungen | Einstellungen der App | SharedPreferences |
 
 ### Gebündelte Offline-Daten
 

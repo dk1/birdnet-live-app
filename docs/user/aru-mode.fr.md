@@ -1,14 +1,48 @@
 # Mode ARU
 
-!!! note "Prochainement"
-    Cette fonctionnalité est en cours de développement et sera disponible dans une future version.
+!!! note "Implémentation préliminaire"
+    Le mode ARU crée actuellement une Session de déploiement planifiée et récupérable, enregistre les cycles planifiés, exécute l'inférence en direct pendant les cycles actifs, enregistre les clips de détection conservés lorsque ce mode d'enregistrement est sélectionné et affiche des contrôles de notification de premier plan sur Android. Le comportement en arrière-plan sur iOS doit encore être validé sur le terrain.
 
-Le mode ARU (Autonomous Recording Unit) transformera votre appareil mobile en une station d'enregistrement acoustique périodique à long terme (similaire au matériel Swift ou AudioMoth).
+Le mode ARU (Autonomous Recording Unit) est le flux de travail pour les déploiements acoustiques planifiés sur site fixe.
 
-## Fonctionnalités planifiées
+## Flux de configuration actuel
 
-- **Plannings d'enregistrement**: Planifiez des fenêtres d'enregistrement actives (par exemple, "10 minutes toutes les heures" ou "du lever au coucher du soleil").
-- **Capture GPS et météo**: Géolocalisez automatiquement les déploiements et capturez les métadonnées météo locales lors de l'initialisation.
-- **Optimisation de l'énergie**: Instructions et vérifications pour optimiser la durée de vie de la batterie (comme l'activation manuelle du mode Avion) et maintenir un pipeline audio robuste en arrière-plan.
-- **Mesures de stockage**: Calculez et vérifiez les besoins de stockage estimés et la mémoire système disponible avant le déploiement.
-- **Consolidation des sessions**: Regroupez les segments enregistrés soit dans des sessions distinctes, soit dans une seule session parente combinée.
+- **Déploiement et audio** : 
+    - **Métadonnées** : saisissez le nom de déploiement, l'ID ARU/station et le nom de l'observateur.
+    - **Localisation** : renseignez les coordonnées du site à l'aide de l'acquisition GPS automatique, de la saisie manuelle de latitude/longitude ou passez l'étape. La latitude et la longitude sont requises si vous utilisez un planning basé sur la position du soleil.
+    - **Format d'enregistrement** : choisissez entre les formats FLAC (compressé sans perte) et WAV (non compressé).
+    - **Mode d'enregistrement** :
+        - *Complet* : enregistre toute la durée de chaque cycle actif.
+        - *Uniquement détections* : enregistre de courts clips audio autour des chants d'oiseaux détectés. Vous pouvez personnaliser le contexte du clip (ajout de 0 à 5 secondes de tampon audio pré- et post-détection) et choisir la méthode d'échantillonnage (*Tout*, *Top N* ou échantillonnage *Intelligent* afin de limiter l'espace de stockage utilisé).
+        - *Désactivé* : exécute l'inférence en temps réel pendant les cycles et journalise les détections, mais n'enregistre aucun fichier audio.
+- **Planning (Plan)** :
+    - **Durée et répétition** : sélectionnez la durée de chaque cycle d'enregistrement actif et sa fréquence de répétition.
+    - **Fenêtre d'enregistrement (profil nycthéméral)** : choisissez d'enregistrer 24h/24 (*À tout moment*) ou limitez les cycles au *Jour uniquement*, à la *Nuit uniquement* ou à des fenêtres spécifiques *Autour du lever*, *Autour du coucher* ou *Autour du lever et coucher* du soleil. Les fenêtres de lever/coucher du soleil sont calculées dynamiquement selon les coordonnées du déploiement.
+    - **Fin du planning** : choisissez d'arrêter le déploiement manuellement, après un nombre fixe de cycles terminés ou automatiquement à une date et heure données.
+    - **Gestion de la batterie** : définissez un seuil d'arrêt en cas de batterie faible (0-50 %) pour mettre en pause les déploiements et éviter que l'appareil ne s'éteigne complètement. S'il est configuré, vous pouvez définir un seuil de reprise pour relancer automatiquement les cycles d'enregistrement lorsque la batterie remonte (par exemple grâce à une recharge solaire).
+    - **Test** : un cycle de test facultatif d'une minute est activé par défaut pour vérifier l'entrée micro et l'inférence dès le démarrage, sans décompte des cycles programmés.
+    - **Regroupement des Sessions** : configurez s'il faut enregistrer chaque cycle dans une Session distincte (recommandé pour des temps de chargement plus rapides et un affichage modulaire) ou combiner tous les cycles au sein d'une seule Session multisegment.
+- **Prêt** : passez en revue le planning, l'estimation de stockage audio et les contraintes liées au soleil, puis lancez le déploiement.
+
+Au démarrage, une Session `SessionType.aru` est immédiatement enregistrée avec les métadonnées du planning ARU afin que l'état des cycles puisse être récupéré plus tard.
+
+Les exports JSON et ZIP incluent les métadonnées du déploiement ARU. Les exports ZIP regroupent les fichiers d'enregistrement par cycle enregistrés sous `aru_cycles/`.
+
+## Écran de déploiement actif
+
+L'écran ARU actif indique si le déploiement est en attente, en enregistrement ou terminé. Sa mise en page utilise quatre onglets :
+- **État** : affiche l'état actuel du déploiement, le minuteur de cycle actif et une liste des détections en temps réel.
+- **Audio** : affiche un spectrogramme en direct pour vérifier l'entrée audio tout en gardant les détections visibles en dessous.
+- **Planning** : liste les 10 prochains horaires de cycle programmés, avec les indications d'alignement lever/coucher de soleil si un profil nycthéméral est actif.
+- **Résumé** : résume le temps écoulé, la durée totale de l'audio enregistré et les statistiques de détection.
+
+Sur Android, les déploiements actifs affichent une notification de premier plan avec les actions Arrêter et Ouvrir.
+
+L'arrêt d'un déploiement ouvre Révision de session. Si les cycles ont été regroupés dans une seule Session, cette Session combinée s'ouvre ; s'ils ont été enregistrés séparément, la dernière Session de cycle terminée s'ouvre.
+
+Sur iOS, cette implémentation préliminaire doit être traitée comme un flux de travail de premier plan jusqu'à ce que le comportement d'audio/arrière-plan programmé ait été validé sur iOS.
+
+## Toujours prévu
+
+- Validation du comportement en arrière-plan sur iOS.
+- Prise en charge complète de la lecture et du spectrogramme dans Session Review pour les enregistrements ARU segmentés.

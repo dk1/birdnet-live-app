@@ -144,6 +144,10 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     _pageController.dispose();
     _latController.dispose();
     _lonController.dispose();
+
+    // Clear state listener on the long-lived controller.
+    ref.read(fileAnalysisControllerProvider).onStateChanged = null;
+
     super.dispose();
   }
 

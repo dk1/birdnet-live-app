@@ -1,7 +1,14 @@
 package com.birdnet.birdnet_live
 
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
 import android.view.WindowManager
+import androidx.core.app.NotificationCompat
 import com.google.android.play.core.assetpacks.AssetPackManagerFactory
+import com.pravera.flutter_foreground_task.service.ForegroundService
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -13,8 +20,26 @@ class MainActivity: FlutterActivity() {
     private val WAKELOCK_CHANNEL = "com.birdnet/wakelock"
     private val AUDIO_DECODER_CHANNEL = "com.birdnet/audio_decoder"
     private val ASSET_PACK_CHANNEL = "com.birdnet/asset_pack"
+    private val ARU_NOTIFICATION_CHANNEL = "com.birdnet/aru_notification"
+    private val ARU_NOTIFICATION_INTENTS_CHANNEL = "com.birdnet/aru_notification_intents"
+    private val ARU_NOTIFICATION_ACTION_EXTRA = "com.birdnet.aru_notification_action"
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var activeDecodeJob: Job? = null
+    private var pendingAruNotificationAction: String? = null
+    private var aruNotificationIntentChannel: MethodChannel? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        captureAruNotificationAction(intent)
+        ForegroundService.handleNotificationContentIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        captureAruNotificationAction(intent)
+        ForegroundService.handleNotificationContentIntent(intent)
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -31,6 +56,49 @@ class MainActivity: FlutterActivity() {
                     result.success(null)
                 }
                 else -> result.notImplemented()
+            }
+        }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ARU_NOTIFICATION_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "update" -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val args = call.arguments as? Map<String, Any?>
+                    if (args == null) {
+                        result.error("INVALID_ARG", "Missing notification arguments", null)
+                        return@setMethodCallHandler
+                    }
+                    try {
+                        updateAruNotification(args)
+                        result.success(null)
+                    } catch (e: Throwable) {
+                        result.error("NOTIFICATION_ERROR", e.message ?: "Notification update failed", null)
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+
+        aruNotificationIntentChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            ARU_NOTIFICATION_INTENTS_CHANNEL
+        ).also { channel ->
+            channel.setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "takePendingAction" -> {
+                        val action = pendingAruNotificationAction
+                        pendingAruNotificationAction = null
+                        result.success(action)
+                    }
+                    "clearPendingAction" -> {
+                        val action = call.arguments as? String
+                        if (pendingAruNotificationAction == action) {
+                            pendingAruNotificationAction = null
+                        }
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
             }
         }
 
@@ -232,7 +300,77 @@ class MainActivity: FlutterActivity() {
     }
 
     override fun onDestroy() {
+        aruNotificationIntentChannel = null
         scope.cancel()
         super.onDestroy()
+    }
+
+    private fun captureAruNotificationAction(intent: Intent?) {
+        val action = intent?.getStringExtra(ARU_NOTIFICATION_ACTION_EXTRA) ?: return
+        pendingAruNotificationAction = action
+        aruNotificationIntentChannel?.invokeMethod("onNotificationAction", action)
+        intent.removeExtra(ARU_NOTIFICATION_ACTION_EXTRA)
+    }
+
+    private fun updateAruNotification(args: Map<String, Any?>) {
+        val serviceId = (args["serviceId"] as Number).toInt()
+        val channelId = args["channelId"] as String
+        val title = args["title"] as String
+        val text = args["text"] as String
+        val stopText = args["stopText"] as String
+        val openText = args["openText"] as String
+        val stopAction = args["stopAction"] as String
+        val openAction = args["openAction"] as String
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setSound(null)
+            .setVibrate(longArrayOf(0L))
+            .setContentIntent(
+                buildAruNotificationPendingIntent(openAction, 0)
+            )
+            .addAction(
+                0,
+                stopText,
+                buildAruNotificationPendingIntent(stopAction, 1)
+            )
+            .addAction(
+                0,
+                openText,
+                buildAruNotificationPendingIntent(openAction, 2)
+            )
+            .build()
+
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(serviceId, notification)
+    }
+
+    private fun buildAruNotificationPendingIntent(
+        action: String,
+        requestCode: Int
+    ): PendingIntent {
+        val launchIntent = packageManager
+            .getLaunchIntentForPackage(packageName)
+            ?: Intent(this, MainActivity::class.java)
+
+        launchIntent.apply {
+            addFlags(
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+            )
+            putExtra(ARU_NOTIFICATION_ACTION_EXTRA, action)
+        }
+
+        var flags = PendingIntent.FLAG_UPDATE_CURRENT
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            flags = flags or PendingIntent.FLAG_IMMUTABLE
+        }
+        return PendingIntent.getActivity(this, requestCode, launchIntent, flags)
     }
 }

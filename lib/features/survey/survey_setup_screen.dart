@@ -87,7 +87,7 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _observerController.text = ref.read(surveyLastObserverProvider);
+    _observerController.text = ref.read(lastObserverProvider);
     _transectController.text = ref.read(surveyLastTransectIdProvider);
     // Reuse a recent fix if one is still warm — closing and reopening the
     // wizard within a couple of minutes shouldn't burn another 10s on the
@@ -284,7 +284,7 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
     final observer = _observerController.text.trim();
     final transect = _transectController.text.trim();
     if (observer.isNotEmpty) {
-      ref.read(surveyLastObserverProvider.notifier).set(observer);
+      ref.read(lastObserverProvider.notifier).set(observer);
     }
     if (transect.isNotEmpty) {
       ref.read(surveyLastTransectIdProvider.notifier).set(transect);

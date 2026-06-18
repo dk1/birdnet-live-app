@@ -3,7 +3,7 @@
 !!! note "Prochainement"
     Cette fonctionnalité est en cours de développement et sera disponible dans une future version.
 
-L'analyse par lots permettra aux utilisateurs de traiter et d'analyser plusieurs fichiers audio par lots (par exemple, à partir d'une carte SD connectée via un lecteur USB) en utilisant des paramètres d'analyse personnalisés.
+L'analyse par lots permettra de traiter et d'analyser plusieurs fichiers audio par lots (par exemple, à partir d'une carte SD connectée via un lecteur USB) en utilisant des paramètres d'analyse personnalisés.
 
 ## Fonctionnalités planifiées
 

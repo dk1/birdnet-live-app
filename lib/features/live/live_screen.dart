@@ -55,6 +55,7 @@ class LiveScreen extends ConsumerStatefulWidget {
 class _LiveScreenState extends ConsumerState<LiveScreen>
     with WidgetsBindingObserver {
   bool _isStarting = false;
+  bool _finalizing = false;
   Timer? _sessionTimer;
   bool _durationWarningShown = false;
   bool _autoStartAttempted = false;
@@ -280,6 +281,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _sessionTimer?.cancel();
+
+    // Clear the state-change callback on the long-lived controller to avoid calling
+    // updates on a defunct/disposed widget state.
+    final controller = ref.read(liveControllerProvider);
+    if (controller.onStateChanged == _onControllerStateChanged) {
+      controller.onStateChanged = null;
+    }
+
     // Ensure screen lock is released when leaving the live screen.
     WakelockService.disable();
     super.dispose();
@@ -371,6 +380,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
   /// Finalize and save the session when leaving the live screen.
   Future<void> _finalizeAndReview() async {
+    if (_finalizing) return;
+    _finalizing = true;
     _sessionTimer?.cancel();
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);

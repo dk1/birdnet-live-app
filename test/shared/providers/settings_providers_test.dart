@@ -149,6 +149,56 @@ void main() {
       expect(container.read(includeAudioProvider), true);
       expect(prefs.getBool('include_audio'), true);
     });
+
+    test(
+      'lastObserverProvider persists shared field-session observer',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+        final container = ProviderContainer(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(lastObserverProvider.notifier).set('Jane Doe');
+
+        expect(container.read(lastObserverProvider), 'Jane Doe');
+        expect(prefs.getString(PrefKeys.lastObserver), 'Jane Doe');
+      },
+    );
+
+    test(
+      'lastObserverProvider falls back to legacy survey observer',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          PrefKeys.legacySurveyLastObserver: 'Survey Person',
+          PrefKeys.legacyPointCountLastObserver: 'Point Count Person',
+        });
+        final prefs = await SharedPreferences.getInstance();
+        final container = ProviderContainer(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        );
+        addTearDown(container.dispose);
+
+        expect(container.read(lastObserverProvider), 'Survey Person');
+      },
+    );
+
+    test(
+      'lastObserverProvider falls back to legacy point count observer',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          PrefKeys.legacyPointCountLastObserver: 'Point Count Person',
+        });
+        final prefs = await SharedPreferences.getInstance();
+        final container = ProviderContainer(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        );
+        addTearDown(container.dispose);
+
+        expect(container.read(lastObserverProvider), 'Point Count Person');
+      },
+    );
   });
 
   group('Privacy setting relationships', () {

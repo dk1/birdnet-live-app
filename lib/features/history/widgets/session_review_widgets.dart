@@ -1326,6 +1326,8 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
       absoluteToRelative: widget.session.absoluteToRelative,
       clipOffset: clipOffsetDur,
       showSeconds: tsShowSeconds,
+      localeName: l10n.localeName,
+      alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
     );
 
     return AnimatedContainer(
@@ -1747,6 +1749,7 @@ class _ClusterRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final tsMode = TimestampDisplayMode.fromString(
       ref.watch(timestampDisplayModeProvider),
     );
@@ -1770,6 +1773,8 @@ class _ClusterRow extends ConsumerWidget {
       absoluteToRelative: session.absoluteToRelative,
       clipOffset: clipOffsetDur,
       showSeconds: tsShowSeconds,
+      localeName: l10n.localeName,
+      alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
     );
     final endStr = formatDetectionTime(
       lastEnd,
@@ -1778,9 +1783,10 @@ class _ClusterRow extends ConsumerWidget {
       absoluteToRelative: session.absoluteToRelative,
       clipOffset: clipOffsetDur,
       showSeconds: tsShowSeconds,
+      localeName: l10n.localeName,
+      alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
     );
     final timeStr = startStr == endStr ? startStr : '$startStr \u2013 $endStr';
-    final l10n = AppLocalizations.of(context)!;
     final confirmed = cluster.records.any((r) => r.isConfirmed);
     // A cluster is "manual" when every record was added by hand. We
     // surface that by replacing the play button with the same edit-note

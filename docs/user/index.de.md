@@ -1,8 +1,8 @@
-# Benutzerhandbuch
+# Benutzungshandbuch
 
 In diesem Handbuch wird BirdNET Live als Feld-Workflow-Tool erläutert: Was jeder Bildschirm bewirkt, was die wiederkehrenden Symbole bedeuten und wie die Einstellungen das Verhalten der App ändern.
 
-Es ist für Ökologen und Vogelvermessungspraktiker geschrieben, die die Feldmethoden bereits kennen und eine klare Karte der App selbst wünschen.
+Es ist für Personen aus Ökologie und Vogelmonitoring geschrieben, die die Feldmethoden bereits kennen und eine klare Karte der App selbst wünschen.
 
 ## Hier beginnen
 
@@ -54,7 +54,7 @@ Mehrere Audiodateien im Batch-Modus analysieren. (Demnächst)
 
 ### [ARU-Modus](aru-mode.md)
 
-Nutzen Sie Ihr Gerät als autonome Aufzeichnungseinheit. (Demnächst)
+Erstellen Sie eine geplante ARU-Einsatz-Session, zeichnen Sie vollständiges Zyklus-Audio oder beibehaltene Erkennungsclips auf, führen Sie während aktiver Zyklen Live-Inferenz aus und verfolgen Sie geplante Aufnahmezyklen.
 
 ## Referenz
 
@@ -71,7 +71,7 @@ Schnelle Antworten zu Offline-Nutzung, Aufnahmeverhalten, Punktanzahl und Leistu
 
 ## Mobiler Tipp
 
-Auf Mobilgeräten ist die Navigationsseitenleiste hinter der Menüschaltfläche in der oberen linken Ecke verborgen. Diese Seite soll der mobile Einstiegspunkt für das gesamte Benutzerhandbuch sein.
+Auf Mobilgeräten ist die Navigationsseitenleiste hinter der Menüschaltfläche in der oberen linken Ecke verborgen. Diese Seite soll der mobile Einstiegspunkt für das gesamte Benutzungshandbuch sein.
 
 ## Weitere Dokumentation
 

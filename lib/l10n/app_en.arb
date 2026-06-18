@@ -441,13 +441,365 @@
   "@aruMode": {
     "description": "Label for ARU mode on the main menu"
   },
-  "aruModeDescription": "Use your device as an acoustic recorder",
+  "aruModeDescription": "Schedule fixed-site recording cycles",
   "@aruModeDescription": {
     "description": "Description for ARU mode on the main menu"
   },
   "comingSoon": "Coming Soon",
   "@comingSoon": {
     "description": "Badge label for unimplemented features"
+  },
+  "aruSetupTitle": "ARU Setup",
+  "@aruSetupTitle": {
+    "description": "Title for the ARU setup wizard"
+  },
+  "aruSetupDetails": "Deployment",
+  "@aruSetupDetails": {
+    "description": "ARU setup step title for deployment details"
+  },
+  "aruSetupSchedule": "Schedule",
+  "@aruSetupSchedule": {
+    "description": "ARU setup step title for schedule settings"
+  },
+  "aruSetupReady": "Ready",
+  "@aruSetupReady": {
+    "description": "ARU setup step title for review"
+  },
+  "aruSetupHelpTitle": "ARU Mode Help",
+  "@aruSetupHelpTitle": {
+    "description": "Title for ARU setup help"
+  },
+  "aruSetupHelpBody": "Use ARU Mode for unattended recordings at a fixed site. The app saves the deployment schedule so it can resume later, records full audio or selected detection clips during scheduled cycles, and identifies species on the device. Android shows a persistent notification while a deployment is active; iOS background behavior still needs field validation.",
+  "@aruSetupHelpBody": {
+    "description": "Help text for the first ARU setup implementation"
+  },
+  "aruSessionGrouping": "Session grouping",
+  "@aruSessionGrouping": {
+    "description": "Label for session grouping setting in ARU parameters"
+  },
+  "aruSessionGroupingAll": "Combined Session",
+  "@aruSessionGroupingAll": {
+    "description": "Option to group all recording cycles into a single session"
+  },
+  "aruSessionGroupingEach": "Per-cycle Session",
+  "@aruSessionGroupingEach": {
+    "description": "Switch title for saving each recording cycle as its own session"
+  },
+  "aruSessionGroupingEachDesc": "One Session per cycle",
+  "@aruSessionGroupingEachDesc": {
+    "description": "Subtitle shown when the per-cycle session switch is on"
+  },
+  "aruSessionGroupingAllDesc": "One combined Session",
+  "@aruSessionGroupingAllDesc": {
+    "description": "Subtitle shown when the per-cycle session switch is off"
+  },
+  "aruDeploymentName": "Project name",
+  "@aruDeploymentName": {
+    "description": "Label for ARU project name field"
+  },
+  "aruStationId": "ARU / station ID",
+  "@aruStationId": {
+    "description": "Label for ARU station id field"
+  },
+  "aruObserverName": "Observer name",
+  "@aruObserverName": {
+    "description": "Label for ARU observer name field"
+  },
+  "aruCycleDuration": "Cycle duration",
+  "@aruCycleDuration": {
+    "description": "Label for ARU cycle duration selector"
+  },
+  "aruRepeatInterval": "Repeat interval",
+  "@aruRepeatInterval": {
+    "description": "Label for ARU repeat interval selector"
+  },
+  "aruMaxCycles": "Number of cycles",
+  "@aruMaxCycles": {
+    "description": "Label for ARU maximum cycle count control"
+  },
+  "aruCycleCount": "{count, plural, =1{1 cycle} other{{count} cycles}}",
+  "@aruCycleCount": {
+    "description": "ARU summary value for a fixed number of deployment cycles",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aruLowBatteryStop": "Pause recording below",
+  "@aruLowBatteryStop": {
+    "description": "Label for the ARU battery level at or below which recording cycles pause"
+  },
+  "aruLowBatteryResume": "Resume recording at",
+  "@aruLowBatteryResume": {
+    "description": "Label for the ARU battery level at or above which recording cycles resume after a low-battery pause"
+  },
+  "aruLowBatteryHint": "Recording cycles pause when the battery falls to the pause level and resume once it charges back to the resume level. The deployment keeps running in between, which is useful with an occasional charge source such as a solar panel.",
+  "@aruLowBatteryHint": {
+    "description": "Explanation for the ARU low-battery pause/resume thresholds"
+  },
+  "aruBatteryPaused": "Paused (low battery)",
+  "@aruBatteryPaused": {
+    "description": "ARU status shown while recording cycles are paused for low battery"
+  },
+  "aruNotificationStats": "{cycles} cycles · {species} species · {detections} detections",
+  "@aruNotificationStats": {
+    "description": "Compact ARU deployment progress shown in the foreground notification",
+    "placeholders": {
+      "cycles": {
+        "type": "int"
+      },
+      "species": {
+        "type": "int"
+      },
+      "detections": {
+        "type": "int"
+      }
+    }
+  },
+  "aruStorageEstimate": "Estimated audio storage",
+  "@aruStorageEstimate": {
+    "description": "Label for ARU storage estimate"
+  },
+  "aruClipStorageEstimateNote": "Clip estimate assumes up to {count} retained clips across 50 species; actual use depends on detections.",
+  "@aruClipStorageEstimateNote": {
+    "description": "ARU storage estimate note for detection-only clip recording",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aruOptionalTestCycle": "Run a one-minute test cycle first",
+  "@aruOptionalTestCycle": {
+    "description": "Label for ARU optional test cycle toggle"
+  },
+  "aruTestRun": "Test run",
+  "@aruTestRun": {
+    "description": "Short label for the immediate one-minute ARU test recording cycle"
+  },
+  "aruTestRunReadyHint": "A one-minute test run will start immediately before the scheduled cycles.",
+  "@aruTestRunReadyHint": {
+    "description": "Ready-screen hint shown when the ARU test run option is enabled"
+  },
+  "aruReadySummary": "Review the deployment before starting. The session is saved immediately so schedule state can be recovered later.",
+  "@aruReadySummary": {
+    "description": "Summary text on ARU ready step"
+  },
+  "aruManualLocationInvalid": "Enter valid manual coordinates before continuing.",
+  "@aruManualLocationInvalid": {
+    "description": "Validation message when ARU manual coordinates are invalid"
+  },
+  "aruGpsFixRequired": "Wait for a GPS fix, refresh location, or switch to Manual/Skip.",
+  "@aruGpsFixRequired": {
+    "description": "Validation message when ARU GPS mode has no fix yet"
+  },
+  "aruPerHourEstimate": "Per hour",
+  "@aruPerHourEstimate": {
+    "description": "Label for ARU storage estimate per hour"
+  },
+  "aruPerDayEstimate": "Per day",
+  "@aruPerDayEstimate": {
+    "description": "Label for ARU storage estimate per day"
+  },
+  "aruReadyReminderAirplane": "Turn on Airplane Mode manually when possible, then re-enable only the connections your deployment needs.",
+  "@aruReadyReminderAirplane": {
+    "description": "ARU readiness reminder about using Airplane Mode"
+  },
+  "aruReadyReminderMount": "Use a stable mount, keep the microphone clear, and shelter the device from direct rain and handling noise.",
+  "@aruReadyReminderMount": {
+    "description": "ARU readiness reminder about mounting and protecting the recorder"
+  },
+  "aruReadyPlatformNote": "Android can keep the deployment active with a persistent notification while waiting between cycles. On iOS, background recording and scheduled wakeups should still be treated as unvalidated.",
+  "@aruReadyPlatformNote": {
+    "description": "ARU readiness note about current platform limitations"
+  },
+  "aruScheduleEnd": "Deployment end",
+  "@aruScheduleEnd": {
+    "description": "Label for how an ARU deployment ends"
+  },
+  "aruScheduleEndManual": "Manual",
+  "@aruScheduleEndManual": {
+    "description": "ARU schedule end option for running until the user stops it"
+  },
+  "aruScheduleEndCycles": "Cycles",
+  "@aruScheduleEndCycles": {
+    "description": "ARU schedule end option for stopping after a fixed number of cycles"
+  },
+  "aruScheduleEndDateTime": "Date & time",
+  "@aruScheduleEndDateTime": {
+    "description": "ARU schedule end option for stopping at a fixed date and time"
+  },
+  "aruScheduleNoLimit": "Until stopped",
+  "@aruScheduleNoLimit": {
+    "description": "ARU summary label for deployments with no fixed end"
+  },
+  "aruRecordingWindow": "Recording window",
+  "@aruRecordingWindow": {
+    "description": "Label for choosing when ARU recording cycles are allowed during the day"
+  },
+  "aruDielAnyTime": "Continuous",
+  "@aruDielAnyTime": {
+    "description": "ARU recording window option with no day/night restriction"
+  },
+  "aruDielDayOnly": "Daylight",
+  "@aruDielDayOnly": {
+    "description": "ARU recording window option for daylight hours"
+  },
+  "aruDielNightOnly": "Night",
+  "@aruDielNightOnly": {
+    "description": "ARU recording window option for night hours"
+  },
+  "aruDielAroundSunrise": "Around sunrise",
+  "@aruDielAroundSunrise": {
+    "description": "ARU recording window option around estimated sunrise"
+  },
+  "aruDielAroundSunset": "Around sunset",
+  "@aruDielAroundSunset": {
+    "description": "ARU recording window option around estimated sunset"
+  },
+  "aruDielAroundSunriseAndSunset": "Around sunrise and sunset",
+  "@aruDielAroundSunriseAndSunset": {
+    "description": "ARU recording window option around estimated sunrise and sunset"
+  },
+  "aruRecordingWindowEstimate": "Records {ranges}",
+  "@aruRecordingWindowEstimate": {
+    "description": "ARU setup estimate of the schedule-aligned recording ranges for the selected recording window",
+    "placeholders": {
+      "ranges": { "type": "String" }
+    }
+  },
+  "aruSunTimesEstimate": "Sunrise {sunrise} · sunset {sunset}",
+  "@aruSunTimesEstimate": {
+    "description": "ARU setup estimate of local sunrise and sunset used for recording windows",
+    "placeholders": {
+      "sunrise": { "type": "String" },
+      "sunset": { "type": "String" }
+    }
+  },
+  "aruStartDeployment": "Start Deployment",
+  "@aruStartDeployment": {
+    "description": "Button label to start ARU deployment"
+  },
+  "aruActiveTitle": "ARU Deployment",
+  "@aruActiveTitle": {
+    "description": "Title for active ARU screen"
+  },
+  "aruTabStatus": "Status",
+  "@aruTabStatus": {
+    "description": "Tab label for the active ARU status dashboard"
+  },
+  "aruTabSpectrogram": "Audio",
+  "@aruTabSpectrogram": {
+    "description": "Short tab label for the active ARU spectrogram dashboard"
+  },
+  "aruTabSchedule": "Schedule",
+  "@aruTabSchedule": {
+    "description": "Short tab label for the active ARU schedule dashboard"
+  },
+  "aruTabSummary": "Summary",
+  "@aruTabSummary": {
+    "description": "Short tab label for the active ARU summary dashboard"
+  },
+  "aruActiveWaiting": "Waiting for next cycle",
+  "@aruActiveWaiting": {
+    "description": "Status text when ARU is waiting"
+  },
+  "aruStatusWaiting": "Waiting",
+  "@aruStatusWaiting": {
+    "description": "Status text when ARU is waiting between cycles"
+  },
+  "aruStatusRecording": "Recording",
+  "@aruStatusRecording": {
+    "description": "Status text when ARU is recording a cycle"
+  },
+  "aruWaitingDetectionsTitle": "Waiting for the next cycle",
+  "@aruWaitingDetectionsTitle": {
+    "description": "Empty-state title for ARU detections while waiting between recording cycles"
+  },
+  "aruWaitingDetectionsBody": "Detections from the next recording cycle will appear here.",
+  "@aruWaitingDetectionsBody": {
+    "description": "Empty-state body for ARU detections while waiting between recording cycles"
+  },
+  "aruHelpStatusIcons": "Status icons show the current audio level, completed cycles, total detections, unique species, active recording state, waiting state, and the optional one-minute test run.",
+  "@aruHelpStatusIcons": {
+    "description": "Help text explaining icons on the active ARU screen"
+  },
+  "aruActiveRecording": "Recording cycle",
+  "@aruActiveRecording": {
+    "description": "Status text when ARU is recording"
+  },
+  "aruActiveCompleted": "Deployment complete",
+  "@aruActiveCompleted": {
+    "description": "Status text when ARU deployment is complete"
+  },
+  "aruNextCycle": "Next cycle",
+  "@aruNextCycle": {
+    "description": "Label for next ARU cycle time"
+  },
+  "aruNextCyclesPreview": "Next 10 cycles",
+  "@aruNextCyclesPreview": {
+    "description": "Heading for the ARU schedule tab showing only the next 10 upcoming cycles"
+  },
+  "aruCompletedCycles": "Completed cycles",
+  "@aruCompletedCycles": {
+    "description": "Label for completed ARU cycles count"
+  },
+  "aruRecordedAudio": "Recorded audio",
+  "@aruRecordedAudio": {
+    "description": "Label for ARU recorded audio duration"
+  },
+  "aruElapsedTime": "Elapsed time",
+  "@aruElapsedTime": {
+    "description": "Label for elapsed wall-clock time on the active ARU summary tab"
+  },
+  "aruSummaryElapsed": "Time",
+  "@aruSummaryElapsed": {
+    "description": "Short label for elapsed time on the compact ARU summary tab"
+  },
+  "aruSummaryAudio": "Audio",
+  "@aruSummaryAudio": {
+    "description": "Short label for recorded audio duration on the compact ARU summary tab"
+  },
+  "aruCyclesShort": "Cycles",
+  "@aruCyclesShort": {
+    "description": "Short label for ARU cycle counts"
+  },
+  "aruCycleProgress": "Cycle progress",
+  "@aruCycleProgress": {
+    "description": "Label for ARU cycle completion progress"
+  },
+  "aruNextIn": "Next in",
+  "@aruNextIn": {
+    "description": "Label for the time remaining until the next ARU cycle"
+  },
+  "aruStopDeployment": "Stop Deployment",
+  "@aruStopDeployment": {
+    "description": "Button label to stop ARU deployment"
+  },
+  "aruStopConfirmTitle": "Stop ARU deployment?",
+  "@aruStopConfirmTitle": {
+    "description": "Title for stop ARU confirmation dialog"
+  },
+  "aruStopConfirmBody": "The current deployment will be finalized and saved.",
+  "@aruStopConfirmBody": {
+    "description": "Body for stop ARU confirmation dialog"
+  },
+  "aruNoActiveDeployment": "No active ARU deployment",
+  "@aruNoActiveDeployment": {
+    "description": "Shown when active ARU screen has no session"
+  },
+  "aruNotificationChannelName": "BirdNET ARU",
+  "@aruNotificationChannelName": {
+    "description": "Android notification channel name for ARU foreground deployments"
+  },
+  "aruNotificationChannelDescription": "Active ARU deployment",
+  "@aruNotificationChannelDescription": {
+    "description": "Android notification channel description for ARU foreground deployments"
+  },
+  "aruNotificationTitle": "ARU Deployment",
+  "@aruNotificationTitle": {
+    "description": "Foreground notification title for active ARU deployments"
   },
   "exploreMode": "Explore",
   "@exploreMode": {
@@ -1288,6 +1640,14 @@
   "@settingsShowSciNamesDescription": {
     "description": "Subtitle for the show scientific names toggle"
   },
+  "settingsPlaybackOverlay": "Playback overlay in review",
+  "@settingsPlaybackOverlay": {
+    "description": "Toggle to show a modal player sheet with a spectrogram when reviewing clips"
+  },
+  "settingsPlaybackOverlayDescription": "Trigger a modal player with a spectrogram preview and detailed actions when reviewing audio clips",
+  "@settingsPlaybackOverlayDescription": {
+    "description": "Subtitle for the playback overlay toggle"
+  },
   "settingsTimestampDisplayMode": "Timestamp display",
   "@settingsTimestampDisplayMode": {
     "description": "Title for the timestamp display mode setting"
@@ -1708,6 +2068,10 @@
   "@settingsHelpShowSciNames": {
     "description": "Help text for the show scientific names setting"
   },
+  "settingsHelpPlaybackOverlay": "When enabled, tapping a detection plays its clip in a dedicated modal overlay with transport controls and a spectrogram preview. When disabled, playback is triggered in the background. Active by default for sessions that have clips only and don't show a spectrogram.",
+  "@settingsHelpPlaybackOverlay": {
+    "description": "Help text for the playback overlay setting"
+  },
   "settingsHelpTimestampDisplayMode": "Choose how per-detection times are rendered in session review. 'Relative' shows the offset from the start of the recording (00:12:34) — best for reviewing a single session and matching the spectrogram playhead. 'Absolute' shows the local clock time when the detection was captured (08:42:17) — best for cross-referencing field notes, weather logs, or other recordings. Storage and exports always use UTC instants regardless of this setting, so the choice never affects your data.",
   "@settingsHelpTimestampDisplayMode": {
     "description": "Help text for timestamp display mode setting"
@@ -2016,9 +2380,9 @@
   "@surveyObserverNameHint": {
     "description": "Hint for observer name field"
   },
-  "surveyLocation": "Location Tracking",
+  "surveyLocation": "Location",
   "@surveyLocation": {
-    "description": "Label for location tracking mode selector"
+    "description": "Label for location mode selector"
   },
   "surveyLocationGps": "GPS",
   "@surveyLocationGps": {
@@ -2058,7 +2422,7 @@
   },
   "surveyLocationSkipNote": "No GPS track will be recorded.",
   "@surveyLocationSkipNote": {
-    "description": "Note when skipping location tracking"
+    "description": "Note when skipping location"
   },
   "surveyParametersTitle": "Parameters",
   "@surveyParametersTitle": {
@@ -2630,9 +2994,9 @@
   "@surveyTabMap": {
     "description": "Tab label for map view in survey live screen"
   },
-  "surveyTabSpectrogram": "Spectrogram",
+  "surveyTabSpectrogram": "Audio",
   "@surveyTabSpectrogram": {
-    "description": "Tab label for spectrogram view in survey live screen"
+    "description": "Tab label for audio view in survey live screen"
   },
   "surveyTabSummary": "Summary",
   "@surveyTabSummary": {
@@ -2798,7 +3162,7 @@
   "@surveyLiveHelpSignal": {
     "description": "Help text explaining the audio quality signal bars"
   },
-  "surveyLiveHelpStats": "The stats bar shows distance walked, number of detections, and unique species count. Tap the tabs above to switch between the live map, spectrogram, and summary views.",
+  "surveyLiveHelpStats": "The stats bar shows distance walked, number of detections, and unique species count. Tap the tabs above to switch between the live map, audio, and summary views.",
   "@surveyLiveHelpStats": {
     "description": "Help text for the stats bar and tabs"
   },
@@ -2839,7 +3203,7 @@
   "@helpSurveyTitle": {
     "description": "Section title for Survey mode help"
   },
-  "helpSurveyBody": "Survey Mode starts with details and parameter steps, then opens a live dashboard with Map, Spectrogram, and Summary tabs. The top bar holds stop, help, and settings, and recent detections below the tabs open the species overlay when tapped.",
+  "helpSurveyBody": "Survey Mode starts with details and parameter steps, then opens a live dashboard with Map, Audio, and Summary tabs. The top bar holds stop, help, and settings, and recent detections below the tabs open the species overlay when tapped.",
   "@helpSurveyBody": {
     "description": "Help body text for Survey mode"
   },
@@ -2863,7 +3227,7 @@
   "@helpAruTitle": {
     "description": "Section title for ARU help"
   },
-  "helpAruBody": "ARU Mode turns your device into a passive recording unit. Configure deployment details, start recording, and let BirdNET Live capture audio in the background for later analysis and review.",
+  "helpAruBody": "ARU Mode is for unattended recordings at one fixed site. Choose when the recorder should run, how cycles are grouped into Sessions, and whether to keep full audio or selected detection clips. During scheduled recording windows, the app records and identifies species on the device; on Android it keeps a persistent notification with Stop and Open controls.",
   "@helpAruBody": {
     "description": "Help body text for ARU mode"
   },
@@ -3877,7 +4241,7 @@
   "@surveyLiveHelpTopBar": {
     "description": "Explains the top bar on the Survey live help overlay"
   },
-  "surveyLiveHelpTabs": "Use the tabs to switch between the live map, spectrogram, and summary views while the survey keeps running.",
+  "surveyLiveHelpTabs": "Use the tabs to switch between the live map, audio, and summary views while the survey keeps running.",
   "@surveyLiveHelpTabs": {
     "description": "Explains the tab row on the Survey live help overlay"
   },
@@ -3908,5 +4272,13 @@
   "openInAppleMaps": "Open in Apple Maps",
   "@openInAppleMaps": {
     "description": "Action to open the location in the external Apple Maps app"
+  },
+  "aruCombinedSessionWarningTitle": "Full Audio Conflict",
+  "@aruCombinedSessionWarningTitle": {
+    "description": "Title of the warning shown when a combined ARU session is configured with full audio recording mode"
+  },
+  "aruCombinedSessionWarningBody": "Combined sessions do not support Full Audio. The system will fall back to saving clips with Smart sampling. Go to the previous screen to review recording settings if you wish to change this.",
+  "@aruCombinedSessionWarningBody": {
+    "description": "Body of the warning shown when a combined ARU session is configured with full audio recording mode"
   }
 }

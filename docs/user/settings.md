@@ -27,6 +27,18 @@ Controls the language used for species names. **Follow app language** uses the s
 
 Shows scientific names below common names across the app.
 
+### Playback overlay in review
+
+When enabled (which is the default), reviewing an audio clip in a clips-only Session Review (where no full audio recording/spectrogram is available) triggers a dedicated modal player overlay with transport controls and a spectrogram preview, rather than playing the clip in the background. If a session has full audio, this setting is bypassed and the playback overlay is never shown.
+
+### Observer name
+
+Survey, Point Count, and ARU setup remember the latest non-empty observer name entered in any of those modes and prefill it the next time you set up a field session. This keeps repeat use quick on a personal field phone while still letting you edit or clear the observer before starting a session.
+
+### ARU/station ID
+
+ARU setup remembers the latest non-empty ARU/station ID and pre-fills it for the next deployment. When present, the ID is included in the ARU session name and export filenames so repeated fixed-site deployments stay identifiable outside the app.
+
 ### Timestamp display
 
 Controls how per-detection times appear in session review.

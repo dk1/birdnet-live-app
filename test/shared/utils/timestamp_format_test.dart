@@ -6,10 +6,14 @@
 // =============================================================================
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:birdnet_live/shared/utils/timestamp_format.dart';
 
-void main() {
+Future<void> main() async {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('de');
+
   group('formatDetectionTime — relative', () {
     final start = DateTime.utc(2026, 5, 6, 8, 0, 0);
 
@@ -59,14 +63,47 @@ void main() {
   });
 
   group('formatDetectionTime — absolute', () {
-    test('renders local clock time as HH:mm:ss', () {
+    test('renders English local clock time with AM/PM', () {
       // Use a local DateTime so the rendering is deterministic regardless of
       // the test runner's timezone.
       final start = DateTime(2026, 5, 6, 8, 0, 0);
-      final ts = DateTime(2026, 5, 6, 8, 42, 17);
+      final ts = DateTime(2026, 5, 6, 15, 42, 17);
       expect(
-        formatDetectionTime(ts, start, TimestampDisplayMode.absolute),
-        '08:42:17',
+        _normalizeSpaces(
+          formatDetectionTime(ts, start, TimestampDisplayMode.absolute),
+        ),
+        '3:42:17 PM',
+      );
+    });
+
+    test(
+      'uses locale-preferred time when platform 24-hour preference is false',
+      () {
+        final start = DateTime(2026, 5, 6, 8, 0, 0);
+        final ts = DateTime(2026, 5, 6, 15, 42, 17);
+        expect(
+          formatDetectionTime(
+            ts,
+            start,
+            TimestampDisplayMode.absolute,
+            localeName: 'de',
+          ),
+          '15:42:17',
+        );
+      },
+    );
+
+    test('respects platform 24-hour preference for English absolute time', () {
+      final start = DateTime(2026, 5, 6, 8, 0, 0);
+      final ts = DateTime(2026, 5, 6, 15, 42, 17);
+      expect(
+        formatDetectionTime(
+          ts,
+          start,
+          TimestampDisplayMode.absolute,
+          alwaysUse24HourFormat: true,
+        ),
+        '15:42:17',
       );
     });
 
@@ -74,8 +111,10 @@ void main() {
       final start = DateTime(2026, 5, 6, 23, 50, 0);
       final ts = DateTime(2026, 5, 7, 0, 5, 0);
       expect(
-        formatDetectionTime(ts, start, TimestampDisplayMode.absolute),
-        '00:05:00 +1d',
+        _normalizeSpaces(
+          formatDetectionTime(ts, start, TimestampDisplayMode.absolute),
+        ),
+        '12:05:00 AM +1d',
       );
     });
 
@@ -83,13 +122,15 @@ void main() {
       final start = DateTime(2026, 5, 6, 8, 0, 0);
       final ts = DateTime(2026, 5, 6, 8, 5, 0);
       expect(
-        formatDetectionTime(
-          ts,
-          start,
-          TimestampDisplayMode.absolute,
-          clipOffset: const Duration(minutes: 1),
+        _normalizeSpaces(
+          formatDetectionTime(
+            ts,
+            start,
+            TimestampDisplayMode.absolute,
+            clipOffset: const Duration(minutes: 1),
+          ),
         ),
-        '08:05:00',
+        '8:05:00 AM',
       );
     });
   });
@@ -109,17 +150,52 @@ void main() {
       );
     });
 
-    test('absolute renders as HH:mm', () {
+    test('English absolute renders without seconds as h:mm a', () {
       final start = DateTime(2026, 5, 6, 8, 0, 0);
-      final ts = DateTime(2026, 5, 6, 8, 42, 17);
+      final ts = DateTime(2026, 5, 6, 15, 42, 17);
+      expect(
+        _normalizeSpaces(
+          formatDetectionTime(
+            ts,
+            start,
+            TimestampDisplayMode.absolute,
+            showSeconds: false,
+          ),
+        ),
+        '3:42 PM',
+      );
+    });
+
+    test(
+      'uses locale-preferred time without seconds when platform 24-hour preference is false',
+      () {
+        final start = DateTime(2026, 5, 6, 8, 0, 0);
+        final ts = DateTime(2026, 5, 6, 15, 42, 17);
+        expect(
+          formatDetectionTime(
+            ts,
+            start,
+            TimestampDisplayMode.absolute,
+            showSeconds: false,
+            localeName: 'de',
+          ),
+          '15:42',
+        );
+      },
+    );
+
+    test('platform 24-hour preference applies without seconds', () {
+      final start = DateTime(2026, 5, 6, 8, 0, 0);
+      final ts = DateTime(2026, 5, 6, 15, 42, 17);
       expect(
         formatDetectionTime(
           ts,
           start,
           TimestampDisplayMode.absolute,
           showSeconds: false,
+          alwaysUse24HourFormat: true,
         ),
-        '08:42',
+        '15:42',
       );
     });
 
@@ -127,13 +203,15 @@ void main() {
       final start = DateTime(2026, 5, 6, 23, 50, 0);
       final ts = DateTime(2026, 5, 7, 0, 5, 0);
       expect(
-        formatDetectionTime(
-          ts,
-          start,
-          TimestampDisplayMode.absolute,
-          showSeconds: false,
+        _normalizeSpaces(
+          formatDetectionTime(
+            ts,
+            start,
+            TimestampDisplayMode.absolute,
+            showSeconds: false,
+          ),
         ),
-        '00:05 +1d',
+        '12:05 AM +1d',
       );
     });
   });
@@ -162,3 +240,5 @@ void main() {
     });
   });
 }
+
+String _normalizeSpaces(String value) => value.replaceAll('\u202f', ' ');
