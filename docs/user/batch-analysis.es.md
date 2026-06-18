@@ -3,7 +3,7 @@
 !!! note "Próximamente"
     Esta función está en desarrollo y estará disponible en una versión futura.
 
-El análisis por lotes permitirá a los usuarios procesar y analizar varios archivos de audio en lote (por ejemplo, desde una tarjeta SD conectada a través de un lector USB) utilizando parámetros de análisis personalizados.
+El análisis por lotes permitirá procesar y analizar varios archivos de audio en lote (por ejemplo, desde una tarjeta SD conectada a través de un lector USB) utilizando parámetros de análisis personalizados.
 
 ## Funciones planificadas
 

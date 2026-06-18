@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Reduced ARU waiting-state wakeups, unchanged session writes, and redundant foreground notification updates; new ARU deployments also default to 0.33 Hz inference to match Survey while leaving other inference and spectrogram settings unchanged.
+- Tightened home footer spacing, shortened Survey tab labels, clarified ARU setup/help wording, refreshed gender-neutral guide wording, simplified ARU ready storage estimates, and aligned Session Library delete confirmations with the swipe action.
 
 ### Fixed
 

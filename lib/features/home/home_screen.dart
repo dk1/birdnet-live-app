@@ -104,7 +104,7 @@ class _PortraitHomeLayout extends ConsumerWidget {
         _LogoHeader(l10n: l10n, theme: theme, isTablet: isTablet),
         const SizedBox(height: 24),
         _ModeCarousel(l10n: l10n, theme: theme, isTablet: isTablet),
-        const SizedBox(height: 24),
+        const SizedBox(height: 12),
         _Footer(l10n: l10n, theme: theme, isTablet: isTablet),
         const SizedBox(height: 16),
       ],
@@ -154,7 +154,7 @@ class _LandscapeHomeLayout extends ConsumerWidget {
                 landscape: true,
                 isTablet: isTablet,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               _Footer(l10n: l10n, theme: theme, isTablet: isTablet),
             ],
           ),
@@ -649,10 +649,11 @@ class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = theme.colorScheme.onSurface.withAlpha(153);
+    final fontSize = isTablet ? 16.0 : 14.0;
     return Wrap(
       alignment: WrapAlignment.center,
-      spacing: isTablet ? 24 : 12,
-      runSpacing: isTablet ? 8 : 4,
+      spacing: isTablet ? 16 : 8,
+      runSpacing: fontSize * 1.3,
       children: [
         // Sessions first — it's the more frequently used destination
         // (every recording produces one) so it deserves the leftmost
@@ -662,6 +663,7 @@ class _Footer extends StatelessWidget {
           icon: AppIcons.libraryMusic,
           label: l10n.sessionLibraryTitle,
           color: color,
+          fontSize: fontSize,
           isTablet: isTablet,
           onPressed:
               () => Navigator.of(context).push(
@@ -674,6 +676,7 @@ class _Footer extends StatelessWidget {
           icon: AppIcons.searchRounded,
           label: l10n.exploreMode,
           color: color,
+          fontSize: fontSize,
           isTablet: isTablet,
           onPressed:
               () => Navigator.of(context).push(
@@ -684,6 +687,7 @@ class _Footer extends StatelessWidget {
           icon: AppIcons.tuneRounded,
           label: l10n.settings,
           color: color,
+          fontSize: fontSize,
           isTablet: isTablet,
           onPressed:
               () => Navigator.of(context).push(
@@ -694,6 +698,7 @@ class _Footer extends StatelessWidget {
           icon: AppIcons.helpOutlineRounded,
           label: l10n.helpTitle,
           color: color,
+          fontSize: fontSize,
           isTablet: isTablet,
           onPressed:
               () => Navigator.of(context).push(
@@ -704,6 +709,7 @@ class _Footer extends StatelessWidget {
           icon: AppIcons.infoOutline,
           label: l10n.about,
           color: color,
+          fontSize: fontSize,
           isTablet: isTablet,
           onPressed:
               () => Navigator.of(context).push(
@@ -721,6 +727,7 @@ class _FooterButton extends StatelessWidget {
     required this.label,
     required this.color,
     required this.onPressed,
+    required this.fontSize,
     this.isTablet = false,
   });
 
@@ -728,6 +735,7 @@ class _FooterButton extends StatelessWidget {
   final String label;
   final Color color;
   final VoidCallback onPressed;
+  final double fontSize;
   final bool isTablet;
 
   @override
@@ -735,15 +743,15 @@ class _FooterButton extends StatelessWidget {
     return TextButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: isTablet ? 24 : 20, color: color),
-      label: Text(
-        label,
-        style: TextStyle(color: color, fontSize: isTablet ? 16 : 14),
-      ),
+      label: Text(label, style: TextStyle(color: color, fontSize: fontSize)),
       style: TextButton.styleFrom(
-        padding:
-            isTablet
-                ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
-                : null,
+        padding: EdgeInsets.symmetric(
+          horizontal: isTablet ? 12 : 6,
+          vertical: isTablet ? 9 : 7,
+        ),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        visualDensity: VisualDensity.compact,
       ),
     );
   }

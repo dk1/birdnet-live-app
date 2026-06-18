@@ -94,7 +94,7 @@
   "aboutFundingDescription": "Vývoj BirdNET Live je podporován nadací Deutsche Bundesstiftung Umwelt prostřednictvím projektu RangerSound (projekt č. 39263/01).",
   "aboutCreditsDescription": "BirdNET je vyvíjen společností Cornell K. Lisa Yang Center for Conservation Bioacoustics a Technische Universität Chemnitz.",
   "aboutWebsite": "Web BirdNET",
-  "aboutUserGuide": "Uživatelská příručka",
+  "aboutUserGuide": "Příručka k používání",
   "aboutGitHub": "Tato aplikace na GitHubu",
   "aboutPrivacyPolicy": "Zásady ochrany osobních údajů",
   "aboutTermsOfUse": "Podmínky používání",
@@ -130,13 +130,13 @@
   "@aruSetupHelpTitle": {
     "description": "Title for ARU setup help"
   },
-  "aruSetupHelpBody": "Režim ARU plánuje nahrávací cykly na pevném místě. Nasazení ukládají obnovitelný stav plánu, během aktivních cyklů nahrávají plný zvuk nebo uchované detekční klipy, spouštějí živou inferenci během cyklů a v Androidu zobrazují ovládání oznámení na popředí. Chování na pozadí v iOS stále vyžaduje terénní ověření.",
+  "aruSetupHelpBody": "Režim ARU slouží pro bezobslužné nahrávání na jednom pevném místě. Aplikace uloží plán nasazení, aby v něm mohla později pokračovat, během plánovaných cyklů nahrává plný zvuk nebo vybrané detekční klipy a určuje druhy přímo v zařízení. Na Androidu se při aktivním nasazení zobrazuje trvalé oznámení; chování na pozadí v iOS stále vyžaduje terénní ověření.",
   "@aruSetupHelpBody": {
     "description": "Help text for the first ARU setup implementation"
   },
-  "aruDeploymentName": "Název stanice",
+  "aruDeploymentName": "Název projektu",
   "@aruDeploymentName": {
-    "description": "Label for ARU deployment name field"
+    "description": "Label for ARU project name field"
   },
   "aruStationId": "ARU / ID stanice",
   "@aruStationId": {
@@ -215,7 +215,7 @@
   "@aruReadySummary": {
     "description": "Summary text on ARU ready step"
   },
-  "aruReadyPlatformNote": "V Androidu může rekordér s oznámením na popředí zůstat aktivní i mezi cykly. Na iOS je stále nutné považovat nahrávání na pozadí a plánované probouzení za neověřené.",
+  "aruReadyPlatformNote": "V Androidu může rekordér s trvalým oznámením zůstat aktivní i mezi cykly. Na iOS je stále nutné považovat nahrávání na pozadí a plánované probouzení za neověřené.",
   "@aruReadyPlatformNote": {
     "description": "ARU readiness note about current platform limitations"
   },
@@ -310,9 +310,9 @@
   "aruNextCyclesPreview": "Dalších 10 cyklů",
   "aruWaitingDetectionsTitle": "Čekání na další cyklus",
   "aruWaitingDetectionsBody": "Detekce z dalšího nahrávacího cyklu se zobrazí zde.",
-  "aruHelpStatusIcons": "Stavové ikony: mikrofon ukazuje aktuální úroveň zvuku, zaškrtnutí ukazuje dokončené cykly, seznam ukazuje celkový počet detekcí, křivka ukazuje jedinečné druhy, červená tečka označuje aktivní nahrávání, hodiny označují čekání na další plánovaný cyklus a ikona testu označuje okamžitý jednominutový test.",
+  "aruHelpStatusIcons": "Stavové ikony ukazují úroveň zvuku, dokončené cykly, celkový počet detekcí, počet druhů, aktivní nahrávání, čekání a volitelný jednominutový test.",
   "aruRecordingWindow": "Okno nahrávání",
-  "aruDielAnyTime": "Kdykoli",
+  "aruDielAnyTime": "Nepřetržitě",
   "aruDielDayOnly": "Denní světlo",
   "aruDielNightOnly": "Noc",
   "aruDielAroundSunrise": "Kolem východu slunce",
@@ -798,7 +798,7 @@
   "surveyHoursAgo": "před {count} h",
   "surveyContinue": "Pokračovat v Survey",
   "surveyTabMap": "Mapa",
-  "surveyTabSpectrogram": "Spektrogram",
+  "surveyTabSpectrogram": "Audio",
   "surveyTabSummary": "Souhrn",
   "surveyTabSummarySpecies": "Druhy",
   "surveyTabSummaryDetections": "Detekce",
@@ -838,7 +838,7 @@
   "surveyLiveHelpTitle": "Panel Survey",
   "surveyLiveHelpOverview": "Survey pokračuje na pozadí, zatímco jdete. GPS, nahrávání zvuku a detekce pokračují i při přepnutí aplikace.",
   "surveyLiveHelpSignal": "Signálové sloupce vedle mikrofonu ukazují kvalitu zvuku: 3 zelené sloupce = dobré podmínky, 2 žluté sloupce = hraniční (příliš tiché nebo mírně hlučné), 1 červený sloupec = špatné (ticho, přebudení nebo silný hluk).",
-  "surveyLiveHelpStats": "Statistický panel zobrazuje ujetou vzdálenost, detekce a počet druhů. Přepínejte mezi mapou, spektrogramem a souhrnem pomocí záložek.",
+  "surveyLiveHelpStats": "Statistický panel zobrazuje ujetou vzdálenost, detekce a počet druhů. Přepínejte mezi mapou, audiem a souhrnem pomocí záložek.",
   "surveyLiveHelpDetections": "Detekované druhy se objevují v seznamu pod statistikami. Klepněte na druh pro podrobnosti. Souřadnice GPS jsou automaticky ukládány ke každé detekci.",
   "surveyLiveHelpStop": "Stiskněte tlačítko zastavit (vlevo nahoře) pro ukončení Survey. Vaše relace je automaticky uložena a můžete ji okamžitě zkontrolovat.",
   "helpTitle": "Nápověda",
@@ -848,13 +848,13 @@
   "helpPointCountTitle": "Point Count",
   "helpPointCountBody": "Režim Point Count používá krátký postup pro dobu trvání a polohu a pak přejde na časovanou živou obrazovku. Horní lišta ukazuje zastavení, zbývající čas a nastavení, zatímco informační lišta shrnuje detekce a počet jedinečných druhů během sčítání.",
   "helpSurveyTitle": "Režim Survey",
-  "helpSurveyBody": "Režim Survey začíná kroky pro detaily a parametry a pak otevře živý panel s kartami Mapa, Spektrogram a Souhrn. Horní lišta obsahuje zastavení, nápovědu a nastavení a nedávné detekce pod kartami po klepnutí otevřou překryv druhu.",
+  "helpSurveyBody": "Režim Survey začíná kroky pro detaily a parametry a pak otevře živý panel s kartami Mapa, Audio a Souhrn. Horní lišta obsahuje zastavení, nápovědu a nastavení a nedávné detekce pod kartami po klepnutí otevřou překryv druhu.",
   "helpFileAnalysisTitle": "Analýza souborů",
   "helpFileAnalysisBody": "Analýza souborů je čtyřkrokový průvodce: vybrat soubor, nastavit polohu a datum, vybrat parametry a spustit analýzu. Tlačítko Nastavení otevře podmnožinu nastavení pro Analýzu souborů a dokončené analýzy se otevřou v Revizi relace.",
   "helpBatchAnalysisTitle": "Dávková analýza",
   "helpBatchAnalysisBody": "Dávková analýza je určená pro zpracování mnoha souborů najednou. Vyberte více nahrávek, potvrďte společné parametry a spusťte jednu frontu, která zpracuje každý soubor a uloží výsledky pro pozdější kontrolu.",
   "helpAruTitle": "Režim ARU",
-  "helpAruBody": "Režim ARU plánuje pevné nahrávací cykly s podporou dielních vzorců (okna pro den, noc, východ/západ slunce), automatického obnovení při vybité baterii, možností seskupování relací a chytrého uchovávání klipů. Během aktivních cyklů spouští inferenci přímo v zařízení a zobrazuje ovládací prvky oznámení v popředí.",
+  "helpAruBody": "Režim ARU je určen pro bezobslužné nahrávání na jednom pevném místě. Nastavíte, kdy má záznam běžet, jak se cykly seskupují do Sessions a zda se ukládá plný zvuk nebo vybrané detekční klipy. Během plánovaných nahrávacích oken aplikace nahrává a určuje druhy přímo v zařízení; na Androidu ponechává trvalé oznámení s akcemi Zastavit a Otevřít.",
   "helpExploreTitle": "Prozkoumejte",
   "helpExploreBody": "Explore vytváří seznam druhů podle polohy z geomodelu BirdNET. Pomocí aktualizace seznam přepočítáte, tlačítko nápovědy v záhlaví polohy poskytne kontext a klepnutím na kartu otevřete obrázky, popisy, odkazy a sezónní graf.",
   "helpSessionsTitle": "Sessions a kontrola",
@@ -863,7 +863,7 @@
   "helpTipQuiet": "Pomocí tlačítka Nastavení otevřete jen ovládací prvky relevantní pro aktuální obrazovku.",
   "helpTipMic": "Hlavní akční tlačítko se mění podle stavu: mikrofon spouští režim Live, přehrání spouští nebo obnovuje a zastavení ukončuje aktivní běh.",
   "helpTipBasics": "Dokončené běhy Live, Point Count, Survey i Analýzy souborů se vždy otevírají v Revizi relace pro kontrolu, úpravy a export.",
-  "helpTipGuide": "Kompletní vysvětlení všech nastavení a funkcí najdete v uživatelské příručce na obrazovce Nápověda nebo O aplikaci.",
+  "helpTipGuide": "Kompletní vysvětlení všech nastavení a funkcí najdete v příručce k používání na obrazovce Nápověda nebo O aplikaci.",
   "helpTipThreshold": "Práh spolehlivosti je hlavní ovládací prvek přísnosti detekcí. Nižší hodnoty ukazují více kandidátů, vyšší ponechají jen silnější shody.",
   "helpTipGeoFilter": "Pracovní postupy založené na poloze mohou používat aktuální GPS, ruční souřadnice nebo žádnou polohu. Explore a filtrování podle polohy na této volbě závisejí.",
   "helpModesTitle": "Co můžeš dělat",
@@ -1122,7 +1122,7 @@
   "exploreHelpLocation": "Záhlaví polohy zobrazuje název místa a souřadnice aktuálního kontextu předpovědi. Malé tlačítko nápovědy v tomto záhlaví znovu otevře tento panel.",
   "exploreHelpCards": "Každá karta druhu zobrazuje aktuální pořadí geomodelu pro daný druh. Klepnutím na kartu otevřete obrázky, popisný text, externí odkazy a sezónní graf.",
   "surveyLiveHelpTopBar": "Horní řádek kombinuje zastavení, uplynulý časovač, nápovědu a nastavení. Zastavení ukončí Survey a uloží Session; nastavení otevře podmnožinu nastavení Survey.",
-  "surveyLiveHelpTabs": "Pomocí karet přepínáte mezi živou mapou, spektrogramem a souhrnným zobrazením, zatímco survey dál běží.",
+  "surveyLiveHelpTabs": "Pomocí karet přepínáte mezi živou mapou, audiem a souhrnným zobrazením, zatímco survey dál běží.",
   "sessionHelpTopBar": "Horní lišta používá zavřít k opuštění Revize Session a nastavení k otevření úplné obrazovky nastavení. Aktuální Session zůstává načtena, zatímco kontrolujete přehrávání, detekce a poznámky.",
   "sessionHelpUndoRedo": "Zpět a znovu posunují úpravy provedené během aktuální revize o krok zpět nebo vpřed.",
   "sessionHelpSaveDiscard": "Uložit zapíše vaše změny, sdílet exportuje balíček Session, zahodit odstraní uloženou Session a tlačítko nápovědy znovu otevře tento panel.",

@@ -100,4 +100,4 @@ Panel průzkumu používá:
 
 ## Když máte pochybnosti
 
-Pokud si nejste jisti, co ovládací prvek dělá, otevřete nejbližší list nápovědy v aplikaci nebo se podívejte na stránku pracovního postupu pro danou obrazovku v této uživatelské příručce.
+Pokud si nejste jisti, co ovládací prvek dělá, otevřete nejbližší list nápovědy v aplikaci nebo se podívejte na stránku pracovního postupu pro danou obrazovku v této příručce k používání.

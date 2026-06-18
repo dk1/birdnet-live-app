@@ -632,9 +632,9 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                     final l10n = AppLocalizations.of(context)!;
                     final confirmed = await confirmDestructive(
                       context,
-                      title: l10n.sessionDiscardTitle,
+                      title: l10n.tooltipDeleteSession,
                       body: l10n.sessionDiscardMessage,
-                      confirmLabel: l10n.sessionDiscard,
+                      confirmLabel: l10n.tooltipDeleteSession,
                       cancelLabel: l10n.cancel,
                     );
                     if (!confirmed) return false;
@@ -789,9 +789,9 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await confirmDestructive(
       context,
-      title: l10n.sessionDiscardTitle,
+      title: l10n.tooltipDeleteSession,
       body: l10n.sessionDiscardMessage,
-      confirmLabel: l10n.sessionDiscard,
+      confirmLabel: l10n.tooltipDeleteSession,
       cancelLabel: l10n.cancel,
     );
     if (!confirmed) return;

@@ -15,11 +15,11 @@ Wählen Sie **Dunkel**, **Hell** oder **System**.
 
 ### App-Sprache
 
-Legt die Sprache der Benutzeroberfläche fest.
+Legt die Sprache der App-Oberfläche fest.
 
 ### Artennamen
 
-Steuert die Sprache, die für Artennamen verwendet wird. **App-Sprache folgen** verwendet dieselbe Sprache wie die Benutzeroberfläche, wenn dieser Name verfügbar ist.
+Steuert die Sprache, die für Artennamen verwendet wird. **App-Sprache folgen** verwendet dieselbe Sprache wie die App-Oberfläche, wenn dieser Name verfügbar ist.
 
 ### Wissenschaftliche Namen anzeigen
 
