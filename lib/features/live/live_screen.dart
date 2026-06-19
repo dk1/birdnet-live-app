@@ -60,6 +60,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   bool _durationWarningShown = false;
   bool _autoStartAttempted = false;
 
+  /// Cached reference to the long-lived controller so [dispose] can detach
+  /// its callback without touching [ref] after the widget is unmounted.
+  LiveController? _liveController;
+
   /// Duration after which a warning dialog is shown to the user.
   static const _warningDuration = Duration(minutes: 10);
 
@@ -70,6 +74,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     // Register the state change callback so the controller can trigger
     // rebuilds when detections arrive.
     final controller = ref.read(liveControllerProvider);
+    _liveController = controller;
     controller.onStateChanged = _onControllerStateChanged;
 
     // Eagerly load the model on first mount.
@@ -212,6 +217,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       final geoSpeciesNames = await ref.read(
         geoModelSpeciesNamesProvider.future,
       );
+      // The geo-model futures can take seconds; the user may have left the
+      // Live screen in the meantime. Bail out before touching [ref] again so
+      // we never read providers on an unmounted widget.
+      if (!mounted) {
+        _isStarting = false;
+        return;
+      }
       if (useGps && mounted) {
         final svc = ref.read(locationServiceProvider);
         if (svc.lastFetchUsedCachedFallback) {
@@ -283,9 +295,11 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     _sessionTimer?.cancel();
 
     // Clear the state-change callback on the long-lived controller to avoid calling
-    // updates on a defunct/disposed widget state.
-    final controller = ref.read(liveControllerProvider);
-    if (controller.onStateChanged == _onControllerStateChanged) {
+    // updates on a defunct/disposed widget state. Use the cached reference
+    // because reading [ref] during dispose is unsafe.
+    final controller = _liveController;
+    if (controller != null &&
+        controller.onStateChanged == _onControllerStateChanged) {
       controller.onStateChanged = null;
     }
 
