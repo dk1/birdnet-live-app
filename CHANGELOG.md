@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.11] - 2026-06-19
+
+### Changed
+
+- Changed the main menu in landscape to show all six mode tiles in a 3x2 grid with a full-width footer and a smaller side-by-side logo/title header.
+
 ## [0.17.10] - 2026-06-19
 
 ### Added
