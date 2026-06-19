@@ -738,42 +738,45 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       context: context,
       showDragHandle: true,
       useSafeArea: true,
+      isScrollControlled: true,
       builder: (sheetCtx) {
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-                child: Text(
-                  l10n.sessionLibraryNewSessionSheetTitle,
-                  style: theme.textTheme.titleMedium,
-                ),
-              ),
-              for (final m in modes)
-                ListTile(
-                  leading: Icon(
-                    sessionTypeIcon(m.type),
-                    color: sessionTypeAccentColor(theme, m.type),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                  child: Text(
+                    l10n.sessionLibraryNewSessionSheetTitle,
+                    style: theme.textTheme.titleMedium,
                   ),
-                  title: Text(m.label),
-                  subtitle: Text(
-                    m.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing:
-                      m.type == _newSessionMode
-                          ? Icon(
-                            AppIcons.checkRounded,
-                            color: theme.colorScheme.primary,
-                          )
-                          : null,
-                  onTap: () => Navigator.of(sheetCtx).pop(m.type),
                 ),
-              const SizedBox(height: 4),
-            ],
+                for (final m in modes)
+                  ListTile(
+                    leading: Icon(
+                      sessionTypeIcon(m.type),
+                      color: sessionTypeAccentColor(theme, m.type),
+                    ),
+                    title: Text(m.label),
+                    subtitle: Text(
+                      m.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing:
+                        m.type == _newSessionMode
+                            ? Icon(
+                              AppIcons.checkRounded,
+                              color: theme.colorScheme.primary,
+                            )
+                            : null,
+                    onTap: () => Navigator.of(sheetCtx).pop(m.type),
+                  ),
+                const SizedBox(height: 4),
+              ],
+            ),
           ),
         );
       },
