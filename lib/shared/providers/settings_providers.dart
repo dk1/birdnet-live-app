@@ -45,11 +45,11 @@ final confidenceThresholdProvider =
       return IntSettingNotifier(prefs, PrefKeys.confidenceThreshold, 35);
     });
 
-/// Inference rate in Hz (0.25, 0.5, 1.0, 2.0 — default 1.0).
+/// Inference rate in Hz (0.1–1.0 in 0.1 Hz steps — default 1.0).
 final inferenceRateProvider =
     StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return DoubleSettingNotifier(prefs, PrefKeys.inferenceRate, 1.0);
+      return InferenceRateSettingNotifier(prefs);
     });
 
 /// Sensitivity (0.5 – 1.5, default 1.0).
@@ -108,7 +108,7 @@ final colorMapProvider = StateNotifierProvider<StringSettingNotifier, String>((
   ref,
 ) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return StringSettingNotifier(prefs, PrefKeys.colorMap, 'viridis');
+  return ColorMapSettingNotifier(prefs);
 });
 
 /// dB floor (default -80).
@@ -704,6 +704,28 @@ class DoubleSettingNotifier extends StateNotifier<double> {
   }
 }
 
+class InferenceRateSettingNotifier extends DoubleSettingNotifier {
+  InferenceRateSettingNotifier(this._inferenceRatePrefs)
+    : super(_inferenceRatePrefs, PrefKeys.inferenceRate, _defaultRate) {
+    final sanitized = _sanitize(state);
+    if (sanitized != state) {
+      state = sanitized;
+      _inferenceRatePrefs.setDouble(PrefKeys.inferenceRate, sanitized);
+    }
+  }
+
+  static const double _defaultRate = 1.0;
+  final SharedPreferences _inferenceRatePrefs;
+
+  static double _sanitize(double value) {
+    final tick = (value * 10).round().clamp(1, 10);
+    return tick / 10.0;
+  }
+
+  @override
+  Future<void> set(double value) => super.set(_sanitize(value));
+}
+
 /// [StateNotifier] for an `int` setting backed by [SharedPreferences].
 class IntSettingNotifier extends StateNotifier<int> {
   IntSettingNotifier(this._prefs, this._key, int defaultValue)
@@ -730,6 +752,39 @@ class StringSettingNotifier extends StateNotifier<String> {
     state = value;
     await _prefs.setString(_key, value);
   }
+}
+
+class ColorMapSettingNotifier extends StringSettingNotifier {
+  ColorMapSettingNotifier(this._colorMapPrefs)
+    : super(_colorMapPrefs, PrefKeys.colorMap, _defaultColorMap) {
+    final sanitized = _sanitize(state);
+    if (sanitized != state) {
+      state = sanitized;
+      _colorMapPrefs.setString(PrefKeys.colorMap, sanitized);
+    }
+  }
+
+  static const String _defaultColorMap = 'viridis';
+  static const Set<String> _allowedColorMaps = {
+    'viridis',
+    'magma',
+    'plasma',
+    'cividis',
+    'jet',
+    'turbo',
+    'grayscale',
+    'birdnet',
+  };
+
+  final SharedPreferences _colorMapPrefs;
+
+  static String _sanitize(String value) {
+    if (value == 'inferno') return 'magma';
+    return _allowedColorMaps.contains(value) ? value : _defaultColorMap;
+  }
+
+  @override
+  Future<void> set(String value) => super.set(_sanitize(value));
 }
 
 /// [StateNotifier] for a `bool` setting backed by [SharedPreferences].

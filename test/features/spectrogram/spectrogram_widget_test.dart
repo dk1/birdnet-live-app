@@ -78,6 +78,7 @@ void main() {
     testWidgets('changing colorMapName does not throw', (tester) async {
       await tester.pumpWidget(buildWidget(colorMapName: 'viridis'));
       await tester.pumpWidget(buildWidget(colorMapName: 'grayscale'));
+      await tester.pumpWidget(buildWidget(colorMapName: 'turbo'));
       await tester.pumpWidget(buildWidget(colorMapName: 'birdnet'));
       expect(find.byType(SpectrogramWidget), findsOneWidget);
     });

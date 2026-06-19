@@ -60,7 +60,7 @@ Hier können Sie ein bestimmtes Eingabegerät auswählen oder die **Systemstanda
 
 ### Fensterdauer
 
-Steuert die Länge des Analysefensters.
+Steuert die Länge des Analysefensters. Verfügbare Schritte sind **1**, **3**, **5**, **7**, **10** und **15** Sekunden.
 
 ### Vertrauensschwelle
 
@@ -72,11 +72,7 @@ Höhere Werte machen den Detektor freizügiger, wodurch schwächere Anrufe auf K
 
 ### Inferenzrate
 
-Steuert, wie oft BirdNET die Inferenz ausführt.
-
-### Score-Pooling
-
-Steuert, wie überlappende Analysefenster kombiniert werden.
+Steuert, wie oft BirdNET die Inferenz ausführt. Der Slider nutzt dieselben **0,10–1,00 Hz**-Schritte wie Survey- und ARU-Setup.
 
 ## Spektrogramm
 
@@ -86,7 +82,7 @@ Steuert die Frequenzauflösung im Spektrogramm.
 
 ### Farbkarte
 
-Wählen Sie **Viridis**, **Magma** oder **Graustufen**.
+Wählen Sie **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Graustufen** oder **BirdNET**. **Turbo** ist die moderne, Jet-ähnliche Regenbogenoption.
 
 ### Dauer (Scrollgeschwindigkeit)
 

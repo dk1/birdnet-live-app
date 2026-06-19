@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.10] - 2026-06-19
+
+### Added
+
+- Added Plasma, Cividis, Jet, Turbo, and BirdNET choices to the spectrogram color map setting.
+
+### Changed
+
+- Changed Window duration and Inference rate settings from dropdowns to sliders, moved Announcements below Recording, changed Recording mode to a dropdown, and hid advanced score pooling controls from Settings.
+- Expanded Window duration to 1, 3, 5, 7, 10, and 15 seconds, and aligned the global Inference rate slider with the Survey and ARU 0.10–1.00 Hz tick grid.
+- Removed the duplicate Inferno color map and migrated saved Inferno preferences to Magma.
+- Moved ARU onto the main live recording modes page and grouped File Analysis with the file workflows page in the home mode carousel.
+
+### Fixed
+
+- Made Session Review and clip playback spectrograms use the configured color map instead of always rendering Viridis.
+- Made Session Review playback overlay previous/next buttons follow the active species sort order while playing all clips for the current species before advancing to the next species.
+
 ## [0.17.9] - 2026-06-18
 
 ### Changed

@@ -72,7 +72,7 @@ Lets you choose a specific input device or keep the **System default**. Your sel
 
 ### Window duration
 
-Controls the length of the analysis window.
+Controls the length of the analysis window. Available steps are **1**, **3**, **5**, **7**, **10**, and **15** seconds.
 
 ### Confidence threshold
 
@@ -84,21 +84,7 @@ Sigmoid steepness applied to the raw classifier output before the confidence thr
 
 ### Inference rate
 
-Controls how frequently BirdNET runs inference.
-
-### Score pooling
-
-Combines scores across recent inference windows so a single noisy window doesn't dominate the result. **Off** uses each window's raw probability — most reactive, noisiest. **Average** arithmetic-means the recent windows for the smoothest output. **Max** keeps the loudest peak per species, which is the most reactive smoothing mode and good for brief, sharp calls. **LME** (log-mean-exp, the default) is BirdNET's reference soft-maximum: it behaves like *max* when one window dominates and like *average* when several windows agree. In LME mode, a new species also needs repeated raw-window support before it first appears, while supported detections keep most of their strongest recent raw score and already-visible species continue until their pooled score falls below the confidence threshold. Switching modes mid-session clears the rolling buffer so old scores don't leak into the new mode.
-
-### Pooling window count
-
-Controls how many consecutive inference windows participate in score pooling.
-A larger value smooths each species' score over a longer time horizon, which
-suppresses spurious one-off detections — useful for steady, distant calls
-where you'd rather wait for a few corroborating windows before raising a
-detection. A smaller value reacts faster to brief vocalizations but lets
-through more noise. The default of **5** matches the value historically
-hard-coded into the model and is a sensible starting point for live use.
+Controls how frequently BirdNET runs inference. The slider uses the same **0.10–1.00 Hz** steps as Survey and ARU setup.
 
 ## Spectrogram
 
@@ -108,7 +94,7 @@ Controls frequency resolution in the spectrogram.
 
 ### Color map
 
-Choose **Viridis**, **Magma**, or **Grayscale**.
+Choose **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Grayscale**, or **BirdNET**. **Turbo** is the modern Jet-like rainbow option.
 
 ### Duration (scroll speed)
 

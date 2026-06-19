@@ -137,6 +137,34 @@ void main() {
       expect(prefs.getString('color_map'), 'magma');
     });
 
+    test('inferenceRate snaps to Survey and ARU tick grid', () async {
+      SharedPreferences.setMockInitialValues({'inference_rate': 0.25});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(inferenceRateProvider), 0.3);
+      expect(prefs.getDouble('inference_rate'), 0.3);
+
+      await container.read(inferenceRateProvider.notifier).set(2.0);
+      expect(container.read(inferenceRateProvider), 1.0);
+      expect(prefs.getDouble('inference_rate'), 1.0);
+    });
+
+    test('colorMap migrates removed inferno value to magma', () async {
+      SharedPreferences.setMockInitialValues({'color_map': 'inferno'});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(colorMapProvider), 'magma');
+      expect(prefs.getString('color_map'), 'magma');
+    });
+
     test('BoolSettingNotifier persists', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
@@ -167,22 +195,19 @@ void main() {
       },
     );
 
-    test(
-      'lastObserverProvider falls back to legacy survey observer',
-      () async {
-        SharedPreferences.setMockInitialValues({
-          PrefKeys.legacySurveyLastObserver: 'Survey Person',
-          PrefKeys.legacyPointCountLastObserver: 'Point Count Person',
-        });
-        final prefs = await SharedPreferences.getInstance();
-        final container = ProviderContainer(
-          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-        );
-        addTearDown(container.dispose);
+    test('lastObserverProvider falls back to legacy survey observer', () async {
+      SharedPreferences.setMockInitialValues({
+        PrefKeys.legacySurveyLastObserver: 'Survey Person',
+        PrefKeys.legacyPointCountLastObserver: 'Point Count Person',
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
 
-        expect(container.read(lastObserverProvider), 'Survey Person');
-      },
-    );
+      expect(container.read(lastObserverProvider), 'Survey Person');
+    });
 
     test(
       'lastObserverProvider falls back to legacy point count observer',

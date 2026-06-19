@@ -307,7 +307,7 @@ class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
                     });
                   },
                   children: [
-                    // Page 1 — Active Modes
+                    // Page 1 — Live recording modes
                     Padding(
                       padding: pageMargin,
                       child: GridView.count(
@@ -352,6 +352,31 @@ class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
                             onTap: () => _openSurvey(context),
                           ),
                           _ModeCard(
+                            icon: sessionTypeIcon(SessionType.aru),
+                            label: widget.l10n.aruMode,
+                            description: widget.l10n.aruModeDescription,
+                            accentColor: sessionTypeAccentColor(
+                              widget.theme,
+                              SessionType.aru,
+                            ),
+                            isTablet: widget.isTablet,
+                            onTap: () => _openAru(context, ref),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Page 2 — File workflows
+                    Padding(
+                      padding: pageMargin,
+                      child: GridView.count(
+                        padding: EdgeInsets.zero,
+                        crossAxisCount: 2,
+                        crossAxisSpacing: spacing,
+                        mainAxisSpacing: spacing,
+                        physics: const NeverScrollableScrollPhysics(),
+                        childAspectRatio: aspectRatio,
+                        children: [
+                          _ModeCard(
                             icon: sessionTypeIcon(SessionType.fileUpload),
                             label: widget.l10n.fileAnalysisMode,
                             description:
@@ -363,20 +388,6 @@ class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
                             isTablet: widget.isTablet,
                             onTap: () => _openFileAnalysis(context),
                           ),
-                        ],
-                      ),
-                    ),
-                    // Page 2 — Coming Soon Modes & Placeholders
-                    Padding(
-                      padding: pageMargin,
-                      child: GridView.count(
-                        padding: EdgeInsets.zero,
-                        crossAxisCount: 2,
-                        crossAxisSpacing: spacing,
-                        mainAxisSpacing: spacing,
-                        physics: const NeverScrollableScrollPhysics(),
-                        childAspectRatio: aspectRatio,
-                        children: [
                           _ModeCard(
                             icon: sessionTypeIcon(SessionType.batchAnalysis),
                             label: widget.l10n.batchAnalysisMode,
@@ -393,17 +404,6 @@ class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
                                   context,
                                   widget.l10n.batchAnalysisMode,
                                 ),
-                          ),
-                          _ModeCard(
-                            icon: sessionTypeIcon(SessionType.aru),
-                            label: widget.l10n.aruMode,
-                            description: widget.l10n.aruModeDescription,
-                            accentColor: sessionTypeAccentColor(
-                              widget.theme,
-                              SessionType.aru,
-                            ),
-                            isTablet: widget.isTablet,
-                            onTap: () => _openAru(context, ref),
                           ),
                         ],
                       ),

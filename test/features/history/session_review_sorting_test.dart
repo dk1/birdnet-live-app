@@ -1,6 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:birdnet_live/features/history/session_review_screen.dart';
+import 'package:birdnet_live/features/live/live_session.dart';
+
+DetectionRecord _record({
+  required String scientificName,
+  required String commonName,
+  required double confidence,
+  required DateTime timestamp,
+}) {
+  return DetectionRecord(
+    scientificName: scientificName,
+    commonName: commonName,
+    confidence: confidence,
+    timestamp: timestamp,
+  );
+}
 
 void main() {
   group('compareSessionReviewConfidenceSortEntries', () {
@@ -44,5 +59,43 @@ void main() {
 
       expect(result, isNegative);
     });
+  });
+
+  group('buildSessionReviewPlaybackOrder', () {
+    final base = DateTime.utc(2026, 5, 24, 8);
+
+    test(
+      'keeps confidence-sorted playback within a species before advancing',
+      () {
+        final firstSpeciesBest = _record(
+          scientificName: 'Zenaida macroura',
+          commonName: 'Mourning Dove',
+          confidence: 0.95,
+          timestamp: base.add(const Duration(seconds: 30)),
+        );
+        final secondSpecies = _record(
+          scientificName: 'Agelaius phoeniceus',
+          commonName: 'Red-winged Blackbird',
+          confidence: 0.90,
+          timestamp: base.add(const Duration(seconds: 10)),
+        );
+        final firstSpeciesLower = _record(
+          scientificName: 'Zenaida macroura',
+          commonName: 'Mourning Dove',
+          confidence: 0.40,
+          timestamp: base.add(const Duration(seconds: 90)),
+        );
+
+        final order = buildSessionReviewPlaybackOrder(
+          detections: [secondSpecies, firstSpeciesLower, firstSpeciesBest],
+          maxGapSec: 3,
+          sortMode: SpeciesSortMode.confidence,
+          localizedCommonName: (_, fallback) => fallback,
+          hasPlayableClip: (_) => true,
+        );
+
+        expect(order, [firstSpeciesBest, firstSpeciesLower, secondSpecies]);
+      },
+    );
   });
 }
