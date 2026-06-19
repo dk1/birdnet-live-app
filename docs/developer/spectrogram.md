@@ -31,7 +31,6 @@ Pre-computed 256-entry ARGB lookup tables:
 
 - **Viridis** — perceptually uniform, color-blind friendly (default)
 - **Magma** — dark-to-bright purple/orange
-- **Inferno** — dark black to vivid yellow
 - **Grayscale** — simple luminance ramp
 - **BirdNET** — custom brand blue palette
 

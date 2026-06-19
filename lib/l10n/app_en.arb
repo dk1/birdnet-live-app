@@ -2116,7 +2116,7 @@
   "@settingsHelpFftSize": {
     "description": "Help text for FFT size setting"
   },
-  "settingsHelpColorMap": "Color palette used to render spectrogram intensity. Viridis and Magma are perceptually uniform; Grayscale is print-friendly and emphasizes structure over hue.",
+  "settingsHelpColorMap": "Color palette used to render spectrogram intensity. Turbo is a modern Jet-like rainbow palette; Viridis, Magma, Plasma, and Cividis are perceptual palettes; Grayscale is print-friendly.",
   "@settingsHelpColorMap": {
     "description": "Help text for spectrogram color map setting"
   },
@@ -3701,9 +3701,29 @@
   "@settingsColorMapMagma": {
     "description": "Magma color map option"
   },
+  "settingsColorMapPlasma": "Plasma",
+  "@settingsColorMapPlasma": {
+    "description": "Plasma color map option"
+  },
+  "settingsColorMapCividis": "Cividis",
+  "@settingsColorMapCividis": {
+    "description": "Cividis color map option"
+  },
+  "settingsColorMapJet": "Jet",
+  "@settingsColorMapJet": {
+    "description": "Jet color map option"
+  },
+  "settingsColorMapTurbo": "Turbo",
+  "@settingsColorMapTurbo": {
+    "description": "Turbo color map option"
+  },
   "settingsColorMapGrayscale": "Grayscale",
   "@settingsColorMapGrayscale": {
     "description": "Grayscale color map option"
+  },
+  "settingsColorMapBirdnet": "BirdNET",
+  "@settingsColorMapBirdnet": {
+    "description": "BirdNET color map option"
   },
   "settingsSpectrogramDuration": "Duration (scroll speed)",
   "@settingsSpectrogramDuration": {
