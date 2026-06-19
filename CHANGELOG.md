@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Changed the main menu in landscape to show all six mode tiles in a 3x2 grid with a full-width footer and a smaller side-by-side logo/title header.
 
+### Fixed
+
+- Fixed the Session Library "new session" picker overflowing in landscape by making it scroll when there is not enough vertical space.
+- Fixed a crash when leaving the Live screen while a session was still starting, caused by reading providers after the screen was closed.
+
 ## [0.17.10] - 2026-06-19
 
 ### Added
