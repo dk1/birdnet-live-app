@@ -60,7 +60,7 @@ Le permite elegir un dispositivo de entrada específico o mantener el **sistema 
 
 ### Duración de la ventana
 
-Controla la longitud de la ventana de análisis.
+Controla la longitud de la ventana de análisis. Los pasos disponibles son **1**, **3**, **5**, **7**, **10** y **15** segundos.
 
 ### Umbral de confianza
 
@@ -72,11 +72,7 @@ Los valores más altos hacen que el detector sea más permisivo, lo que puede re
 
 ### Tasa de inferencia
 
-Controla la frecuencia con la que BirdNET ejecuta la inferencia.
-
-### Agrupación de puntuaciones
-
-Controla cómo se combinan las ventanas de análisis superpuestas.
+Controla la frecuencia con la que BirdNET ejecuta la inferencia. El control usa los mismos pasos de **0,10–1,00 Hz** que la configuración de Survey y ARU.
 
 ## Espectrograma
 
@@ -86,7 +82,7 @@ Controla la resolución de frecuencia en el espectrograma.
 
 ### Mapa de colores
 
-Elija **Viridis**, **Magma** o **Escala de grises**.
+Elija **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Escala de grises** o **BirdNET**. **Turbo** es la opción de arcoíris moderna similar a Jet.
 
 ### Duración (velocidad de desplazamiento)
 

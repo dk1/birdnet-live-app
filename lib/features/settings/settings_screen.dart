@@ -181,7 +181,9 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: Text(l10n.settingsPlaybackOverlayDescription),
                 value: ref.watch(sessionReviewPlaybackOverlayProvider),
                 onChanged:
-                    (v) => ref.read(sessionReviewPlaybackOverlayProvider.notifier).set(v),
+                    (v) => ref
+                        .read(sessionReviewPlaybackOverlayProvider.notifier)
+                        .set(v),
               ),
               ListTile(
                 title: _TitleWithHelp(
@@ -277,11 +279,12 @@ class SettingsScreen extends ConsumerWidget {
                 title: l10n.settingsInference,
                 subtitle: l10n.settingsInferenceDescription,
               ),
-              _ChoiceTile<int>(
+              _DiscreteSliderTile<int>(
                 title: l10n.settingsWindowDuration,
                 helpBody: l10n.settingsHelpWindowDuration,
                 value: ref.watch(windowDurationProvider),
-                options: const {3: '3s', 5: '5s', 10: '10s'},
+                values: const [1, 3, 5, 7, 10, 15],
+                format: (v) => '${v}s',
                 onChanged:
                     (v) => ref.read(windowDurationProvider.notifier).set(v),
               ),
@@ -308,48 +311,25 @@ class SettingsScreen extends ConsumerWidget {
                 format: (v) => v.toStringAsFixed(2),
                 onChanged: (v) => ref.read(sensitivityProvider.notifier).set(v),
               ),
-              _ChoiceTile<double>(
+              _DiscreteSliderTile<double>(
                 title: l10n.settingsInferenceRate,
                 helpBody: l10n.settingsHelpInferenceRate,
                 value: ref.watch(inferenceRateProvider),
-                options: {
-                  0.25: '0.25 Hz',
-                  0.5: '0.5 Hz',
-                  1.0: '1 Hz',
-                  2.0: '2 Hz',
-                },
+                values: const [
+                  0.1,
+                  0.2,
+                  0.3,
+                  0.4,
+                  0.5,
+                  0.6,
+                  0.7,
+                  0.8,
+                  0.9,
+                  1.0,
+                ],
+                format: (v) => '${v.toStringAsFixed(2)} Hz',
                 onChanged:
                     (v) => ref.read(inferenceRateProvider.notifier).set(v),
-              ),
-              _ChoiceTile<String>(
-                title: l10n.settingsScorePooling,
-                helpBody: l10n.settingsHelpScorePooling,
-                value: ref.watch(scorePoolingProvider),
-                options: {
-                  'off': l10n.settingsPoolingOff,
-                  'average': l10n.settingsPoolingAverage,
-                  'max': l10n.settingsPoolingMax,
-                  'lme': l10n.settingsPoolingLME,
-                },
-                onChanged:
-                    (v) => ref.read(scorePoolingProvider.notifier).set(v),
-              ),
-              // The pooling-windows slider only matters when pooling is on. We
-              // still leave it visible (greyed out at the bottom of the section
-              // would be more discoverable than hiding it entirely) so users can
-              // dial it in before re-enabling pooling.
-              _SliderTile(
-                title: l10n.settingsScorePoolingWindows,
-                helpBody: l10n.settingsHelpScorePoolingWindows,
-                value: ref.watch(scorePoolingWindowsProvider).toDouble(),
-                min: 1,
-                max: 10,
-                divisions: 9,
-                format: (v) => v.toInt().toString(),
-                onChanged:
-                    (v) => ref
-                        .read(scorePoolingWindowsProvider.notifier)
-                        .set(v.toInt()),
               ),
               const Divider(),
             ],
@@ -379,7 +359,12 @@ class SettingsScreen extends ConsumerWidget {
                 options: {
                   'viridis': l10n.settingsColorMapViridis,
                   'magma': l10n.settingsColorMapMagma,
+                  'plasma': l10n.settingsColorMapPlasma,
+                  'cividis': l10n.settingsColorMapCividis,
+                  'jet': l10n.settingsColorMapJet,
+                  'turbo': l10n.settingsColorMapTurbo,
                   'grayscale': l10n.settingsColorMapGrayscale,
+                  'birdnet': l10n.settingsColorMapBirdnet,
                 },
                 onChanged: (v) => ref.read(colorMapProvider.notifier).set(v),
               ),
@@ -438,63 +423,24 @@ class SettingsScreen extends ConsumerWidget {
               const Divider(),
             ],
 
-            // --- Announcements ---
-            // Sits high up in the list (right after Spectrogram) because
-            // it is the only setting users typically need to revisit
-            // mid-session — the verbosity × frequency pickers are the
-            // entire setup, so making them easy to find matters more
-            // than category alphabetization.
-            if (_showSection('announcements'))
-              AnnouncementsSettingsSection(
-                sectionHeader:
-                    ({required String title, required String subtitle}) =>
-                        _SectionHeader(title: title, subtitle: subtitle),
-                titleWithHelp:
-                    ({required String title, String? helpBody}) =>
-                        _TitleWithHelp(title: title, helpBody: helpBody),
-              ),
-
             // --- Recording ---
             if (_showSection('recording')) ...[
               _SectionHeader(
                 title: l10n.settingsRecording,
                 subtitle: l10n.settingsRecordingDescription,
               ),
-              ListTile(
-                title: _TitleWithHelp(
-                  title: l10n.settingsRecordingMode,
-                  helpBody: l10n.settingsHelpRecordingMode,
-                ),
+              _ChoiceTile<String>(
+                title: l10n.settingsRecordingMode,
+                helpBody: l10n.settingsHelpRecordingMode,
+                value: ref.watch(recordingModeProvider),
+                options: {
+                  'full': l10n.settingsRecordingModeFull,
+                  'detections': l10n.settingsRecordingModeDetections,
+                  'off': l10n.settingsRecordingModeOff,
+                },
+                onChanged:
+                    (v) => ref.read(recordingModeProvider.notifier).set(v),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: SegmentedButton<String>(
-                  segments: [
-                    ButtonSegment(
-                      value: 'full',
-                      label: _SegmentLabel(
-                        text: l10n.settingsRecordingModeFull,
-                      ),
-                    ),
-                    ButtonSegment(
-                      value: 'detections',
-                      label: _SegmentLabel(
-                        text: l10n.settingsRecordingModeDetections,
-                      ),
-                    ),
-                    ButtonSegment(
-                      value: 'off',
-                      label: _SegmentLabel(text: l10n.settingsRecordingModeOff),
-                    ),
-                  ],
-                  selected: {ref.watch(recordingModeProvider)},
-                  onSelectionChanged: (s) {
-                    HapticFeedback.selectionClick();
-                    ref.read(recordingModeProvider.notifier).set(s.first);
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
               // Clip context (visible only when recording mode = detections)
               if (ref.watch(recordingModeProvider) == 'detections') ...[
                 ListTile(
@@ -547,6 +493,17 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               const Divider(),
             ],
+
+            // --- Announcements ---
+            if (_showSection('announcements'))
+              AnnouncementsSettingsSection(
+                sectionHeader:
+                    ({required String title, required String subtitle}) =>
+                        _SectionHeader(title: title, subtitle: subtitle),
+                titleWithHelp:
+                    ({required String title, String? helpBody}) =>
+                        _TitleWithHelp(title: title, helpBody: helpBody),
+              ),
 
             // --- Location / Geo ---
             if (_showSection('location')) ...[
@@ -1203,6 +1160,59 @@ class _SliderTile extends StatelessWidget {
       ),
       trailing: Text(
         format(value),
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+    );
+  }
+}
+
+class _DiscreteSliderTile<T> extends StatelessWidget {
+  const _DiscreteSliderTile({
+    required this.title,
+    required this.value,
+    required this.values,
+    required this.format,
+    required this.onChanged,
+    this.helpBody,
+  }) : assert(values.length > 1);
+
+  final String title;
+  final T value;
+  final List<T> values;
+  final String Function(T) format;
+  final ValueChanged<T> onChanged;
+  final String? helpBody;
+
+  int get _selectedIndex {
+    final index = values.indexOf(value);
+    return index == -1 ? 0 : index;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedIndex = _selectedIndex;
+    final selectedValue = values[selectedIndex];
+    return ListTile(
+      title: _TitleWithHelp(title: title, helpBody: helpBody),
+      subtitle: Slider(
+        value: selectedIndex.toDouble(),
+        min: 0,
+        max: (values.length - 1).toDouble(),
+        divisions: values.length - 1,
+        label: format(selectedValue),
+        onChanged: (raw) {
+          final rounded = raw.round();
+          final index =
+              rounded < 0
+                  ? 0
+                  : rounded >= values.length
+                  ? values.length - 1
+                  : rounded;
+          onChanged(values[index]);
+        },
+      ),
+      trailing: Text(
+        format(selectedValue),
         style: Theme.of(context).textTheme.bodySmall,
       ),
     );
