@@ -5,11 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.14] - 2026-06-20
+
+### Changed
+
+- Added a per-format help icon to each export format (Raven, CSV, JSON, GPX) explaining what that file contains, and reworded the Export Format help to describe the new bundle-and-audio-only behavior.
+- Replaced the manual Latitude/Longitude sliders in Settings with editable text fields so you can type or paste exact coordinates when GPS is off. Pasting a combined "latitude, longitude" string into either field fills both at once, and out-of-range or invalid entries are flagged inline.
+
+## [0.17.13] - 2026-06-20
+
+### Added
+
+- Added an "Include app metadata" checkbox to Settings > Export, on by default. Turning it off drops the `*.metadata.json` side-file from the export bundle.
+- Added an audio-only share path: untick every export format, the HTML report, and the new app metadata box (leaving only "Include audio files") and Share will hand the platform sheet the raw recording instead of a ZIP — useful for sending a session straight into iNaturalist or eBird.
+
+### Changed
+
+- Converted the "Include audio files" and "Include HTML report" settings from toggles to checkboxes so the entire Export section is now a single consistent checklist.
+
+## [0.17.12] - 2026-06-20
+
+### Fixed
+
+- Fixed Survey session durations in the Session Library continuing to grow after the session ended, caused by a stale open recording segment left behind by the final persist.
+
 ## [0.17.11] - 2026-06-19
 
 ### Changed
 
 - Changed the main menu in landscape to show all six mode tiles in a 3x2 grid with a full-width footer and a smaller side-by-side logo/title header.
+
+### Fixed
+
+- Fixed the Session Library "new session" picker overflowing in landscape by making it scroll when there is not enough vertical space.
+- Fixed a crash when leaving the Live screen while a session was still starting, caused by reading providers after the screen was closed.
 
 ## [0.17.10] - 2026-06-19
 

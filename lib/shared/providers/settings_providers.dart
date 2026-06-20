@@ -224,9 +224,9 @@ final exportFormatProvider =
     });
 
 /// Set of formats included in every export ZIP, persisted as a
-/// comma-separated string under [PrefKeys.exportSelection]. Empty
-/// selections fall back to `{'raven'}` at read time so the pipeline
-/// always produces at least one document.
+/// comma-separated string under [PrefKeys.exportSelection]. Defaults to
+/// `{'raven'}` for new installs; users may deselect every format to
+/// share the raw audio file without a ZIP container.
 final exportSelectionProvider =
     StateNotifierProvider<ExportSelectionNotifier, Set<String>>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
@@ -236,6 +236,10 @@ final exportSelectionProvider =
 class ExportSelectionNotifier extends StateNotifier<Set<String>> {
   ExportSelectionNotifier(this._prefs) : super(_load(_prefs));
 
+  // Sentinel string used to persist an intentionally-empty selection,
+  // so SharedPreferences can distinguish "never set" from "explicitly
+  // none" (the latter must NOT trigger the new-install default).
+  static const String _emptySentinel = '__none__';
   static const Set<String> _allFormats = {'raven', 'csv', 'json', 'gpx'};
   static const Set<String> _defaultFormats = {'raven'};
 
@@ -243,7 +247,7 @@ class ExportSelectionNotifier extends StateNotifier<Set<String>> {
 
   static Set<String> _load(SharedPreferences prefs) {
     final raw = prefs.getString(PrefKeys.exportSelection);
-    if (raw == null || raw.isEmpty) {
+    if (raw == null) {
       // Migrate from the legacy single-choice key when present.
       final legacy = prefs.getString(PrefKeys.exportFormat);
       if (legacy != null && _allFormats.contains(legacy)) {
@@ -251,8 +255,8 @@ class ExportSelectionNotifier extends StateNotifier<Set<String>> {
       }
       return {..._defaultFormats};
     }
-    final parts = raw.split(',').where(_allFormats.contains).toSet();
-    return parts.isEmpty ? {..._defaultFormats} : parts;
+    if (raw.isEmpty || raw == _emptySentinel) return <String>{};
+    return raw.split(',').where(_allFormats.contains).toSet();
   }
 
   void toggle(String format, bool enabled) {
@@ -263,16 +267,19 @@ class ExportSelectionNotifier extends StateNotifier<Set<String>> {
     } else {
       next.remove(format);
     }
-    if (next.isEmpty) next.addAll(_defaultFormats);
-    state = next;
-    _prefs.setString(PrefKeys.exportSelection, next.join(','));
+    _persist(next);
   }
 
   void set(Set<String> formats) {
-    final filtered = formats.where(_allFormats.contains).toSet();
-    final next = filtered.isEmpty ? {..._defaultFormats} : filtered;
+    _persist(formats.where(_allFormats.contains).toSet());
+  }
+
+  void _persist(Set<String> next) {
     state = next;
-    _prefs.setString(PrefKeys.exportSelection, next.join(','));
+    _prefs.setString(
+      PrefKeys.exportSelection,
+      next.isEmpty ? _emptySentinel : next.join(','),
+    );
   }
 }
 
@@ -293,6 +300,17 @@ final exportHtmlReportProvider =
     StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
       return BoolSettingNotifier(prefs, PrefKeys.exportHtmlReport, true);
+    });
+
+/// Bundle the BirdNET Live app metadata side-file (`*.metadata.json`)
+/// inside the export ZIP (default true). The side-file carries
+/// provenance such as app version, model identity, weather snapshot,
+/// and audio integrity warnings. Disable to share audio + selected
+/// formats without app-specific metadata.
+final includeAppMetadataProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(prefs, PrefKeys.includeAppMetadata, true);
     });
 
 // ---------------------------------------------------------------------------

@@ -637,6 +637,79 @@ void main() {
       expect(gpxContent, contains('<wpt'));
       expect(gpxContent, contains('Eurasian Blackbird'));
     });
+
+    test(
+      'audio-only export returns raw audio file (no ZIP) when every '
+      'companion is disabled',
+      () async {
+        final wavPath = '${tempDir.path}/full.wav';
+        File(wavPath).writeAsBytesSync([0x52, 0x49, 0x46, 0x46]);
+
+        final session = _makeSession(
+          recordingPath: wavPath,
+          detections: [
+            _det(
+              'Turdus merula',
+              'Eurasian Blackbird',
+              0.91,
+              const Duration(seconds: 5),
+              DateTime.utc(2025, 6, 15, 8, 0, 0),
+            ),
+          ],
+        );
+
+        final result = await buildSessionExport(
+          session,
+          formats: const <String>{},
+          includeAudio: true,
+          includeHtmlReport: false,
+          includeAppMetadata: false,
+        );
+
+        expect(result, isNotNull);
+        expect(result!.endsWith('.wav'), isTrue);
+        expect(p.basename(result), '$_prefix.wav');
+        expect(File(result).existsSync(), isTrue);
+      },
+    );
+
+    test(
+      'disabling app metadata drops the .metadata.json side-file from the ZIP',
+      () async {
+        final wavPath = '${tempDir.path}/full.wav';
+        File(wavPath).writeAsBytesSync([0x52, 0x49, 0x46, 0x46]);
+
+        final session = _makeSession(
+          recordingPath: wavPath,
+          detections: [
+            _det(
+              'Turdus merula',
+              'Eurasian Blackbird',
+              0.91,
+              const Duration(seconds: 5),
+              DateTime.utc(2025, 6, 15, 8, 0, 0),
+            ),
+          ],
+        );
+
+        final zipPath = await buildSessionExport(
+          session,
+          formats: const {'raven'},
+          includeAudio: true,
+          includeAppMetadata: false,
+          metadata: {'app': 'birdnet-live'},
+        );
+
+        expect(zipPath, isNotNull);
+        final archive = ZipDecoder().decodeBytes(
+          File(zipPath!).readAsBytesSync(),
+        );
+        final names = archive.map((f) => f.name).toList();
+        expect(names, contains('$_prefix.wav'));
+        expect(names, contains('$_prefix.selections.txt'));
+        expect(names.any((n) => n.endsWith('.metadata.json')), isFalse);
+      },
+    );
   });
 
   // â”€â”€ JSON export: new fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

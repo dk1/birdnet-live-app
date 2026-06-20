@@ -957,6 +957,30 @@
   "@settingsLongitude": {
     "description": "Manual longitude setting label"
   },
+  "settingsManualCoordinates": "Manual coordinates",
+  "@settingsManualCoordinates": {
+    "description": "Label above the manual latitude/longitude entry fields"
+  },
+  "settingsHelpManualCoordinates": "Type or paste a precise location to use when GPS is off. Enter decimal degrees (for example 52.5200 and 13.4050). You can also paste a combined \"latitude, longitude\" string into either field and both will be filled at once.",
+  "@settingsHelpManualCoordinates": {
+    "description": "Help text for the manual coordinates entry"
+  },
+  "settingsCoordinatesHint": "Type or paste, e.g. 52.5200, 13.4050",
+  "@settingsCoordinatesHint": {
+    "description": "Hint below the manual coordinate fields explaining the accepted format"
+  },
+  "settingsCoordinateInvalid": "Enter a valid number",
+  "@settingsCoordinateInvalid": {
+    "description": "Error shown when a coordinate field is not a parseable number"
+  },
+  "settingsLatitudeRange": "Latitude must be between -90 and 90",
+  "@settingsLatitudeRange": {
+    "description": "Error shown when latitude is outside its valid range"
+  },
+  "settingsLongitudeRange": "Longitude must be between -180 and 180",
+  "@settingsLongitudeRange": {
+    "description": "Error shown when longitude is outside its valid range"
+  },
   "settingsSpeciesFilter": "Species filter",
   "@settingsSpeciesFilter": {
     "description": "Species filter mode setting label"
@@ -2156,9 +2180,25 @@
   "@settingsHelpGeoThreshold": {
     "description": "Help text for geo threshold setting"
   },
-  "settingsHelpExportFormat": "Format for exported session data. Raven is for use in Cornell Raven Pro; CSV opens in spreadsheets; JSON is easiest for programmatic processing; GPX writes the survey track and waypoints for use in mapping tools.",
+  "settingsHelpExportFormat": "Pick any combination of formats to bundle into the export. Each ticked format is written as its own file inside the ZIP, alongside the audio, app metadata, and HTML report you enable below. Untick every format here and leave only \"Include audio files\" on to share the raw recording on its own, with no ZIP.",
   "@settingsHelpExportFormat": {
     "description": "Help text for export format setting"
+  },
+  "settingsHelpExportRaven": "Writes a Raven selection table (`.selections.txt`) for use in Cornell Raven Pro. Each detection becomes a selection with its time range, frequency band, score, and species labels so you can review the recording against the model's marks.",
+  "@settingsHelpExportRaven": {
+    "description": "Help text for the Raven export format checkbox"
+  },
+  "settingsHelpExportCsv": "Writes a comma-separated table (`.csv`) with one row per detection — time, species, score, and any notes — that opens in any spreadsheet app. Best for quick filtering, sorting, and summarizing your detections.",
+  "@settingsHelpExportCsv": {
+    "description": "Help text for the CSV export format checkbox"
+  },
+  "settingsHelpExportJson": "Writes a structured `.json` document carrying the full session: every detection plus the complete per-session metadata (settings, model identity, weather, and integrity info). Best for programmatic processing and re-import.",
+  "@settingsHelpExportJson": {
+    "description": "Help text for the JSON export format checkbox"
+  },
+  "settingsHelpExportGpx": "Writes a `.gpx` file with the recorded GPS track and a waypoint for each located detection, for use in mapping tools. Only meaningful for sessions recorded with GPS on; surveys also bundle a GPX automatically when other formats are selected.",
+  "@settingsHelpExportGpx": {
+    "description": "Help text for the GPX export format checkbox"
   },
   "settingsHelpIncludeAudioFiles": "When enabled, exported sessions include the saved audio files alongside the metadata table. Useful for archiving and re-analysis; results in much larger exports.",
   "@settingsHelpIncludeAudioFiles": {
@@ -2167,6 +2207,10 @@
   "settingsHelpExportHtmlReport": "When enabled, the export ZIP also contains a self-contained `report.html`. Open it in any browser to see a styled session summary with map, per-detection cards, and inline audio players. Species images are loaded from the BirdNET taxonomy service when online.",
   "@settingsHelpExportHtmlReport": {
     "description": "Help text for export HTML report setting"
+  },
+  "settingsHelpExportAppMetadata": "When enabled, the export ZIP includes a `*.metadata.json` side-file with BirdNET Live provenance: app and model version, weather snapshot at the start of the session, and audio integrity warnings. Turn off to share only audio and the selected formats without any app-specific files.",
+  "@settingsHelpExportAppMetadata": {
+    "description": "Help text for the include app metadata setting"
   },
   "fileAnalysisNext": "Next",
   "@fileAnalysisNext": {
@@ -3459,6 +3503,10 @@
   "settingsExportHtmlReport": "Include HTML report",
   "@settingsExportHtmlReport": {
     "description": "Toggle: bundle a self-contained HTML report inside the export ZIP"
+  },
+  "settingsExportAppMetadata": "Include app metadata",
+  "@settingsExportAppMetadata": {
+    "description": "Checkbox: bundle the BirdNET Live metadata side-file inside the export ZIP"
   },
   "settingsPrivacy": "Privacy",
   "@settingsPrivacy": {

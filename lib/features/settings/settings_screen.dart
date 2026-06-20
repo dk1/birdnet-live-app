@@ -521,26 +521,7 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged: (v) => ref.read(useGpsProvider.notifier).set(v),
               ),
               if (!ref.watch(useGpsProvider)) ...[
-                _SliderTile(
-                  title: l10n.settingsLatitude,
-                  value: ref.watch(manualLatitudeProvider),
-                  min: -90,
-                  max: 90,
-                  divisions: 1800,
-                  format: (v) => v.toStringAsFixed(2),
-                  onChanged:
-                      (v) => ref.read(manualLatitudeProvider.notifier).set(v),
-                ),
-                _SliderTile(
-                  title: l10n.settingsLongitude,
-                  value: ref.watch(manualLongitudeProvider),
-                  min: -180,
-                  max: 180,
-                  divisions: 3600,
-                  format: (v) => v.toStringAsFixed(2),
-                  onChanged:
-                      (v) => ref.read(manualLongitudeProvider.notifier).set(v),
-                ),
+                const _ManualCoordinatesTile(),
               ],
               if (ref.watch(useGpsProvider)) const _GpsRefreshTile(),
               if (_showOfflineMapDownloadSetting && ref.watch(useGpsProvider))
@@ -579,23 +560,40 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: l10n.settingsExportDescription,
               ),
               _ExportFormatChecklist(),
-              SwitchListTile(
+              CheckboxListTile(
+                dense: true,
                 title: _TitleWithHelp(
                   title: l10n.settingsIncludeAudioFiles,
                   helpBody: l10n.settingsHelpIncludeAudioFiles,
                 ),
                 value: ref.watch(includeAudioProvider),
                 onChanged:
-                    (v) => ref.read(includeAudioProvider.notifier).set(v),
+                    (v) =>
+                        ref.read(includeAudioProvider.notifier).set(v ?? false),
               ),
-              SwitchListTile(
+              CheckboxListTile(
+                dense: true,
+                title: _TitleWithHelp(
+                  title: l10n.settingsExportAppMetadata,
+                  helpBody: l10n.settingsHelpExportAppMetadata,
+                ),
+                value: ref.watch(includeAppMetadataProvider),
+                onChanged:
+                    (v) => ref
+                        .read(includeAppMetadataProvider.notifier)
+                        .set(v ?? false),
+              ),
+              CheckboxListTile(
+                dense: true,
                 title: _TitleWithHelp(
                   title: l10n.settingsExportHtmlReport,
                   helpBody: l10n.settingsHelpExportHtmlReport,
                 ),
                 value: ref.watch(exportHtmlReportProvider),
                 onChanged:
-                    (v) => ref.read(exportHtmlReportProvider.notifier).set(v),
+                    (v) => ref
+                        .read(exportHtmlReportProvider.notifier)
+                        .set(v ?? false),
               ),
               const Divider(),
             ],
@@ -1125,6 +1123,222 @@ class _SpeciesLanguageTile extends ConsumerWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// _ManualCoordinatesTile — editable latitude / longitude entry
+// ---------------------------------------------------------------------------
+//
+// Lets the user type or paste precise coordinates when GPS is off,
+// addressing the imprecision of dragging a slider on a touch screen.
+// Pasting a combined "lat, lon" string (comma-, semicolon-, or
+// whitespace-separated) into either field fills both fields at once.
+// Values are validated against geographic ranges and persisted to
+// [manualLatitudeProvider] / [manualLongitudeProvider] as the user types.
+// ---------------------------------------------------------------------------
+
+class _ManualCoordinatesTile extends ConsumerStatefulWidget {
+  const _ManualCoordinatesTile();
+
+  @override
+  ConsumerState<_ManualCoordinatesTile> createState() =>
+      _ManualCoordinatesTileState();
+}
+
+class _ManualCoordinatesTileState
+    extends ConsumerState<_ManualCoordinatesTile> {
+  late final TextEditingController _latController = TextEditingController(
+    text: _format(ref.read(manualLatitudeProvider)),
+  );
+  late final TextEditingController _lonController = TextEditingController(
+    text: _format(ref.read(manualLongitudeProvider)),
+  );
+  final FocusNode _latFocus = FocusNode();
+  final FocusNode _lonFocus = FocusNode();
+
+  String? _latError;
+  String? _lonError;
+
+  static String _format(double v) => v.toStringAsFixed(5);
+
+  @override
+  void dispose() {
+    _latController.dispose();
+    _lonController.dispose();
+    _latFocus.dispose();
+    _lonFocus.dispose();
+    super.dispose();
+  }
+
+  /// Parses a combined coordinate string such as "52.52, 13.40",
+  /// "52.52; 13.40", or "52.52 13.40". Returns null when the text is not
+  /// exactly two parseable numbers.
+  static (double, double)? _parsePair(String text) {
+    final parts =
+        text
+            .trim()
+            .split(RegExp(r'[,;\s]+'))
+            .where((p) => p.isNotEmpty)
+            .toList();
+    if (parts.length != 2) return null;
+    final lat = double.tryParse(parts[0]);
+    final lon = double.tryParse(parts[1]);
+    if (lat == null || lon == null) return null;
+    return (lat, lon);
+  }
+
+  /// Applies a full lat/lon pair (typically pasted) to both providers and
+  /// both text fields, validating each value against its range.
+  void _applyPair(double lat, double lon, AppLocalizations l10n) {
+    final latValid = lat >= -90 && lat <= 90;
+    final lonValid = lon >= -180 && lon <= 180;
+    setState(() {
+      _latError = latValid ? null : l10n.settingsLatitudeRange;
+      _lonError = lonValid ? null : l10n.settingsLongitudeRange;
+    });
+    if (latValid) {
+      ref.read(manualLatitudeProvider.notifier).set(lat);
+      final text = _format(lat);
+      _latController.value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: text.length),
+      );
+    }
+    if (lonValid) {
+      ref.read(manualLongitudeProvider.notifier).set(lon);
+      final text = _format(lon);
+      _lonController.value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: text.length),
+      );
+    }
+  }
+
+  void _onLatChanged(String value, AppLocalizations l10n) {
+    final pair = _parsePair(value);
+    if (pair != null) {
+      _applyPair(pair.$1, pair.$2, l10n);
+      return;
+    }
+    final trimmed = value.trim();
+    final lat = double.tryParse(trimmed);
+    setState(() {
+      if (trimmed.isEmpty) {
+        _latError = null;
+      } else if (lat == null) {
+        _latError = l10n.settingsCoordinateInvalid;
+      } else if (lat < -90 || lat > 90) {
+        _latError = l10n.settingsLatitudeRange;
+      } else {
+        _latError = null;
+        ref.read(manualLatitudeProvider.notifier).set(lat);
+      }
+    });
+  }
+
+  void _onLonChanged(String value, AppLocalizations l10n) {
+    final pair = _parsePair(value);
+    if (pair != null) {
+      _applyPair(pair.$1, pair.$2, l10n);
+      return;
+    }
+    final trimmed = value.trim();
+    final lon = double.tryParse(trimmed);
+    setState(() {
+      if (trimmed.isEmpty) {
+        _lonError = null;
+      } else if (lon == null) {
+        _lonError = l10n.settingsCoordinateInvalid;
+      } else if (lon < -180 || lon > 180) {
+        _lonError = l10n.settingsLongitudeRange;
+      } else {
+        _lonError = null;
+        ref.read(manualLongitudeProvider.notifier).set(lon);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    // Keep the fields in sync when the providers change from elsewhere
+    // (e.g. a reset), but never stomp on the field the user is editing.
+    ref.listen(manualLatitudeProvider, (_, next) {
+      if (!_latFocus.hasFocus) {
+        final formatted = _format(next);
+        if (_latController.text != formatted) _latController.text = formatted;
+      }
+    });
+    ref.listen(manualLongitudeProvider, (_, next) {
+      if (!_lonFocus.hasFocus) {
+        final formatted = _format(next);
+        if (_lonController.text != formatted) _lonController.text = formatted;
+      }
+    });
+
+    const keyboardType = TextInputType.numberWithOptions(
+      decimal: true,
+      signed: true,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _TitleWithHelp(
+            title: l10n.settingsManualCoordinates,
+            helpBody: l10n.settingsHelpManualCoordinates,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _latController,
+                  focusNode: _latFocus,
+                  keyboardType: keyboardType,
+                  textInputAction: TextInputAction.next,
+                  onChanged: (v) => _onLatChanged(v, l10n),
+                  decoration: InputDecoration(
+                    labelText: l10n.settingsLatitude,
+                    border: const OutlineInputBorder(),
+                    errorText: _latError,
+                    isDense: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _lonController,
+                  focusNode: _lonFocus,
+                  keyboardType: keyboardType,
+                  textInputAction: TextInputAction.done,
+                  onChanged: (v) => _onLonChanged(v, l10n),
+                  decoration: InputDecoration(
+                    labelText: l10n.settingsLongitude,
+                    border: const OutlineInputBorder(),
+                    errorText: _lonError,
+                    isDense: true,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.settingsCoordinatesHint,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SliderTile extends StatelessWidget {
   const _SliderTile({
     required this.title,
@@ -1548,11 +1762,11 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
 // ---------------------------------------------------------------------------
 //
 // Replaces the single-choice export-format selector with a row of
-// independent toggles. The pipeline now bundles every enabled format
+// independent checkboxes. The pipeline bundles every enabled format
 // into the export ZIP, so users can grab Raven + CSV + JSON in one
-// share. Selection is persisted via [exportSelectionProvider]; an empty
-// selection silently falls back to `{raven}` so the export always
-// produces at least one document.
+// share. Selection is persisted via [exportSelectionProvider]. Unticking
+// every format (together with the audio / metadata / HTML report boxes)
+// shares the raw audio file on its own — see [buildSessionExport].
 // ---------------------------------------------------------------------------
 
 class _ExportFormatChecklist extends ConsumerWidget {
@@ -1562,11 +1776,13 @@ class _ExportFormatChecklist extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final selection = ref.watch(exportSelectionProvider);
-    const formats = <(String, String)>[
-      ('raven', 'Raven Selection Table'),
-      ('csv', 'CSV'),
-      ('json', 'JSON'),
-      ('gpx', 'GPX (track + waypoints)'),
+    // (token, display label, per-format help). Labels stay in English as
+    // technical terms; only the help bodies are localized.
+    final formats = <(String, String, String)>[
+      ('raven', 'Raven Selection Table', l10n.settingsHelpExportRaven),
+      ('csv', 'CSV', l10n.settingsHelpExportCsv),
+      ('json', 'JSON', l10n.settingsHelpExportJson),
+      ('gpx', 'GPX (track + waypoints)', l10n.settingsHelpExportGpx),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1581,7 +1797,7 @@ class _ExportFormatChecklist extends ConsumerWidget {
         for (final fmt in formats)
           CheckboxListTile(
             dense: true,
-            title: Text(fmt.$2),
+            title: _TitleWithHelp(title: fmt.$2, helpBody: fmt.$3),
             value: selection.contains(fmt.$1),
             onChanged:
                 (v) => ref
