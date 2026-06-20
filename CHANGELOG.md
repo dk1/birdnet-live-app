@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Added a per-format help icon to each export format (Raven, CSV, JSON, GPX) explaining what that file contains, and reworded the Export Format help to describe the new bundle-and-audio-only behavior.
+- Replaced the manual Latitude/Longitude sliders in Settings with editable text fields so you can type or paste exact coordinates when GPS is off. Pasting a combined "latitude, longitude" string into either field fills both at once, and out-of-range or invalid entries are flagged inline.
 
 ## [0.17.13] - 2026-06-20
 

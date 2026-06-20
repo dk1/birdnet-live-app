@@ -957,6 +957,30 @@
   "@settingsLongitude": {
     "description": "Manual longitude setting label"
   },
+  "settingsManualCoordinates": "Manual coordinates",
+  "@settingsManualCoordinates": {
+    "description": "Label above the manual latitude/longitude entry fields"
+  },
+  "settingsHelpManualCoordinates": "Type or paste a precise location to use when GPS is off. Enter decimal degrees (for example 52.5200 and 13.4050). You can also paste a combined \"latitude, longitude\" string into either field and both will be filled at once.",
+  "@settingsHelpManualCoordinates": {
+    "description": "Help text for the manual coordinates entry"
+  },
+  "settingsCoordinatesHint": "Type or paste, e.g. 52.5200, 13.4050",
+  "@settingsCoordinatesHint": {
+    "description": "Hint below the manual coordinate fields explaining the accepted format"
+  },
+  "settingsCoordinateInvalid": "Enter a valid number",
+  "@settingsCoordinateInvalid": {
+    "description": "Error shown when a coordinate field is not a parseable number"
+  },
+  "settingsLatitudeRange": "Latitude must be between -90 and 90",
+  "@settingsLatitudeRange": {
+    "description": "Error shown when latitude is outside its valid range"
+  },
+  "settingsLongitudeRange": "Longitude must be between -180 and 180",
+  "@settingsLongitudeRange": {
+    "description": "Error shown when longitude is outside its valid range"
+  },
   "settingsSpeciesFilter": "Species filter",
   "@settingsSpeciesFilter": {
     "description": "Species filter mode setting label"

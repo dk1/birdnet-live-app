@@ -170,9 +170,9 @@ When enabled, Live mode begins recording as soon as the screen opens and the mod
 
 Use device GPS instead of manual coordinates.
 
-### Latitude / Longitude
+### Manual coordinates
 
-Manual coordinates used when GPS is disabled.
+The coordinates used when **Use GPS** is off. Both Latitude and Longitude are editable text fields, so you can **type** an exact value or **paste** one copied from another app — far more precise than dragging a slider on a touch screen. Enter decimal degrees (e.g. `52.5200` and `13.4050`). You can also paste a combined `latitude, longitude` string (comma-, semicolon-, or space-separated) into *either* field and both fields fill at once, which matches what most maps and websites put on the clipboard. Out-of-range or non-numeric input is flagged inline and not saved; valid values persist as you type. The intuition: the most common reason to set a manual location is to ID a sound recorded somewhere other than where you are now, and that location usually comes as text from elsewhere — typing and pasting make that a single accurate step.
 
 ### Refresh GPS now
 
