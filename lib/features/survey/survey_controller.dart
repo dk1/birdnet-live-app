@@ -1176,10 +1176,15 @@ class SurveyController {
     try {
       // Roll the segment forward so the persisted recordedDurationSeconds
       // reflects time recorded since the last persist tick. We immediately
-      // open a new segment so [elapsed] keeps ticking smoothly.
+      // open a new segment for active surveys so [elapsed] keeps ticking
+      // smoothly. Final persists run after [LiveSession.end] and must not
+      // reopen a segment, otherwise saved Survey durations keep growing in
+      // Session Library.
       _closeRecordingSegment();
-      _session!.startSegment();
-      _segmentStart = DateTime.now();
+      if (_session!.endTime == null) {
+        _session!.startSegment();
+        _segmentStart = DateTime.now();
+      }
 
       final appDir = await getApplicationDocumentsDirectory();
       final sessionsDir = Directory('${appDir.path}/sessions');

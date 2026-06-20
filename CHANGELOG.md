@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.12] - 2026-06-20
+
+### Fixed
+
+- Fixed Survey session durations in the Session Library continuing to grow after the session ended, caused by a stale open recording segment left behind by the final persist.
+
 ## [0.17.11] - 2026-06-19
 
 ### Changed
