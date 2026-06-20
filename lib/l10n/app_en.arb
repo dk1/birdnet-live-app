@@ -2156,9 +2156,25 @@
   "@settingsHelpGeoThreshold": {
     "description": "Help text for geo threshold setting"
   },
-  "settingsHelpExportFormat": "Format for exported session data. Raven is for use in Cornell Raven Pro; CSV opens in spreadsheets; JSON is easiest for programmatic processing; GPX writes the survey track and waypoints for use in mapping tools.",
+  "settingsHelpExportFormat": "Pick any combination of formats to bundle into the export. Each ticked format is written as its own file inside the ZIP, alongside the audio, app metadata, and HTML report you enable below. Untick every format here and leave only \"Include audio files\" on to share the raw recording on its own, with no ZIP.",
   "@settingsHelpExportFormat": {
     "description": "Help text for export format setting"
+  },
+  "settingsHelpExportRaven": "Writes a Raven selection table (`.selections.txt`) for use in Cornell Raven Pro. Each detection becomes a selection with its time range, frequency band, score, and species labels so you can review the recording against the model's marks.",
+  "@settingsHelpExportRaven": {
+    "description": "Help text for the Raven export format checkbox"
+  },
+  "settingsHelpExportCsv": "Writes a comma-separated table (`.csv`) with one row per detection — time, species, score, and any notes — that opens in any spreadsheet app. Best for quick filtering, sorting, and summarizing your detections.",
+  "@settingsHelpExportCsv": {
+    "description": "Help text for the CSV export format checkbox"
+  },
+  "settingsHelpExportJson": "Writes a structured `.json` document carrying the full session: every detection plus the complete per-session metadata (settings, model identity, weather, and integrity info). Best for programmatic processing and re-import.",
+  "@settingsHelpExportJson": {
+    "description": "Help text for the JSON export format checkbox"
+  },
+  "settingsHelpExportGpx": "Writes a `.gpx` file with the recorded GPS track and a waypoint for each located detection, for use in mapping tools. Only meaningful for sessions recorded with GPS on; surveys also bundle a GPX automatically when other formats are selected.",
+  "@settingsHelpExportGpx": {
+    "description": "Help text for the GPX export format checkbox"
   },
   "settingsHelpIncludeAudioFiles": "When enabled, exported sessions include the saved audio files alongside the metadata table. Useful for archiving and re-analysis; results in much larger exports.",
   "@settingsHelpIncludeAudioFiles": {

@@ -1565,11 +1565,11 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
 // ---------------------------------------------------------------------------
 //
 // Replaces the single-choice export-format selector with a row of
-// independent toggles. The pipeline now bundles every enabled format
+// independent checkboxes. The pipeline bundles every enabled format
 // into the export ZIP, so users can grab Raven + CSV + JSON in one
-// share. Selection is persisted via [exportSelectionProvider]; an empty
-// selection silently falls back to `{raven}` so the export always
-// produces at least one document.
+// share. Selection is persisted via [exportSelectionProvider]. Unticking
+// every format (together with the audio / metadata / HTML report boxes)
+// shares the raw audio file on its own — see [buildSessionExport].
 // ---------------------------------------------------------------------------
 
 class _ExportFormatChecklist extends ConsumerWidget {
@@ -1579,11 +1579,13 @@ class _ExportFormatChecklist extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final selection = ref.watch(exportSelectionProvider);
-    const formats = <(String, String)>[
-      ('raven', 'Raven Selection Table'),
-      ('csv', 'CSV'),
-      ('json', 'JSON'),
-      ('gpx', 'GPX (track + waypoints)'),
+    // (token, display label, per-format help). Labels stay in English as
+    // technical terms; only the help bodies are localized.
+    final formats = <(String, String, String)>[
+      ('raven', 'Raven Selection Table', l10n.settingsHelpExportRaven),
+      ('csv', 'CSV', l10n.settingsHelpExportCsv),
+      ('json', 'JSON', l10n.settingsHelpExportJson),
+      ('gpx', 'GPX (track + waypoints)', l10n.settingsHelpExportGpx),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1598,7 +1600,7 @@ class _ExportFormatChecklist extends ConsumerWidget {
         for (final fmt in formats)
           CheckboxListTile(
             dense: true,
-            title: Text(fmt.$2),
+            title: _TitleWithHelp(title: fmt.$2, helpBody: fmt.$3),
             value: selection.contains(fmt.$1),
             onChanged:
                 (v) => ref
