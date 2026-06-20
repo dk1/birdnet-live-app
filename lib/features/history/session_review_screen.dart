@@ -1850,6 +1850,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
     final includeHtmlReport = ref.read(exportHtmlReportProvider);
+    final includeAppMetadata = ref.read(includeAppMetadataProvider);
     final taxonomy = ref.read(taxonomyServiceProvider).value;
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     // Legacy sessions persisted before SessionSettings.clipContextSeconds
@@ -1880,6 +1881,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       useAbsoluteSurveyTime:
           ref.read(timestampDisplayModeProvider) == 'absolute',
       includeHtmlReport: includeHtmlReport,
+      includeAppMetadata: includeAppMetadata,
     );
 
     if (exportPath == null) return;

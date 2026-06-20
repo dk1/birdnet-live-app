@@ -113,6 +113,7 @@ abstract final class PrefKeys {
 
   static const String includeAudio = 'include_audio';
   static const String exportHtmlReport = 'export_html_report';
+  static const String includeAppMetadata = 'include_app_metadata';
 
   // Location / geo settings
   static const String useGps = 'use_gps';

@@ -579,23 +579,40 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: l10n.settingsExportDescription,
               ),
               _ExportFormatChecklist(),
-              SwitchListTile(
+              CheckboxListTile(
+                dense: true,
                 title: _TitleWithHelp(
                   title: l10n.settingsIncludeAudioFiles,
                   helpBody: l10n.settingsHelpIncludeAudioFiles,
                 ),
                 value: ref.watch(includeAudioProvider),
                 onChanged:
-                    (v) => ref.read(includeAudioProvider.notifier).set(v),
+                    (v) =>
+                        ref.read(includeAudioProvider.notifier).set(v ?? false),
               ),
-              SwitchListTile(
+              CheckboxListTile(
+                dense: true,
+                title: _TitleWithHelp(
+                  title: l10n.settingsExportAppMetadata,
+                  helpBody: l10n.settingsHelpExportAppMetadata,
+                ),
+                value: ref.watch(includeAppMetadataProvider),
+                onChanged:
+                    (v) => ref
+                        .read(includeAppMetadataProvider.notifier)
+                        .set(v ?? false),
+              ),
+              CheckboxListTile(
+                dense: true,
                 title: _TitleWithHelp(
                   title: l10n.settingsExportHtmlReport,
                   helpBody: l10n.settingsHelpExportHtmlReport,
                 ),
                 value: ref.watch(exportHtmlReportProvider),
                 onChanged:
-                    (v) => ref.read(exportHtmlReportProvider.notifier).set(v),
+                    (v) => ref
+                        .read(exportHtmlReportProvider.notifier)
+                        .set(v ?? false),
               ),
               const Divider(),
             ],

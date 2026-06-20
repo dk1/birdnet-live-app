@@ -810,6 +810,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
     final includeHtmlReport = ref.read(exportHtmlReportProvider);
+    final includeAppMetadata = ref.read(includeAppMetadataProvider);
     final taxonomy = ref.read(taxonomyServiceProvider).value;
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     final useAbsoluteSurveyTime =
@@ -827,6 +828,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       metadata: metadata,
       useAbsoluteSurveyTime: useAbsoluteSurveyTime,
       includeHtmlReport: includeHtmlReport,
+      includeAppMetadata: includeAppMetadata,
     );
     if (exportPath == null) return;
     await SharePlus.instance.share(ShareParams(files: [XFile(exportPath)]));
@@ -900,6 +902,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       final exportFormats = ref.read(exportSelectionProvider);
       final includeAudio = ref.read(includeAudioProvider);
       final includeHtmlReport = ref.read(exportHtmlReportProvider);
+      final includeAppMetadata = ref.read(includeAppMetadataProvider);
       final taxonomy = ref.read(taxonomyServiceProvider).value;
       final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
       final useAbsoluteSurveyTime =
@@ -913,6 +916,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         speciesLocale: speciesLocale,
         useAbsoluteSurveyTime: useAbsoluteSurveyTime,
         includeHtmlReport: includeHtmlReport,
+        includeAppMetadata: includeAppMetadata,
       );
 
       if (mounted) {

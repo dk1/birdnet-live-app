@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.13] - 2026-06-20
+
+### Added
+
+- Added an "Include app metadata" checkbox to Settings > Export, on by default. Turning it off drops the `*.metadata.json` side-file from the export bundle.
+- Added an audio-only share path: untick every export format, the HTML report, and the new app metadata box (leaving only "Include audio files") and Share will hand the platform sheet the raw recording instead of a ZIP — useful for sending a session straight into iNaturalist or eBird.
+
+### Changed
+
+- Converted the "Include audio files" and "Include HTML report" settings from toggles to checkboxes so the entire Export section is now a single consistent checklist.
+
 ## [0.17.12] - 2026-06-20
 
 ### Fixed

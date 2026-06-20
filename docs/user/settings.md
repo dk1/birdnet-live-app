@@ -209,9 +209,17 @@ The intuition: many workflows need more than one format at the same time — a C
 
 Include saved audio alongside the exported tables or metadata when supported by the export workflow.
 
+### Include app metadata
+
+When on, the export ZIP carries a `*.metadata.json` side-file describing how the session was produced: BirdNET Live version, model identity, the weather snapshot captured at session start, and any audio integrity warnings detected during recording. The intuition: that provenance is what lets you (or a reviewer) reproduce or audit a session months later. Turn it off when you want a clean share of just the audio and your selected formats — for example, dropping a single WAV into iNaturalist or eBird without any app-specific files riding along.
+
 ### Include HTML report
 
 When on, every export ZIP also contains a `report.html` file alongside the table, audio clips, and GPX. Open it in any web browser and you get a print-ready summary of the session: header card with date, location, observer, and totals; an interactive map of the GPS track and detection markers; a card per detection with the Cornell taxonomy thumbnail, names, score pill, your confirmation, any note you typed, and the original audio clip inline as a player; and the analysis settings used. The intuition: a CSV is great for analysis pipelines but useless for sharing with a non-technical collaborator or printing a quick field summary — the HTML report fills that gap with one tap. Species thumbnails and map tiles need a connection the first time the file is opened (they're fetched live from the BirdNET taxonomy API and OpenStreetMap), but everything else — text, layout, audio playback, links — works fully offline. Turn this off if you only need the raw data and want to keep the ZIP a few KB smaller.
+
+### Audio-only sharing
+
+Untick every format **and** the HTML report **and** the app metadata box, leaving only **Include audio files**, and Share will hand the platform sheet the raw recording (e.g. `BirdNET_Live_…flac`) instead of a ZIP. That is the low-friction path for sending a session straight into iNaturalist, eBird, or any other app that wants an unwrapped audio file. Sessions made of detection clips (no full recording) still produce a ZIP because there is more than one file to share.
 
 ## Privacy
 
