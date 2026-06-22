@@ -301,7 +301,7 @@ void main() {
       expect(config.onnx.modelFile, contains('.onnx'));
       expect(config.onnx.inputName, 'input');
       expect(config.onnx.predictionsName, 'predictions');
-      expect(config.onnx.embeddingsName, 'embeddings');
+      expect(config.onnx.embeddingsName, 'embeddings_out');
       expect(config.labels.file, contains('Labels.csv'));
       expect(config.scoreBlacklistFile, contains('ScoreBlacklist.json'));
       expect(config.labels.delimiter, ';');

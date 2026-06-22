@@ -10,7 +10,7 @@
 // session via platform channels and runs inference on a native background
 // thread queue, so the heavy work already happens off the UI thread.  The
 // remaining Dart-side post-processing (sigmoid, sort, top-K) takes
-// sub-millisecond on the 5,250-class label space and is safe to run on the
+// sub-millisecond on the 10,208-class label space and is safe to run on the
 // root isolate.
 //
 // To minimize churn at the call sites this class now keeps the same public

@@ -52,7 +52,7 @@ abstract final class AppConstants {
   /// Default species count for display purposes.
   ///
   /// Overridden at runtime once the model config and labels are loaded.
-  static const int speciesCount = 5250;
+  static const int speciesCount = 10208;
 }
 
 /// SharedPreferences key constants.
