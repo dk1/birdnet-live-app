@@ -340,7 +340,7 @@
   "@aboutModelVersion": {
     "description": "Audio model section title in about screen"
   },
-  "aboutModelName": "BirdNET+ V3.0-preview3 Global (pruned, FP16)",
+  "aboutModelName": "BirdNET+ V3.0-preview3.1 Global 10K-pruned (FP16)",
   "@aboutModelName": {
     "description": "Audio model name shown in about screen"
   },
@@ -357,7 +357,7 @@
   "@aboutGeoModel": {
     "description": "Geo-model section title"
   },
-  "aboutGeoModelName": "BirdNET Geomodel V3.0.1 Global (pruned, FP16)",
+  "aboutGeoModelName": "BirdNET+ Geomodel V3.0.3 Global 10K-pruned (FP16)",
   "@aboutGeoModelName": {
     "description": "Geo-model name shown in about screen"
   },
