@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0] - 2026-06-22
+
+### Changed
+
+- Updated to the latest BirdNET+ models (V3.0-preview3.1 audio and Geomodel V3.0.3), now covering 10,208 species across birds, amphibians, mammals, and insects.
+- Scientific names are now shown in their taxonomy-canonical form consistently across the app and in exports.
+
+### Added
+
+- Added domestic Dog, Cat, and Cattle to the recognized species so common backyard and farm animals can appear in Explore and detections.
+
+### Removed
+
+- Removed the Human class, which the model could not reliably detect.
+
 ## [0.17.14] - 2026-06-20
 
 ### Changed

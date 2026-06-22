@@ -8,7 +8,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
    <img src="https://img.shields.io/badge/flutter-%3E%3D3.27-blue.svg" alt="Flutter >=3.27">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
-  <img src="https://img.shields.io/badge/version-0.17.14-orange.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.18.0-orange.svg" alt="Version">
   <img src="https://img.shields.io/badge/species-10%2C208-brightgreen.svg" alt="Species: 10,208">
 </p>
 
