@@ -1,4 +1,4 @@
-﻿// =============================================================================
+// =============================================================================
 // Detection Sampler — Controls which survey detection clips are kept on disk
 // =============================================================================
 //
@@ -48,6 +48,22 @@ SamplingMode samplingModeFromString(String value) {
     'smart' => SamplingMode.smart,
     _ => SamplingMode.all,
   };
+}
+
+/// Deletes a detection clip file from disk, swallowing and logging I/O errors.
+///
+/// Shared by [DetectionSampler] and `AruDetectionSampler` so the two retention
+/// engines (which use deliberately different *selection* strategies) never
+/// diverge on the actual file teardown. Callers are responsible for clearing
+/// the owning record's `audioClipPath` and updating their own drop counters.
+Future<void> deleteDetectionClipFile(String? path, {required String logTag}) async {
+  if (path == null) return;
+  try {
+    final file = File(path);
+    if (await file.exists()) await file.delete();
+  } catch (e) {
+    debugPrint('[$logTag] failed to delete clip: $e');
+  }
 }
 
 /// Controls which detection audio clips are retained during a survey.
@@ -165,13 +181,7 @@ class DetectionSampler {
     final path = record.audioClipPath;
     record.audioClipPath = null;
     _droppedClipCount++;
-    if (path == null) return;
-    try {
-      final file = File(path);
-      if (await file.exists()) await file.delete();
-    } catch (e) {
-      debugPrint('[DetectionSampler] failed to delete clip: $e');
-    }
+    await deleteDetectionClipFile(path, logTag: 'DetectionSampler');
   }
 
   /// Find an already-kept record at the "same spot" as [candidate], or null.
@@ -220,7 +230,8 @@ class DetectionSampler {
     const earthRadius = 6371000.0; // meters
     final dLat = _radians(lat2 - lat1);
     final dLon = _radians(lon2 - lon1);
-    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
         math.cos(_radians(lat1)) *
             math.cos(_radians(lat2)) *
             math.sin(dLon / 2) *

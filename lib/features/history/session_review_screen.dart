@@ -41,6 +41,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -51,7 +52,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -69,6 +69,8 @@ import '../../shared/models/weather_snapshot.dart';
 import '../../shared/services/weather_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/taxonomy_service.dart';
+import '../../shared/services/link_launcher.dart';
+import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/timestamp_format.dart';
 import '../../shared/utils/weather_format.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
@@ -82,6 +84,7 @@ import '../recording/audio_decoder.dart';
 import '../recording/native_audio_decoder.dart';
 import '../recording/playback_normalizer.dart';
 import '../spectrogram/color_maps.dart';
+import '../spectrogram/spectrogram_widget.dart';
 import 'export_metadata_helper.dart';
 import 'session_export.dart';
 import 'session_map_screen.dart';
@@ -99,10 +102,455 @@ part 'widgets/session_review_widgets.dart';
 /// Sort modes for the species list on the Session Review screen.
 ///
 /// Persisted via [PrefKeys.sessionReviewSpeciesSort] (stored as
-/// `name`). [alphabetical] is the new default — first-detection order
-/// becomes hard to scan once a session has 50+ species. [firstSeen]
-/// stays available for users who want the historical behavior.
+/// `name`). [confidence] is the default so review starts with the most
+/// likely identifications. [firstSeen] stays available for users who want
+/// the historical behavior.
 enum SpeciesSortMode { alphabetical, count, confidence, firstSeen }
+
+/// Compare Session Review detections for confidence-focused review order.
+///
+/// Used for expanded detection clusters when [SpeciesSortMode.confidence] is
+/// active: clip-backed detections are most useful for review, then higher
+/// confidence, then earlier time for deterministic ties.
+int compareSessionReviewConfidenceSortEntries({
+  required bool aHasAudioClip,
+  required double aConfidence,
+  required DateTime aTimestamp,
+  required bool bHasAudioClip,
+  required double bConfidence,
+  required DateTime bTimestamp,
+}) {
+  if (aHasAudioClip != bHasAudioClip) return aHasAudioClip ? -1 : 1;
+
+  final confidence = bConfidence.compareTo(aConfidence);
+  if (confidence != 0) return confidence;
+
+  return aTimestamp.compareTo(bTimestamp);
+}
+
+List<DetectionRecord> buildSessionReviewPlaybackOrder({
+  required List<DetectionRecord> detections,
+  required int maxGapSec,
+  required SpeciesSortMode sortMode,
+  required String Function(String scientificName, String fallbackCommonName)
+  localizedCommonName,
+  required bool Function(DetectionRecord detection) hasPlayableClip,
+}) {
+  final groups = _SessionReviewScreenState._buildSpeciesGroups(
+    detections,
+    maxGapSec,
+  );
+  final orderedGroups = _orderSessionReviewSpeciesGroups(
+    groups: groups,
+    sortMode: sortMode,
+    localizedCommonName:
+        (group) => localizedCommonName(group.scientificName, group.commonName),
+    hasPlayableClip: hasPlayableClip,
+  );
+
+  return [
+    for (final group in orderedGroups)
+      for (final cluster in group.clusters)
+        for (final record in cluster.records)
+          if (hasPlayableClip(record)) record,
+  ];
+}
+
+List<_SpeciesGroup> _orderSessionReviewSpeciesGroups({
+  required Iterable<_SpeciesGroup> groups,
+  required SpeciesSortMode sortMode,
+  required String Function(_SpeciesGroup group) localizedCommonName,
+  required bool Function(DetectionRecord detection) hasPlayableClip,
+}) {
+  final sorted = List<_SpeciesGroup>.of(groups);
+  switch (sortMode) {
+    case SpeciesSortMode.alphabetical:
+      sorted.sort(
+        (a, b) => localizedCommonName(
+          a,
+        ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase()),
+      );
+      break;
+    case SpeciesSortMode.count:
+      sorted.sort((a, b) {
+        final c = b.totalCount.compareTo(a.totalCount);
+        if (c != 0) return c;
+        return localizedCommonName(
+          a,
+        ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase());
+      });
+      break;
+    case SpeciesSortMode.confidence:
+      sorted.sort((a, b) {
+        final c = b.bestConfidence.compareTo(a.bestConfidence);
+        if (c != 0) return c;
+        return localizedCommonName(
+          a,
+        ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase());
+      });
+      break;
+    case SpeciesSortMode.firstSeen:
+      sorted.sort((a, b) => a.firstTimestamp.compareTo(b.firstTimestamp));
+      break;
+  }
+
+  return [
+    for (final group in sorted)
+      _orderSessionReviewSpeciesGroupClusters(
+        group: group,
+        sortMode: sortMode,
+        hasPlayableClip: hasPlayableClip,
+      ),
+  ];
+}
+
+_SpeciesGroup _orderSessionReviewSpeciesGroupClusters({
+  required _SpeciesGroup group,
+  required SpeciesSortMode sortMode,
+  required bool Function(DetectionRecord detection) hasPlayableClip,
+}) {
+  if (sortMode != SpeciesSortMode.confidence) return group;
+  final clusters = List<_DetectionCluster>.of(group.clusters)..sort(
+    (a, b) => compareSessionReviewConfidenceSortEntries(
+      aHasAudioClip: a.records.any(hasPlayableClip),
+      aConfidence: a.bestConfidence,
+      aTimestamp: a.firstTimestamp,
+      bHasAudioClip: b.records.any(hasPlayableClip),
+      bConfidence: b.bestConfidence,
+      bTimestamp: b.firstTimestamp,
+    ),
+  );
+  return _SpeciesGroup(
+    scientificName: group.scientificName,
+    commonName: group.commonName,
+    clusters: clusters,
+  );
+}
+
+class _ReviewWarningCard extends StatelessWidget {
+  const _ReviewWarningCard({
+    required this.icon,
+    required this.title,
+    required this.body,
+    this.onDismiss,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final VoidCallback? onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final showTitle = title.isNotEmpty;
+    return Card(
+      color: theme.colorScheme.errorContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Icon(icon, color: theme.colorScheme.onErrorContainer),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (showTitle) ...[
+                    Text(
+                      title,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: theme.colorScheme.onErrorContainer,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  Text(
+                    body,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (onDismiss != null) ...[
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(AppIcons.close, size: 20),
+                color: theme.colorScheme.onErrorContainer,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: onDismiss,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SpectrogramChunk {
+  const _SpectrogramChunk({
+    required this.startSec,
+    required this.endSec,
+    required this.image,
+    required this.hop,
+  });
+
+  final double startSec;
+  final double endSec;
+  final ui.Image image;
+  final int hop;
+
+  void dispose() => image.dispose();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Background spectrogram-chunk rendering
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Decoding an hour-long FLAC and running a STFT over 30 s at a time is far
+// too heavy for the UI isolate — on a Pixel 10 Pro it skipped >120 frames
+// per chunk during pinch-zoom. We move the decode + FFT loop into a
+// background isolate via `Isolate.run` and only hand the finished RGBA
+// buffer back to the UI isolate, which then calls
+// `ui.decodeImageFromPixels` (cheap, asynchronous).
+
+class _SpectrogramChunkRequest {
+  const _SpectrogramChunkRequest({
+    required this.path,
+    required this.sourceSampleRate,
+    required this.rawPcm16,
+    required this.startSample,
+    required this.count,
+    required this.targetSampleRate,
+    required this.fftSize,
+    required this.hop,
+    required this.maxDisplayBins,
+    required this.colorMapName,
+  });
+
+  final String path;
+  final int sourceSampleRate;
+  final bool rawPcm16;
+  final int startSample;
+  final int count;
+  final int targetSampleRate;
+
+  /// FFT window size. Larger → finer frequency resolution, slower.
+  final int fftSize;
+
+  /// Hop between FFT columns in samples. Larger → fewer columns,
+  /// faster, less time detail.
+  final int hop;
+
+  /// Hard cap on rendered frequency bins. Anything above what the strip
+  /// can actually show as a pixel is wasted work, so we keep this near
+  /// the spectrogram strip's physical pixel height.
+  final int maxDisplayBins;
+
+  /// Palette used to render spectrogram intensity.
+  final String colorMapName;
+}
+
+class _SpectrogramChunkPixels {
+  const _SpectrogramChunkPixels({
+    required this.pixels,
+    required this.width,
+    required this.height,
+  });
+
+  final Uint8List pixels;
+  final int width;
+  final int height;
+}
+
+Future<_SpectrogramChunkPixels?> _decodeAndRenderSpectrogramChunk(
+  _SpectrogramChunkRequest req,
+) async {
+  final DecodedAudio audio;
+  if (req.rawPcm16) {
+    audio = await _decodePcm16Range(
+      req.path,
+      sampleRate: req.sourceSampleRate,
+      startSample: req.startSample,
+      count: req.count,
+    );
+  } else if (await AudioDecoder.canDecodeDart(req.path)) {
+    audio = await AudioDecoder.decodeRange(
+      req.path,
+      startSample: req.startSample,
+      count: req.count,
+    );
+  } else {
+    audio = await NativeAudioDecoder.decodeRange(
+      req.path,
+      startSample: req.startSample,
+      count: req.count,
+    );
+  }
+  final resampled = audio.resampleTo(req.targetSampleRate);
+  return _renderSpectrogramChunkPixels(
+    resampled,
+    fftSize: req.fftSize,
+    hop: req.hop,
+    maxDisplayBins: req.maxDisplayBins,
+    colorMapName: req.colorMapName,
+  );
+}
+
+Future<DecodedAudio> _decodePcm16Range(
+  String path, {
+  required int sampleRate,
+  required int startSample,
+  required int count,
+}) async {
+  final file = File(path);
+  final fileLength = await file.length();
+  final totalSamples = fileLength ~/ 2;
+  final safeStart = startSample.clamp(0, totalSamples);
+  final safeEnd = (startSample + count).clamp(0, totalSamples);
+  final bytesToRead = math.max(0, safeEnd - safeStart) * 2;
+  final output = Int16List(count);
+  if (bytesToRead <= 0) {
+    return DecodedAudio(samples: output, sampleRate: sampleRate);
+  }
+
+  final raf = await file.open();
+  try {
+    await raf.setPosition(safeStart * 2);
+    final bytes = await raf.read(bytesToRead);
+    final byteData = ByteData.sublistView(bytes);
+    final sampleOffset = safeStart - startSample;
+    for (var i = 0; i < bytes.length ~/ 2; i++) {
+      output[sampleOffset + i] = byteData.getInt16(i * 2, Endian.little);
+    }
+  } finally {
+    await raf.close();
+  }
+
+  return DecodedAudio(samples: output, sampleRate: sampleRate);
+}
+
+_SpectrogramChunkPixels? _renderSpectrogramChunkPixels(
+  DecodedAudio audio, {
+  required int fftSize,
+  required int hop,
+  required int maxDisplayBins,
+  required String colorMapName,
+}) {
+  const maxFreqHz = 16000;
+  const dbFloor = -80.0;
+  const dbCeiling = 0.0;
+
+  if (audio.totalSamples < fftSize) return null;
+
+  final numCols = (audio.totalSamples - fftSize) ~/ hop + 1;
+  if (numCols <= 0) return null;
+
+  final nyquist = audio.sampleRate / 2;
+  final binCount = fftSize ~/ 2 + 1;
+  final visibleBins = (maxFreqHz / nyquist * binCount).round().clamp(
+    1,
+    binCount,
+  );
+  // Down-sample bins when there are more frequency rows than the
+  // spectrogram strip can paint as distinct pixels. Each output row
+  // averages `binStride` adjacent FFT bins, giving a smoother (and much
+  // cheaper) look on phone-sized strips.
+  final binStride = math.max(1, (visibleBins / maxDisplayBins).ceil());
+  final displayBins = (visibleBins / binStride).ceil();
+
+  final lut = SpectrogramColorMap.lut(colorMapName);
+  final pixels = Uint8List(numCols * displayBins * 4);
+
+  final hann = Float64List(fftSize);
+  final hannFactor = 2.0 * math.pi / fftSize;
+  for (var i = 0; i < fftSize; i++) {
+    hann[i] = 0.5 * (1.0 - math.cos(hannFactor * i));
+  }
+  final fft = FFT(fftSize);
+
+  for (var c = 0; c < numCols; c++) {
+    final colSample = c * hop;
+    final chunk = audio.readFloat32(colSample, fftSize);
+    final input = Float64List(fftSize);
+    for (var i = 0; i < fftSize; i++) {
+      input[i] = chunk[i] * hann[i];
+    }
+    final spectrum = fft.realFft(input);
+
+    for (var row = 0; row < displayBins; row++) {
+      final binStart = row * binStride;
+      final binEnd = math.min(binStart + binStride, visibleBins);
+      var power = 0.0;
+      for (var bin = binStart; bin < binEnd; bin++) {
+        final re = spectrum[bin].x;
+        final im = spectrum[bin].y;
+        power += re * re + im * im;
+      }
+      power /= (binEnd - binStart);
+      final db = 10 * math.log(power + 1e-10) / math.ln10;
+      final norm = ((db - dbFloor) / (dbCeiling - dbFloor)).clamp(0.0, 1.0);
+
+      final y = displayBins - 1 - row;
+      final pxOffset = (y * numCols + c) * 4;
+      final lutIdx = (norm * 255).round().clamp(0, 255);
+      final color = lut[lutIdx];
+      pixels[pxOffset] = (color >> 16) & 0xFF;
+      pixels[pxOffset + 1] = (color >> 8) & 0xFF;
+      pixels[pxOffset + 2] = color & 0xFF;
+      pixels[pxOffset + 3] = (color >> 24) & 0xFF;
+    }
+  }
+
+  return _SpectrogramChunkPixels(
+    pixels: pixels,
+    width: numCols,
+    height: displayBins,
+  );
+}
+
+/// Run the FLAC→WAV transcode in a fresh background isolate.
+///
+/// Lives at top level on purpose: when the closure passed to
+/// [Isolate.run] is constructed inside a `State` method, Dart's
+/// isolate-send serializer pulls the entire enclosing closure context
+/// along, which transitively reaches `this._player` (a just_audio
+/// [AudioPlayer]) and the rxdart `BehaviorSubject` it holds — and
+/// `BehaviorSubject` is not sendable, so the spawn fails with
+/// "object is unsendable". By keeping this wrapper top-level, the
+/// closure only captures the two `String` parameters.
+/// Run the spectrogram chunk decode+render in a fresh background isolate.
+///
+/// Top-level closures constructed inside a `State` method capture `this`,
+/// which pulls in just_audio's [AudioPlayer] → rxdart `BehaviorSubject`
+/// (unsendable) and aborts the spawn with "object is unsendable".
+Future<_SpectrogramChunkPixels?> _runSpectrogramChunkIsolate(
+  _SpectrogramChunkRequest request,
+) {
+  final token = RootIsolateToken.instance;
+  return Isolate.run(() {
+    if (token != null) {
+      BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+    }
+    return _decodeAndRenderSpectrogramChunk(request);
+  });
+}
+
+class _SpectrogramImageResult {
+  const _SpectrogramImageResult({required this.image, required this.stride});
+
+  final ui.Image image;
+  final int stride;
+}
 
 /// Review screen displayed after a live session ends.
 class SessionReviewScreen extends ConsumerStatefulWidget {
@@ -128,7 +576,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<PlayerState>? _clipPlayerStateSubscription;
-  Duration _position = Duration.zero;
+  final ValueNotifier<Duration> _positionNotifier = ValueNotifier(
+    Duration.zero,
+  );
+  Duration get _position => _positionNotifier.value;
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
   bool _audioAvailable = false;
@@ -171,15 +622,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   final List<_ReviewSnapshot> _undoStack = [];
   final List<_ReviewSnapshot> _redoStack = [];
 
-  /// Forces undo SnackBars to auto-dismiss even when the user has
-  /// `MediaQuery.accessibleNavigation` enabled (TalkBack / certain
-  /// reduced-motion settings). Flutter's built-in SnackBar timer is
-  /// disabled in that case whenever a SnackBarAction is present, which
-  /// made the undo banner appear permanent on affected devices. We keep
-  /// our own Timer so the banner always disappears after the same 6 s
-  /// window, regardless of accessibility flags.
-  Timer? _undoSnackBarTimer;
-
   /// Pre-computed spectrogram image covering the current playback range.
   /// When a clip is active this is cropped to the trimmed region.
   ui.Image? _spectrogramImage;
@@ -192,6 +634,37 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// Drives the thin LinearProgressIndicator under the AppBar so users
   /// of large sessions get visible feedback that the screen isn't frozen.
   bool _initializing = true;
+
+  /// True when the audio file ends materially before the session/detections.
+  bool _audioTruncatedWarning = false;
+
+  /// True if the user dismissed the audio truncated warning.
+  bool _audioTruncatedWarningDismissed = false;
+
+  /// True when long-session spectrogram detail is decoded on demand.
+  bool _spectrogramLazy = false;
+
+  /// Most recent visible window reported by `_SpectrogramStrip` via
+  /// `onViewportChanged`. Used in lazy mode to (a) anchor trim-handle
+  /// defaults when the user enters trim mode and (b) bound trim drags
+  /// to the visible window, since we can't show handles outside what's
+  /// painted on screen.
+  double? _lastViewportCenterSec;
+  double? _lastViewportViewSec;
+  bool _spectrogramViewportLoadQueued = false;
+
+  /// Source path/metadata for range-decoded spectrogram chunks.
+  String? _spectrogramAudioPath;
+  AudioMetadata? _spectrogramAudioMetadata;
+  String? _spectrogramTempPcmPath;
+  bool _spectrogramAudioIsRawPcm16 = false;
+
+  /// Detailed spectrogram chunks keyed by absolute recording seconds.
+  final List<_SpectrogramChunk> _spectrogramChunks = [];
+  final Set<int> _loadingSpectrogramChunkIndexes = {};
+  int _spectrogramGeneration = 0;
+  int? _lastLoadedTargetHop;
+  double? _lastLoadedChunkSeconds;
 
   bool get _canUndo => _undoStack.isNotEmpty;
   bool get _canRedo => _redoStack.isNotEmpty;
@@ -215,9 +688,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       TextEditingController();
 
   /// Active sort mode for the species list. Loaded asynchronously in
-  /// [initState]; defaults to [SpeciesSortMode.alphabetical] which is
-  /// the predictable fallback once a session has lots of species.
-  SpeciesSortMode _speciesSort = SpeciesSortMode.alphabetical;
+  /// [initState]; defaults to [SpeciesSortMode.confidence] so review starts
+  /// with the most likely identifications.
+  SpeciesSortMode _speciesSort = SpeciesSortMode.confidence;
 
   _ReviewSnapshot _takeSnapshot() => _ReviewSnapshot(
     detections: List.of(_detections),
@@ -287,8 +760,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         setState(() {
           _clipOffsetSec = snapshotClipOffset;
           _duration = clippedDur ?? (endDur - startDur);
-          _position = Duration.zero;
         });
+        _positionNotifier.value = Duration.zero;
+        _invalidateLazySpectrogramPipeline();
       }
     } else {
       // Remove clip — restore full recording.
@@ -298,14 +772,34 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         setState(() {
           _clipOffsetSec = 0.0;
           _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
-          _position = Duration.zero;
           if (_spectrogramImage != null &&
               !identical(_spectrogramImage, _fullSpectrogramImage)) {
             _spectrogramImage!.dispose();
           }
           _spectrogramImage = _fullSpectrogramImage;
         });
+        _positionNotifier.value = Duration.zero;
+        // The strip's own didUpdateWidget will fire a viewport request
+        // for the actual visible window once the duration/clip changes
+        // propagate; just make sure any stale lazy state (pending chunk
+        // reservations or a stuck `_decoding=true`) is reset so that
+        // follow-up request can succeed instead of being short-circuited.
+        _invalidateLazySpectrogramPipeline();
       }
+    }
+  }
+
+  /// Reset transient lazy-spectrogram bookkeeping after a clip change
+  /// (apply trim / undo / redo). Bumps the generation counter so any
+  /// in-flight chunk loads from the previous clip drop their results,
+  /// clears the pending reservation set, and forces the spinner off if
+  /// nothing is actually loading anymore.
+  void _invalidateLazySpectrogramPipeline() {
+    if (!_spectrogramLazy) return;
+    _spectrogramGeneration++;
+    _loadingSpectrogramChunkIndexes.clear();
+    if (_decoding) {
+      setState(() => _decoding = false);
     }
   }
 
@@ -324,6 +818,29 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _resolveLocation();
     _resolveWeather();
     _loadSpeciesSort();
+    _loadDismissedWarningState();
+  }
+
+  Future<void> _loadDismissedWarningState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'dismissed_audio_warning_${widget.session.id}';
+    if (prefs.getBool(key) == true) {
+      if (mounted) {
+        setState(() {
+          _audioTruncatedWarningDismissed = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _dismissAudioWarning() async {
+    setState(() {
+      _audioTruncatedWarningDismissed = true;
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('dismissed_audio_warning_${widget.session.id}', true);
+    } catch (_) {}
   }
 
   Future<void> _loadSpeciesSort() async {
@@ -332,7 +849,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     if (stored == null || !mounted) return;
     final mode = SpeciesSortMode.values.firstWhere(
       (m) => m.name == stored,
-      orElse: () => SpeciesSortMode.alphabetical,
+      orElse: () => SpeciesSortMode.confidence,
     );
     if (mode != _speciesSort) {
       setState(() => _speciesSort = mode);
@@ -364,6 +881,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         _audioAvailable = true;
       });
 
+      await _inspectAudioIntegrity(path);
+
       _positionSubscription = _player.positionStream.listen((pos) {
         if (!mounted) return;
         final stopAt = _autoStopPosition;
@@ -373,8 +892,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           // Snap to the exact stop position so the playhead doesn't
           // visually overshoot the end of the cluster.
           _player.seek(stopAt);
+          _positionNotifier.value = stopAt;
+          return;
         }
-        setState(() => _position = pos);
+
+        _positionNotifier.value = pos;
       });
       _playerStateSubscription = _player.playerStateStream.listen((state) {
         if (mounted) {
@@ -394,6 +916,66 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     } finally {
       if (mounted) setState(() => _initializing = false);
     }
+  }
+
+  Future<void> _refreshSpectrogramForColorMap() async {
+    final path = widget.session.recordingPath;
+    if (path == null || !File(path).existsSync() || _decoding) return;
+
+    await _decodeAudioForSpectrogram(path);
+    await _restoreSavedTrim();
+  }
+
+  Future<void> _inspectAudioIntegrity(String path) async {
+    try {
+      final canDart = await AudioDecoder.canDecodeDart(path);
+      final metadata =
+          canDart
+              ? await AudioDecoder.inspectFile(path)
+              : await NativeAudioDecoder.inspectFile(
+                path,
+                _formatLabelForPath(path),
+              );
+      final audioSec = metadata.duration.inMicroseconds / 1e6;
+      var expectedSec = 0.0;
+      final recordedSec = widget.session.recordedDurationSeconds?.toDouble();
+      if (recordedSec != null && recordedSec > 0) {
+        expectedSec = recordedSec;
+      } else {
+        final end = widget.session.endTime;
+        if (end != null) {
+          expectedSec = math.max(
+            expectedSec,
+            end.difference(widget.session.startTime).inMicroseconds / 1e6,
+          );
+        }
+        for (final detection in widget.session.detections) {
+          final eventEnd = detection.endTimestamp ?? detection.timestamp;
+          expectedSec = math.max(
+            expectedSec,
+            eventEnd.difference(widget.session.startTime).inMicroseconds / 1e6,
+          );
+        }
+      }
+      final isTruncated = expectedSec > 0 && audioSec + 5 < expectedSec;
+      if (mounted && isTruncated != _audioTruncatedWarning) {
+        setState(() => _audioTruncatedWarning = isTruncated);
+      }
+    } catch (_) {
+      // Integrity diagnostics should never block review playback.
+    }
+  }
+
+  String _formatLabelForPath(String path) {
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.mp3')) return 'MP3';
+    if (lower.endsWith('.ogg') || lower.endsWith('.oga')) return 'OGG';
+    if (lower.endsWith('.opus')) return 'OPUS';
+    if (lower.endsWith('.m4a') || lower.endsWith('.aac')) return 'AAC';
+    if (lower.endsWith('.mp4')) return 'AAC';
+    if (lower.endsWith('.wma')) return 'WMA';
+    if (lower.endsWith('.amr')) return 'AMR';
+    return 'AUDIO';
   }
 
   /// Re-apply a previously saved trim after audio and spectrogram are loaded.
@@ -418,8 +1000,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       setState(() {
         _clipOffsetSec = start;
         _duration = clippedDur ?? (endDur - startDur);
-        _position = Duration.zero;
       });
+      _positionNotifier.value = Duration.zero;
     }
   }
 
@@ -488,11 +1070,86 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   }
 
   Future<void> _decodeAudioForSpectrogram(String path) async {
+    final generation = ++_spectrogramGeneration;
     setState(() => _decoding = true);
     try {
+      final canDart = await AudioDecoder.canDecodeDart(path);
+      final metadata =
+          canDart
+              ? await AudioDecoder.inspectFile(path)
+              : await NativeAudioDecoder.inspectFile(
+                path,
+                _formatLabelForPath(path),
+              );
+      // Native-decoded formats (MP3, OGG, AAC, etc.) always lazy-load the
+      // spectrogram, but first stream the compressed file to a temporary PCM
+      // cache. Per-tile compressed seeks are not sample-exact enough for MP3
+      // and can create visible gaps; PCM ranges behave like the FLAC path.
+      // Dart-decodable formats (WAV/FLAC) keep the 128 MB threshold since
+      // their range-decode is essentially free (direct byte reads).
+      final shouldLazyLoad =
+          !canDart || metadata.decodedPcmBytes >= 128 * 1024 * 1024;
+      var sourcePath = path;
+      var sourceMetadata = metadata;
+      var sourceIsRawPcm16 = false;
+
+      if (shouldLazyLoad && !canDart) {
+        final decoded = await NativeAudioDecoder.decodeToTempPcmFile(path);
+        if (!mounted) {
+          try {
+            final file = File(decoded.pcmPath);
+            if (file.existsSync()) file.deleteSync();
+          } catch (_) {}
+          return;
+        }
+        sourcePath = decoded.pcmPath;
+        sourceMetadata = AudioMetadata(
+          sampleRate: decoded.sampleRate,
+          totalSamples: decoded.totalSamples,
+          format: '${metadata.format} PCM',
+        );
+        sourceIsRawPcm16 = true;
+      }
+
+      if (mounted) {
+        setState(() {
+          _clearSpectrogramChunks();
+          _deleteSpectrogramTempPcm();
+          _spectrogramAudioPath = sourcePath;
+          _spectrogramAudioMetadata = sourceMetadata;
+          _spectrogramAudioIsRawPcm16 = sourceIsRawPcm16;
+          _spectrogramTempPcmPath = sourceIsRawPcm16 ? sourcePath : null;
+          _spectrogramLazy = shouldLazyLoad;
+          if (_spectrogramImage != null &&
+              !identical(_spectrogramImage, _fullSpectrogramImage)) {
+            _spectrogramImage!.dispose();
+          }
+          _spectrogramImage = null;
+          _fullSpectrogramImage?.dispose();
+          _fullSpectrogramImage = null;
+        });
+      }
+
+      if (shouldLazyLoad) {
+        final totalSec = sourceMetadata.duration.inMicroseconds / 1000000.0;
+        final userPref = ref.read(spectrogramDurationProvider).toDouble();
+        final bootstrapView =
+            totalSec <= 0
+                ? userPref
+                : totalSec <= 300.0
+                ? math.min(userPref, totalSec)
+                : (totalSec * 0.1).clamp(userPref, 60.0).toDouble();
+        await _ensureSpectrogramForViewport(
+          absoluteCenterSec: bootstrapView / 2,
+          viewSeconds: bootstrapView,
+          generation: generation,
+        );
+        return;
+      }
+
       // Use pure-Dart decoder for WAV/FLAC, native for compressed formats.
       DecodedAudio audio;
-      if (await AudioDecoder.canDecodeDart(path)) {
+      if (canDart) {
         audio = await AudioDecoder.decodeFile(path);
       } else {
         audio = await NativeAudioDecoder.decodeFile(path);
@@ -500,44 +1157,80 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       if (!mounted) return;
       // Resample to model sample rate so spectrogram matches inference.
       audio = audio.resampleTo(AppConstants.sampleRate);
-      await _buildSpectrogramImage(audio);
-    } catch (_) {
+      final result = await _computeSpectrogramImage(audio);
+      if (!mounted || generation != _spectrogramGeneration) {
+        result?.image.dispose();
+        return;
+      }
+      if (result == null) return;
+      setState(() {
+        _fullSpectrogramImage?.dispose();
+        _fullSpectrogramImage = result.image;
+        _spectrogramImage = result.image;
+      });
+    } catch (e, st) {
       // Spectrogram unavailable — non-fatal.
+      // ignore: avoid_print
+      print('[spec] _decodeAudioForSpectrogram failed: $e\n$st');
     } finally {
       if (mounted) setState(() => _decoding = false);
     }
   }
 
-  /// Pre-compute the entire session spectrogram as a [ui.Image].
+  /// Compute a spectrogram [ui.Image] for a decoded audio buffer.
   ///
   /// Uses a fixed FFT size and hop.  Each pixel column = one FFT frame.
   /// The painter scrolls through the image using pixels-per-second.
-  Future<void> _buildSpectrogramImage(DecodedAudio audio) async {
-    // Larger FFT (2048) gives ~12 Hz/bin resolution which renders
-    // formants and harmonic structure much more clearly than the
-    // previous 1024-point FFT (~23 Hz/bin). The hop is increased to
-    // 1024 so the per-second column count stays similar — keeping the
-    // total spectrogram-image memory comparable for long sessions while
-    // doubling the vertical (frequency) resolution.
+  Future<_SpectrogramImageResult?> _computeSpectrogramImage(
+    DecodedAudio audio, {
+    int maxColumns = 6000,
+  }) async {
+    final String quality = ref.read(spectrogramQualityProvider);
+    int maxDisplayBins;
+    int hop;
+
+    switch (quality.toLowerCase()) {
+      case 'low':
+        maxDisplayBins = 128;
+        hop = 2048;
+        break;
+      case 'medium':
+        maxDisplayBins = 256;
+        hop = 1024;
+        break;
+      case 'high':
+      default:
+        maxDisplayBins = 512;
+        hop = 512;
+        break;
+    }
+
     const fftSize = 2048;
-    const hop = 1024;
     const maxFreqHz = 16000;
     const dbFloor = -80.0;
     const dbCeiling = 0.0;
 
-    if (audio.totalSamples < fftSize) return;
+    if (audio.totalSamples < fftSize) return null;
 
-    final numCols = (audio.totalSamples - fftSize) ~/ hop + 1;
-    if (numCols <= 0) return;
+    final rawCols = (audio.totalSamples - fftSize) ~/ hop + 1;
+    final stride = math.max(1, (rawCols / maxColumns).ceil());
+    final effectiveHop = hop * stride;
+    final numCols = (audio.totalSamples - fftSize) ~/ effectiveHop + 1;
+    if (numCols <= 0) return null;
 
     final nyquist = audio.sampleRate / 2;
     final binCount = fftSize ~/ 2 + 1;
-    final displayBins = (maxFreqHz / nyquist * binCount).round().clamp(
+    final visibleBins = (maxFreqHz / nyquist * binCount).round().clamp(
       1,
       binCount,
     );
+    final binStride = (visibleBins / maxDisplayBins).ceil().clamp(
+      1,
+      visibleBins,
+    );
+    final displayBins = (visibleBins / binStride).ceil();
 
-    final lut = SpectrogramColorMap.lut('viridis');
+    final lut = SpectrogramColorMap.lut(ref.read(colorMapProvider));
     final pixels = Uint8List(numCols * displayBins * 4);
 
     // Periodic Hann window (matches FftProcessor).
@@ -551,10 +1244,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     for (var c = 0; c < numCols; c++) {
       if (c > 0 && c % 200 == 0) {
         await Future.delayed(Duration.zero);
-        if (!mounted) return;
+        if (!mounted) return null;
       }
 
-      final colSample = c * hop;
+      final colSample = c * effectiveHop;
       final chunk = audio.readFloat32(colSample, fftSize);
       final input = Float64List(fftSize);
       for (var i = 0; i < fftSize; i++) {
@@ -562,14 +1255,20 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       }
       final spectrum = fft.realFft(input);
 
-      for (var bin = 0; bin < displayBins; bin++) {
-        final re = spectrum[bin].x;
-        final im = spectrum[bin].y;
-        final power = re * re + im * im;
+      for (var row = 0; row < displayBins; row++) {
+        final binStart = row * binStride;
+        final binEnd = (binStart + binStride).clamp(0, visibleBins);
+        var power = 0.0;
+        for (var bin = binStart; bin < binEnd; bin++) {
+          final re = spectrum[bin].x;
+          final im = spectrum[bin].y;
+          power += re * re + im * im;
+        }
+        power /= (binEnd - binStart);
         final db = 10 * math.log(power + 1e-10) / math.ln10;
         final norm = ((db - dbFloor) / (dbCeiling - dbFloor)).clamp(0.0, 1.0);
 
-        final y = displayBins - 1 - bin;
+        final y = displayBins - 1 - row;
         final pxOffset = (y * numCols + c) * 4;
         final lutIdx = (norm * 255).round().clamp(0, 255);
         final color = lut[lutIdx];
@@ -589,15 +1288,343 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       completer.complete,
     );
     final image = await completer.future;
+    return _SpectrogramImageResult(image: image, stride: stride);
+  }
 
-    if (mounted) {
-      setState(() {
-        _fullSpectrogramImage?.dispose();
-        _fullSpectrogramImage = image;
-        _spectrogramImage = image;
-      });
+  void _clearSpectrogramChunks() {
+    for (final chunk in _spectrogramChunks) {
+      chunk.dispose();
+    }
+    _spectrogramChunks.clear();
+    _loadingSpectrogramChunkIndexes.clear();
+  }
+
+  void _deleteSpectrogramTempPcm() {
+    final path = _spectrogramTempPcmPath;
+    _spectrogramTempPcmPath = null;
+    _spectrogramAudioIsRawPcm16 = false;
+    if (path == null) return;
+    try {
+      final file = File(path);
+      if (file.existsSync()) file.deleteSync();
+    } catch (_) {
+      // Best-effort cleanup of a temporary spectrogram cache.
+    }
+  }
+
+  void _requestSpectrogramViewport(
+    double absoluteCenterSec,
+    double viewSeconds,
+  ) {
+    // Remember the strip's current visible window even when we're not
+    // lazy-loading: trim-mode initialization reads it to default the
+    // handles to whatever the user is currently looking at.
+    _lastViewportCenterSec = absoluteCenterSec;
+    _lastViewportViewSec = viewSeconds;
+    if (!_spectrogramLazy) return;
+    if (_spectrogramViewportLoadQueued) return;
+    _spectrogramViewportLoadQueued = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _spectrogramViewportLoadQueued = false;
+      if (!mounted || !_spectrogramLazy) return;
+      final center = _lastViewportCenterSec;
+      final view = _lastViewportViewSec;
+      if (center == null || view == null) return;
+      unawaited(
+        _ensureSpectrogramForViewport(
+          absoluteCenterSec: center,
+          viewSeconds: view,
+          generation: _spectrogramGeneration,
+        ),
+      );
+    });
+  }
+
+  Future<void> _ensureSpectrogramForViewport({
+    required double absoluteCenterSec,
+    required double viewSeconds,
+    required int generation,
+  }) async {
+    final metadata = _spectrogramAudioMetadata;
+    final durationSec = metadata?.duration.inMicroseconds ?? 0;
+    if (!_spectrogramLazy || metadata == null || durationSec <= 0) return;
+
+    final totalSec = durationSec / 1000000.0;
+    // Define zoom levels, dynamic chunk seconds, hop multipliers, and cache sizes.
+    final double chunkSeconds;
+    final int hopMultiplier;
+    final int maxCachedChunks;
+    if (viewSeconds <= 20.0) {
+      chunkSeconds = 30.0;
+      hopMultiplier = 1;
+      maxCachedChunks = 16;
+    } else if (viewSeconds <= 60.0) {
+      chunkSeconds = 120.0;
+      hopMultiplier = 4;
+      maxCachedChunks = 16;
     } else {
-      image.dispose();
+      chunkSeconds = 480.0;
+      hopMultiplier = 16;
+      maxCachedChunks = 16;
+    }
+
+    final padding = math.min(math.max(5.0, viewSeconds * 0.25), chunkSeconds);
+    final startSec = (absoluteCenterSec - viewSeconds / 2 - padding).clamp(
+      0.0,
+      totalSec,
+    );
+    final endSec = (absoluteCenterSec + viewSeconds / 2 + padding).clamp(
+      0.0,
+      totalSec,
+    );
+    final firstIndex = (startSec / chunkSeconds).floor();
+    final lastIndex = math.max(
+      firstIndex,
+      ((endSec - 0.000001) / chunkSeconds).floor(),
+    );
+
+    // Determine the base hop to compute target hop
+    final String quality = ref.read(spectrogramQualityProvider);
+    final long = totalSec > 600.0;
+    int baseHop;
+    switch (quality.toLowerCase()) {
+      case 'low':
+        baseHop = long ? 3072 : 2048;
+        break;
+      case 'medium':
+        baseHop = long ? 2048 : 1024;
+        break;
+      case 'high':
+      default:
+        baseHop = long ? 1024 : 512;
+        break;
+    }
+    final targetHop = baseHop * hopMultiplier;
+
+    // Clear pending load indexes when transition between zoom levels occurs.
+    var activeGeneration = generation;
+    if (_lastLoadedTargetHop != targetHop ||
+        _lastLoadedChunkSeconds != chunkSeconds) {
+      _lastLoadedTargetHop = targetHop;
+      _lastLoadedChunkSeconds = chunkSeconds;
+      _spectrogramGeneration++;
+      activeGeneration = _spectrogramGeneration;
+      _loadingSpectrogramChunkIndexes.clear();
+      _clearSpectrogramChunks();
+    }
+
+    // Collect candidate indexes that don't have a chunk with the targetHop covering the required range.
+    final centerIndex = (absoluteCenterSec / chunkSeconds).floor();
+    final candidates = <int>[];
+    for (var index = firstIndex; index <= lastIndex; index++) {
+      final reqStart = index * chunkSeconds;
+      final reqEnd = math.min(reqStart + chunkSeconds, totalSec);
+      bool covered = false;
+      for (final chunk in _spectrogramChunks) {
+        if (chunk.startSec <= reqStart + 0.001 &&
+            chunk.endSec >= reqEnd - 0.001 &&
+            chunk.hop <= targetHop) {
+          covered = true;
+          break;
+        }
+      }
+      if (covered) continue;
+      if (_loadingSpectrogramChunkIndexes.contains(index)) continue;
+      candidates.add(index);
+    }
+    candidates.sort(
+      (a, b) => (a - centerIndex).abs().compareTo((b - centerIndex).abs()),
+    );
+    final inFlight = _loadingSpectrogramChunkIndexes.length;
+    final budget = math.max(0, maxCachedChunks - inFlight);
+    final scheduled = candidates.take(budget).toList();
+
+    if (scheduled.isEmpty) {
+      // Nothing new to load — make sure the spinner doesn't linger.
+      if (mounted && _decoding != _loadingSpectrogramChunkIndexes.isNotEmpty) {
+        setState(() => _decoding = _loadingSpectrogramChunkIndexes.isNotEmpty);
+      }
+      return;
+    }
+    _loadingSpectrogramChunkIndexes.addAll(scheduled);
+    if (mounted) setState(() => _decoding = true);
+
+    // Hold a snapshot of what we reserved so the finally block can
+    // guarantee cleanup even if `_loadSpectrogramChunk` throws (e.g.
+    // a range-read failure near a freshly applied clip boundary).
+    final reserved = scheduled.toSet();
+    try {
+      for (final index in scheduled) {
+        if (!mounted || activeGeneration != _spectrogramGeneration) {
+          // Drop pending reservations so a follow-up request can retry.
+          _loadingSpectrogramChunkIndexes.removeAll(reserved);
+          if (mounted) {
+            setState(
+              () => _decoding = _loadingSpectrogramChunkIndexes.isNotEmpty,
+            );
+          }
+          return;
+        }
+        // Each chunk load is best-effort: one bad chunk shouldn't stop
+        // the rest of the viewport from filling in.
+        try {
+          await _loadSpectrogramChunk(
+            index,
+            activeGeneration,
+            cacheCenterSec: absoluteCenterSec,
+            maxCachedChunks: maxCachedChunks,
+            hop: targetHop,
+            chunkSeconds: chunkSeconds,
+          );
+        } catch (e, st) {
+          // ignore: avoid_print
+          print('[spec] chunk $index failed: $e\n$st');
+        } finally {
+          reserved.remove(index);
+        }
+      }
+    } finally {
+      if (reserved.isNotEmpty) {
+        _loadingSpectrogramChunkIndexes.removeAll(reserved);
+      }
+      if (mounted && _decoding != _loadingSpectrogramChunkIndexes.isNotEmpty) {
+        setState(() => _decoding = _loadingSpectrogramChunkIndexes.isNotEmpty);
+      }
+    }
+  }
+
+  Future<void> _loadSpectrogramChunk(
+    int index,
+    int generation, {
+    required double cacheCenterSec,
+    required int maxCachedChunks,
+    required int hop,
+    required double chunkSeconds,
+  }) async {
+    try {
+      final path = _spectrogramAudioPath;
+      final metadata = _spectrogramAudioMetadata;
+      if (path == null || metadata == null) return;
+
+      final totalSec = metadata.duration.inMicroseconds / 1000000.0;
+      final chunkStartSec = index * chunkSeconds;
+      final chunkEndSec = math.min(totalSec, chunkStartSec + chunkSeconds);
+      if (chunkEndSec <= chunkStartSec) return;
+
+      final startSample = (chunkStartSec * metadata.sampleRate).floor();
+      final count =
+          ((chunkEndSec - chunkStartSec) * metadata.sampleRate).ceil();
+
+      final String quality = ref.read(spectrogramQualityProvider);
+      final fftSize = 2048;
+
+      int baseMaxDisplayBins;
+      switch (quality.toLowerCase()) {
+        case 'low':
+          baseMaxDisplayBins = 128;
+          break;
+        case 'medium':
+          baseMaxDisplayBins = 256;
+          break;
+        case 'high':
+        default:
+          baseMaxDisplayBins = 512;
+          break;
+      }
+
+      final long = totalSec > 600.0;
+      int baseHop;
+      switch (quality.toLowerCase()) {
+        case 'low':
+          baseHop = long ? 3072 : 2048;
+          break;
+        case 'medium':
+          baseHop = long ? 2048 : 1024;
+          break;
+        case 'high':
+        default:
+          baseHop = long ? 1024 : 512;
+          break;
+      }
+      final hopMultiplier = math.max(1, hop ~/ baseHop);
+      final int binDivisor =
+          hopMultiplier == 1 ? 1 : (hopMultiplier <= 4 ? 2 : 4);
+      final maxDisplayBins = math.max(32, baseMaxDisplayBins ~/ binDivisor);
+
+      // Decode + STFT in a background isolate so pinch-zoom never stalls
+      // the UI thread. Only the cheap GPU upload happens on main.
+      final pixelData = await _runSpectrogramChunkIsolate(
+        _SpectrogramChunkRequest(
+          path: path,
+          sourceSampleRate: metadata.sampleRate,
+          rawPcm16: _spectrogramAudioIsRawPcm16,
+          startSample: startSample,
+          count: count,
+          targetSampleRate: AppConstants.sampleRate,
+          fftSize: fftSize,
+          hop: hop,
+          maxDisplayBins: maxDisplayBins,
+          colorMapName: ref.read(colorMapProvider),
+        ),
+      );
+      if (pixelData == null) return;
+
+      if (!mounted || generation != _spectrogramGeneration) return;
+
+      final completer = Completer<ui.Image>();
+      ui.decodeImageFromPixels(
+        pixelData.pixels,
+        pixelData.width,
+        pixelData.height,
+        ui.PixelFormat.rgba8888,
+        completer.complete,
+      );
+      final image = await completer.future;
+
+      if (!mounted || generation != _spectrogramGeneration) {
+        image.dispose();
+        return;
+      }
+
+      setState(() {
+        for (var i = _spectrogramChunks.length - 1; i >= 0; i--) {
+          final chunk = _spectrogramChunks[i];
+          if (chunk.startSec >= chunkStartSec - 0.001 &&
+              chunk.endSec <= chunkEndSec + 0.001 &&
+              chunk.hop >= hop) {
+            _spectrogramChunks.removeAt(i).dispose();
+          }
+        }
+
+        _spectrogramChunks.add(
+          _SpectrogramChunk(
+            startSec: chunkStartSec,
+            endSec: chunkEndSec,
+            image: image,
+            hop: hop,
+          ),
+        );
+        _spectrogramChunks.sort((a, b) => a.startSec.compareTo(b.startSec));
+        while (_spectrogramChunks.length > maxCachedChunks) {
+          var farthestIndex = 0;
+          var farthestDistance = -1.0;
+          for (var i = 0; i < _spectrogramChunks.length; i++) {
+            final chunk = _spectrogramChunks[i];
+            final chunkCenter = (chunk.startSec + chunk.endSec) / 2;
+            final distance = (chunkCenter - cacheCenterSec).abs();
+            if (distance > farthestDistance) {
+              farthestDistance = distance;
+              farthestIndex = i;
+            }
+          }
+          _spectrogramChunks.removeAt(farthestIndex).dispose();
+        }
+      });
+    } finally {
+      _loadingSpectrogramChunkIndexes.remove(index);
+      if (mounted) {
+        setState(() => _decoding = _loadingSpectrogramChunkIndexes.isNotEmpty);
+      }
     }
   }
 
@@ -646,7 +1673,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   @override
   void dispose() {
-    _undoSnackBarTimer?.cancel();
+    _positionNotifier.dispose();
     _positionSubscription?.cancel();
     _playerStateSubscription?.cancel();
     _clipPlayerStateSubscription?.cancel();
@@ -654,6 +1681,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _spectrogramImage?.dispose();
     }
     _fullSpectrogramImage?.dispose();
+    _clearSpectrogramChunks();
+    _deleteSpectrogramTempPcm();
     _player.dispose();
     _clipPlayer.dispose();
     _speciesSearchController.dispose();
@@ -821,7 +1850,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
     final includeHtmlReport = ref.read(exportHtmlReportProvider);
-    final taxonomy = ref.read(taxonomyServiceProvider).valueOrNull;
+    final includeAppMetadata = ref.read(includeAppMetadataProvider);
+    final taxonomy = ref.read(taxonomyServiceProvider).value;
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     // Legacy sessions persisted before SessionSettings.clipContextSeconds
     // existed default to 0, which would falsely place every detection at
@@ -851,10 +1881,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       useAbsoluteSurveyTime:
           ref.read(timestampDisplayModeProvider) == 'absolute',
       includeHtmlReport: includeHtmlReport,
+      includeAppMetadata: includeAppMetadata,
     );
 
     if (exportPath == null) return;
-    await Share.shareXFiles([XFile(exportPath)]);
+    await SharePlus.instance.share(ShareParams(files: [XFile(exportPath)]));
   }
 
   void _done() {
@@ -1021,6 +2052,41 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       // can build an accurate undo snapshot.
       _preTrimStartSec = _trimStartSec;
       _preTrimEndSec = _trimEndSec;
+
+      // For long (lazy-loaded) recordings we don't have a full-file
+      // spectrogram thumbnail to scrub against, so the trim editor
+      // operates on whatever portion of the strip the user is currently
+      // looking at. Default the handles to the visible window edges so
+      // the user just zooms/scrolls to the region of interest first,
+      // then drags the handles inward to refine. Any prior persisted
+      // trim that falls inside the visible window is preserved.
+      if (_spectrogramLazy &&
+          _lastViewportCenterSec != null &&
+          _lastViewportViewSec != null) {
+        final totalSec =
+            _spectrogramAudioMetadata?.duration.inMicroseconds != null
+                ? _spectrogramAudioMetadata!.duration.inMicroseconds / 1000000.0
+                : _fullDurationSec;
+        final visibleStart = (_lastViewportCenterSec! -
+                _lastViewportViewSec! / 2)
+            .clamp(0.0, totalSec);
+        final visibleEnd = (_lastViewportCenterSec! + _lastViewportViewSec! / 2)
+            .clamp(0.0, totalSec);
+        final existingStart = _trimStartSec;
+        final existingEnd = _trimEndSec;
+        _trimStartSec =
+            (existingStart != null &&
+                    existingStart >= visibleStart &&
+                    existingStart < visibleEnd)
+                ? existingStart
+                : visibleStart;
+        _trimEndSec =
+            (existingEnd != null &&
+                    existingEnd > visibleStart &&
+                    existingEnd <= visibleEnd)
+                ? existingEnd
+                : visibleEnd;
+      }
     }
     setState(() => _trimMode = !_trimMode);
   }
@@ -1127,8 +2193,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       setState(() {
         _clipOffsetSec = start;
         _duration = clippedDur ?? (endDur - startDur);
-        _position = Duration.zero;
       });
+      _positionNotifier.value = Duration.zero;
+      // Drop any in-flight lazy chunk loads from the pre-trim viewport
+      // so the strip's follow-up viewport request for the new clip
+      // range can schedule freshly instead of getting stuck behind a
+      // stale `_decoding=true` flag.
+      _invalidateLazySpectrogramPipeline();
     }
   }
 
@@ -1144,7 +2215,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _trimEndSec = null;
       _clipOffsetSec = 0.0;
       _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
-      _position = Duration.zero;
       // Restore the full-recording spectrogram.
       if (_spectrogramImage != null &&
           !identical(_spectrogramImage, _fullSpectrogramImage)) {
@@ -1154,6 +2224,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _isDirty = true;
       _trimMode = false;
     });
+    _positionNotifier.value = Duration.zero;
+    if (_spectrogramLazy) {
+      _requestSpectrogramViewport(0, 10);
+    }
   }
 
   // ── Help ──────────────────────────────────────────────────────────
@@ -1284,46 +2358,148 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _showUndoSnackBar(l10n.sessionSpeciesRemoved);
   }
 
-  /// Shows an undo SnackBar with a hard-capped lifetime.
-  ///
-  /// Flutter's SnackBar disables its built-in dismiss timer whenever
-  /// `MediaQuery.accessibleNavigation` is true and an action is present,
-  /// which left the undo banner stuck on-screen on devices with TalkBack
-  /// or certain reduced-motion settings enabled. We attach our own Timer
-  /// here so the banner always disappears after the configured window,
-  /// regardless of accessibility flags.
+  /// Shows an undo SnackBar using Flutter's built-in accessibility behavior,
+  /// but with an explicit safety timeout to prevent snackbars from staying
+  /// open indefinitely on devices with active accessibility services (such as
+  /// Android password managers or custom gestures on Pixel devices).
   void _showUndoSnackBar(String text) {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
-    _undoSnackBarTimer?.cancel();
     messenger.hideCurrentSnackBar();
-    const lifetime = Duration(seconds: 6);
-    messenger.showSnackBar(
+    const lifetime = Duration(seconds: 5);
+    final controller = messenger.showSnackBar(
       SnackBar(
         content: Text(text),
         duration: lifetime,
         action: SnackBarAction(
           label: l10n.sessionUndo,
           onPressed: () {
-            _undoSnackBarTimer?.cancel();
             if (mounted) _undo();
           },
         ),
       ),
     );
-    _undoSnackBarTimer = Timer(lifetime, () {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    Future.delayed(lifetime, () {
+      try {
+        controller.close();
+      } catch (_) {}
     });
   }
 
+  bool get _usePlaybackOverlay {
+    // Never show on sessions that have full audio.
+    if (_audioAvailable) return false;
+
+    // Event-driven check; read current setting without creating a watch.
+    return ref.read(sessionReviewPlaybackOverlayProvider);
+  }
+
+  Future<void> _triggerPlaybackOverlay(_DetectionCluster cluster) async {
+    final clip = cluster.records.where(_hasPlayableDetectionClip).firstOrNull;
+    if (clip == null) return;
+
+    final playable = buildSessionReviewPlaybackOrder(
+      detections: _visibleReviewDetectionsForPlayback(),
+      maxGapSec: widget.session.settings.windowDuration,
+      sortMode: _speciesSort,
+      localizedCommonName: _localizedCommonNameForPlayback,
+      hasPlayableClip: _hasPlayableDetectionClip,
+    );
+
+    Future<void> showOverlayForRecord(DetectionRecord record) async {
+      if (!mounted) return;
+
+      final idx = playable.indexOf(record);
+      final prev = idx > 0 ? playable[idx - 1] : null;
+      final next =
+          idx >= 0 && idx < playable.length - 1 ? playable[idx + 1] : null;
+
+      await showClipPlayerSheet(
+        context,
+        detection: record,
+        session: widget.session,
+        onPrevious:
+            prev == null
+                ? null
+                : () {
+                  if (mounted) showOverlayForRecord(prev);
+                },
+        onNext:
+            next == null
+                ? null
+                : () {
+                  if (mounted) showOverlayForRecord(next);
+                },
+        onConfirmChanged: () {
+          if (mounted) setState(() {});
+          _isDirty = true;
+        },
+        onNoteChanged: () {
+          if (mounted) setState(() {});
+          _isDirty = true;
+        },
+        onVoiceMemoChanged: () {
+          if (mounted) setState(() {});
+          _isDirty = true;
+        },
+        onDelete: () {
+          _deleteDetectionWithUndo(_DetectionCluster([record]));
+        },
+      );
+    }
+
+    await showOverlayForRecord(clip);
+  }
+
+  bool _hasPlayableDetectionClip(DetectionRecord detection) {
+    final path = detection.audioClipPath;
+    return path != null && File(path).existsSync();
+  }
+
+  String _localizedCommonNameForPlayback(
+    String scientificName,
+    String fallbackCommonName,
+  ) {
+    final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
+    final taxonomy = ref.read(taxonomyServiceProvider).value;
+    return taxonomy
+            ?.lookup(scientificName)
+            ?.commonNameForLocale(speciesLocale) ??
+        fallbackCommonName;
+  }
+
+  List<DetectionRecord> _visibleReviewDetectionsForPlayback() {
+    final groups = _filteredSpeciesGroups;
+    final query = _speciesSearchQuery.trim().toLowerCase();
+    if (query.isEmpty) {
+      return groups.expand((group) => group.allRecords).toList();
+    }
+
+    return [
+      for (final group in groups)
+        if (_localizedCommonNameForPlayback(
+              group.scientificName,
+              group.commonName,
+            ).toLowerCase().contains(query) ||
+            group.scientificName.toLowerCase().contains(query))
+          ...group.allRecords,
+    ];
+  }
+
   void _seekToCluster(_DetectionCluster cluster) {
+    if (_usePlaybackOverlay) {
+      _pausePlayer();
+      _triggerPlaybackOverlay(cluster);
+      return;
+    }
+
     // Full recording available — seek the main player.
     if (_audioAvailable && _duration != Duration.zero) {
       final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
-      final offset = cluster.firstTimestamp.difference(
-        widget.session.startTime,
+      final relativeSec = widget.session.absoluteToRelative(
+        cluster.firstTimestamp,
       );
+      final offset = Duration(microseconds: (relativeSec * 1e6).round());
       var seekPos = offset - clipOffset;
       // Clamp into the playable range [0, duration] so detections that
       // landed slightly before the recorder fully spun up (negative
@@ -1342,6 +2518,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _autoStopPosition = null;
 
       _player.seek(seekPos);
+      _positionNotifier.value = seekPos;
       if (!_isPlaying) _player.play();
       return;
     }
@@ -1389,6 +2566,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // over the timeline.
     _autoStopPosition = null;
     _player.seek(position);
+    _positionNotifier.value = position;
     if (!_isPlaying) _player.play();
   }
 
@@ -1414,17 +2592,17 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.add_circle_outline),
+                  leading: const Icon(AppIcons.addCircleOutline),
                   title: Text(l10n.sessionAddSpecies),
                   onTap: () => Navigator.of(ctx).pop('species'),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.note_add_outlined),
+                  leading: const Icon(AppIcons.noteAdd),
                   title: Text(l10n.sessionAddAnnotationOption),
                   onTap: () => Navigator.of(ctx).pop('annotation'),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.mic_none),
+                  leading: const Icon(AppIcons.micNone),
                   title: Text(l10n.sessionAddVoiceMemoOption),
                   onTap: () => Navigator.of(ctx).pop('voice_memo'),
                 ),
@@ -1455,6 +2633,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final l10n = AppLocalizations.of(context)!;
     final isEdit = editingIndex != null;
     final existing = isEdit ? _annotations[editingIndex] : null;
+
+    await _pausePlayersForVoiceMemo();
+    if (!mounted) return;
 
     String? memoPath;
     if (isEdit) {
@@ -1515,7 +2696,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                           spacing: 8,
                           children: [
                             ChoiceChip(
-                              avatar: const Icon(Icons.public, size: 18),
+                              avatar: const Icon(AppIcons.public, size: 18),
                               label: Text(l10n.sessionAnnotationGlobal),
                               selected: !atTimestamp,
                               onSelected: (_) {
@@ -1526,7 +2707,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                               },
                             ),
                             ChoiceChip(
-                              avatar: const Icon(Icons.schedule, size: 18),
+                              avatar: const Icon(AppIcons.schedule, size: 18),
                               label: Text(l10n.sessionInsertAtTimestamp),
                               selected: atTimestamp,
                               onSelected: (_) {
@@ -1541,9 +2722,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                         if (isEdit) ...[
                           const SizedBox(height: 12),
                           OutlinedButton.icon(
-                            icon: const Icon(Icons.mic, size: 18),
+                            icon: const Icon(AppIcons.mic, size: 18),
                             label: Text(l10n.detectionReplaceVoiceMemo),
                             onPressed: () async {
+                              await _pausePlayersForVoiceMemo();
+                              if (!ctx.mounted) return;
                               final result = await showVoiceMemoDialog(
                                 context: ctx,
                                 sessionId: widget.session.id,
@@ -1668,7 +2851,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                           spacing: 8,
                           children: [
                             ChoiceChip(
-                              avatar: const Icon(Icons.public, size: 18),
+                              avatar: const Icon(AppIcons.public, size: 18),
                               label: Text(l10n.sessionAnnotationGlobal),
                               selected: !atTimestamp,
                               onSelected:
@@ -1676,7 +2859,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                                       setDialogState(() => atTimestamp = false),
                             ),
                             ChoiceChip(
-                              avatar: const Icon(Icons.schedule, size: 18),
+                              avatar: const Icon(AppIcons.schedule, size: 18),
                               label: Text(l10n.sessionInsertAtTimestamp),
                               selected: atTimestamp,
                               onSelected:
@@ -1790,6 +2973,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   Future<void> _editClusterVoiceMemo(_DetectionCluster cluster) async {
     final l10n = AppLocalizations.of(context)!;
     final target = cluster.records.first;
+    await _pausePlayersForVoiceMemo();
+    if (!mounted) return;
     final result = await showVoiceMemoDialog(
       context: context,
       sessionId: widget.session.id,
@@ -1818,6 +3003,26 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           duration: const Duration(seconds: 2),
         ),
       );
+    }
+  }
+
+  Future<void> _pausePlayersForVoiceMemo() async {
+    try {
+      if (_player.playing) {
+        await _player.pause();
+      }
+    } catch (_) {
+      // Best-effort: keep memo flow moving even if pause throws.
+    }
+    try {
+      if (_clipPlayer.playing) {
+        await _clipPlayer.pause();
+      }
+    } catch (_) {
+      // Best-effort.
+    }
+    if (mounted && _isPlaying) {
+      setState(() => _isPlaying = false);
     }
   }
 
@@ -1898,6 +3103,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    ref.listen<String>(colorMapProvider, (previous, next) {
+      if (previous != null && previous != next) {
+        unawaited(_refreshSpectrogramForColorMap());
+      }
+    });
 
     return PopScope(
       canPop: !_isDirty,
@@ -1925,7 +3135,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   ),
                   const SizedBox(width: 4),
                   Icon(
-                    Icons.edit,
+                    AppIcons.edit,
                     size: 16,
                     color: Theme.of(
                       context,
@@ -1936,7 +3146,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             ),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.close),
+            icon: const Icon(AppIcons.close),
             tooltip: l10n.tooltipClose,
             onPressed: () async {
               if (_isDirty) {
@@ -1949,12 +3159,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.help_outline),
+              icon: const Icon(AppIcons.helpOutline),
               tooltip: l10n.sessionHelpTitle,
               onPressed: _showHelp,
             ),
             IconButton(
-              icon: const Icon(Icons.tune_rounded),
+              icon: const Icon(AppIcons.tuneRounded),
               tooltip: l10n.settings,
               onPressed:
                   () => Navigator.of(context).push(
@@ -2045,13 +3255,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           IconButton(
-            icon: const Icon(Icons.add_circle_outline),
+            icon: const Icon(AppIcons.addCircleOutline),
             tooltip: l10n.sessionAddContent,
             onPressed: _showAddMenu,
           ),
           IconButton(
             icon: Icon(
-              Icons.undo,
+              AppIcons.undo,
               color:
                   _canUndo ? null : theme.colorScheme.onSurface.withAlpha(80),
             ),
@@ -2060,7 +3270,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
           IconButton(
             icon: Icon(
-              Icons.redo,
+              AppIcons.redo,
               color:
                   _canRedo ? null : theme.colorScheme.onSurface.withAlpha(80),
             ),
@@ -2069,16 +3279,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
           if (_audioAvailable)
             IconButton(
-              icon: Icon(
-                _trimMode ? Icons.content_cut : Icons.content_cut_outlined,
-              ),
+              icon: Icon(AppIcons.contentCut),
               tooltip: l10n.sessionTrimRecording,
               onPressed: _toggleTrimMode,
               color: _trimMode ? theme.colorScheme.primary : null,
             ),
           IconButton(
             icon: Icon(
-              Icons.save,
+              AppIcons.save,
               color:
                   _isDirty
                       ? theme.colorScheme.primary
@@ -2088,19 +3296,19 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             onPressed: _isDirty ? _save : null,
           ),
           IconButton(
-            icon: const Icon(Icons.share),
+            icon: const Icon(AppIcons.share),
             tooltip: l10n.sessionShare,
             onPressed: _share,
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline),
+            icon: const Icon(AppIcons.deleteOutline),
             tooltip: l10n.sessionDiscard,
             onPressed: _discard,
           ),
           if (widget.session.type == SessionType.survey)
             IconButton(
               icon: Icon(
-                Icons.play_arrow_rounded,
+                AppIcons.playArrowRounded,
                 color: theme.colorScheme.primary,
               ),
               tooltip: l10n.surveyContinue,
@@ -2136,6 +3344,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   ),
                 )
                 : null,
+        onFetchWeather: _resolveWeather,
       ),
       if (widget.session.type == SessionType.survey &&
           (widget.session.gpsTrack.isNotEmpty ||
@@ -2177,7 +3386,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(6),
                     child: Icon(
-                      Icons.fullscreen,
+                      AppIcons.fullscreen,
                       size: 20,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
@@ -2186,6 +3395,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               ),
             ),
           ],
+        ),
+      if (_audioTruncatedWarning && !_audioTruncatedWarningDismissed)
+        _ReviewWarningCard(
+          icon: AppIcons.warningAmberRounded,
+          title: l10n.sessionReviewAudioShortTitle,
+          body: l10n.sessionReviewAudioShortBody,
+          onDismiss: _dismissAudioWarning,
         ),
       if (_audioAvailable) ...[
         if (_trimMode && (_fullSpectrogramImage ?? _spectrogramImage) != null)
@@ -2202,19 +3418,63 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                     ? _fullDurationSec
                     : _duration.inMicroseconds / 1000000.0),
             onChanged: _onTrimChanged,
+            quality: ref.watch(spectrogramQualityProvider),
           )
         else
           Stack(
             children: [
               _SpectrogramStrip(
+                session: widget.session,
                 spectrogramImage: _spectrogramImage,
+                spectrogramChunks: List.unmodifiable(_spectrogramChunks),
                 decoding: _decoding,
-                position: _position,
+                positionNotifier: _positionNotifier,
                 duration: _duration,
+                timelineOffsetSec: _clipOffsetSec,
+                onViewportChanged: _requestSpectrogramViewport,
                 onSeek: _seekToPosition,
                 onPause: _pausePlayer,
                 isPlaying: _isPlaying,
+                userDefaultViewSeconds:
+                    ref.watch(spectrogramDurationProvider).toDouble(),
+                quality: ref.watch(spectrogramQualityProvider),
               ),
+              // Lazy trim editor: no full-file spectrogram thumbnail is
+              // available, so we overlay trim handles directly on the
+              // live (chunk-painted) strip and operate on whatever
+              // window is currently visible. The user pre-zooms to the
+              // region of interest, then drags handles inward.
+              if (_trimMode &&
+                  _spectrogramLazy &&
+                  _lastViewportCenterSec != null &&
+                  _lastViewportViewSec != null)
+                Positioned.fill(
+                  child: Builder(
+                    builder: (context) {
+                      final totalSec =
+                          _spectrogramAudioMetadata?.duration.inMicroseconds !=
+                                  null
+                              ? _spectrogramAudioMetadata!
+                                      .duration
+                                      .inMicroseconds /
+                                  1000000.0
+                              : _fullDurationSec;
+                      final visibleStart = (_lastViewportCenterSec! -
+                              _lastViewportViewSec! / 2)
+                          .clamp(0.0, totalSec);
+                      final visibleEnd = (_lastViewportCenterSec! +
+                              _lastViewportViewSec! / 2)
+                          .clamp(0.0, totalSec);
+                      return _TrimOverlay.windowed(
+                        visibleStartSec: visibleStart,
+                        visibleEndSec: visibleEnd,
+                        initialStartSec: _trimStartSec ?? visibleStart,
+                        initialEndSec: _trimEndSec ?? visibleEnd,
+                        onChanged: _onTrimChanged,
+                      );
+                    },
+                  ),
+                ),
               Positioned(
                 left: 8,
                 bottom: 8,
@@ -2289,8 +3549,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
       avatar: Icon(
         a.hasVoiceMemo
-            ? Icons.mic
-            : (a.offsetInRecording != null ? Icons.schedule : Icons.short_text),
+            ? AppIcons.mic
+            : (a.offsetInRecording != null
+                ? AppIcons.schedule
+                : AppIcons.shortText),
         size: 16,
       ),
       onPressed: () => _editAnnotation(i),
@@ -2298,7 +3560,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           a.hasVoiceMemo
               ? l10n.sessionEditVoiceMemo
               : l10n.sessionEditAnnotation,
-      deleteIcon: const Icon(Icons.close, size: 16),
+      deleteIcon: const Icon(AppIcons.close, size: 16),
       onDeleted: () => _deleteAnnotation(i),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       visualDensity: VisualDensity.compact,
@@ -2307,7 +3569,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   Widget _buildSpeciesList(ThemeData theme, AppLocalizations l10n) {
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
-    final taxonomy = ref.watch(taxonomyServiceProvider).valueOrNull;
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
 
     // Locale-aware common-name resolver — mirrors the lookup used by
     // the species tile so the filter/sort match what the user sees.
@@ -2330,38 +3592,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           }).toList();
     }
 
-    // Apply user-selected sort. New list to avoid mutating cached state.
-    final sorted = List<_SpeciesGroup>.of(groups);
-    switch (_speciesSort) {
-      case SpeciesSortMode.alphabetical:
-        sorted.sort(
-          (a, b) => localizedCommonName(
-            a,
-          ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase()),
-        );
-        break;
-      case SpeciesSortMode.count:
-        sorted.sort((a, b) {
-          final c = b.totalCount.compareTo(a.totalCount);
-          if (c != 0) return c;
-          return localizedCommonName(
-            a,
-          ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase());
-        });
-        break;
-      case SpeciesSortMode.confidence:
-        sorted.sort((a, b) {
-          final c = b.bestConfidence.compareTo(a.bestConfidence);
-          if (c != 0) return c;
-          return localizedCommonName(
-            a,
-          ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase());
-        });
-        break;
-      case SpeciesSortMode.firstSeen:
-        sorted.sort((a, b) => a.firstTimestamp.compareTo(b.firstTimestamp));
-        break;
-    }
+    final sorted = _orderSessionReviewSpeciesGroups(
+      groups: groups,
+      sortMode: _speciesSort,
+      localizedCommonName: localizedCommonName,
+      hasPlayableClip: _hasPlayableDetectionClip,
+    );
 
     final header = _buildSpeciesListHeader(theme, l10n);
     final hasAnyGroups = _filteredSpeciesGroups.isNotEmpty;
@@ -2400,17 +3636,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         itemBuilder: (context, index) {
           final group = sorted[index];
           final isExpanded = _expandedSpecies.contains(group.scientificName);
-          final isActive =
-              _isSpeciesActive(group) ||
-              (_activeClipCluster != null &&
-                  group.clusters.contains(_activeClipCluster));
           return _SpeciesTile(
+            key: ValueKey('species-tile-${group.scientificName}'),
             group: group,
-            sessionStart: widget.session.startTime,
+            session: widget.session,
             isExpanded: isExpanded,
-            isActive: isActive,
-            activePositionSec:
-                _isPlaying ? _position.inMicroseconds / 1e6 : null,
+            positionNotifier: _positionNotifier,
+            isPlaying: _isPlaying,
             activeCluster: _activeClipCluster,
             clipOffsetSec: _clipOffsetSec,
             windowSec: widget.session.settings.windowDuration,
@@ -2473,7 +3705,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 decoration: InputDecoration(
                   isDense: true,
                   hintText: l10n.sessionSearchSpecies,
-                  prefixIcon: const Icon(Icons.search, size: 18),
+                  prefixIcon: const Icon(AppIcons.search, size: 18),
                   prefixIconConstraints: const BoxConstraints(
                     minWidth: 32,
                     minHeight: 32,
@@ -2482,7 +3714,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                       _speciesSearchQuery.isEmpty
                           ? null
                           : IconButton(
-                            icon: const Icon(Icons.clear, size: 18),
+                            icon: const Icon(AppIcons.clear, size: 18),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(
                               minWidth: 32,
@@ -2506,11 +3738,16 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
           PopupMenuButton<SpeciesSortMode>(
             tooltip: l10n.sessionSpeciesSortMenu,
-            icon: const Icon(Icons.sort),
+            icon: const Icon(AppIcons.sort),
             initialValue: _speciesSort,
             onSelected: _setSpeciesSort,
             itemBuilder:
                 (context) => [
+                  CheckedPopupMenuItem(
+                    value: SpeciesSortMode.confidence,
+                    checked: _speciesSort == SpeciesSortMode.confidence,
+                    child: Text(l10n.sessionSpeciesSortConfidence),
+                  ),
                   CheckedPopupMenuItem(
                     value: SpeciesSortMode.alphabetical,
                     checked: _speciesSort == SpeciesSortMode.alphabetical,
@@ -2522,11 +3759,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                     child: Text(l10n.sessionSpeciesSortCount),
                   ),
                   CheckedPopupMenuItem(
-                    value: SpeciesSortMode.confidence,
-                    checked: _speciesSort == SpeciesSortMode.confidence,
-                    child: Text(l10n.sessionSpeciesSortConfidence),
-                  ),
-                  CheckedPopupMenuItem(
                     value: SpeciesSortMode.firstSeen,
                     checked: _speciesSort == SpeciesSortMode.firstSeen,
                     child: Text(l10n.sessionSpeciesSortFirstSeen),
@@ -2536,31 +3768,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         ],
       ),
     );
-  }
-
-  /// Whether any detection in [group] spans the current playback position.
-  bool _isSpeciesActive(_SpeciesGroup group) {
-    // Only highlight while audio is actually playing — a paused player
-    // (whether by the user or by the cluster auto-stop) should leave the
-    // species list in its idle styling.
-    if (!_isPlaying) return false;
-    final windowSec = widget.session.settings.windowDuration;
-    final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
-    for (final r in group.allRecords) {
-      final offset = r.timestamp.difference(widget.session.startTime);
-      // Map the absolute offset into clip-relative coordinates.
-      final rel = offset - clipOffset;
-      // Honour the recorded continuous-detection duration when present;
-      // otherwise fall back to a single inference window starting at the
-      // detection timestamp.
-      final detEnd =
-          r.endTimestamp != null
-              ? r.endTimestamp!.difference(widget.session.startTime) -
-                  clipOffset
-              : rel + Duration(seconds: windowSec);
-      if (_position >= rel && _position <= detEnd) return true;
-    }
-    return false;
   }
 
   // ── Grouping Logic ──────────────────────────────────────────────────
@@ -2632,6 +3839,10 @@ String _sessionTypeLabel(AppLocalizations l10n, SessionType type) {
       return l10n.sessionTypePointCount;
     case SessionType.survey:
       return l10n.sessionTypeSurvey;
+    case SessionType.batchAnalysis:
+      return l10n.sessionTypeBatchAnalysis;
+    case SessionType.aru:
+      return l10n.sessionTypeAru;
   }
 }
 
@@ -2654,6 +3865,10 @@ String _sessionReviewTitle(AppLocalizations l10n, LiveSession session) {
       return l10n.sessionTitlePointCountNum(n);
     case SessionType.survey:
       return l10n.sessionTitleSurveyNum(n);
+    case SessionType.batchAnalysis:
+      return l10n.sessionTitleBatchAnalysisNum(n);
+    case SessionType.aru:
+      return l10n.sessionTitleAruNum(n);
   }
 }
 
@@ -2769,7 +3984,7 @@ class _FullscreenSurveyMapScreenState
   /// Localized common name for [sciName]. Falls back to the record's stored
   /// common name when the taxonomy hasn't loaded yet.
   String _localizedName(String sciName, String fallback) {
-    final taxonomy = ref.watch(taxonomyServiceProvider).valueOrNull;
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     return taxonomy?.lookup(sciName)?.commonNameForLocale(speciesLocale) ??
         fallback;
@@ -2948,6 +4163,25 @@ class _FullscreenSurveyMapScreenState
               ),
           ],
         ),
+        actions: [
+          if (Platform.isIOS)
+            IconButton(
+              icon: const Icon(AppIcons.openInNew),
+              tooltip: l10n.openInAppleMaps,
+              onPressed: () {
+                final lat = widget.session.latitude ??
+                    (widget.gpsTrack.isNotEmpty ? widget.gpsTrack.first.latitude : null);
+                final lng = widget.session.longitude ??
+                    (widget.gpsTrack.isNotEmpty ? widget.gpsTrack.first.longitude : null);
+                if (lat != null && lng != null) {
+                  openExternalUrl(
+                    context,
+                    'https://maps.apple.com/?q=$lat,$lng',
+                  );
+                }
+              },
+            ),
+        ],
       ),
       body: Stack(
         children: [
@@ -2986,7 +4220,7 @@ class _FullscreenSurveyMapScreenState
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline),
+                      const Icon(AppIcons.infoOutline),
                       const SizedBox(width: 12),
                       Expanded(child: Text(l10n.surveyMapFilterEmpty)),
                     ],
@@ -3218,7 +4452,7 @@ class _MapFilterSheetState extends State<_MapFilterSheet> {
                     TextField(
                       decoration: InputDecoration(
                         isDense: true,
-                        prefixIcon: const Icon(Icons.search, size: 20),
+                        prefixIcon: const Icon(AppIcons.search, size: 20),
                         hintText: l10n.surveyMapFilterSpeciesSearchHint,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -3321,8 +4555,8 @@ class _SpeciesPickerTile extends ConsumerWidget {
           children: [
             Icon(
               selected
-                  ? Icons.check_circle_rounded
-                  : Icons.radio_button_unchecked,
+                  ? AppIcons.checkCircleRounded
+                  : AppIcons.radioButtonUnchecked,
               size: 20,
               color:
                   selected
@@ -3417,11 +4651,7 @@ class _MapFilterChip extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  isActive ? Icons.filter_list : Icons.filter_list_outlined,
-                  size: 18,
-                  color: fg,
-                ),
+                Icon(AppIcons.filterList, size: 18, color: fg),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(

@@ -29,9 +29,9 @@ Species are grouped into expandable rows. You can inspect detections by species 
 
 A search field above the list filters species by common or scientific name, so finding one specific bird in a 100-species session is a few keystrokes instead of a long scroll. The :material-sort: button next to it changes the species order:
 
-- **A → Z** (default) — alphabetical by common name. Predictable, locale-aware, and the easiest to scan once a session has lots of species.
+- **Highest confidence** (default) — species with the highest single-detection confidence first. Good for triaging the most certain identifications. When you expand a species in this mode, detections with playable audio clips appear before clipless detections, then by confidence.
 - **Most detections** — species with the highest detection count first. Good for spotting the dominant choristers.
-- **Highest confidence** — species with the highest single-detection confidence first. Good for triaging the most certain identifications.
+- **A → Z** — alphabetical by common name. Predictable, locale-aware, and easy to scan once a session has lots of species.
 - **First detected** — chronological by first-detection time. The historical default; useful when reviewing alongside the spectrogram timeline.
 
 The chosen sort persists across sessions.
@@ -67,6 +67,16 @@ The audio attachment is resolved in this order:
 1. The detection's own per-detection clip on disk.
 2. **For sessions recording one continuous file**: the relevant audio window is sliced out of the recording on the fly. Both WAV and FLAC continuous recordings are supported, and the slice ships in the same container as the source (WAV in → WAV out, FLAC in → FLAC out).
 3. If neither is available, the share is text-only — location and timestamp still land in the payload.
+
+### Voice memos
+
+You can attach short, spoken voice commentary to individual detection records:
+
+- **Record**: Tap the :material-dots-vertical: button on a detection cluster and select **Record voice memo** to open the voice memo dialog. Tap the large microphone button to start recording. A live waveform reflects your voice in real time. Tap the stop button when finished.
+- **Review**: Once recorded, you can listen to the memo using the inline player. To replace the memo, tap the **Re-record** button. To save it, tap the **Save** button.
+- **Delete**: If a detection already has an attached voice memo, you can delete it from either the overflow menu or the voice memo dialog.
+- **Platform-Specific Formats**: On Android and other platforms, voice memos are recorded in highly-compressed AAC (`.m4a`) format at 16 kHz. On iOS, they automatically use WAV/PCM16 format (`.wav`) to prevent CoreAudio compatibility issues with the app's active audio sessions. Both formats are fully supported by the export ZIP packaging.
+- **Exporting**: When exporting the session as a ZIP, voice memos are bundled inside the `memos/` directory and their relative paths are recorded in JSON and CSV metadata.
 
 ### Survey track map
 
@@ -117,7 +127,7 @@ The toolbar uses the same icon meanings described in [Icons & Controls](icons-an
 
 ## Export
 
-Export behavior depends on the options selected in [Settings](settings.md). The app can package detections and, optionally, audio into the chosen export format. Every export now ships with full provenance metadata — the app version, model name and version, species locale, export timestamp, and a snapshot of all settings at export time — written to a `<prefix>.metadata.json` side-file (ZIP) or a top-level `meta` block (JSON) so that exports are self-describing and reproducible.
+Export behavior depends on the options selected in [Settings](settings.md). The app can package detections and, optionally, audio into the chosen export format. Every export ships with provenance metadata — the app version, model name and version, species locale, export timestamp, settings retained with the session, plus relevant export options — written to a `<prefix>.metadata.json` side-file (ZIP) or a top-level `meta` block (JSON) so that exports are self-describing and reproducible.
 
 The JSON export's `settings` block records the values that were *actually applied to this session* — sensitivity, score-pooling mode and window count, microphone gain, and the high-pass cutoff — not whatever happens to be set in Settings now. This means you can reproduce a result months later, or compare two surveys, without remembering which sliders were where when you ran them.
 

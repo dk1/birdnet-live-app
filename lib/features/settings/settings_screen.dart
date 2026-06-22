@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/services/app_data_clear_service.dart';
 import '../../shared/providers/app_providers.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/content_width_constraint.dart';
@@ -13,6 +15,8 @@ import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
 import '../spectrogram/color_maps.dart';
 import 'offline_map_download_tile.dart';
+
+bool get _showOfflineMapDownloadSetting => false;
 
 // ---------------------------------------------------------------------------
 // Settings context — determines which settings are visible
@@ -32,6 +36,12 @@ enum SettingsContext {
 
   /// Survey mode (future).
   survey,
+
+  /// ARU (autonomous recording unit) deployment mode.
+  ///
+  /// Currently mirrors [survey]'s settings surface, but is kept distinct so
+  /// ARU and Survey can diverge without leaking each other's context.
+  aru,
 
   /// Point-count mode (future).
   pointCount,
@@ -119,7 +129,12 @@ class SettingsScreen extends ConsumerWidget {
   /// Returns `true` if [section] should be visible for the current context.
   bool _showSection(String section) {
     if (settingsContext == SettingsContext.all) return true;
-    return _sectionContexts[section]?.contains(settingsContext) ?? true;
+    // ARU currently shares Survey's settings surface.
+    final effective =
+        settingsContext == SettingsContext.aru
+            ? SettingsContext.survey
+            : settingsContext;
+    return _sectionContexts[section]?.contains(effective) ?? true;
   }
 
   @override
@@ -157,6 +172,18 @@ class SettingsScreen extends ConsumerWidget {
                 value: ref.watch(showSciNamesProvider),
                 onChanged:
                     (v) => ref.read(showSciNamesProvider.notifier).set(v),
+              ),
+              SwitchListTile(
+                title: _TitleWithHelp(
+                  title: l10n.settingsPlaybackOverlay,
+                  helpBody: l10n.settingsHelpPlaybackOverlay,
+                ),
+                subtitle: Text(l10n.settingsPlaybackOverlayDescription),
+                value: ref.watch(sessionReviewPlaybackOverlayProvider),
+                onChanged:
+                    (v) => ref
+                        .read(sessionReviewPlaybackOverlayProvider.notifier)
+                        .set(v),
               ),
               ListTile(
                 title: _TitleWithHelp(
@@ -252,11 +279,12 @@ class SettingsScreen extends ConsumerWidget {
                 title: l10n.settingsInference,
                 subtitle: l10n.settingsInferenceDescription,
               ),
-              _ChoiceTile<int>(
+              _DiscreteSliderTile<int>(
                 title: l10n.settingsWindowDuration,
                 helpBody: l10n.settingsHelpWindowDuration,
                 value: ref.watch(windowDurationProvider),
-                options: const {3: '3s', 5: '5s', 10: '10s'},
+                values: const [1, 3, 5, 7, 10, 15],
+                format: (v) => '${v}s',
                 onChanged:
                     (v) => ref.read(windowDurationProvider.notifier).set(v),
               ),
@@ -283,48 +311,25 @@ class SettingsScreen extends ConsumerWidget {
                 format: (v) => v.toStringAsFixed(2),
                 onChanged: (v) => ref.read(sensitivityProvider.notifier).set(v),
               ),
-              _ChoiceTile<double>(
+              _DiscreteSliderTile<double>(
                 title: l10n.settingsInferenceRate,
                 helpBody: l10n.settingsHelpInferenceRate,
                 value: ref.watch(inferenceRateProvider),
-                options: {
-                  0.25: '0.25 Hz',
-                  0.5: '0.5 Hz',
-                  1.0: '1 Hz',
-                  2.0: '2 Hz',
-                },
+                values: const [
+                  0.1,
+                  0.2,
+                  0.3,
+                  0.4,
+                  0.5,
+                  0.6,
+                  0.7,
+                  0.8,
+                  0.9,
+                  1.0,
+                ],
+                format: (v) => '${v.toStringAsFixed(2)} Hz',
                 onChanged:
                     (v) => ref.read(inferenceRateProvider.notifier).set(v),
-              ),
-              _ChoiceTile<String>(
-                title: l10n.settingsScorePooling,
-                helpBody: l10n.settingsHelpScorePooling,
-                value: ref.watch(scorePoolingProvider),
-                options: {
-                  'off': l10n.settingsPoolingOff,
-                  'average': l10n.settingsPoolingAverage,
-                  'max': l10n.settingsPoolingMax,
-                  'lme': l10n.settingsPoolingLME,
-                },
-                onChanged:
-                    (v) => ref.read(scorePoolingProvider.notifier).set(v),
-              ),
-              // The pooling-windows slider only matters when pooling is on. We
-              // still leave it visible (greyed out at the bottom of the section
-              // would be more discoverable than hiding it entirely) so users can
-              // dial it in before re-enabling pooling.
-              _SliderTile(
-                title: l10n.settingsScorePoolingWindows,
-                helpBody: l10n.settingsHelpScorePoolingWindows,
-                value: ref.watch(scorePoolingWindowsProvider).toDouble(),
-                min: 1,
-                max: 10,
-                divisions: 9,
-                format: (v) => v.toInt().toString(),
-                onChanged:
-                    (v) => ref
-                        .read(scorePoolingWindowsProvider.notifier)
-                        .set(v.toInt()),
               ),
               const Divider(),
             ],
@@ -354,7 +359,12 @@ class SettingsScreen extends ConsumerWidget {
                 options: {
                   'viridis': l10n.settingsColorMapViridis,
                   'magma': l10n.settingsColorMapMagma,
+                  'plasma': l10n.settingsColorMapPlasma,
+                  'cividis': l10n.settingsColorMapCividis,
+                  'jet': l10n.settingsColorMapJet,
+                  'turbo': l10n.settingsColorMapTurbo,
                   'grayscale': l10n.settingsColorMapGrayscale,
+                  'birdnet': l10n.settingsColorMapBirdnet,
                 },
                 onChanged: (v) => ref.read(colorMapProvider.notifier).set(v),
               ),
@@ -413,63 +423,24 @@ class SettingsScreen extends ConsumerWidget {
               const Divider(),
             ],
 
-            // --- Announcements ---
-            // Sits high up in the list (right after Spectrogram) because
-            // it is the only setting users typically need to revisit
-            // mid-session — the verbosity × frequency pickers are the
-            // entire setup, so making them easy to find matters more
-            // than category alphabetization.
-            if (_showSection('announcements'))
-              AnnouncementsSettingsSection(
-                sectionHeader:
-                    ({required String title, required String subtitle}) =>
-                        _SectionHeader(title: title, subtitle: subtitle),
-                titleWithHelp:
-                    ({required String title, String? helpBody}) =>
-                        _TitleWithHelp(title: title, helpBody: helpBody),
-              ),
-
             // --- Recording ---
             if (_showSection('recording')) ...[
               _SectionHeader(
                 title: l10n.settingsRecording,
                 subtitle: l10n.settingsRecordingDescription,
               ),
-              ListTile(
-                title: _TitleWithHelp(
-                  title: l10n.settingsRecordingMode,
-                  helpBody: l10n.settingsHelpRecordingMode,
-                ),
+              _ChoiceTile<String>(
+                title: l10n.settingsRecordingMode,
+                helpBody: l10n.settingsHelpRecordingMode,
+                value: ref.watch(recordingModeProvider),
+                options: {
+                  'full': l10n.settingsRecordingModeFull,
+                  'detections': l10n.settingsRecordingModeDetections,
+                  'off': l10n.settingsRecordingModeOff,
+                },
+                onChanged:
+                    (v) => ref.read(recordingModeProvider.notifier).set(v),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: SegmentedButton<String>(
-                  segments: [
-                    ButtonSegment(
-                      value: 'full',
-                      label: _SegmentLabel(
-                        text: l10n.settingsRecordingModeFull,
-                      ),
-                    ),
-                    ButtonSegment(
-                      value: 'detections',
-                      label: _SegmentLabel(
-                        text: l10n.settingsRecordingModeDetections,
-                      ),
-                    ),
-                    ButtonSegment(
-                      value: 'off',
-                      label: _SegmentLabel(text: l10n.settingsRecordingModeOff),
-                    ),
-                  ],
-                  selected: {ref.watch(recordingModeProvider)},
-                  onSelectionChanged: (s) {
-                    HapticFeedback.selectionClick();
-                    ref.read(recordingModeProvider.notifier).set(s.first);
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
               // Clip context (visible only when recording mode = detections)
               if (ref.watch(recordingModeProvider) == 'detections') ...[
                 ListTile(
@@ -523,6 +494,17 @@ class SettingsScreen extends ConsumerWidget {
               const Divider(),
             ],
 
+            // --- Announcements ---
+            if (_showSection('announcements'))
+              AnnouncementsSettingsSection(
+                sectionHeader:
+                    ({required String title, required String subtitle}) =>
+                        _SectionHeader(title: title, subtitle: subtitle),
+                titleWithHelp:
+                    ({required String title, String? helpBody}) =>
+                        _TitleWithHelp(title: title, helpBody: helpBody),
+              ),
+
             // --- Location / Geo ---
             if (_showSection('location')) ...[
               _SectionHeader(
@@ -539,29 +521,11 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged: (v) => ref.read(useGpsProvider.notifier).set(v),
               ),
               if (!ref.watch(useGpsProvider)) ...[
-                _SliderTile(
-                  title: l10n.settingsLatitude,
-                  value: ref.watch(manualLatitudeProvider),
-                  min: -90,
-                  max: 90,
-                  divisions: 1800,
-                  format: (v) => v.toStringAsFixed(2),
-                  onChanged:
-                      (v) => ref.read(manualLatitudeProvider.notifier).set(v),
-                ),
-                _SliderTile(
-                  title: l10n.settingsLongitude,
-                  value: ref.watch(manualLongitudeProvider),
-                  min: -180,
-                  max: 180,
-                  divisions: 3600,
-                  format: (v) => v.toStringAsFixed(2),
-                  onChanged:
-                      (v) => ref.read(manualLongitudeProvider.notifier).set(v),
-                ),
+                const _ManualCoordinatesTile(),
               ],
               if (ref.watch(useGpsProvider)) const _GpsRefreshTile(),
-              if (ref.watch(useGpsProvider)) const OfflineMapDownloadTile(),
+              if (_showOfflineMapDownloadSetting && ref.watch(useGpsProvider))
+                const OfflineMapDownloadTile(),
               _ChoiceTile<String>(
                 title: l10n.settingsSpeciesFilter,
                 helpBody: l10n.settingsHelpSpeciesFilter,
@@ -596,23 +560,40 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: l10n.settingsExportDescription,
               ),
               _ExportFormatChecklist(),
-              SwitchListTile(
+              CheckboxListTile(
+                dense: true,
                 title: _TitleWithHelp(
                   title: l10n.settingsIncludeAudioFiles,
                   helpBody: l10n.settingsHelpIncludeAudioFiles,
                 ),
                 value: ref.watch(includeAudioProvider),
                 onChanged:
-                    (v) => ref.read(includeAudioProvider.notifier).set(v),
+                    (v) =>
+                        ref.read(includeAudioProvider.notifier).set(v ?? false),
               ),
-              SwitchListTile(
+              CheckboxListTile(
+                dense: true,
+                title: _TitleWithHelp(
+                  title: l10n.settingsExportAppMetadata,
+                  helpBody: l10n.settingsHelpExportAppMetadata,
+                ),
+                value: ref.watch(includeAppMetadataProvider),
+                onChanged:
+                    (v) => ref
+                        .read(includeAppMetadataProvider.notifier)
+                        .set(v ?? false),
+              ),
+              CheckboxListTile(
+                dense: true,
                 title: _TitleWithHelp(
                   title: l10n.settingsExportHtmlReport,
                   helpBody: l10n.settingsHelpExportHtmlReport,
                 ),
                 value: ref.watch(exportHtmlReportProvider),
                 onChanged:
-                    (v) => ref.read(exportHtmlReportProvider.notifier).set(v),
+                    (v) => ref
+                        .read(exportHtmlReportProvider.notifier)
+                        .set(v ?? false),
               ),
               const Divider(),
             ],
@@ -671,7 +652,7 @@ class SettingsScreen extends ConsumerWidget {
             if (_showSection('about'))
               ListTile(
                 title: Text(l10n.about),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: const Icon(AppIcons.chevronRight),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
@@ -702,7 +683,7 @@ class SettingsScreen extends ConsumerWidget {
                   l10n.settingsClearData,
                   style: TextStyle(color: theme.colorScheme.error),
                 ),
-                onTap: () => _showClearDataDialog(context, ref, l10n),
+                onTap: () => _showClearDataDialog(context, l10n),
               ),
             ],
 
@@ -791,15 +772,12 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showClearDataDialog(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations l10n,
-  ) {
+  void _showClearDataDialog(BuildContext context, AppLocalizations l10n) {
     showDialog<void>(
       context: context,
       builder: (context) {
         final controller = TextEditingController();
+        var isClearing = false;
         return StatefulBuilder(
           builder: (context, setState) {
             final theme = Theme.of(context);
@@ -815,6 +793,7 @@ class SettingsScreen extends ConsumerWidget {
                   TextField(
                     controller: controller,
                     onChanged: (_) => setState(() {}),
+                    enabled: !isClearing,
                     decoration: InputDecoration(
                       labelText: l10n.settingsClearDataTypeConfirm,
                       border: const OutlineInputBorder(),
@@ -824,25 +803,51 @@ class SettingsScreen extends ConsumerWidget {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed:
+                      isClearing ? null : () => Navigator.of(context).pop(),
                   child: Text(l10n.cancel),
                 ),
                 FilledButton.tonal(
                   onPressed:
-                      typed
-                          ? () {
-                            // TODO: Clear session database and recordings
-                            Navigator.of(context).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(l10n.settingsDataCleared)),
-                            );
+                      typed && !isClearing
+                          ? () async {
+                            final navigator = Navigator.of(context);
+                            final messenger = ScaffoldMessenger.of(context);
+                            setState(() => isClearing = true);
+                            try {
+                              await const AppDataClearService().clearAllData();
+                              navigator.pop();
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.settingsDataCleared),
+                                ),
+                              );
+                              await Future<void>.delayed(
+                                const Duration(milliseconds: 800),
+                              );
+                              await SystemNavigator.pop();
+                            } catch (_) {
+                              if (!context.mounted) return;
+                              setState(() => isClearing = false);
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.settingsDataClearFailed),
+                                ),
+                              );
+                            }
                           }
                           : null,
                   style: FilledButton.styleFrom(
                     backgroundColor: theme.colorScheme.errorContainer,
                     foregroundColor: theme.colorScheme.onErrorContainer,
                   ),
-                  child: Text(l10n.confirm),
+                  child:
+                      isClearing
+                          ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : Text(l10n.confirm),
                 ),
               ],
             );
@@ -928,7 +933,7 @@ class _HelpIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return IconButton(
-      icon: const Icon(Icons.help_outline, size: 18),
+      icon: const Icon(AppIcons.helpOutline, size: 18),
       visualDensity: VisualDensity.compact,
       tooltip: l10n.settingsHelpTooltip,
       padding: EdgeInsets.zero,
@@ -1118,6 +1123,222 @@ class _SpeciesLanguageTile extends ConsumerWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// _ManualCoordinatesTile — editable latitude / longitude entry
+// ---------------------------------------------------------------------------
+//
+// Lets the user type or paste precise coordinates when GPS is off,
+// addressing the imprecision of dragging a slider on a touch screen.
+// Pasting a combined "lat, lon" string (comma-, semicolon-, or
+// whitespace-separated) into either field fills both fields at once.
+// Values are validated against geographic ranges and persisted to
+// [manualLatitudeProvider] / [manualLongitudeProvider] as the user types.
+// ---------------------------------------------------------------------------
+
+class _ManualCoordinatesTile extends ConsumerStatefulWidget {
+  const _ManualCoordinatesTile();
+
+  @override
+  ConsumerState<_ManualCoordinatesTile> createState() =>
+      _ManualCoordinatesTileState();
+}
+
+class _ManualCoordinatesTileState
+    extends ConsumerState<_ManualCoordinatesTile> {
+  late final TextEditingController _latController = TextEditingController(
+    text: _format(ref.read(manualLatitudeProvider)),
+  );
+  late final TextEditingController _lonController = TextEditingController(
+    text: _format(ref.read(manualLongitudeProvider)),
+  );
+  final FocusNode _latFocus = FocusNode();
+  final FocusNode _lonFocus = FocusNode();
+
+  String? _latError;
+  String? _lonError;
+
+  static String _format(double v) => v.toStringAsFixed(5);
+
+  @override
+  void dispose() {
+    _latController.dispose();
+    _lonController.dispose();
+    _latFocus.dispose();
+    _lonFocus.dispose();
+    super.dispose();
+  }
+
+  /// Parses a combined coordinate string such as "52.52, 13.40",
+  /// "52.52; 13.40", or "52.52 13.40". Returns null when the text is not
+  /// exactly two parseable numbers.
+  static (double, double)? _parsePair(String text) {
+    final parts =
+        text
+            .trim()
+            .split(RegExp(r'[,;\s]+'))
+            .where((p) => p.isNotEmpty)
+            .toList();
+    if (parts.length != 2) return null;
+    final lat = double.tryParse(parts[0]);
+    final lon = double.tryParse(parts[1]);
+    if (lat == null || lon == null) return null;
+    return (lat, lon);
+  }
+
+  /// Applies a full lat/lon pair (typically pasted) to both providers and
+  /// both text fields, validating each value against its range.
+  void _applyPair(double lat, double lon, AppLocalizations l10n) {
+    final latValid = lat >= -90 && lat <= 90;
+    final lonValid = lon >= -180 && lon <= 180;
+    setState(() {
+      _latError = latValid ? null : l10n.settingsLatitudeRange;
+      _lonError = lonValid ? null : l10n.settingsLongitudeRange;
+    });
+    if (latValid) {
+      ref.read(manualLatitudeProvider.notifier).set(lat);
+      final text = _format(lat);
+      _latController.value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: text.length),
+      );
+    }
+    if (lonValid) {
+      ref.read(manualLongitudeProvider.notifier).set(lon);
+      final text = _format(lon);
+      _lonController.value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: text.length),
+      );
+    }
+  }
+
+  void _onLatChanged(String value, AppLocalizations l10n) {
+    final pair = _parsePair(value);
+    if (pair != null) {
+      _applyPair(pair.$1, pair.$2, l10n);
+      return;
+    }
+    final trimmed = value.trim();
+    final lat = double.tryParse(trimmed);
+    setState(() {
+      if (trimmed.isEmpty) {
+        _latError = null;
+      } else if (lat == null) {
+        _latError = l10n.settingsCoordinateInvalid;
+      } else if (lat < -90 || lat > 90) {
+        _latError = l10n.settingsLatitudeRange;
+      } else {
+        _latError = null;
+        ref.read(manualLatitudeProvider.notifier).set(lat);
+      }
+    });
+  }
+
+  void _onLonChanged(String value, AppLocalizations l10n) {
+    final pair = _parsePair(value);
+    if (pair != null) {
+      _applyPair(pair.$1, pair.$2, l10n);
+      return;
+    }
+    final trimmed = value.trim();
+    final lon = double.tryParse(trimmed);
+    setState(() {
+      if (trimmed.isEmpty) {
+        _lonError = null;
+      } else if (lon == null) {
+        _lonError = l10n.settingsCoordinateInvalid;
+      } else if (lon < -180 || lon > 180) {
+        _lonError = l10n.settingsLongitudeRange;
+      } else {
+        _lonError = null;
+        ref.read(manualLongitudeProvider.notifier).set(lon);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    // Keep the fields in sync when the providers change from elsewhere
+    // (e.g. a reset), but never stomp on the field the user is editing.
+    ref.listen(manualLatitudeProvider, (_, next) {
+      if (!_latFocus.hasFocus) {
+        final formatted = _format(next);
+        if (_latController.text != formatted) _latController.text = formatted;
+      }
+    });
+    ref.listen(manualLongitudeProvider, (_, next) {
+      if (!_lonFocus.hasFocus) {
+        final formatted = _format(next);
+        if (_lonController.text != formatted) _lonController.text = formatted;
+      }
+    });
+
+    const keyboardType = TextInputType.numberWithOptions(
+      decimal: true,
+      signed: true,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _TitleWithHelp(
+            title: l10n.settingsManualCoordinates,
+            helpBody: l10n.settingsHelpManualCoordinates,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _latController,
+                  focusNode: _latFocus,
+                  keyboardType: keyboardType,
+                  textInputAction: TextInputAction.next,
+                  onChanged: (v) => _onLatChanged(v, l10n),
+                  decoration: InputDecoration(
+                    labelText: l10n.settingsLatitude,
+                    border: const OutlineInputBorder(),
+                    errorText: _latError,
+                    isDense: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _lonController,
+                  focusNode: _lonFocus,
+                  keyboardType: keyboardType,
+                  textInputAction: TextInputAction.done,
+                  onChanged: (v) => _onLonChanged(v, l10n),
+                  decoration: InputDecoration(
+                    labelText: l10n.settingsLongitude,
+                    border: const OutlineInputBorder(),
+                    errorText: _lonError,
+                    isDense: true,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.settingsCoordinatesHint,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SliderTile extends StatelessWidget {
   const _SliderTile({
     required this.title,
@@ -1153,6 +1374,59 @@ class _SliderTile extends StatelessWidget {
       ),
       trailing: Text(
         format(value),
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+    );
+  }
+}
+
+class _DiscreteSliderTile<T> extends StatelessWidget {
+  const _DiscreteSliderTile({
+    required this.title,
+    required this.value,
+    required this.values,
+    required this.format,
+    required this.onChanged,
+    this.helpBody,
+  }) : assert(values.length > 1);
+
+  final String title;
+  final T value;
+  final List<T> values;
+  final String Function(T) format;
+  final ValueChanged<T> onChanged;
+  final String? helpBody;
+
+  int get _selectedIndex {
+    final index = values.indexOf(value);
+    return index == -1 ? 0 : index;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedIndex = _selectedIndex;
+    final selectedValue = values[selectedIndex];
+    return ListTile(
+      title: _TitleWithHelp(title: title, helpBody: helpBody),
+      subtitle: Slider(
+        value: selectedIndex.toDouble(),
+        min: 0,
+        max: (values.length - 1).toDouble(),
+        divisions: values.length - 1,
+        label: format(selectedValue),
+        onChanged: (raw) {
+          final rounded = raw.round();
+          final index =
+              rounded < 0
+                  ? 0
+                  : rounded >= values.length
+                  ? values.length - 1
+                  : rounded;
+          onChanged(values[index]);
+        },
+      ),
+      trailing: Text(
+        format(selectedValue),
         style: Theme.of(context).textTheme.bodySmall,
       ),
     );
@@ -1289,7 +1563,7 @@ class _MicInputTile extends ConsumerWidget {
             ),
           ),
       error:
-          (_, __) => ListTile(
+          (a, b) => ListTile(
             title: Text(l10n.settingsMicrophone),
             trailing: Text(l10n.statusError),
           ),
@@ -1459,7 +1733,7 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final loc = ref.watch(currentLocationProvider).valueOrNull;
+    final loc = ref.watch(currentLocationProvider).value;
     final subtitle =
         _refreshing
             ? l10n.settingsGpsRefreshing
@@ -1467,7 +1741,7 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
             ? l10n.settingsGpsRefreshSubtitle
             : '${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)}';
     return ListTile(
-      leading: const Icon(Icons.my_location),
+      leading: const Icon(AppIcons.myLocation),
       title: Text(l10n.settingsGpsRefresh),
       subtitle: Text(subtitle),
       trailing:
@@ -1477,7 +1751,7 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
                 height: 24,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-              : const Icon(Icons.refresh),
+              : const Icon(AppIcons.refresh),
       onTap: _refreshing ? null : _refresh,
     );
   }
@@ -1488,11 +1762,11 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
 // ---------------------------------------------------------------------------
 //
 // Replaces the single-choice export-format selector with a row of
-// independent toggles. The pipeline now bundles every enabled format
+// independent checkboxes. The pipeline bundles every enabled format
 // into the export ZIP, so users can grab Raven + CSV + JSON in one
-// share. Selection is persisted via [exportSelectionProvider]; an empty
-// selection silently falls back to `{raven}` so the export always
-// produces at least one document.
+// share. Selection is persisted via [exportSelectionProvider]. Unticking
+// every format (together with the audio / metadata / HTML report boxes)
+// shares the raw audio file on its own — see [buildSessionExport].
 // ---------------------------------------------------------------------------
 
 class _ExportFormatChecklist extends ConsumerWidget {
@@ -1502,11 +1776,13 @@ class _ExportFormatChecklist extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final selection = ref.watch(exportSelectionProvider);
-    const formats = <(String, String)>[
-      ('raven', 'Raven Selection Table'),
-      ('csv', 'CSV'),
-      ('json', 'JSON'),
-      ('gpx', 'GPX (track + waypoints)'),
+    // (token, display label, per-format help). Labels stay in English as
+    // technical terms; only the help bodies are localized.
+    final formats = <(String, String, String)>[
+      ('raven', 'Raven Selection Table', l10n.settingsHelpExportRaven),
+      ('csv', 'CSV', l10n.settingsHelpExportCsv),
+      ('json', 'JSON', l10n.settingsHelpExportJson),
+      ('gpx', 'GPX (track + waypoints)', l10n.settingsHelpExportGpx),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1521,7 +1797,7 @@ class _ExportFormatChecklist extends ConsumerWidget {
         for (final fmt in formats)
           CheckboxListTile(
             dense: true,
-            title: Text(fmt.$2),
+            title: _TitleWithHelp(title: fmt.$2, helpBody: fmt.$3),
             value: selection.contains(fmt.$1),
             onChanged:
                 (v) => ref

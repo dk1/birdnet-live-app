@@ -9,6 +9,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/services/link_launcher.dart';
@@ -50,7 +51,7 @@ class HelpScreen extends StatelessWidget {
             // first, in order of increasing structure / commitment:
             //   Live  → Point Count → Survey → File Analysis
             _SectionHeader(
-              icon: Icons.mic_none_outlined,
+              icon: AppIcons.micNoneOutlined,
               title: l10n.helpModesTitle,
             ),
             const SizedBox(height: 12),
@@ -112,6 +113,34 @@ class HelpScreen extends StatelessWidget {
               title: l10n.helpFileAnalysisTitle,
               body: l10n.helpFileAnalysisBody,
             ),
+            _HelpSection(
+              icon: sessionTypeIcon(SessionType.batchAnalysis),
+              color: sessionTypeAccentColor(theme, SessionType.batchAnalysis),
+              containerColor:
+                  isBrandTheme
+                      ? sessionTypeAccentColor(
+                        theme,
+                        SessionType.batchAnalysis,
+                      ).withAlpha(30)
+                      : sessionTypeContainerColor(
+                        theme,
+                        SessionType.batchAnalysis,
+                      ),
+              title: l10n.helpBatchAnalysisTitle,
+              body: l10n.helpBatchAnalysisBody,
+            ),
+            _HelpSection(
+              icon: sessionTypeIcon(SessionType.aru),
+              color: sessionTypeAccentColor(theme, SessionType.aru),
+              containerColor:
+                  isBrandTheme
+                      ? sessionTypeAccentColor(theme, SessionType.aru).withAlpha(
+                        30,
+                      )
+                      : sessionTypeContainerColor(theme, SessionType.aru),
+              title: l10n.helpAruTitle,
+              body: l10n.helpAruBody,
+            ),
             const SizedBox(height: 20),
 
             // ── 3. Discover & revisit (Explore + Session Library) ──
@@ -119,19 +148,19 @@ class HelpScreen extends StatelessWidget {
             // *what to expect* before recording — these two screens are
             // where they go.
             _SectionHeader(
-              icon: Icons.travel_explore_outlined,
+              icon: AppIcons.travelExplore,
               title: l10n.helpToolsTitle,
             ),
             const SizedBox(height: 12),
             _HelpSection(
-              icon: Icons.search_rounded,
+              icon: AppIcons.searchRounded,
               color: theme.colorScheme.primary,
               containerColor: theme.colorScheme.primaryContainer,
               title: l10n.helpExploreTitle,
               body: l10n.helpExploreBody,
             ),
             _HelpSection(
-              icon: Icons.library_books_outlined,
+              icon: AppIcons.libraryBooks,
               color: theme.colorScheme.secondary,
               containerColor: theme.colorScheme.secondaryContainer,
               title: l10n.helpSessionsTitle,
@@ -144,22 +173,22 @@ class HelpScreen extends StatelessWidget {
             // every screen. They follow the modes because users typically
             // discover them only after they've started using the app.
             _SectionHeader(
-              icon: Icons.tune_rounded,
+              icon: AppIcons.gridViewRounded,
               title: l10n.helpControlsTitle,
             ),
             const SizedBox(height: 12),
             _ControlCard(
-              icon: Icons.tune_rounded,
+              icon: AppIcons.tuneRounded,
               title: l10n.settings,
               body: l10n.helpControlSettings,
             ),
             _ControlCard(
-              icon: Icons.help_outline_rounded,
+              icon: AppIcons.helpOutlineRounded,
               title: l10n.helpTitle,
               body: l10n.helpControlHelp,
             ),
             _ControlCard(
-              icon: Icons.info_outline,
+              icon: AppIcons.infoOutline,
               title: l10n.about,
               body: l10n.helpControlAbout,
             ),
@@ -170,7 +199,7 @@ class HelpScreen extends StatelessWidget {
 
             // ── 5. Tips for best results ─────────────────────────
             _SectionHeader(
-              icon: Icons.lightbulb_outline,
+              icon: AppIcons.lightbulbOutline,
               title: l10n.helpTipsTitle,
             ),
             const SizedBox(height: 12),
@@ -193,7 +222,7 @@ class HelpScreen extends StatelessWidget {
                     Row(
                       children: [
                         Icon(
-                          Icons.menu_book_outlined,
+                          AppIcons.menuBook,
                           size: 20,
                           color: theme.colorScheme.primary,
                         ),
@@ -217,7 +246,7 @@ class HelpScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     FilledButton.tonalIcon(
                       onPressed: () => _launchUserGuide(context),
-                      icon: const Icon(Icons.open_in_new),
+                      icon: const Icon(AppIcons.openInNew),
                       label: Text(l10n.aboutUserGuide),
                     ),
                   ],
@@ -402,7 +431,7 @@ class _TipRow extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 6),
             child: Icon(
-              Icons.chevron_right,
+              AppIcons.chevronRight,
               size: 16,
               color: theme.colorScheme.primary.withAlpha(180),
             ),

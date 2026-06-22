@@ -1,4 +1,4 @@
-# Guía del usuario
+# Guía de uso
 
 Esta guía explica BirdNET Live como una herramienta de flujo de trabajo de campo: qué hace cada pantalla, qué significan los íconos recurrentes y cómo la configuración cambia el comportamiento de la aplicación.
 
@@ -47,6 +47,14 @@ Configuración de la encuesta, el panel de la encuesta en vivo y las pestañas d
 ### [Análisis de archivos](file-analysis.md)
 
 El asistente de análisis de archivos de cuatro pasos, las opciones de parámetros y cómo los resultados pasan a Session Review.
+
+### [Análisis por lotes](batch-analysis.md)
+
+Procesar y analizar varios archivos de audio en lote. (Próximamente)
+
+### [Modo ARU](aru-mode.md)
+
+Cree una sesión de despliegue ARU programada, grabe audio completo de ciclo o clips de detección retenidos, ejecute inferencia en vivo durante los ciclos activos y siga los ciclos de grabación planificados.
 
 ## Referencia
 

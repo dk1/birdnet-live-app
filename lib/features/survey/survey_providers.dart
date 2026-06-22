@@ -18,6 +18,7 @@
 // =============================================================================
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/settings_providers.dart';

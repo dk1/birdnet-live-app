@@ -106,7 +106,7 @@
       "chatty": [
         "Peut-être à nouveau {name}, difficile à dire.",
         "Cela ressemble peut-être à {name}, qui revient.",
-        "Sans doute {name} qui repointe son bec.",
+        "Sans doute {name} qui revient.",
         "Probablement {name}, deuxième fois."
       ]
     },
@@ -209,22 +209,22 @@
       "Pas vraiment courante par ici.",
       "Un peu moins fréquente dans ta région.",
       "À noter — on ne l'entend pas tous les jours.",
-      "Petit plaisir — pas si fréquente chez toi.",
+      "Pas si courant par chez toi.",
       "Pas le chant quotidien du coin."
     ],
     "rare": [
       "Une jolie rareté pour le coin — bien repérée !",
       "Espèce inhabituelle pour cette région.",
-      "Plutôt rare dans ta région, celle-là.",
+      "Plutôt rare dans ta région.",
       "À retenir — vraiment peu fréquente ici.",
       "Belle observation pour ta région."
     ],
     "seasonalAddendum": [
-      "Et en plus, pas vraiment la saison pour elle.",
+      "Et en plus, pas vraiment de saison en ce moment.",
       "Et un peu hors saison aussi.",
       "Un peu tôt ou tard, normalement.",
       "Hors période habituelle ici, en plus.",
-      "Pas la saison habituelle pour elle."
+      "Pas la période habituelle par ici."
     ]
   }
 }

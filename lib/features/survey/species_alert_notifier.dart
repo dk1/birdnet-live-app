@@ -71,9 +71,8 @@ class SpeciesAlertStrings {
 /// itself is a process-wide singleton so calling [init] multiple times is
 /// safe and only the latest channel/sound configuration takes effect.
 class SpeciesAlertNotifier {
-  SpeciesAlertNotifier({
-    FlutterLocalNotificationsPlugin? plugin,
-  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  SpeciesAlertNotifier({FlutterLocalNotificationsPlugin? plugin})
+    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   final FlutterLocalNotificationsPlugin _plugin;
   static const String _channelId = 'birdnet_species_alert';
@@ -102,12 +101,30 @@ class SpeciesAlertNotifier {
       // Required by Android — launcher icon would render as a white square.
       'ic_notification',
     );
-    const initSettings = InitializationSettings(android: initSettingsAndroid);
-    await _plugin.initialize(initSettings);
+    const initSettingsDarwin = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
+    const initSettings = InitializationSettings(
+      android: initSettingsAndroid,
+      iOS: initSettingsDarwin,
+      macOS: initSettingsDarwin,
+    );
+    try {
+      await _plugin.initialize(settings: initSettings);
+    } catch (e) {
+      debugPrint('[SpeciesAlertNotifier] init failed: $e');
+      _initialized = false;
+      return;
+    }
 
     if (Platform.isAndroid) {
-      final android = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final android =
+          _plugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >();
       if (android != null) {
         // Importance HIGH gives heads-up presentation. The system enforces
         // user overrides — if they've muted the channel manually we can't
@@ -135,9 +152,7 @@ class SpeciesAlertNotifier {
   /// notification permission for the app, `false` when denied or when the
   /// platform does not require a runtime prompt. Safe to call before
   /// [init] — initializes the plugin lazily.
-  Future<bool> requestPermission({
-    SpeciesAlertStrings? strings,
-  }) async {
+  Future<bool> requestPermission({SpeciesAlertStrings? strings}) async {
     if (!Platform.isAndroid) return true;
     if (!_initialized && strings != null) {
       await init(strings: strings, sound: _sound, vibrate: _vibrate);
@@ -146,12 +161,29 @@ class SpeciesAlertNotifier {
       const initSettingsAndroid = AndroidInitializationSettings(
         'ic_notification',
       );
-      await _plugin.initialize(
-        const InitializationSettings(android: initSettingsAndroid),
+      const initSettingsDarwin = DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
       );
+      try {
+        await _plugin.initialize(
+          settings: const InitializationSettings(
+            android: initSettingsAndroid,
+            iOS: initSettingsDarwin,
+            macOS: initSettingsDarwin,
+          ),
+        );
+      } catch (e) {
+        debugPrint('[SpeciesAlertNotifier] lazy init failed: $e');
+        return false;
+      }
     }
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android =
+        _plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
     if (android == null) return false;
     try {
       final granted = await android.requestNotificationsPermission();
@@ -170,10 +202,7 @@ class SpeciesAlertNotifier {
   }) async {
     if (!_initialized) return;
     final body = _bodyFor(alert, strings);
-    await _show(
-      title: title ?? alert.commonName,
-      body: body,
-    );
+    await _show(title: title ?? alert.commonName, body: body);
   }
 
   /// Fire a summary alert covering multiple coalesced species.
@@ -183,8 +212,10 @@ class SpeciesAlertNotifier {
   }) async {
     if (!_initialized) return;
     final names = summary.alerts.map((a) => a.commonName).join(', ');
-    final title =
-        strings.summaryTitle.replaceAll('{count}', summary.count.toString());
+    final title = strings.summaryTitle.replaceAll(
+      '{count}',
+      summary.count.toString(),
+    );
     final body = strings.summaryBody
         .replaceAll('{count}', summary.count.toString())
         .replaceAll('{names}', names);
@@ -230,9 +261,23 @@ class SpeciesAlertNotifier {
       styleInformation: BigTextStyleInformation(body),
       ticker: title,
     );
-    final details = NotificationDetails(android: androidDetails);
+    final darwinDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: false,
+      presentSound: _sound,
+    );
+    final details = NotificationDetails(
+      android: androidDetails,
+      iOS: darwinDetails,
+      macOS: darwinDetails,
+    );
     try {
-      await _plugin.show(_nextId++, title, body, details);
+      await _plugin.show(
+        id: _nextId++,
+        title: title,
+        body: body,
+        notificationDetails: details,
+      );
     } catch (e) {
       // Notification permission denied or platform unavailable — never let
       // this take down the survey.

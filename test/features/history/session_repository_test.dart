@@ -223,6 +223,20 @@ void main() {
       // Should not throw.
       await repo.delete('nonexistent');
     });
+
+    test('deleteMetadataOnly keeps associated recording directory', () async {
+      await repo.save(makeSession(id: 'aru-1'));
+      final recordingsDir = Directory(
+        '${tempDir.parent.path}/recordings/aru-1',
+      );
+      await recordingsDir.create(recursive: true);
+      await File('${recordingsDir.path}/clip.flac').writeAsString('audio');
+
+      await repo.deleteMetadataOnly('aru-1');
+
+      expect(await repo.load('aru-1'), isNull);
+      expect(await recordingsDir.exists(), isTrue);
+    });
   });
 
   // ── deleteAll ────────────────────────────────────────────────────────
@@ -255,6 +269,35 @@ void main() {
       await repo.save(makeSession(id: 'a'));
       await repo.save(makeSession(id: 'b'));
       expect(await repo.count(), 2);
+    });
+  });
+
+  // ── nextSessionNumber ────────────────────────────────────────────────
+
+  group('nextSessionNumber', () {
+    test('returns 1 when no sessions exist', () async {
+      expect(await repo.nextSessionNumber(SessionType.live), 1);
+    });
+
+    test('returns correct sequential number for type', () async {
+      final s1 = makeSession(id: 's1');
+      s1.type = SessionType.live;
+      s1.sessionNumber = 5;
+      await repo.save(s1);
+
+      final s2 = makeSession(id: 's2');
+      s2.type = SessionType.live;
+      s2.sessionNumber = 2;
+      await repo.save(s2);
+
+      // A session of a different type should not affect it.
+      final s3 = makeSession(id: 's3');
+      s3.type = SessionType.pointCount;
+      s3.sessionNumber = 10;
+      await repo.save(s3);
+
+      expect(await repo.nextSessionNumber(SessionType.live), 6);
+      expect(await repo.nextSessionNumber(SessionType.pointCount), 11);
     });
   });
 

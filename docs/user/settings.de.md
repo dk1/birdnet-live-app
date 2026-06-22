@@ -15,11 +15,11 @@ Wählen Sie **Dunkel**, **Hell** oder **System**.
 
 ### App-Sprache
 
-Legt die Sprache der Benutzeroberfläche fest.
+Legt die Sprache der App-Oberfläche fest.
 
 ### Artennamen
 
-Steuert die Sprache, die für Artennamen verwendet wird. **App-Sprache folgen** verwendet dieselbe Sprache wie die Benutzeroberfläche, wenn dieser Name verfügbar ist.
+Steuert die Sprache, die für Artennamen verwendet wird. **App-Sprache folgen** verwendet dieselbe Sprache wie die App-Oberfläche, wenn dieser Name verfügbar ist.
 
 ### Wissenschaftliche Namen anzeigen
 
@@ -27,16 +27,16 @@ Zeigt wissenschaftliche Namen unterhalb gebräuchlicher Namen in der App an.
 
 ### Zeitstempel-Anzeige
 
-Bestimmt, wie Zeitangaben einzelner Erkennungen in der Sitzungsübersicht erscheinen.
+Bestimmt, wie Zeitangaben einzelner Detektionen in der Sitzungsübersicht erscheinen.
 
 - **Relativ** zeigt den Versatz seit Aufnahmebeginn, z. B. `00:12:34`. Am besten zum Durchsehen einer einzelnen Sitzung und zur Synchronisierung mit dem Spektrogramm.
-- **Absolut** zeigt die lokale Uhrzeit der Erkennung, z. B. `08:42:17`. Am besten zum Abgleich mit Feldnotizen, Wetterprotokollen oder gleichzeitigen Aufnahmen.
+- **Absolut** zeigt die lokale Uhrzeit der Detektion, z. B. `08:42:17`. Am besten zum Abgleich mit Feldnotizen, Wetterprotokollen oder gleichzeitigen Aufnahmen.
 
-Liegt eine Erkennung an einem anderen Kalendertag als der Sitzungsbeginn (z. B. bei einer Nachtaufnahme), wird der absoluten Zeit ein `+1d`-Suffix angehängt, damit man die morgige Morgendämmerung nicht mit der heutigen verwechselt.
+Liegt eine Detektion an einem anderen Kalendertag als der Sitzungsbeginn (z. B. bei einer Nachtaufnahme), wird der absoluten Zeit ein `+1d`-Suffix angehängt, damit man die morgige Morgendämmerung nicht mit der heutigen verwechselt.
 
-Wenn **Absolut** ausgewählt ist, erscheint zusätzlich der Schalter **Sekunden in Zeitstempeln anzeigen**. Deaktiviere ihn, wenn du das kompaktere `08:42` dem `08:42:17` vorziehst — hilfreich beim Überfliegen langer Erkennungslisten. Relative Versatzangaben zeigen immer Sekunden, weil zur Synchronisation mit dem Spektrogramm Sub-Minuten-Genauigkeit nötig ist.
+Wenn **Absolut** ausgewählt ist, erscheint zusätzlich der Schalter **Sekunden in Zeitstempeln anzeigen**. Deaktiviere ihn, wenn du das kompaktere `08:42` dem `08:42:17` vorziehst — hilfreich beim Überfliegen langer Detektionslisten. Relative Versatzangaben zeigen immer Sekunden, weil zur Synchronisation mit dem Spektrogramm Sub-Minuten-Genauigkeit nötig ist.
 
-Wenn **Absolut** ausgewählt ist, erscheint zusätzlich der Schalter **Sekunden in Zeitstempeln anzeigen**. Deaktiviere ihn, wenn du das kompaktere `08:42` dem `08:42:17` vorziehst — hilfreich beim Überfliegen langer Erkennungslisten. Relative Versatzangaben zeigen immer Sekunden, weil zur Synchronisation mit dem Spektrogramm Sub-Minuten-Genauigkeit nötig ist.
+Wenn **Absolut** ausgewählt ist, erscheint zusätzlich der Schalter **Sekunden in Zeitstempeln anzeigen**. Deaktiviere ihn, wenn du das kompaktere `08:42` dem `08:42:17` vorziehst — hilfreich beim Überfliegen langer Detektionslisten. Relative Versatzangaben zeigen immer Sekunden, weil zur Synchronisation mit dem Spektrogramm Sub-Minuten-Genauigkeit nötig ist.
 
 Speicherung und Export verwenden unabhängig von dieser Einstellung immer UTC, sodass die Auswahl niemals die Daten verändert — nur deren Darstellung.
 
@@ -60,11 +60,11 @@ Hier können Sie ein bestimmtes Eingabegerät auswählen oder die **Systemstanda
 
 ### Fensterdauer
 
-Steuert die Länge des Analysefensters.
+Steuert die Länge des Analysefensters. Verfügbare Schritte sind **1**, **3**, **5**, **7**, **10** und **15** Sekunden.
 
 ### Vertrauensschwelle
 
-Legt fest, wie konservativ Erkennungen sein sollen.
+Legt fest, wie konservativ Detektionen sein sollen.
 
 ### Empfindlichkeit
 
@@ -72,11 +72,7 @@ Höhere Werte machen den Detektor freizügiger, wodurch schwächere Anrufe auf K
 
 ### Inferenzrate
 
-Steuert, wie oft BirdNET die Inferenz ausführt.
-
-### Score-Pooling
-
-Steuert, wie überlappende Analysefenster kombiniert werden.
+Steuert, wie oft BirdNET die Inferenz ausführt. Der Slider nutzt dieselben **0,10–1,00 Hz**-Schritte wie Survey- und ARU-Setup.
 
 ## Spektrogramm
 
@@ -86,7 +82,7 @@ Steuert die Frequenzauflösung im Spektrogramm.
 
 ### Farbkarte
 
-Wählen Sie **Viridis**, **Magma** oder **Graustufen**.
+Wählen Sie **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Graustufen** oder **BirdNET**. **Turbo** ist die moderne, Jet-ähnliche Regenbogenoption.
 
 ### Dauer (Scrollgeschwindigkeit)
 
@@ -100,17 +96,21 @@ Legt die obere Anzeigefrequenz fest.
 
 Wendet eine logarithmische Skalierung auf das Spektrogramm an, um das visuelle Ablesen zu erleichtern.
 
+### Qualität
+
+Steuert, wie glatt das Spektrogrammbild skaliert wird. **Mittel** ist die ausgewogene Standardeinstellung. Wählen Sie **Niedrig** auf älteren Geräten, wenn das Scrollen ruckelt oder das Gerät warm wird; wählen Sie **Hoch**, wenn Sie eine weichere Darstellung bevorzugen und Ihr Gerät genug GPU-Reserve hat. Die Intuition: Diese Einstellung verändert nur die Darstellungskosten, nicht die Audioanalyse oder die Detektionsergebnisse.
+
 ## Aufnahme
 
 ### Modus
 
 - **Vollständig** – Speichern Sie die gesamte Aufnahme
-- **Nur Erkennungen** – Clips rund um Erkennungen speichern
+- **Nur Detektionen** – Clips rund um Detektionen speichern
 - **Aus** – keine Audioaufnahme
 
 ### Clip-Kontext
 
-Wenn **Nur Erkennungen** aktiv ist, zeigt die App einen einzelnen **Clip-Kontext**-Schieberegler (0–5 s) an, der festlegt, wie viel Audio auf **beiden Seiten** jeder Erkennung erhalten bleibt. Jeder Clip ist „Analysefenster + 2 × Clip-Kontext“ lang, sodass der gespeicherte Clip bei einem Analysefenster von 3 Sekunden und dem Standardkontext von 1 Sekunde 5 Sekunden lang ist. Wenn Sie den Kontext auf 2 s festlegen, erhalten Sie einen 7 s langen Clip (2 s Pre-Roll + 3 s analysiertes Audio + 2 s Post-Roll). Größere Werte geben Ihnen mehr Platz für visuelle Inspektions- oder externe Überprüfungstools auf Kosten von Speicherplatz. 0 speichert nur das analysierte Fenster selbst.
+Wenn **Nur Detektionen** aktiv ist, zeigt die App einen einzelnen **Clip-Kontext**-Schieberegler (0–5 s) an, der festlegt, wie viel Audio auf **beiden Seiten** jeder Detektion erhalten bleibt. Jeder Clip ist „Analysefenster + 2 × Clip-Kontext“ lang, sodass der gespeicherte Clip bei einem Analysefenster von 3 Sekunden und dem Standardkontext von 1 Sekunde 5 Sekunden lang ist. Wenn Sie den Kontext auf 2 s festlegen, erhalten Sie einen 7 s langen Clip (2 s Pre-Roll + 3 s analysiertes Audio + 2 s Post-Roll). Größere Werte geben Ihnen mehr Platz für visuelle Inspektions- oder externe Überprüfungstools auf Kosten von Speicherplatz. 0 speichert nur das analysierte Fenster selbst.
 
 ### Format
 
@@ -159,7 +159,7 @@ Dieser Abschnitt steuert, **welche externen Dienste BirdNET Live in deinem Namen
 
 ### Kartenkacheln erlauben
 
-Erforderlich für jede interaktive Karte (Standort-Picker, Survey-Live-Karte, Sitzungskarte, Vorab-Download von Kartenkacheln). Wenn aktiv, laden Kartenansichten Rasterkacheln von den öffentlichen **OpenStreetMap**-Servern; Kachelanfragen verraten, welchen Bereich der Welt du gerade ansiehst. Wenn aus, zeigen alle Kartenbildschirme einen Platzhalter.
+Erforderlich für jede interaktive Karte (Standort-Picker, Survey-Live-Karte, Sitzungskarte). Wenn aktiv, laden Kartenansichten Rasterkacheln von den öffentlichen **OpenStreetMap**-Servern; Kachelanfragen verraten, welchen Bereich der Welt du gerade ansiehst. Wenn aus, zeigen alle Kartenbildschirme einen Platzhalter.
 
 ### Ortsnamen-Suche erlauben
 
@@ -181,7 +181,9 @@ Zeigt die Onboarding-Sequenz beim nächsten Start der App erneut an.
 
 ### Alle Daten löschen
 
-Öffnet einen Bestätigungsablauf zum dauerhaften Entfernen gespeicherter App-Daten.
+Löscht dauerhaft Sessions, Detektionen, Aufnahmen, Sprachnotizen, eigene Artenlisten, gespeicherte Einstellungen sowie zwischengespeicherte Karten-, Orts-, Wetter-, Wiedergabe-, Review- und Teilen-Daten. Der Bestätigungsdialog verlangt die Eingabe von `DELETE` und schließt danach die App, damit der nächste Start aus einem sauberen lokalen Zustand erfolgt.
+
+Verwenden Sie dies, bevor Sie ein Gerät an eine andere beobachtende Person weitergeben, ein Feldtelefon außer Dienst nehmen oder ortsbezogene Historie aus der App entfernen. Exportieren Sie zuerst alles, was Sie behalten möchten; diese Aktion kann nicht rückgängig gemacht werden.
 
 ## Workflowspezifische Parameter außerhalb der Einstellungen
 

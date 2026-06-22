@@ -12,6 +12,14 @@ abstract final class AppConstants {
   static const String githubUrl =
       'https://github.com/birdnet-team/birdnet-live-app';
 
+  /// Mobile application package identifier.
+  static const String packageName = 'de.tu_chemnitz.mi.kahst.birdnet_live';
+
+  /// Contactable User-Agent for public web services used by the app.
+  static const String networkUserAgent =
+      'BirdNETLive (de.tu_chemnitz.mi.kahst.birdnet_live; '
+      '+https://github.com/birdnet-team/birdnet-live-app)';
+
   /// Documentation site URL.
   static const String docsUrl =
       'https://birdnet-team.github.io/birdnet-live-app';
@@ -21,6 +29,9 @@ abstract final class AppConstants {
 
   /// BirdNET website URL.
   static const String birdnetUrl = 'https://birdnet.cornell.edu';
+
+  /// BirdNET donation page URL.
+  static const String birdnetDonateUrl = 'https://birdnet.cornell.edu/donate/';
 
   /// Path to the model configuration JSON asset.
   ///
@@ -102,6 +113,7 @@ abstract final class PrefKeys {
 
   static const String includeAudio = 'include_audio';
   static const String exportHtmlReport = 'export_html_report';
+  static const String includeAppMetadata = 'include_app_metadata';
 
   // Location / geo settings
   static const String useGps = 'use_gps';
@@ -160,7 +172,13 @@ abstract final class PrefKeys {
 
   // Point count settings
   static const String pointCountDuration = 'point_count_duration';
-  static const String pointCountLastObserver = 'point_count_last_observer';
+
+  // Shared field-session identity settings
+  static const String lastObserver = 'last_observer';
+  static const String aruLastStationId = 'aru_last_station_id';
+  static const String legacyPointCountLastObserver =
+      'point_count_last_observer';
+  static const String legacySurveyLastObserver = 'survey_last_observer';
 
   // Survey settings
   static const String surveyInferenceRate = 'survey_inference_rate';
@@ -175,7 +193,6 @@ abstract final class PrefKeys {
   static const String surveyDetectionSampling = 'survey_detection_sampling';
   static const String surveyTopNPerSpecies = 'survey_top_n_per_species';
   static const String micDeviceId = 'mic_device_id';
-  static const String surveyLastObserver = 'survey_last_observer';
   static const String surveyLastTransectId = 'survey_last_transect_id';
 
   // Survey species alerts (v0.7.0+)
@@ -217,10 +234,12 @@ abstract final class PrefKeys {
 
   /// Persisted sort order for the species list on the Session Review
   /// screen (one of `SpeciesSortMode.name`: alphabetical, count,
-  /// confidence, firstSeen). Default `alphabetical` — once a session
-  /// has 50+ species, finding one by detection-time order becomes
-  /// painful; alphabetical is the predictable fallback.
+  /// confidence, firstSeen). Default `confidence` so review starts with
+  /// the most likely identifications.
   static const String sessionReviewSpeciesSort = 'session_review_species_sort';
+
+  /// Whether to show the playback overlay (clip player sheet) in session review.
+  static const String sessionReviewPlaybackOverlay = 'session_review_playback_overlay';
 
   // --- Announcements (spoken detections, post-v1.0) ---------------------
   // See [dev/announcements.md] for the full design. The user-facing

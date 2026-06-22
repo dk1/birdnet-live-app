@@ -22,13 +22,21 @@ import 'package:flutter/painting.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_map/flutter_map.dart';
 
+import '../../core/constants/app_constants.dart';
+
 const String kOpenStreetMapUrlTemplate =
     'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+const String kOpenStreetMapUserAgent = AppConstants.networkUserAgent;
+
+Map<String, String> _openStreetMapTileHeaders() => {
+  'User-Agent': kOpenStreetMapUserAgent,
+};
 
 TileLayer buildOpenStreetMapTileLayer() {
   return TileLayer(
     urlTemplate: kOpenStreetMapUrlTemplate,
-    userAgentPackageName: 'birdnet_live',
+    userAgentPackageName: AppConstants.packageName,
     tileProvider: _CachedNetworkTileProvider(),
     evictErrorTileStrategy: EvictErrorTileStrategy.notVisible,
   );
@@ -39,10 +47,10 @@ TileLayer buildOpenStreetMapTileLayer() {
 // ---------------------------------------------------------------------------
 //
 // Dedicated cache for OSM tiles, kept separate from any other on-disk caches
-// the app might add later. We give tiles a long retention period (90 days)
-// because OSM tile content rarely changes — and we cap at 4000 objects so a
+// the app might add later. We give tiles a long retention period (180 days)
+// because OSM tile content rarely changes — and we cap at 6000 objects so a
 // heavy survey session doesn't blow up the user's storage. At ~30 KB per
-// tile the worst-case footprint is ~120 MB, similar in size to the bundled
+// tile the worst-case footprint is ~180 MB, similar in size to the bundled
 // species image set.
 // ---------------------------------------------------------------------------
 
@@ -56,7 +64,7 @@ class _OsmTileCacheManager extends CacheManager {
     : super(
         Config(
           _key,
-          stalePeriod: const Duration(days: 90),
+          stalePeriod: const Duration(days: 180),
           maxNrOfCacheObjects: 6000,
         ),
       );
@@ -66,10 +74,11 @@ class _OsmTileCacheManager extends CacheManager {
 // Public prefetch helpers
 // ---------------------------------------------------------------------------
 //
-// `prefetchOsmTile(url)` lets feature code (e.g. the Settings → Location
-// "Download offline maps" tile) seed the same on-disk tile cache that
-// flutter_map reads from. The shared singleton means a tile downloaded
-// here is immediately usable by every map widget without any wiring.
+// `prefetchOsmTile(url)` is retained for a future tile source that explicitly
+// allows offline prefetching. The public OpenStreetMap tile service does not
+// allow bulk, offline, or pre-seeded downloads, so this helper must not be
+// exposed in user-visible flows while [kOpenStreetMapUrlTemplate] points at
+// `tile.openstreetmap.org`.
 //
 // Returns the size of the cached file in bytes (best-effort; 0 on
 // failure). Network errors are swallowed because the caller is
@@ -79,12 +88,20 @@ class _OsmTileCacheManager extends CacheManager {
 
 Future<int> prefetchOsmTile(String url) async {
   try {
-    final file = await _OsmTileCacheManager().getSingleFile(url);
+    final file = await _OsmTileCacheManager().getSingleFile(
+      url,
+      headers: _openStreetMapTileHeaders(),
+    );
     if (await file.exists()) return await file.length();
   } catch (_) {
     // Ignore — caller updates progress regardless.
   }
   return 0;
+}
+
+/// Clears all cached OpenStreetMap tiles from the app's dedicated tile cache.
+Future<void> clearOpenStreetMapTileCache() async {
+  await _OsmTileCacheManager().emptyCache();
 }
 
 // ---------------------------------------------------------------------------
@@ -98,11 +115,11 @@ Future<int> prefetchOsmTile(String url) async {
 // ---------------------------------------------------------------------------
 
 class _CachedNetworkTileProvider extends TileProvider {
-  _CachedNetworkTileProvider();
+  _CachedNetworkTileProvider() : super(headers: _openStreetMapTileHeaders());
 
   @override
   ImageProvider getImage(TileCoordinates coordinates, TileLayer options) {
-    return _CachedTileImage(getTileUrl(coordinates, options));
+    return _CachedTileImage(getTileUrl(coordinates, options), headers);
   }
 }
 
@@ -116,9 +133,10 @@ class _CachedNetworkTileProvider extends TileProvider {
 // ---------------------------------------------------------------------------
 
 class _CachedTileImage extends ImageProvider<_CachedTileImage> {
-  const _CachedTileImage(this.url);
+  const _CachedTileImage(this.url, this.headers);
 
   final String url;
+  final Map<String, String> headers;
 
   @override
   Future<_CachedTileImage> obtainKey(ImageConfiguration configuration) {
@@ -141,7 +159,10 @@ class _CachedTileImage extends ImageProvider<_CachedTileImage> {
     _CachedTileImage key,
     ImageDecoderCallback decode,
   ) async {
-    final file = await _OsmTileCacheManager().getSingleFile(url);
+    final file = await _OsmTileCacheManager().getSingleFile(
+      url,
+      headers: headers,
+    );
     final bytes = await file.readAsBytes();
     if (bytes.isEmpty) {
       throw StateError('Empty tile bytes for $url');

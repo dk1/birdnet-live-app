@@ -88,6 +88,31 @@ class DecodedAudio {
   }
 }
 
+/// Lightweight audio metadata that can be read without decoding full PCM.
+class AudioMetadata {
+  const AudioMetadata({
+    required this.sampleRate,
+    required this.totalSamples,
+    required this.format,
+  });
+
+  /// Audio sample rate in Hz.
+  final int sampleRate;
+
+  /// Total mono sample frames reported by the container/header.
+  final int totalSamples;
+
+  /// Container label, such as WAV, FLAC, MP3, or AAC.
+  final String format;
+
+  /// Duration of the audio.
+  Duration get duration =>
+      Duration(microseconds: totalSamples * 1000000 ~/ sampleRate);
+
+  /// Estimated mono 16-bit PCM size after decode.
+  int get decodedPcmBytes => totalSamples * 2;
+}
+
 /// Decodes audio files to raw PCM samples.
 class AudioDecoder {
   AudioDecoder._();
@@ -120,6 +145,22 @@ class AudioDecoder {
     }
   }
 
+  /// Check whether the file is a WAV file based on RIFF magic bytes.
+  static Future<bool> isWav(String path) async {
+    final file = File(path);
+    final raf = await file.open();
+    try {
+      final header = await raf.read(4);
+      if (header.length < 4) return false;
+      return header[0] == 0x52 &&
+          header[1] == 0x49 &&
+          header[2] == 0x46 &&
+          header[3] == 0x46;
+    } finally {
+      await raf.close();
+    }
+  }
+
   /// Auto-detect format (WAV or FLAC) and decode.
   ///
   /// For compressed formats (MP3, OGG, AAC, etc.) this will throw a
@@ -143,6 +184,82 @@ class AudioDecoder {
         bytes[2] == 0x61 &&
         bytes[3] == 0x43) {
       return _decodeFlac(bytes);
+    }
+
+    throw FormatException('Unknown audio format (not WAV or FLAC): $path');
+  }
+
+  /// Read WAV/FLAC metadata without decoding the full audio stream.
+  static Future<AudioMetadata> inspectFile(String path) async {
+    final file = File(path);
+    final raf = await file.open();
+    try {
+      final header = await raf.read(12);
+      if (header.length < 4) {
+        throw FormatException('File too small to be an audio file: $path');
+      }
+
+      if (header[0] == 0x52 &&
+          header[1] == 0x49 &&
+          header[2] == 0x46 &&
+          header[3] == 0x46) {
+        final info = await _readWavInfo(file);
+        return AudioMetadata(
+          sampleRate: info.sampleRate,
+          totalSamples: info.totalFrames,
+          format: 'WAV',
+        );
+      }
+
+      if (header[0] == 0x66 &&
+          header[1] == 0x4C &&
+          header[2] == 0x61 &&
+          header[3] == 0x43) {
+        final bytes = await file
+            .openRead(0, 42)
+            .fold<BytesBuilder>(
+              BytesBuilder(),
+              (builder, chunk) => builder..add(chunk),
+            );
+        final metadata = _inspectFlac(bytes.toBytes());
+        return metadata;
+      }
+    } finally {
+      await raf.close();
+    }
+
+    throw FormatException('Unknown audio format (not WAV or FLAC): $path');
+  }
+
+  /// Decode a bounded sample range from a WAV/FLAC file.
+  ///
+  /// This avoids allocating full-file PCM for long File Analysis inputs.
+  static Future<DecodedAudio> decodeRange(
+    String path, {
+    required int startSample,
+    required int count,
+  }) async {
+    final file = File(path);
+    final raf = await file.open();
+    try {
+      final header = await raf.read(4);
+      if (header.length < 4) {
+        throw FormatException('File too small to be an audio file: $path');
+      }
+      if (header[0] == 0x52 &&
+          header[1] == 0x49 &&
+          header[2] == 0x46 &&
+          header[3] == 0x46) {
+        return _decodeWavRange(file, startSample: startSample, count: count);
+      }
+      if (header[0] == 0x66 &&
+          header[1] == 0x4C &&
+          header[2] == 0x61 &&
+          header[3] == 0x43) {
+        return decodeFlacRange(path, startSample: startSample, count: count);
+      }
+    } finally {
+      await raf.close();
     }
 
     throw FormatException('Unknown audio format (not WAV or FLAC): $path');
@@ -248,6 +365,170 @@ class AudioDecoder {
     return DecodedAudio(samples: samples, sampleRate: sampleRate);
   }
 
+  static AudioMetadata _inspectFlac(Uint8List bytes) {
+    if (bytes.length < 42) {
+      throw const FormatException('FLAC file too short for STREAMINFO');
+    }
+    final sampleRate = (bytes[18] << 12) | (bytes[19] << 4) | (bytes[20] >> 4);
+    final bps = ((bytes[20] & 0x01) << 4) | (bytes[21] >> 4);
+    final bitsPerSample = bps + 1;
+    if (bitsPerSample != 16) {
+      throw FormatException(
+        'Only 16-bit FLAC supported, got $bitsPerSample-bit',
+      );
+    }
+    final totalHigh = bytes[21] & 0x0F;
+    final totalLow = ByteData.sublistView(
+      bytes,
+      22,
+      26,
+    ).getUint32(0, Endian.big);
+    return AudioMetadata(
+      sampleRate: sampleRate,
+      totalSamples: (totalHigh << 32) | totalLow,
+      format: 'FLAC',
+    );
+  }
+
+  static Future<_WavInfo> _readWavInfo(File file) async {
+    final raf = await file.open();
+    try {
+      final fileLen = await raf.length();
+      if (fileLen < 12) {
+        throw const FormatException('WAV header too short');
+      }
+      await raf.setPosition(0);
+      final header = await raf.read(12);
+      if (String.fromCharCodes(header, 0, 4) != 'RIFF' ||
+          String.fromCharCodes(header, 8, 12) != 'WAVE') {
+        throw const FormatException('Not a valid WAVE file');
+      }
+
+      int audioFormat = 0;
+      int sampleRate = 0;
+      int bitsPerSample = 0;
+      int channels = 0;
+      int dataOffset = 0;
+      int dataSize = 0;
+
+      var pos = 12;
+      while (pos + 8 <= fileLen) {
+        await raf.setPosition(pos);
+        final chunkHeader = await raf.read(8);
+        if (chunkHeader.length < 8) break;
+        final chunkId = String.fromCharCodes(chunkHeader, 0, 4);
+        final chunkSize = ByteData.sublistView(
+          Uint8List.fromList(chunkHeader),
+          4,
+          8,
+        ).getUint32(0, Endian.little);
+
+        if (chunkId == 'fmt ') {
+          final fmt = await raf.read(chunkSize);
+          if (fmt.length < 16) {
+            throw const FormatException('WAV fmt chunk too short');
+          }
+          final bd = ByteData.sublistView(Uint8List.fromList(fmt));
+          audioFormat = bd.getUint16(0, Endian.little);
+          channels = bd.getUint16(2, Endian.little);
+          sampleRate = bd.getUint32(4, Endian.little);
+          bitsPerSample = bd.getUint16(14, Endian.little);
+        } else if (chunkId == 'data') {
+          dataOffset = pos + 8;
+          final available = fileLen - dataOffset;
+          dataSize = chunkSize > available ? available : chunkSize;
+        }
+
+        pos += 8 + chunkSize;
+        if (pos.isOdd) pos++;
+      }
+
+      if (sampleRate == 0 || dataOffset == 0 || channels == 0) {
+        throw const FormatException('WAV file missing fmt or data chunk');
+      }
+      return _WavInfo(
+        audioFormat: audioFormat,
+        sampleRate: sampleRate,
+        bitsPerSample: bitsPerSample,
+        channels: channels,
+        dataOffset: dataOffset,
+        dataSize: dataSize,
+      );
+    } finally {
+      await raf.close();
+    }
+  }
+
+  static Future<DecodedAudio> _decodeWavRange(
+    File file, {
+    required int startSample,
+    required int count,
+  }) async {
+    final info = await _readWavInfo(file);
+    final bytesPerSample = info.bitsPerSample ~/ 8;
+    final frameSize = bytesPerSample * info.channels;
+    if (bytesPerSample <= 0 || frameSize <= 0) {
+      throw FormatException('Unsupported WAV bit depth: ${info.bitsPerSample}');
+    }
+
+    final totalFrames = info.totalFrames;
+    final safeStart = startSample.clamp(0, totalFrames);
+    final safeEnd = (startSample + count).clamp(0, totalFrames);
+    final framesToRead = safeEnd - safeStart;
+    if (framesToRead <= 0) {
+      return DecodedAudio(samples: Int16List(0), sampleRate: info.sampleRate);
+    }
+
+    final raf = await file.open();
+    try {
+      await raf.setPosition(info.dataOffset + safeStart * frameSize);
+      final bytes = await raf.read(framesToRead * frameSize);
+      final samples = Int16List(framesToRead);
+      final dataView = ByteData.sublistView(Uint8List.fromList(bytes));
+
+      if (info.audioFormat == 3 && info.bitsPerSample == 32) {
+        for (var i = 0; i < framesToRead; i++) {
+          final f = dataView.getFloat32(i * frameSize, Endian.little);
+          samples[i] = (f * 32767.0).round().clamp(-32768, 32767);
+        }
+      } else if (info.audioFormat == 3 && info.bitsPerSample == 64) {
+        for (var i = 0; i < framesToRead; i++) {
+          final f = dataView.getFloat64(i * frameSize, Endian.little);
+          samples[i] = (f * 32767.0).round().clamp(-32768, 32767);
+        }
+      } else if (info.bitsPerSample == 16) {
+        for (var i = 0; i < framesToRead; i++) {
+          samples[i] = dataView.getInt16(i * frameSize, Endian.little);
+        }
+      } else if (info.bitsPerSample == 24) {
+        for (var i = 0; i < framesToRead; i++) {
+          final offset = i * frameSize;
+          final lo = bytes[offset + 1];
+          final hi = bytes[offset + 2];
+          samples[i] = (hi << 8) | lo;
+        }
+      } else if (info.bitsPerSample == 32 && info.audioFormat == 1) {
+        for (var i = 0; i < framesToRead; i++) {
+          final v = dataView.getInt32(i * frameSize, Endian.little);
+          samples[i] = (v >> 16).clamp(-32768, 32767);
+        }
+      } else if (info.bitsPerSample == 8) {
+        for (var i = 0; i < framesToRead; i++) {
+          samples[i] = (bytes[i * frameSize] - 128) << 8;
+        }
+      } else {
+        throw FormatException(
+          'Unsupported WAV format: ${info.bitsPerSample}-bit, '
+          'format=${info.audioFormat}',
+        );
+      }
+
+      return DecodedAudio(samples: samples, sampleRate: info.sampleRate);
+    } finally {
+      await raf.close();
+    }
+  }
+
   // ── FLAC Decoder ────────────────────────────────────────────────────────
 
   /// Decode just `[startSample, startSample + count)` from a FLAC file.
@@ -268,8 +549,177 @@ class AudioDecoder {
     required int startSample,
     required int count,
   }) async {
-    final bytes = await File(path).readAsBytes();
-    return _decodeFlac(bytes, rangeStart: startSample, rangeCount: count);
+    final file = File(path);
+    final raf = await file.open();
+    try {
+      final info = await _readFlacStreamInfo(raf, path);
+      final reader = _StreamingBitReader(
+        file: raf,
+        fileLength: await raf.length(),
+        startByte: info.firstFrameOffset,
+      );
+      return _decodeFlacFrames(
+        reader,
+        info,
+        rangeStart: startSample,
+        rangeCount: count,
+      );
+    } finally {
+      await raf.close();
+    }
+  }
+
+  /// Decode a FLAC file sequentially and emit fixed-size analysis windows.
+  ///
+  /// Unlike [decodeFlacRange], this walks the FLAC frames only once. It is the
+  /// right path for long File Analysis runs where windows are processed in
+  /// chronological order; repeatedly range-decoding an hour-long FLAC would
+  /// otherwise re-read and re-decode the beginning of the stream for every
+  /// window.
+  static Future<void> decodeFlacWindows(
+    String path, {
+    required int windowSamples,
+    required int stepSamples,
+    required int maxWindows,
+    required Future<bool> Function(
+      int windowIndex,
+      int startSample,
+      DecodedAudio window,
+    )
+    onWindow,
+  }) async {
+    final file = File(path);
+    final raf = await file.open();
+    try {
+      final info = await _readFlacStreamInfo(raf, path);
+      final reader = _StreamingBitReader(
+        file: raf,
+        fileLength: await raf.length(),
+        startByte: info.firstFrameOffset,
+      );
+      await _decodeFlacWindowsFromReader(
+        reader,
+        info,
+        windowSamples: windowSamples,
+        stepSamples: stepSamples,
+        maxWindows: maxWindows,
+        onWindow: onWindow,
+      );
+    } finally {
+      await raf.close();
+    }
+  }
+
+  static Future<_FlacStreamInfo> _readFlacStreamInfo(
+    RandomAccessFile raf,
+    String path,
+  ) async {
+    final fileLen = await raf.length();
+    await raf.setPosition(0);
+    final magic = await raf.read(4);
+    if (magic.length < 4 ||
+        magic[0] != 0x66 ||
+        magic[1] != 0x4C ||
+        magic[2] != 0x61 ||
+        magic[3] != 0x43) {
+      throw FormatException('Not a valid FLAC file: $path');
+    }
+
+    _FlacStreamInfo? streamInfo;
+    var pos = 4;
+    while (pos + 4 <= fileLen) {
+      await raf.setPosition(pos);
+      final header = await raf.read(4);
+      if (header.length < 4) {
+        throw const FormatException('Truncated FLAC metadata header');
+      }
+      final isLast = (header[0] & 0x80) != 0;
+      final blockType = header[0] & 0x7F;
+      final blockLen = (header[1] << 16) | (header[2] << 8) | header[3];
+      pos += 4;
+
+      if (pos + blockLen > fileLen) {
+        throw const FormatException('Truncated FLAC metadata block');
+      }
+
+      if (blockType == 0) {
+        final body = await raf.read(blockLen);
+        streamInfo = _parseFlacStreamInfoBody(body, firstFrameOffset: 0);
+      }
+
+      pos += blockLen;
+      if (isLast) break;
+    }
+
+    if (streamInfo == null) {
+      throw const FormatException('FLAC file missing STREAMINFO metadata');
+    }
+    return streamInfo.copyWith(firstFrameOffset: pos);
+  }
+
+  static _FlacStreamInfo _readFlacStreamInfoFromBytes(Uint8List bytes) {
+    if (bytes.length < 42) {
+      throw const FormatException('FLAC file too short for STREAMINFO');
+    }
+    if (bytes[0] != 0x66 ||
+        bytes[1] != 0x4C ||
+        bytes[2] != 0x61 ||
+        bytes[3] != 0x43) {
+      throw const FormatException('Not a valid FLAC file');
+    }
+
+    _FlacStreamInfo? streamInfo;
+    var pos = 4;
+    while (pos + 4 <= bytes.length) {
+      final isLast = (bytes[pos] & 0x80) != 0;
+      final blockType = bytes[pos] & 0x7F;
+      final blockLen =
+          (bytes[pos + 1] << 16) | (bytes[pos + 2] << 8) | bytes[pos + 3];
+      pos += 4;
+      if (pos + blockLen > bytes.length) {
+        throw const FormatException('Truncated FLAC metadata block');
+      }
+      if (blockType == 0) {
+        streamInfo = _parseFlacStreamInfoBody(
+          Uint8List.sublistView(bytes, pos, pos + blockLen),
+          firstFrameOffset: 0,
+        );
+      }
+      pos += blockLen;
+      if (isLast) break;
+    }
+
+    if (streamInfo == null) {
+      throw const FormatException('FLAC file missing STREAMINFO metadata');
+    }
+    return streamInfo.copyWith(firstFrameOffset: pos);
+  }
+
+  static _FlacStreamInfo _parseFlacStreamInfoBody(
+    Uint8List body, {
+    required int firstFrameOffset,
+  }) {
+    if (body.length < 34) {
+      throw const FormatException('FLAC STREAMINFO block too short');
+    }
+    final si = ByteData.sublistView(body, 0, 34);
+    final maxBlock = si.getUint16(2, Endian.big);
+    final sampleRate = (body[10] << 12) | (body[11] << 4) | (body[12] >> 4);
+    final bps = ((body[12] & 0x01) << 4) | (body[13] >> 4);
+    final bitsPerSample = bps + 1;
+    final totalHigh = body[13] & 0x0F;
+    final totalLow = ByteData.sublistView(
+      body,
+      14,
+      18,
+    ).getUint32(0, Endian.big);
+    return _FlacStreamInfo(
+      maxBlockSize: maxBlock,
+      sampleRate: sampleRate,
+      bitsPerSample: bitsPerSample,
+      totalSamples: (totalHigh << 32) | totalLow,
+      firstFrameOffset: firstFrameOffset,
+    );
   }
 
   static DecodedAudio _decodeFlac(
@@ -277,44 +727,25 @@ class AudioDecoder {
     int? rangeStart,
     int? rangeCount,
   }) {
-    // Parse STREAMINFO.
-    if (bytes.length < 42) {
-      throw const FormatException('FLAC file too short for STREAMINFO');
-    }
+    final info = _readFlacStreamInfoFromBytes(bytes);
+    return _decodeFlacFrames(
+      _MemoryBitReader(bytes, info.firstFrameOffset),
+      info,
+      rangeStart: rangeStart,
+      rangeCount: rangeCount,
+    );
+  }
 
-    // Byte 4: metadata header.  Bytes 8–41: STREAMINFO body (34 bytes).
-    final si = ByteData.sublistView(bytes, 8, 42);
-
-    final maxBlock = si.getUint16(2, Endian.big);
-
-    // Bytes 10-12: sample rate (20 bits), channels-1 (3 bits), bps-1 (5 bits).
-    final sampleRate = (bytes[18] << 12) | (bytes[19] << 4) | (bytes[20] >> 4);
-    final bps = ((bytes[20] & 0x01) << 4) | (bytes[21] >> 4);
-    final bitsPerSample = bps + 1;
-
-    // Total samples (36 bits at bytes 21[3:0] and 22-25).
-    final totalHigh = bytes[21] & 0x0F;
-    final totalLow = ByteData.sublistView(
-      bytes,
-      22,
-      26,
-    ).getUint32(0, Endian.big);
-    final totalSamples = (totalHigh << 32) | totalLow;
-
-    if (bitsPerSample != 16) {
+  static DecodedAudio _decodeFlacFrames(
+    _FlacBitReader reader,
+    _FlacStreamInfo info, {
+    int? rangeStart,
+    int? rangeCount,
+  }) {
+    if (info.bitsPerSample != 16) {
       throw FormatException(
-        'Only 16-bit FLAC supported, got $bitsPerSample-bit',
+        'Only 16-bit FLAC supported, got ${info.bitsPerSample}-bit',
       );
-    }
-
-    // Skip metadata blocks to find the first audio frame.
-    var pos = 4;
-    while (pos + 4 <= bytes.length) {
-      final isLast = (bytes[pos] & 0x80) != 0;
-      final blockLen =
-          (bytes[pos + 1] << 16) | (bytes[pos + 2] << 8) | bytes[pos + 3];
-      pos += 4 + blockLen;
-      if (isLast) break;
     }
 
     // Range-decode mode: only allocate what the caller asked for, and
@@ -322,23 +753,34 @@ class AudioDecoder {
     final useRange = rangeStart != null && rangeCount != null;
     // `totalSamples == 0` happens when the encoder hasn't finalized
     // STREAMINFO yet (mid-recording). Treat that as "decode until EOF".
-    final hasKnownTotal = totalSamples > 0;
+    final hasKnownTotal = info.totalSamples > 0;
 
-    final outLen = useRange ? rangeCount : totalSamples;
-    final allSamples = Int16List(outLen);
+    final collectUntilEof = !useRange && !hasKnownTotal;
+    final outLen = useRange ? rangeCount : info.totalSamples;
+    final allSamples = collectUntilEof ? null : Int16List(outLen);
+    final frameChunks = collectUntilEof ? <Int16List>[] : null;
     final outStart = useRange ? rangeStart : 0;
     final outEnd = outStart + outLen;
 
     // Decode audio frames.
     var samplePos = 0;
-    final reader = _BitReader(bytes, pos);
 
     while (reader.bytesRemaining > 2) {
-      if (hasKnownTotal && samplePos >= totalSamples) break;
-      if (samplePos >= outEnd) break;
+      if (hasKnownTotal && samplePos >= info.totalSamples) break;
+      if (!collectUntilEof && samplePos >= outEnd) break;
 
-      final frameResult = _decodeFrame(reader, maxBlock, bitsPerSample);
+      final frameResult = _decodeFrame(
+        reader,
+        info.maxBlockSize,
+        info.bitsPerSample,
+      );
       if (frameResult == null) break;
+
+      if (collectUntilEof) {
+        frameChunks!.add(frameResult);
+        samplePos += frameResult.length;
+        continue;
+      }
 
       final frameStart = samplePos;
       final frameEnd = samplePos + frameResult.length;
@@ -348,10 +790,23 @@ class AudioDecoder {
       final copyTo = frameEnd < outEnd ? frameEnd : outEnd;
       if (copyTo > copyFrom) {
         for (var i = copyFrom; i < copyTo; i++) {
-          allSamples[i - outStart] = frameResult[i - frameStart];
+          allSamples![i - outStart] = frameResult[i - frameStart];
         }
       }
       samplePos = frameEnd;
+    }
+
+    if (collectUntilEof) {
+      if (samplePos <= 0) {
+        return DecodedAudio(samples: Int16List(0), sampleRate: info.sampleRate);
+      }
+      final samples = Int16List(samplePos);
+      var offset = 0;
+      for (final chunk in frameChunks!) {
+        samples.setAll(offset, chunk);
+        offset += chunk.length;
+      }
+      return DecodedAudio(samples: samples, sampleRate: info.sampleRate);
     }
 
     // Trim trailing zero-padding when the source ran out of audio
@@ -361,21 +816,87 @@ class AudioDecoder {
     // where a "5 s" slice carried 6 s of silence at the tail.
     final filled = (samplePos < outEnd ? samplePos : outEnd) - outStart;
     if (filled <= 0) {
-      return DecodedAudio(samples: Int16List(0), sampleRate: sampleRate);
+      return DecodedAudio(samples: Int16List(0), sampleRate: info.sampleRate);
     }
     if (filled < outLen) {
       return DecodedAudio(
-        samples: Int16List.sublistView(allSamples, 0, filled),
-        sampleRate: sampleRate,
+        samples: Int16List.sublistView(allSamples!, 0, filled),
+        sampleRate: info.sampleRate,
       );
     }
-    return DecodedAudio(samples: allSamples, sampleRate: sampleRate);
+    return DecodedAudio(samples: allSamples!, sampleRate: info.sampleRate);
+  }
+
+  static Future<void> _decodeFlacWindowsFromReader(
+    _FlacBitReader reader,
+    _FlacStreamInfo info, {
+    required int windowSamples,
+    required int stepSamples,
+    required int maxWindows,
+    required Future<bool> Function(
+      int windowIndex,
+      int startSample,
+      DecodedAudio window,
+    )
+    onWindow,
+  }) async {
+    if (info.bitsPerSample != 16) {
+      throw FormatException(
+        'Only 16-bit FLAC supported, got ${info.bitsPerSample}-bit',
+      );
+    }
+
+    final hasKnownTotal = info.totalSamples > 0;
+    var decodedSamples = 0;
+    var bufferStartSample = 0;
+    var nextWindowStart = 0;
+    var windowIndex = 0;
+    var pending = <int>[];
+
+    while (reader.bytesRemaining > 2 && windowIndex < maxWindows) {
+      if (hasKnownTotal && decodedSamples >= info.totalSamples) break;
+
+      final frame = _decodeFrame(reader, info.maxBlockSize, info.bitsPerSample);
+      if (frame == null) break;
+      pending.addAll(frame);
+      decodedSamples += frame.length;
+
+      while (windowIndex < maxWindows &&
+          nextWindowStart + windowSamples <= decodedSamples) {
+        final offset = nextWindowStart - bufferStartSample;
+        if (offset < 0 || offset + windowSamples > pending.length) break;
+        final samples = Int16List(windowSamples);
+        for (var i = 0; i < windowSamples; i++) {
+          samples[i] = pending[offset + i];
+        }
+        final keepGoing = await onWindow(
+          windowIndex,
+          nextWindowStart,
+          DecodedAudio(samples: samples, sampleRate: info.sampleRate),
+        );
+        windowIndex++;
+        nextWindowStart += stepSamples;
+
+        final discardCount = nextWindowStart - bufferStartSample;
+        if (discardCount > 0) {
+          if (discardCount >= pending.length) {
+            pending = <int>[];
+            bufferStartSample = nextWindowStart;
+          } else {
+            pending = pending.sublist(discardCount);
+            bufferStartSample += discardCount;
+          }
+        }
+
+        if (!keepGoing) return;
+      }
+    }
   }
 
   /// Decode a single FLAC audio frame.  Returns the decoded Int16 samples,
   /// or null if no more frames can be read.
   static Int16List? _decodeFrame(
-    _BitReader reader,
+    _FlacBitReader reader,
     int maxBlockSize,
     int bitsPerSample,
   ) {
@@ -427,7 +948,7 @@ class AudioDecoder {
   }
 
   /// Scan forward to find the 0xFFF8/0xFFF9 frame sync pattern.
-  static bool _syncToFrame(_BitReader reader) {
+  static bool _syncToFrame(_FlacBitReader reader) {
     reader.alignToByte();
     while (reader.bytesRemaining >= 2) {
       final b = reader.peekByte();
@@ -448,7 +969,7 @@ class AudioDecoder {
   }
 
   /// Decode a FLAC UTF-8 coded value (used for frame numbers).
-  static int _readFlacUtf8(_BitReader reader) {
+  static int _readFlacUtf8(_FlacBitReader reader) {
     var first = reader.readBits(8);
     if (first < 0x80) return first;
 
@@ -517,7 +1038,7 @@ class AudioDecoder {
 
   /// Decode a single subframe from the bitstream.
   static Int16List _decodeSubframe(
-    _BitReader reader,
+    _FlacBitReader reader,
     int blockSize,
     int bitsPerSample,
   ) {
@@ -560,6 +1081,15 @@ class AudioDecoder {
           samples[i] = (samples[i] << wastedBits);
         }
       }
+    } else if (typeBits >= 0x20 && typeBits <= 0x3F) {
+      // LPC predictor, order = typeBits - 31.
+      final order = typeBits - 0x1F;
+      samples = _decodeLpcSubframe(reader, blockSize, effectiveBps, order);
+      if (wastedBits > 0) {
+        for (var i = 0; i < blockSize; i++) {
+          samples[i] = (samples[i] << wastedBits);
+        }
+      }
     } else {
       // Unsupported subframe type — fill with silence.
       samples = Int16List(blockSize);
@@ -568,9 +1098,53 @@ class AudioDecoder {
     return samples;
   }
 
+  /// Decode an LPC-predictor subframe.
+  static Int16List _decodeLpcSubframe(
+    _FlacBitReader reader,
+    int blockSize,
+    int bps,
+    int order,
+  ) {
+    final samples = Int16List(blockSize);
+
+    for (var i = 0; i < order; i++) {
+      samples[i] = reader.readSignedBits(bps);
+    }
+
+    final coefficientPrecision = reader.readBits(4) + 1;
+    if (coefficientPrecision == 16) {
+      throw const FormatException('Invalid FLAC LPC coefficient precision');
+    }
+    final quantizationShift = reader.readSignedBits(5);
+    final coefficients = Int32List(order);
+    for (var i = 0; i < order; i++) {
+      coefficients[i] = reader.readSignedBits(coefficientPrecision);
+    }
+
+    final residuals = _decodeRicePartition(reader, blockSize, order);
+    final residualCount = blockSize - order;
+    if (residuals.length < residualCount) {
+      throw const FormatException('Truncated FLAC LPC residuals');
+    }
+
+    for (var i = order; i < blockSize; i++) {
+      var sum = 0;
+      for (var j = 0; j < order; j++) {
+        sum += coefficients[j] * samples[i - j - 1];
+      }
+      final predicted =
+          quantizationShift >= 0
+              ? (sum >> quantizationShift)
+              : (sum << -quantizationShift);
+      samples[i] = (predicted + residuals[i - order]).clamp(-32768, 32767);
+    }
+
+    return samples;
+  }
+
   /// Decode a FIXED-predictor subframe.
   static Int16List _decodeFixedSubframe(
-    _BitReader reader,
+    _FlacBitReader reader,
     int blockSize,
     int bps,
     int order,
@@ -584,6 +1158,10 @@ class AudioDecoder {
 
     // Read Rice-coded residuals.
     final residuals = _decodeRicePartition(reader, blockSize, order);
+    final residualCount = blockSize - order;
+    if (residuals.length < residualCount) {
+      throw const FormatException('Truncated FLAC fixed residuals');
+    }
 
     // Apply fixed predictor restoration.
     for (var i = order; i < blockSize; i++) {
@@ -619,7 +1197,7 @@ class AudioDecoder {
 
   /// Decode Rice-coded residual partition.
   static List<int> _decodeRicePartition(
-    _BitReader reader,
+    _FlacBitReader reader,
     int blockSize,
     int predictorOrder,
   ) {
@@ -668,27 +1246,100 @@ class AudioDecoder {
   }
 }
 
+class _WavInfo {
+  const _WavInfo({
+    required this.audioFormat,
+    required this.sampleRate,
+    required this.bitsPerSample,
+    required this.channels,
+    required this.dataOffset,
+    required this.dataSize,
+  });
+
+  final int audioFormat;
+  final int sampleRate;
+  final int bitsPerSample;
+  final int channels;
+  final int dataOffset;
+  final int dataSize;
+
+  int get totalFrames => dataSize ~/ (channels * (bitsPerSample ~/ 8));
+}
+
+class _FlacStreamInfo {
+  const _FlacStreamInfo({
+    required this.maxBlockSize,
+    required this.sampleRate,
+    required this.bitsPerSample,
+    required this.totalSamples,
+    required this.firstFrameOffset,
+  });
+
+  final int maxBlockSize;
+  final int sampleRate;
+  final int bitsPerSample;
+  final int totalSamples;
+  final int firstFrameOffset;
+
+  _FlacStreamInfo copyWith({int? firstFrameOffset}) => _FlacStreamInfo(
+    maxBlockSize: maxBlockSize,
+    sampleRate: sampleRate,
+    bitsPerSample: bitsPerSample,
+    totalSamples: totalSamples,
+    firstFrameOffset: firstFrameOffset ?? this.firstFrameOffset,
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Bit Reader — MSB-first bit-level reader for FLAC bitstream
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _BitReader {
-  _BitReader(this._data, this._bytePos);
+abstract class _FlacBitReader {
+  int get bytePosition;
+  int get bytesRemaining;
+
+  int peekByte();
+  void seekByte(int pos);
+  void alignToByte();
+
+  /// Read [n] bits as an unsigned integer (MSB-first).
+  int readBits(int n);
+
+  /// Read [n] bits as a signed two's-complement integer.
+  int readSignedBits(int n) {
+    if (n == 0) return 0;
+    final unsigned = readBits(n);
+    // Sign-extend.
+    if (unsigned >= (1 << (n - 1))) {
+      return unsigned - (1 << n);
+    }
+    return unsigned;
+  }
+}
+
+class _MemoryBitReader extends _FlacBitReader {
+  _MemoryBitReader(this._data, this._bytePos);
 
   final Uint8List _data;
   int _bytePos;
   int _bitPos = 0; // 0 = MSB, 7 = LSB within current byte.
 
+  @override
   int get bytePosition => _bytePos;
+
+  @override
   int get bytesRemaining => _data.length - _bytePos;
 
+  @override
   int peekByte() => _data[_bytePos];
 
+  @override
   void seekByte(int pos) {
     _bytePos = pos;
     _bitPos = 0;
   }
 
+  @override
   void alignToByte() {
     if (_bitPos > 0) {
       _bytePos++;
@@ -696,7 +1347,7 @@ class _BitReader {
     }
   }
 
-  /// Read [n] bits as an unsigned integer (MSB-first).
+  @override
   int readBits(int n) {
     var result = 0;
     for (var i = 0; i < n; i++) {
@@ -710,15 +1361,83 @@ class _BitReader {
     }
     return result;
   }
+}
 
-  /// Read [n] bits as a signed two's-complement integer.
-  int readSignedBits(int n) {
-    if (n == 0) return 0;
-    final unsigned = readBits(n);
-    // Sign-extend.
-    if (unsigned >= (1 << (n - 1))) {
-      return unsigned - (1 << n);
+/// Buffered file-backed bit reader for sequential FLAC frame walks.
+///
+/// It keeps only a small compressed-byte window in memory while exposing the
+/// same byte-seek/bit-read operations the frame decoder already uses. This is
+/// what lets File Analysis walk an hour-long FLAC once without allocating the
+/// entire compressed file first.
+class _StreamingBitReader extends _FlacBitReader {
+  _StreamingBitReader({
+    required RandomAccessFile file,
+    required int fileLength,
+    required int startByte,
+    int bufferSize = 64 * 1024,
+  }) : _file = file,
+       _fileLength = fileLength,
+       _bytePos = startByte,
+       _buffer = Uint8List(bufferSize);
+
+  final RandomAccessFile _file;
+  final int _fileLength;
+  final Uint8List _buffer;
+  int _bufferStart = 0;
+  int _bufferLength = 0;
+  int _bytePos;
+  int _bitPos = 0;
+
+  @override
+  int get bytePosition => _bytePos;
+
+  @override
+  int get bytesRemaining => _bytePos < _fileLength ? _fileLength - _bytePos : 0;
+
+  @override
+  int peekByte() => _byteAt(_bytePos) ?? 0;
+
+  @override
+  void seekByte(int pos) {
+    _bytePos = pos;
+    _bitPos = 0;
+  }
+
+  @override
+  void alignToByte() {
+    if (_bitPos > 0) {
+      _bytePos++;
+      _bitPos = 0;
     }
-    return unsigned;
+  }
+
+  @override
+  int readBits(int n) {
+    var result = 0;
+    for (var i = 0; i < n; i++) {
+      final byte = _byteAt(_bytePos);
+      if (byte == null) return result;
+      result = (result << 1) | ((byte >> (7 - _bitPos)) & 1);
+      _bitPos++;
+      if (_bitPos == 8) {
+        _bitPos = 0;
+        _bytePos++;
+      }
+    }
+    return result;
+  }
+
+  int? _byteAt(int pos) {
+    if (pos < 0 || pos >= _fileLength) return null;
+    final inBuffer = pos >= _bufferStart && pos < _bufferStart + _bufferLength;
+    if (!inBuffer) {
+      _file.setPositionSync(pos);
+      _bufferLength = _file.readIntoSync(_buffer);
+      _bufferStart = pos;
+      if (_bufferLength <= 0) return null;
+    }
+    final index = pos - _bufferStart;
+    if (index < 0 || index >= _bufferLength) return null;
+    return _buffer[index];
   }
 }

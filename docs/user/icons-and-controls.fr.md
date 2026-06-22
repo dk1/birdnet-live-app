@@ -12,7 +12,21 @@ Cette page explique les contrôles et symboles récurrents utilisés dans BirdNE
 | :material-help-circle-outline : **Aide** | Pied de page d'accueil, en-tête Explorer, tableau de bord d'enquête, barre d'outils de révision de session | Ouvre l'aide ou une feuille d'aide spécifique à l'écran. |
 | :material-information-outline : **Info / À propos** | Pied de page d'accueil, barres d'informations, fiches d'aide | Affiche des informations générales ou un contexte récapitulatif. |
 | :material-arrow-left: **Retour** | Mode direct | Revient à l'écran précédent. |
-| :material-open-in-new : **Ouvrir externe** | Écran À propos, liens vers la documentation | Ouvre une page externe telle que le Guide de l'utilisateur en ligne. |
+| :material-open-in-new : **Ouvrir externe** | Écran À propos, liens vers la documentation | Ouvre une page externe telle que le Guide d'utilisation en ligne. |
+| :material-volunteer-activism: **Faire un don** | Écran À propos | Ouvre la page de don de BirdNET. |
+
+## Symboles météo
+
+| Symbole | Signification |
+|---|---|
+| :material-wb-sunny: **Dégagé** | Ciel dégagé. |
+| :material-partly-cloudy-day: **Partiellement nuageux** | Soleil et nuage pour un temps plutôt dégagé ou partiellement nuageux. |
+| :material-cloudy: **Couvert** | Couverture nuageuse complète. |
+| :material-foggy: **Brouillard** | Brouillard ou brouillard givrant. |
+| :material-rainy-light: **Bruine** | Précipitations légères. |
+| :material-rainy: **Pluie** | Pluie ou averses. |
+| :material-weather-snowy: **Neige** | Neige ou averses de neige. |
+| :material-thunderstorm: **Orage** | Conditions orageuses. |
 
 ## Contrôles de démarrage, d'arrêt et de session
 

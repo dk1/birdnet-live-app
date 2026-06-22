@@ -60,7 +60,7 @@ Permite escolher um dispositivo de entrada específico ou manter o **Padrão do 
 
 ### Duração da janela
 
-Controla o comprimento da janela de análise.
+Controla o comprimento da janela de análise. Os passos disponíveis são **1**, **3**, **5**, **7**, **10** e **15** segundos.
 
 ### Limite de confiança
 
@@ -72,11 +72,7 @@ Valores mais altos tornam o detector mais permissivo, o que pode recuperar chama
 
 ### Taxa de inferência
 
-Controla a frequência com que o BirdNET executa inferência.
-
-### Agrupamento de pontuação
-
-Controla como as janelas de análise sobrepostas são combinadas.
+Controla a frequência com que o BirdNET executa inferência. O controlo usa os mesmos passos de **0,10–1,00 Hz** da configuração Survey e ARU.
 
 ## Espectrograma
 
@@ -86,7 +82,7 @@ Controla a resolução de frequência no espectrograma.
 
 ### Mapa de cores
 
-Escolha **Viridis**, **Magma** ou **Escala de cinza**.
+Escolha **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Escala de cinza** ou **BirdNET**. **Turbo** é a opção arco-íris moderna semelhante a Jet.
 
 ### Duração (velocidade de rolagem)
 
@@ -99,6 +95,10 @@ Define a frequência de exibição superior.
 ### Amplitude do registro
 
 Aplica escala logarítmica ao espectrograma para facilitar a leitura visual.
+
+### Qualidade
+
+Controla a suavidade com que a imagem do espectrograma é escalada. **Média** é o equilíbrio padrão. Escolha **Baixa** em telefones mais antigos se a rolagem engasgar ou o dispositivo aquecer; escolha **Alta** se preferir uma imagem mais suave e o dispositivo tiver margem de GPU suficiente. A intuição: isto altera apenas o custo de renderização, não a análise de áudio nem os resultados de detecção.
 
 ## Gravação
 
@@ -159,7 +159,7 @@ Esta seção controla **quais serviços de terceiros o BirdNET Live pode contata
 
 ### Permitir tiles de mapa
 
-Necessário para qualquer mapa interativo (seletor de localização, mapa ao vivo do Survey, mapa da sessão, pré-download de tiles). Quando ativo, os widgets de mapa baixam tiles raster dos servidores públicos do **OpenStreetMap**; as requisições de coordenadas de tile revelam que área do mundo você está olhando. Quando desligado, todas as telas de mapa mostram um painel marcador.
+Necessário para qualquer mapa interativo (seletor de localização, mapa ao vivo do Survey, mapa da sessão). Quando ativo, os widgets de mapa baixam tiles raster dos servidores públicos do **OpenStreetMap**; as requisições de coordenadas de tile revelam que área do mundo você está olhando. Quando desligado, todas as telas de mapa mostram um painel marcador.
 
 ### Permitir busca de nome de lugar
 
@@ -181,7 +181,9 @@ Mostra a sequência de integração novamente na próxima vez que o aplicativo f
 
 ### Limpar todos os dados
 
-Abre um fluxo de confirmação para remover permanentemente os dados armazenados do aplicativo.
+Exclui permanentemente sessões, detecções, gravações, notas de voz, listas de espécies personalizadas, preferências salvas e dados em cache de mapas, nomes de lugares, meteorologia, reprodução, revisão e compartilhamento. O diálogo de confirmação exige digitar `DELETE` e depois fecha o app para que a próxima abertura comece de um estado local limpo.
+
+Use antes de entregar um dispositivo a outra pessoa observadora, aposentar um telefone de campo ou remover do app histórico vinculado a localização. Exporte primeiro tudo o que deseja manter; esta ação não pode ser desfeita.
 
 ## Parâmetros específicos do fluxo de trabalho fora das configurações
 

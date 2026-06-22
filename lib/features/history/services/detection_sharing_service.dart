@@ -70,10 +70,8 @@ Future<ShareResult> shareDetection(
   final clipPath = detection.audioClipPath;
   if (clipPath != null && File(clipPath).existsSync()) {
     final staged = await _stageClipForShare(File(clipPath), detection);
-    return Share.shareXFiles(
-      [XFile(staged.path)],
-      text: body,
-      subject: subject,
+    return SharePlus.instance.share(
+      ShareParams(files: [XFile(staged.path)], text: body, subject: subject),
     );
   }
 
@@ -83,17 +81,19 @@ Future<ShareResult> shareDetection(
   if (session != null) {
     final extracted = await _extractClipFromFullAudio(session, detection);
     if (extracted != null) {
-      return Share.shareXFiles(
-        [XFile(extracted.path)],
-        text: body,
-        subject: subject,
+      return SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(extracted.path)],
+          text: body,
+          subject: subject,
+        ),
       );
     }
   }
 
   // 3) No audio available — share text only. The body still carries
   //    location + timestamp so the recipient gets the full picture.
-  return Share.share(body, subject: subject);
+  return SharePlus.instance.share(ShareParams(text: body, subject: subject));
 }
 
 /// Copies [clip] into the temp dir under the export-style filename so the

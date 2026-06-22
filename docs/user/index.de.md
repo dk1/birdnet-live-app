@@ -1,8 +1,8 @@
-# Benutzerhandbuch
+# Benutzungshandbuch
 
 In diesem Handbuch wird BirdNET Live als Feld-Workflow-Tool erläutert: Was jeder Bildschirm bewirkt, was die wiederkehrenden Symbole bedeuten und wie die Einstellungen das Verhalten der App ändern.
 
-Es ist für Ökologen und Vogelvermessungspraktiker geschrieben, die die Feldmethoden bereits kennen und eine klare Karte der App selbst wünschen.
+Es ist für Personen aus Ökologie und Vogelmonitoring geschrieben, die die Feldmethoden bereits kennen und eine klare Karte der App selbst wünschen.
 
 ## Hier beginnen
 
@@ -22,7 +22,7 @@ Alle derzeit in der App angezeigten Einstellungen sind auf die gleiche Weise gru
 
 ### [Live-Modus](live-mode.md)
 
-Kontinuierliches Zuhören mit dem Mikrofon, Live-Erkennungen, dem Spektrogramm und der Sitzungsinfoleiste.
+Kontinuierliches Zuhören mit dem Mikrofon, Live-Detektionen, dem Spektrogramm und der Sitzungsinfoleiste.
 
 ### [Erkunden](explore.md)
 
@@ -48,6 +48,14 @@ Vermessungseinrichtung, das Live-Vermessungs-Dashboard sowie die Registerkarten 
 
 Der vierstufige Dateianalyse-Assistent, Parameterauswahl und die Art und Weise, wie Ergebnisse in die Sitzungsüberprüfung übertragen werden.
 
+### [Batch-Analyse](batch-analysis.md)
+
+Mehrere Audiodateien im Batch-Modus analysieren. (Demnächst)
+
+### [ARU-Modus](aru-mode.md)
+
+Erstellen Sie eine geplante ARU-Einsatz-Session, zeichnen Sie vollständiges Zyklus-Audio oder beibehaltene Erkennungsclips auf, führen Sie während aktiver Zyklen Live-Inferenz aus und verfolgen Sie geplante Aufnahmezyklen.
+
 ## Referenz
 
 ### [FAQ](faq.md)
@@ -63,7 +71,7 @@ Schnelle Antworten zu Offline-Nutzung, Aufnahmeverhalten, Punktanzahl und Leistu
 
 ## Mobiler Tipp
 
-Auf Mobilgeräten ist die Navigationsseitenleiste hinter der Menüschaltfläche in der oberen linken Ecke verborgen. Diese Seite soll der mobile Einstiegspunkt für das gesamte Benutzerhandbuch sein.
+Auf Mobilgeräten ist die Navigationsseitenleiste hinter der Menüschaltfläche in der oberen linken Ecke verborgen. Diese Seite soll der mobile Einstiegspunkt für das gesamte Benutzungshandbuch sein.
 
 ## Weitere Dokumentation
 

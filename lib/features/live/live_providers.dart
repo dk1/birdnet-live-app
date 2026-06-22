@@ -22,11 +22,13 @@
 // =============================================================================
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/services/reverse_geocoding_service.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/weather_service.dart';
 import '../announcements/announcements_alert_sink.dart';
 import '../audio/audio_providers.dart';
 import '../history/session_repository.dart';
@@ -156,5 +158,55 @@ final sessionListProvider = FutureProvider<List<LiveSession>>((ref) async {
     // Cache backfill is purely a UX nicety; never let it break the list.
   }
 
+  // Trigger non-blocking background weather resolution
+  _resolvePendingWeather(ref, sessions);
+
   return sessions;
 });
+
+/// Background task to resolve missing weather snapshots for saved sessions when online.
+void _resolvePendingWeather(Ref ref, List<LiveSession> sessions) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final allowed = prefs.getBool(PrefKeys.privacyAllowWeather) ?? false;
+    if (!allowed) return;
+
+    final repo = ref.read(sessionRepositoryProvider);
+    final svc = ref.read(weatherServiceProvider);
+
+    final missing = sessions
+        .where((s) =>
+            s.latitude != null &&
+            s.longitude != null &&
+            s.weather == null)
+        .toList();
+
+    if (missing.isEmpty) return;
+
+    var updatedAny = false;
+    for (final s in missing) {
+      try {
+        final snap = await svc.fetch(
+          latitude: s.latitude!,
+          longitude: s.longitude!,
+          observedAt: s.endTime ?? s.startTime,
+        );
+        if (snap != null) {
+          s.weather = snap;
+          await repo.save(s);
+          updatedAny = true;
+        }
+      } catch (_) {
+        // Ignore individual failures
+      }
+      // Polite delay between requests to not hammer the server/device
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    }
+
+    if (updatedAny) {
+      ref.invalidate(sessionListProvider);
+    }
+  } catch (_) {
+    // Fail silently to never impact UI thread
+  }
+}

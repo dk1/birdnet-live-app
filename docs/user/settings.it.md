@@ -60,7 +60,7 @@ Consente di scegliere un dispositivo di input specifico o di mantenere l'**impos
 
 ### Durata della finestra
 
-Controlla la lunghezza della finestra di analisi.
+Controlla la lunghezza della finestra di analisi. I passaggi disponibili sono **1**, **3**, **5**, **7**, **10** e **15** secondi.
 
 ### Soglia di confidenza
 
@@ -72,11 +72,7 @@ Valori più alti rendono il rilevatore più permissivo, che può recuperare le c
 
 ### Tasso di inferenza
 
-Controlla la frequenza con cui BirdNET esegue l'inferenza.
-
-### Raggruppamento dei punteggi
-
-Controlla il modo in cui vengono combinate le finestre di analisi sovrapposte.
+Controlla la frequenza con cui BirdNET esegue l'inferenza. Il cursore usa gli stessi passaggi **0,10–1,00 Hz** della configurazione Survey e ARU.
 
 ## Spettrogramma
 
@@ -86,7 +82,7 @@ Controlla la risoluzione della frequenza nello spettrogramma.
 
 ### Mappa dei colori
 
-Scegli **Viridis**, **Magma** o **Scala di grigi**.
+Scegli **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Scala di grigi** o **BirdNET**. **Turbo** è l'opzione arcobaleno moderna simile a Jet.
 
 ### Durata (velocità di scorrimento)
 
@@ -99,6 +95,10 @@ Imposta la frequenza di visualizzazione superiore.
 ### Registra l'ampiezza
 
 Applica la scala logaritmica allo spettrogramma per facilitare la lettura visiva.
+
+### Qualità
+
+Controlla quanto uniformemente viene scalata l'immagine dello spettrogramma. **Media** è il bilanciamento predefinito. Scegli **Bassa** sui telefoni più vecchi se lo scorrimento va a scatti o il dispositivo si scalda; scegli **Alta** se preferisci una resa più fluida e il dispositivo ha sufficiente margine GPU. L'intuizione: cambia solo il costo di rendering, non l'analisi audio né i risultati delle rilevazioni.
 
 ## Registrazione
 
@@ -159,7 +159,7 @@ Questa sezione controlla **quali servizi di terze parti BirdNET Live può contat
 
 ### Consenti tile della mappa
 
-Richiesto per qualsiasi mappa interattiva (selettore di posizione, mappa live di Survey, mappa della sessione, prescaricamento di tile). Quando attivo, i widget mappa scaricano tile raster dai server pubblici **OpenStreetMap**; le richieste di coordinate dei tile rivelano quale area del mondo stai guardando. Quando disattivato, tutte le schermate di mappa mostrano un pannello segnaposto.
+Richiesto per qualsiasi mappa interattiva (selettore di posizione, mappa live di Survey, mappa della sessione). Quando attivo, i widget mappa scaricano tile raster dai server pubblici **OpenStreetMap**; le richieste di coordinate dei tile rivelano quale area del mondo stai guardando. Quando disattivato, tutte le schermate di mappa mostrano un pannello segnaposto.
 
 ### Consenti ricerca nome luogo
 
@@ -181,7 +181,9 @@ Mostra nuovamente la sequenza di onboarding al successivo avvio dell'app.
 
 ### Cancella tutti i dati
 
-Apre un flusso di conferma per la rimozione permanente dei dati dell'app archiviati.
+Elimina in modo permanente sessioni, rilevazioni, registrazioni, note vocali, liste specie personalizzate, preferenze salvate e dati cache di mappe, nomi di luoghi, meteo, riproduzione, revisione e condivisione. La finestra di conferma richiede di digitare `DELETE`, poi chiude l'app in modo che il prossimo avvio parta da uno stato locale pulito.
+
+Usalo prima di consegnare un dispositivo a un'altra persona osservatrice, dismettere un telefono da campo o rimuovere dall'app cronologia collegata alla posizione. Esporta prima tutto ciò che vuoi conservare; questa azione non può essere annullata.
 
 ## Parametri specifici del flusso di lavoro esterni alle impostazioni
 

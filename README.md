@@ -1,4 +1,4 @@
-# BirdNET Live
+# BirdNET Live - Professional bioacoustics in your pocket
 
 <p align="center">
   <img src="assets/images/app-icon.png" alt="BirdNET Live" width="250">
@@ -6,23 +6,27 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/flutter-%3E%3D3.0-blue.svg" alt="Flutter">
+   <img src="https://img.shields.io/badge/flutter-%3E%3D3.27-blue.svg" alt="Flutter >=3.27">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
-  <img src="https://img.shields.io/badge/version-0.14.3-orange.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.17.14-orange.svg" alt="Version">
   <img src="https://img.shields.io/badge/species-5%2C250-brightgreen.svg" alt="Species: 5,250">
 </p>
 
-The bioacoustics companion app for field researchers, conservationists, and birders. Identifies bird species in real time using on-device BirdNET+ inference — no internet required. Built with Flutter for Android, iOS, and Windows.
+Built for field researchers, conservationists, and birders, BirdNET Live identifies bird species in real time using on-device BirdNET+ inference — no internet required. Built with Flutter for Android, iOS, and Windows.
 
 <p align="center">
   <img src="docs/assets/screenshots/live-mode.png" alt="Live Mode" width="150">
-  <img src="docs/assets/screenshots/survey.png" alt="Survey Mode" width="150">
   <img src="docs/assets/screenshots/session-review.png" alt="Session Review" width="150">
   <img src="docs/assets/screenshots/explore.png" alt="Explore" width="150">
+  <img src="docs/assets/screenshots/species.png" alt="Species Overlay" width="150">
   <img src="docs/assets/screenshots/file-analysis.png" alt="File Analysis" width="150">
 </p>
 
 <p align="center">
+  <a href="https://play.google.com/store/apps/details?id=de.tu_chemnitz.mi.kahst.birdnet_live"><b>Google Play</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://apps.apple.com/us/app/birdnet-live/id6776168518"><b>App Store</b></a>
+  &nbsp;·&nbsp;
   <a href="https://github.com/birdnet-team/birdnet-live-app/releases/latest"><b>Download APK</b></a>
   &nbsp;·&nbsp;
   <a href="https://birdnet-team.github.io/birdnet-live-app/"><b>Documentation</b></a>
@@ -34,19 +38,43 @@ The bioacoustics companion app for field researchers, conservationists, and bird
 
 ---
 
+## Table of Contents
+
+- [Features](#features)
+- [Install on Android](#install-on-android)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+  - [Verify](#verify)
+- [Deploy to Phone](#deploy-to-phone)
+  - [Android (USB — Windows / macOS / Linux)](#android-usb--windows--macos--linux)
+  - [Android (Wireless — Windows)](#android-wireless--windows)
+  - [iOS (macOS only)](#ios-macos-only)
+  - [VS Code Tips](#vs-code-tips)
+- [Documentation](#documentation)
+- [Project Structure](#project-structure)
+- [Model Assets](#model-assets)
+- [Development](#development)
+- [License](#license)
+- [Terms of Use](#terms-of-use)
+- [Citation](#citation)
+- [Funding](#funding)
+- [Partners](#partners)
+
 ## Features
 
 - **Live Mode** — Real-time scrolling spectrogram with species identification
 - **Point Count Mode** — Timed survey sessions with countdown timer and station metadata
 - **Survey Mode** — Long-running transect surveys with GPS tracking, background monitoring, and detection sampling
 - **File Analysis Mode** — Analyze existing audio files (WAV, FLAC, MP3, OGG, and more)
+- **ARU Mode** — Turn your device into an acoustic recording unit for multi-day deployments
 - **Explore** — Browse species expected at your location using the BirdNET geo-model
 - **Session Library** — Review, edit, and export past sessions with audio playback
 - **Export** — Raven Pro, CSV, JSON, GPX, and ZIP bundle formats
 - **On-device inference** — BirdNET+ model (5,250 species), no internet required
 - **FLAC recording** — Pure Dart encoder for compressed audio (50–60% reduction)
 - **Landscape & tablet layouts** — Adaptive UI for phones and tablets in both orientations
-- **Localization** — Full English and German UI
+- **Localization** — UI translations for English, German, Czech, Spanish, French, Italian, and Portuguese
 
 ## Install on Android
 
@@ -58,7 +86,8 @@ BirdNET Live is available as a signed APK for sideloading. Download the latest r
 
 ### Prerequisites
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) (>= 3.0)
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.27+ with Dart 3.7+)
+- [Git LFS](https://git-lfs.com/) for the large ONNX model files
 - [Android Studio](https://developer.android.com/studio) (for Android SDK & emulator)
 - Xcode (macOS only, for iOS development)
 
@@ -67,9 +96,13 @@ BirdNET Live is available as a signed APK for sideloading. Download the latest r
 ```bash
 git clone https://github.com/birdnet-team/birdnet-live-app.git
 cd birdnet-live-app
+git lfs install
+git lfs pull
 flutter pub get
 flutter gen-l10n
 ```
+
+Do not skip the LFS step on a fresh clone. The two `.onnx` model files under `assets/models/` are stored with Git LFS; without the real files the app may build from pointer files but model loading will fail at runtime. You only need to run the Python model build pipeline in `dev/` when updating or rebuilding the models themselves.
 
 ### Verify
 
@@ -100,7 +133,7 @@ flutter analyze   # Check for issues
    ```bash
    flutter build apk --release
    ```
-   The APK will be at `build/app/outputs/flutter-apk/app-release.apk`. Transfer it to your phone and install.
+   The APK will be at `build/app/outputs/flutter-apk/app-release.apk`. It is self-contained for sideloading and includes the ONNX models. Transfer it to your phone and install.
 
 ### Android (Wireless — Windows)
 
@@ -162,14 +195,23 @@ lib/
   core/           # Constants, theme, utilities, extensions
   features/       # Feature modules (live, point_count, survey, file_analysis,
                   #   audio, inference, explore, history, settings, home, about)
-  l10n/           # Localization ARB files (en, de)
+   l10n/          # Localization ARB files (en, de, cs, es, fr, it, pt)
   shared/         # Shared models, providers, services, widgets
                   #   (e.g. ContentWidthConstraint for tablet max-width)
 
 docs/             # MkDocs source for GitHub Pages documentation
-assets/           # App assets (models, species data, images, fonts)
+assets/           # App assets (LFS ONNX models, species data, images, fonts)
 test/             # Tests mirroring lib/ structure
 ```
+
+## Model Assets
+
+BirdNET Live runs fully on-device, so the model assets are part of the checkout/build rather than downloaded by the app at runtime. The large `.onnx` files in `assets/models/` are tracked with Git LFS:
+
+- `BirdNET+_V3.0-preview3_Global_5K-pruned_FP16.onnx` — audio classifier (~152 MB)
+- `BirdNET+_Geomodel_V3.0.1_Global_5K-pruned_FP16.onnx` — location-based species model (~6 MB)
+
+Release APKs for sideloading keep those models inside `flutter_assets`. Play Store App Bundles move the `.onnx` files into the install-time `models_pack` asset pack so the base module stays below Play's size limit while still working offline after installation.
 
 ## Development
 
@@ -192,6 +234,19 @@ Please ensure you review and adhere to the specific license terms provided with 
 ## Terms of Use
 
 Please refer to the [TERMS OF USE](TERMS_OF_USE.md) file for detailed terms and conditions regarding the use of the BirdNET+ V3.0 preview models.
+
+## Citation
+
+If you use this app in your scientific work, please cite it using the following BibTeX entry:
+
+```bibtex
+@software{BirdNET_Live_2026,
+  author = {Kahl, Stefan and Börner, Andy and Mauermann, Max and Seifert, Raja Charlotte and Lasseck, Mario and Wilhelm-Stein, Thomas and Wood, Connor M. and Eibl, Maximilian and Klinck, Holger},
+  title = {{BirdNET Live app - Professional bioacoustics in your pocket}},
+  url = {https://github.com/birdnet-team/birdnet-live-app},
+  year = {2026}
+}
+```
 
 ## Funding
 

@@ -317,10 +317,19 @@ class SurveyController {
           '${AppConstants.modelAssetsDir}/${_config!.labels.file}';
       final labelsCsv = await rootBundle.loadString(labelsAssetPath);
 
+      final blacklistFile = _config!.scoreBlacklistFile;
+      final scoreBlacklistJson =
+          blacklistFile == null
+              ? null
+              : await rootBundle.loadString(
+                '${AppConstants.modelAssetsDir}/$blacklistFile',
+              );
+
       await _isolate.start(
         modelFilePath: modelFilePath,
         labelsCsv: labelsCsv,
         config: _config!,
+        scoreBlacklistJson: scoreBlacklistJson,
       );
 
       _state = SurveyState.idle;
@@ -395,6 +404,14 @@ class SurveyController {
               poolingWindows: poolingWindows,
               gainLinear: gainLinear,
               highPassHz: highPassHz,
+              recordingMode: recordingMode.name,
+              recordingFormat: recordingFormat,
+              detectionSamplingMode: samplingMode.name,
+              topNPerSpecies: topNPerSpecies,
+              gpsIntervalSeconds: gpsIntervalSeconds,
+              maxDurationHours: maxDurationHours,
+              autoStopBatteryPercent: autoStopBattery,
+              backgroundGps: backgroundGps,
             ),
         transectId: transectId,
         observerName: observerName,
@@ -463,6 +480,7 @@ class SurveyController {
       _autoStopBattery = autoStopBattery;
 
       // Open the first recording segment so [elapsed] starts ticking.
+      _session!.startSegment();
       _segmentStart = DateTime.now();
 
       // Start inference timer.
@@ -607,6 +625,7 @@ class SurveyController {
 
       // Open a new recording segment. Any previously accumulated time on
       // the session is preserved via [LiveSession.recordedDurationSeconds].
+      _session?.startSegment();
       _segmentStart = DateTime.now();
 
       final intervalMs = (1000.0 / inferenceRate).round();
@@ -1148,6 +1167,7 @@ class SurveyController {
     if (start == null || session == null) return;
     final secs = DateTime.now().difference(start).inSeconds;
     if (secs > 0) session.accumulateRecordedSeconds(secs);
+    session.closeSegment();
     _segmentStart = null;
   }
 
@@ -1156,9 +1176,15 @@ class SurveyController {
     try {
       // Roll the segment forward so the persisted recordedDurationSeconds
       // reflects time recorded since the last persist tick. We immediately
-      // open a new segment so [elapsed] keeps ticking smoothly.
+      // open a new segment for active surveys so [elapsed] keeps ticking
+      // smoothly. Final persists run after [LiveSession.end] and must not
+      // reopen a segment, otherwise saved Survey durations keep growing in
+      // Session Library.
       _closeRecordingSegment();
-      _segmentStart = DateTime.now();
+      if (_session!.endTime == null) {
+        _session!.startSegment();
+        _segmentStart = DateTime.now();
+      }
 
       final appDir = await getApplicationDocumentsDirectory();
       final sessionsDir = Directory('${appDir.path}/sessions');

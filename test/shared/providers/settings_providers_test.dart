@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:birdnet_live/core/constants/app_constants.dart';
 import 'package:birdnet_live/shared/providers/app_providers.dart';
 import 'package:birdnet_live/shared/providers/settings_providers.dart';
 
@@ -13,9 +14,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
     });
 
@@ -33,8 +32,8 @@ void main() {
       expect(container.read(windowDurationProvider), 3);
     });
 
-    test('confidenceThreshold defaults to 25', () {
-      expect(container.read(confidenceThresholdProvider), 25);
+    test('confidenceThreshold defaults to 35', () {
+      expect(container.read(confidenceThresholdProvider), 35);
     });
 
     test('inferenceRate defaults to 1.0', () {
@@ -103,9 +102,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 
@@ -118,9 +115,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 
@@ -133,9 +128,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 
@@ -144,19 +137,129 @@ void main() {
       expect(prefs.getString('color_map'), 'magma');
     });
 
+    test('inferenceRate snaps to Survey and ARU tick grid', () async {
+      SharedPreferences.setMockInitialValues({'inference_rate': 0.25});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(inferenceRateProvider), 0.3);
+      expect(prefs.getDouble('inference_rate'), 0.3);
+
+      await container.read(inferenceRateProvider.notifier).set(2.0);
+      expect(container.read(inferenceRateProvider), 1.0);
+      expect(prefs.getDouble('inference_rate'), 1.0);
+    });
+
+    test('colorMap migrates removed inferno value to magma', () async {
+      SharedPreferences.setMockInitialValues({'color_map': 'inferno'});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(colorMapProvider), 'magma');
+      expect(prefs.getString('color_map'), 'magma');
+    });
+
     test('BoolSettingNotifier persists', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 
       await container.read(includeAudioProvider.notifier).set(true);
       expect(container.read(includeAudioProvider), true);
       expect(prefs.getBool('include_audio'), true);
+    });
+
+    test(
+      'lastObserverProvider persists shared field-session observer',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+        final container = ProviderContainer(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(lastObserverProvider.notifier).set('Jane Doe');
+
+        expect(container.read(lastObserverProvider), 'Jane Doe');
+        expect(prefs.getString(PrefKeys.lastObserver), 'Jane Doe');
+      },
+    );
+
+    test('lastObserverProvider falls back to legacy survey observer', () async {
+      SharedPreferences.setMockInitialValues({
+        PrefKeys.legacySurveyLastObserver: 'Survey Person',
+        PrefKeys.legacyPointCountLastObserver: 'Point Count Person',
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(lastObserverProvider), 'Survey Person');
+    });
+
+    test(
+      'lastObserverProvider falls back to legacy point count observer',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          PrefKeys.legacyPointCountLastObserver: 'Point Count Person',
+        });
+        final prefs = await SharedPreferences.getInstance();
+        final container = ProviderContainer(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        );
+        addTearDown(container.dispose);
+
+        expect(container.read(lastObserverProvider), 'Point Count Person');
+      },
+    );
+  });
+
+  group('Privacy setting relationships', () {
+    test('allowing map tiles also allows place-name lookup', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(privacyAllowMapProvider.notifier).set(true);
+
+      expect(container.read(privacyAllowMapProvider), true);
+      expect(container.read(privacyAllowReverseGeocodingProvider), true);
+      expect(prefs.getBool(PrefKeys.privacyAllowMap), true);
+      expect(prefs.getBool(PrefKeys.privacyAllowReverseGeocoding), true);
+    });
+
+    test('place-name lookup remains independently revocable', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(privacyAllowMapProvider.notifier).set(true);
+      await container
+          .read(privacyAllowReverseGeocodingProvider.notifier)
+          .set(false);
+
+      expect(container.read(privacyAllowMapProvider), true);
+      expect(container.read(privacyAllowReverseGeocodingProvider), false);
+      expect(prefs.getBool(PrefKeys.privacyAllowMap), true);
+      expect(prefs.getBool(PrefKeys.privacyAllowReverseGeocoding), false);
     });
   });
 
@@ -171,9 +274,7 @@ void main() {
       });
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 

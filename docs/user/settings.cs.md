@@ -60,7 +60,7 @@ Umožňuje vybrat konkrétní vstupní zařízení nebo zachovat **Výchozí nas
 
 ### Doba trvání okna
 
-Řídí délku okna analýzy.
+Řídí délku okna analýzy. Dostupné kroky jsou **1**, **3**, **5**, **7**, **10** a **15** sekund.
 
 ### Práh spolehlivosti
 
@@ -72,11 +72,7 @@ Vyšší hodnoty činí detektor tolerantnějším, což může obnovit slabší
 
 ### Míra inference
 
-Řídí, jak často BirdNET spouští odvození.
-
-### Sdružování skóre
-
-Řídí, jak jsou kombinována překrývající se okna analýzy.
+Řídí, jak často BirdNET spouští odvození. Posuvník používá stejné kroky **0,10–1,00 Hz** jako nastavení Survey a ARU.
 
 ## Spektrogram
 
@@ -86,7 +82,7 @@ Vyšší hodnoty činí detektor tolerantnějším, což může obnovit slabší
 
 ### Barevná mapa
 
-Vyberte **Viridis**, **Magma** nebo **Stupně šedi**.
+Vyberte **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Stupně šedi** nebo **BirdNET**. **Turbo** je moderní duhová možnost podobná Jet.
 
 ### Délka (rychlost posouvání)
 
@@ -99,6 +95,10 @@ Nastavuje horní frekvenci zobrazení.
 ### Zaznamenat amplitudu
 
 Aplikuje logaritmické škálování na spektrogram pro snadnější vizuální čtení.
+
+### Kvalita
+
+Určuje, jak plynule se obraz spektrogramu škáluje. **Střední** je výchozí vyvážená volba. Na starších telefonech zvolte **Nízká**, pokud se posouvání zasekává nebo se zařízení zahřívá; zvolte **Vysoká**, pokud chcete hladší zobrazení a zařízení má dostatečnou rezervu GPU. Intuice: mění se pouze náročnost vykreslování, nikoli analýza zvuku ani výsledky detekce.
 
 ## Nahrávání
 
@@ -159,7 +159,7 @@ Tato sekce řídí, **které externí služby smí BirdNET Live kontaktovat vaš
 
 ### Povolit mapové dlaždice
 
-Vyžadováno pro každou interaktivní mapu (výběr polohy, živá mapa Survey, mapa relace, předstahování dlaždic). Když je zapnuto, mapové prvky stahují rastrové dlaždice z veřejných serverů **OpenStreetMap**; požadavky o souřadnice dlaždic prozrazují, kterou oblast světa právě prohlížíte. Když je vypnuto, všechny mapové obrazovky zobrazí zástupný panel.
+Vyžadováno pro každou interaktivní mapu (výběr polohy, živá mapa Survey, mapa relace). Když je zapnuto, mapové prvky stahují rastrové dlaždice z veřejných serverů **OpenStreetMap**; požadavky o souřadnice dlaždic prozrazují, kterou oblast světa právě prohlížíte. Když je vypnuto, všechny mapové obrazovky zobrazí zástupný panel.
 
 ### Povolit vyhledávání názvu místa
 
@@ -181,7 +181,9 @@ Při příštím spuštění aplikace znovu zobrazí vstupní sekvenci.
 
 ### Vymazat všechna data
 
-Otevře tok potvrzení pro trvalé odstranění uložených dat aplikace.
+Trvale smaže relace, detekce, nahrávky, hlasové poznámky, vlastní seznamy druhů, uložená nastavení a data v mezipaměti pro mapy, názvy míst, počasí, přehrávání, revizi a sdílení. Potvrzovací dialog vyžaduje zadání `DELETE` a poté aplikaci zavře, aby další spuštění začalo s čistým místním stavem.
+
+Použijte tuto volbu před předáním zařízení jinému pozorovateli, vyřazením terénního telefonu nebo odstraněním historie navázané na polohu z aplikace. Vše, co potřebujete, nejprve exportujte; tuto akci nelze vrátit zpět.
 
 ## Parametry specifické pro pracovní postup mimo nastavení
 

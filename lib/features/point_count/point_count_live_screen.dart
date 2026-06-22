@@ -29,11 +29,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/wakelock_service.dart';
 import '../../shared/providers/settings_providers.dart';
-import '../../shared/services/weather_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
@@ -63,6 +63,7 @@ class PointCountLiveScreen extends ConsumerStatefulWidget {
     this.inferenceRateOverride,
     this.confidenceThresholdOverride,
     this.speciesFilterModeOverride,
+    this.sensitivityOverride,
   });
 
   /// Total survey duration in minutes.
@@ -86,6 +87,7 @@ class PointCountLiveScreen extends ConsumerStatefulWidget {
   final double? inferenceRateOverride;
   final int? confidenceThresholdOverride;
   final String? speciesFilterModeOverride;
+  final double? sensitivityOverride;
 
   @override
   ConsumerState<PointCountLiveScreen> createState() =>
@@ -95,7 +97,7 @@ class PointCountLiveScreen extends ConsumerStatefulWidget {
 class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     with WidgetsBindingObserver {
   /// Remaining time in the countdown (updated every second).
-  late Duration _remaining;
+  late final ValueNotifier<Duration> _remainingNotifier;
 
   /// Periodic timer that ticks every second to update the countdown.
   Timer? _countdownTimer;
@@ -110,14 +112,26 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _remaining = Duration(minutes: widget.durationMinutes);
+    _remainingNotifier = ValueNotifier(
+      Duration(minutes: widget.durationMinutes),
+    );
 
     final controller = ref.read(liveControllerProvider);
     controller.onStateChanged = _onControllerStateChanged;
 
     // Start session after the first frame.
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _startSession();
+      if (mounted) {
+        // Reset previous session state post-frame to ensure blank screen on load and avoid build-phase modifications.
+        if (controller.state != LiveState.active &&
+            controller.state != LiveState.paused) {
+          controller.clearSessionState();
+          ref.read(sessionDetectionsProvider.notifier).state = const [];
+          ref.read(latestLiveDetectionsProvider.notifier).state = const [];
+          ref.read(currentSessionProvider.notifier).state = null;
+        }
+        _startSession();
+      }
     });
   }
 
@@ -163,12 +177,26 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         ref.read(confidenceThresholdProvider);
     final String filterMode =
         widget.speciesFilterModeOverride ?? ref.read(speciesFilterModeProvider);
+    final double sensitivity =
+        widget.sensitivityOverride ?? ref.read(sensitivityProvider);
     final recordingModeStr = ref.read(recordingModeProvider);
     final recordingMode = recordingModeFromString(recordingModeStr);
     final recordingFormat = ref.read(recordingFormatProvider);
     final geoThreshold = ref.read(geoThresholdProvider);
     final geoScores = await ref.read(geoScoresProvider.future);
     final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
+
+    double? startLat = widget.latitude;
+    double? startLon = widget.longitude;
+    if (startLat == null || startLon == null) {
+      try {
+        final loc = ref.read(currentLocationProvider).value;
+        if (loc != null) {
+          startLat = loc.latitude;
+          startLon = loc.longitude;
+        }
+      } catch (_) {}
+    }
 
     await controller.startSession(
       windowDuration: windowDuration,
@@ -182,20 +210,22 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       geoModelSpeciesNames: geoSpeciesNames,
       poolingWindows: ref.read(scorePoolingWindowsProvider),
       poolingMode: ref.read(scorePoolingProvider),
-      sensitivity: ref.read(sensitivityProvider),
+      sensitivity: sensitivity,
+      targetDurationSeconds: widget.durationMinutes * 60,
+      latitude: startLat,
+      longitude: startLon,
     );
 
     _started = true;
     _onControllerStateChanged();
 
     // Start the countdown.
-    _remaining = Duration(minutes: widget.durationMinutes);
+    _remainingNotifier.value = Duration(minutes: widget.durationMinutes);
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() {
-        _remaining -= const Duration(seconds: 1);
-      });
-      if (_remaining <= Duration.zero) {
+      final next = _remainingNotifier.value - const Duration(seconds: 1);
+      _remainingNotifier.value = next;
+      if (next <= Duration.zero) {
         _countdownTimer?.cancel();
         _onCountdownComplete();
       }
@@ -262,31 +292,22 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       final repo = ref.read(sessionRepositoryProvider);
       session.sessionNumber = await repo.nextSessionNumber(session.type);
 
-      // Capture location from setup (GPS, manual, or map-picked).
-      if (widget.latitude != null && widget.longitude != null) {
-        session.latitude = widget.latitude;
-        session.longitude = widget.longitude;
-      } else {
-        try {
-          final location = await ref.read(currentLocationProvider.future);
-          if (location != null) {
-            session.latitude = location.latitude;
-            session.longitude = location.longitude;
+      // Capture location from setup (GPS, manual, or map-picked) only if not already set.
+      if (session.latitude == null || session.longitude == null) {
+        if (widget.latitude != null && widget.longitude != null) {
+          session.latitude = widget.latitude;
+          session.longitude = widget.longitude;
+        } else {
+          try {
+            final location = await ref.read(currentLocationProvider.future);
+            if (location != null) {
+              session.latitude = location.latitude;
+              session.longitude = location.longitude;
+            }
+          } catch (_) {
+            // Location unavailable.
           }
-        } catch (_) {
-          // Location unavailable.
         }
-      }
-
-      if (session.latitude != null && session.longitude != null) {
-        try {
-          final svc = ref.read(weatherServiceProvider);
-          session.weather = await svc.fetch(
-            latitude: session.latitude!,
-            longitude: session.longitude!,
-            observedAt: session.endTime ?? DateTime.now(),
-          );
-        } catch (_) {}
       }
 
       await repo.save(session);
@@ -298,7 +319,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
           PageRouteBuilder<void>(
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
-            pageBuilder: (_, __, ___) => const SessionLibraryScreen(),
+            pageBuilder: (a, b, c) => const SessionLibraryScreen(),
           ),
         );
         navigator.push(
@@ -347,6 +368,15 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _countdownTimer?.cancel();
+    _remainingNotifier.dispose();
+
+    // Clear the state-change callback on the long-lived controller to avoid calling
+    // updates on a defunct/disposed widget state.
+    final controller = ref.read(liveControllerProvider);
+    if (controller.onStateChanged == _onControllerStateChanged) {
+      controller.onStateChanged = null;
+    }
+
     WakelockService.disable();
     super.dispose();
   }
@@ -358,7 +388,10 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final captureState = ref.watch(captureStateProvider);
     final isCapturing = captureState == CaptureState.capturing;
     final isActive = liveState == LiveState.active;
-    final detections = ref.watch(sessionDetectionsProvider);
+    final detections =
+        isActive
+            ? ref.watch(sessionDetectionsProvider)
+            : const <DetectionRecord>[];
 
     // Hot-apply tunable settings to the running point count: changes
     // made on the Settings screen mid-count are pushed straight to the
@@ -419,15 +452,23 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
-    final statusBar = _CountdownStatusBar(
-      remaining: _remaining,
-      totalDuration: Duration(minutes: widget.durationMinutes),
-      liveState: liveState,
-      onStop: _confirmStopEarly,
+    final statusBar = ValueListenableBuilder<Duration>(
+      valueListenable: _remainingNotifier,
+      builder:
+          (context, remaining, _) => _CountdownStatusBar(
+            remaining: remaining,
+            totalDuration: Duration(minutes: widget.durationMinutes),
+            liveState: liveState,
+            onStop: _confirmStopEarly,
+          ),
     );
-    final progressBar = _CountdownProgressBar(
-      remaining: _remaining,
-      totalDuration: Duration(minutes: widget.durationMinutes),
+    final progressBar = ValueListenableBuilder<Duration>(
+      valueListenable: _remainingNotifier,
+      builder:
+          (context, remaining, _) => _CountdownProgressBar(
+            remaining: remaining,
+            totalDuration: Duration(minutes: widget.durationMinutes),
+          ),
     );
     final spectrogram = Container(
       color: theme.colorScheme.surfaceContainerLowest,
@@ -530,7 +571,7 @@ class _CountdownStatusBar extends StatelessWidget {
         children: [
           // Stop button (replaces back arrow).
           IconButton(
-            icon: const Icon(Icons.stop_rounded, size: 22),
+            icon: const Icon(AppIcons.stopRounded, size: 22),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             onPressed: isActive ? onStop : () => Navigator.of(context).pop(),
@@ -567,7 +608,7 @@ class _CountdownStatusBar extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            Icons.timer_rounded,
+                            AppIcons.timerRounded,
                             size: 18,
                             color:
                                 remaining.inSeconds <= 30
@@ -593,7 +634,7 @@ class _CountdownStatusBar extends StatelessWidget {
 
           IconButton(
             icon: Icon(
-              Icons.help_outline_rounded,
+              AppIcons.helpOutlineRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -606,7 +647,7 @@ class _CountdownStatusBar extends StatelessWidget {
           // Settings gear.
           IconButton(
             icon: Icon(
-              Icons.tune_rounded,
+              AppIcons.tuneRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -642,15 +683,15 @@ void _showPointCountLiveHelp(BuildContext context) {
           title: l10n.pointCountLiveHelpTitle,
           sections: [
             AppHelpSection(
-              icon: Icons.timer_rounded,
+              icon: AppIcons.timerRounded,
               body: l10n.pointCountLiveHelpTimer,
             ),
             AppHelpSection(
-              icon: Icons.info_outline,
+              icon: AppIcons.infoOutline,
               body: l10n.pointCountLiveHelpDetections,
             ),
             AppHelpSection(
-              icon: Icons.stop_rounded,
+              icon: AppIcons.stopRounded,
               body: l10n.pointCountLiveHelpFinish,
             ),
           ],
@@ -736,7 +777,11 @@ class _PointCountInfoBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.info_outline, size: 14, color: theme.colorScheme.primary),
+          Icon(
+            AppIcons.infoOutline,
+            size: 14,
+            color: theme.colorScheme.primary,
+          ),
           const SizedBox(width: 4),
           Text(
             parts.join(' · '),
@@ -788,6 +833,7 @@ class _PointCountSpectrogram extends ConsumerWidget {
       maxDisplayFrequency: maxFreq,
       logAmplitude: logAmplitude,
       filterQuality: spectrogramFilterQualityFromString(quality),
+      quality: quality,
     );
   }
 }

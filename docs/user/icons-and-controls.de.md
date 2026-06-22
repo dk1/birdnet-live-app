@@ -6,13 +6,27 @@ Auf dieser Seite werden die wiederkehrenden Steuerelemente und Symbole erläuter
 
 | Kontrolle | Wo Sie es sehen | Was es tut |
 |---|---|---|
-| :material-tune: **Einstellungen** | Home-Fußzeile, Live, Punktezählung, Umfrage, Dateianalyse, Sitzungsrückblick | Öffnet Einstellungen. In den Modusbildschirmen werden die für den jeweiligen Arbeitsablauf relevantesten Einstellungen geöffnet. |
-| :material-magnify: **Erkunden** | Home-Fußzeile | Öffnet „Erkunden“. |
-| :material-music-box-multiple-outline: **Bibliothek** | Home-Fußzeile | Öffnet die Sitzungsbibliothek. |
-| :material-help-circle-outline: **Hilfe** | Startseite-Fußzeile, Kopfzeile „Erkunden“, Umfrage-Dashboard, Symbolleiste „Sitzungsüberprüfung“ | Öffnet die Hilfe oder ein bildschirmspezifisches Hilfeblatt. |
-| :material-information-outline: **Info / Über** | Home-Fußzeile, Infoleisten, Hilfeblätter | Zeigt allgemeine Informationen oder einen zusammenfassenden Kontext an. |
+| :material-tune: **Einstellungen** | Start-Fußzeile, Live, Punktezählung, Umfrage, Dateianalyse, Sitzungsrückblick | Öffnet Einstellungen. In den Modusbildschirmen werden die für den jeweiligen Arbeitsablauf relevantesten Einstellungen geöffnet. |
+| :material-magnify: **Erkunden** | Start-Fußzeile | Öffnet „Erkunden“. |
+| :material-music-box-multiple-outline: **Bibliothek** | Start-Fußzeile | Öffnet die Sitzungsbibliothek. |
+| :material-help-circle-outline: **Hilfe** | Start-Fußzeile, Kopfzeile „Erkunden“, Umfrage-Dashboard, Symbolleiste „Sitzungsüberprüfung“ | Öffnet die Hilfe oder ein bildschirmspezifisches Hilfeblatt. |
+| :material-information-outline: **Info / Über** | Start-Fußzeile, Infoleisten, Hilfeblätter | Zeigt allgemeine Informationen oder einen zusammenfassenden Kontext an. |
 | :material-arrow-left: **Zurück** | Live-Modus | Kehrt zum vorherigen Bildschirm zurück. |
-| :material-open-in-new: **Extern öffnen** | Über Bildschirm, Dokumentationslinks | Öffnet eine externe Seite, beispielsweise das Online-Benutzerhandbuch. |
+| :material-open-in-new: **Extern öffnen** | Über Bildschirm, Dokumentationslinks | Öffnet eine externe Seite, beispielsweise das Online-Benutzungshandbuch. |
+| :material-volunteer-activism: **Spenden** | Über-Bildschirm | Öffnet die BirdNET-Spendenseite. |
+
+## Wettersymbole
+
+| Symbol | Bedeutung |
+|---|---|
+| :material-wb-sunny: **Klar** | Klarer Himmel. |
+| :material-partly-cloudy-day: **Teilweise bewölkt** | Sonne und Wolke für überwiegend klare oder teilweise bewölkte Bedingungen. |
+| :material-cloudy: **Bedeckt** | Vollständige Bewölkung. |
+| :material-foggy: **Nebel** | Nebel oder gefrierender Nebel. |
+| :material-rainy-light: **Nieselregen** | Leichter Niederschlag. |
+| :material-rainy: **Regen** | Regen oder Regenschauer. |
+| :material-weather-snowy: **Schnee** | Schnee oder Schneeschauer. |
+| :material-thunderstorm: **Gewitter** | Gewitterbedingungen. |
 
 ## Start-, Stopp- und Sitzungssteuerung
 
@@ -66,9 +80,9 @@ Diese Steuerelemente werden auf dem Bildschirm „Sitzungsüberprüfung“ verwe
 
 Die Live-Infoleiste verwendet :material-information-outline: gefolgt von kompakten Beschriftungen wie:
 
-- „Jetzt“ – Erkennungen, die derzeit in der Live-Liste sichtbar sind
+- „Jetzt“ – Detektionen, die derzeit in der Live-Liste sichtbar sind
 - „spp“ – einzigartige Artenzahl
-- „det“ – Gesamtzahl der Erkennungen
+- „det“ – Gesamtzahl der Detektionen
 - Dauer und geschätzte Aufnahmegröße, wenn die Aufnahme aktiv ist
 
 ### Punkteanzahl
@@ -86,4 +100,4 @@ Das Umfrage-Dashboard verwendet:
 
 ## Im Zweifelsfall
 
-Wenn Sie nicht sicher sind, was ein Steuerelement bewirkt, öffnen Sie das nächstgelegene Hilfeblatt in der App oder sehen Sie sich die Workflow-Seite für diesen Bildschirm in diesem Benutzerhandbuch an.
+Wenn Sie nicht sicher sind, was ein Steuerelement bewirkt, öffnen Sie das nächstgelegene Hilfeblatt in der App oder sehen Sie sich die Workflow-Seite für diesen Bildschirm in diesem Benutzungshandbuch an.

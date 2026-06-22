@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/wakelock_service.dart';
 
 import '../../shared/providers/settings_providers.dart';
-import '../../shared/services/weather_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
@@ -55,9 +55,14 @@ class LiveScreen extends ConsumerStatefulWidget {
 class _LiveScreenState extends ConsumerState<LiveScreen>
     with WidgetsBindingObserver {
   bool _isStarting = false;
+  bool _finalizing = false;
   Timer? _sessionTimer;
   bool _durationWarningShown = false;
   bool _autoStartAttempted = false;
+
+  /// Cached reference to the long-lived controller so [dispose] can detach
+  /// its callback without touching [ref] after the widget is unmounted.
+  LiveController? _liveController;
 
   /// Duration after which a warning dialog is shown to the user.
   static const _warningDuration = Duration(minutes: 10);
@@ -69,13 +74,21 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     // Register the state change callback so the controller can trigger
     // rebuilds when detections arrive.
     final controller = ref.read(liveControllerProvider);
+    _liveController = controller;
     controller.onStateChanged = _onControllerStateChanged;
 
     // Eagerly load the model on first mount.
     // Deferred to post-frame so provider updates don't fire during build.
     if (controller.state == LiveState.idle) {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (mounted) controller.loadModel();
+      SchedulerBinding.instance.addPostFrameCallback((_) async {
+        if (mounted) {
+          controller.clearSessionState();
+          ref.read(sessionDetectionsProvider.notifier).state = const [];
+          ref.read(latestLiveDetectionsProvider.notifier).state = const [];
+          ref.read(currentSessionProvider.notifier).state = null;
+
+          await controller.loadModel();
+        }
       });
     } else {
       // Model was already loaded on a previous visit, so the controller is
@@ -85,7 +98,16 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       // auto-start path for the second/third/Nth Live screen visit. Defer
       // to post-frame so provider updates don't fire during build.
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _onControllerStateChanged();
+        if (mounted) {
+          if (controller.state != LiveState.active &&
+              controller.state != LiveState.paused) {
+            controller.clearSessionState();
+            ref.read(sessionDetectionsProvider.notifier).state = const [];
+            ref.read(latestLiveDetectionsProvider.notifier).state = const [];
+            ref.read(currentSessionProvider.notifier).state = null;
+          }
+          _onControllerStateChanged();
+        }
       });
     }
   }
@@ -195,6 +217,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       final geoSpeciesNames = await ref.read(
         geoModelSpeciesNamesProvider.future,
       );
+      // The geo-model futures can take seconds; the user may have left the
+      // Live screen in the meantime. Bail out before touching [ref] again so
+      // we never read providers on an unmounted widget.
+      if (!mounted) {
+        _isStarting = false;
+        return;
+      }
       if (useGps && mounted) {
         final svc = ref.read(locationServiceProvider);
         if (svc.lastFetchUsedCachedFallback) {
@@ -209,6 +238,16 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
             );
         }
       }
+
+      double? startLat;
+      double? startLon;
+      try {
+        final loc = ref.read(currentLocationProvider).value;
+        if (loc != null) {
+          startLat = loc.latitude;
+          startLon = loc.longitude;
+        }
+      } catch (_) {}
 
       // Start inference session.
       await controller.startSession(
@@ -226,6 +265,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         sensitivity: sensitivity,
         gainLinear: ref.read(audioGainProvider),
         highPassHz: ref.read(highPassFilterProvider).toDouble(),
+        latitude: startLat,
+        longitude: startLon,
       );
 
       _isStarting = false;
@@ -252,6 +293,16 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _sessionTimer?.cancel();
+
+    // Clear the state-change callback on the long-lived controller to avoid calling
+    // updates on a defunct/disposed widget state. Use the cached reference
+    // because reading [ref] during dispose is unsafe.
+    final controller = _liveController;
+    if (controller != null &&
+        controller.onStateChanged == _onControllerStateChanged) {
+      controller.onStateChanged = null;
+    }
+
     // Ensure screen lock is released when leaving the live screen.
     WakelockService.disable();
     super.dispose();
@@ -343,6 +394,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
   /// Finalize and save the session when leaving the live screen.
   Future<void> _finalizeAndReview() async {
+    if (_finalizing) return;
+    _finalizing = true;
     _sessionTimer?.cancel();
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
@@ -362,28 +415,17 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       final repo = ref.read(sessionRepositoryProvider);
       session.sessionNumber = await repo.nextSessionNumber(session.type);
 
-      // Capture recording location (best effort — null if unavailable).
-      try {
-        final location = await ref.read(currentLocationProvider.future);
-        if (location != null) {
-          session.latitude = location.latitude;
-          session.longitude = location.longitude;
-        }
-      } catch (_) {
-        // Location unavailable — leave fields null.
-      }
-
-      // Best-effort weather snapshot (gated by privacy toggle, 8 s
-      // timeout, never blocks save on failure).
-      if (session.latitude != null && session.longitude != null) {
+      // Capture recording location (best effort — null if unavailable) if not already set.
+      if (session.latitude == null || session.longitude == null) {
         try {
-          final svc = ref.read(weatherServiceProvider);
-          session.weather = await svc.fetch(
-            latitude: session.latitude!,
-            longitude: session.longitude!,
-            observedAt: session.endTime ?? DateTime.now(),
-          );
-        } catch (_) {}
+          final location = await ref.read(currentLocationProvider.future);
+          if (location != null) {
+            session.latitude = location.latitude;
+            session.longitude = location.longitude;
+          }
+        } catch (_) {
+          // Location unavailable — leave fields null.
+        }
       }
 
       // Persist completed session.
@@ -400,7 +442,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
           PageRouteBuilder<void>(
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
-            pageBuilder: (_, __, ___) => const SessionLibraryScreen(),
+            pageBuilder: (a, b, c) => const SessionLibraryScreen(),
           ),
         );
         navigator.push(
@@ -422,7 +464,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final isCapturing = captureState == CaptureState.capturing;
     final isActive = liveState == LiveState.active;
     final isPaused = liveState == LiveState.paused;
-    final detections = ref.watch(sessionDetectionsProvider);
+    final detections =
+        (isActive || isPaused)
+            ? ref.watch(sessionDetectionsProvider)
+            : const <DetectionRecord>[];
 
     // Hot-apply tunable settings to the running session: when the user
     // tweaks the confidence threshold or pooling window count from the
@@ -518,6 +563,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         child: DetectionList(
           detections: detections,
           isActive: isActive || isPaused,
+          showTips: true,
           onDetectionTap: (detection) {
             SpeciesInfoOverlay.show(
               context,
@@ -618,7 +664,7 @@ class _CompactStatusBar extends StatelessWidget {
         children: [
           // Back button.
           IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, size: 22),
+            icon: const Icon(AppIcons.arrowBackRounded, size: 22),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             onPressed: () => Navigator.of(context).maybePop(),
@@ -639,7 +685,7 @@ class _CompactStatusBar extends StatelessWidget {
 
           IconButton(
             icon: Icon(
-              Icons.help_outline_rounded,
+              AppIcons.helpOutlineRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -652,7 +698,7 @@ class _CompactStatusBar extends StatelessWidget {
           // Settings gear.
           IconButton(
             icon: Icon(
-              Icons.tune_rounded,
+              AppIcons.tuneRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -687,17 +733,20 @@ void _showLiveHelp(BuildContext context) {
         (_) => AppHelpBottomSheet(
           title: l10n.liveScreenHelpTitle,
           sections: [
-            AppHelpSection(icon: Icons.mic, body: l10n.liveScreenHelpOverview),
             AppHelpSection(
-              icon: Icons.help_outline_rounded,
+              icon: AppIcons.mic,
+              body: l10n.liveScreenHelpOverview,
+            ),
+            AppHelpSection(
+              icon: AppIcons.helpOutlineRounded,
               body: l10n.liveScreenHelpControls,
             ),
             AppHelpSection(
-              icon: Icons.info_outline,
+              icon: AppIcons.infoOutline,
               body: l10n.liveScreenHelpInfoBar,
             ),
             AppHelpSection(
-              icon: Icons.library_music_outlined,
+              icon: AppIcons.libraryMusic,
               body: l10n.liveScreenHelpDetections,
             ),
           ],
@@ -732,17 +781,17 @@ class _CaptureButton extends StatelessWidget {
 
     if (isActive) {
       bgColor = theme.colorScheme.error;
-      icon = Icons.stop_rounded;
+      icon = AppIcons.stopRounded;
       iconColor = theme.colorScheme.onError;
       semanticsLabel = l10n.a11yLiveCaptureStop;
     } else if (isPaused) {
       bgColor = theme.colorScheme.primary;
-      icon = Icons.play_arrow_rounded;
+      icon = AppIcons.playArrowRounded;
       iconColor = theme.colorScheme.onPrimary;
       semanticsLabel = l10n.a11yLiveCaptureResume;
     } else {
       bgColor = theme.colorScheme.primary;
-      icon = Icons.mic;
+      icon = AppIcons.mic;
       iconColor = theme.colorScheme.onPrimary;
       semanticsLabel = l10n.a11yLiveCaptureStart;
     }
@@ -808,7 +857,7 @@ class _StatusBanner extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons.error_outline,
+            AppIcons.errorOutline,
             size: 16,
             color: theme.colorScheme.onErrorContainer,
           ),
@@ -914,7 +963,7 @@ class _SessionInfoBar extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.info_outline,
+                AppIcons.infoOutline,
                 size: 14,
                 color: theme.colorScheme.primary,
               ),
@@ -1012,19 +1061,22 @@ class _LiveSpectrogram extends ConsumerWidget {
     final logAmplitude = ref.watch(logAmplitudeProvider);
     final quality = ref.watch(spectrogramQualityProvider);
 
-    return SpectrogramWidget(
-      ringBuffer: ringBuffer,
-      isActive: isCapturing,
-      fftSize: fftSize,
-      colorMapName: colorMap,
-      dbFloor: dbFloor,
-      dbCeiling: dbCeiling,
-      maxColumns: maxColumns,
-      showFrequencyAxis: false,
-      showTimeAxis: false,
-      maxDisplayFrequency: maxFreq,
-      logAmplitude: logAmplitude,
-      filterQuality: spectrogramFilterQualityFromString(quality),
+    return ExcludeSemantics(
+      child: SpectrogramWidget(
+        ringBuffer: ringBuffer,
+        isActive: isCapturing,
+        fftSize: fftSize,
+        colorMapName: colorMap,
+        dbFloor: dbFloor,
+        dbCeiling: dbCeiling,
+        maxColumns: maxColumns,
+        showFrequencyAxis: false,
+        showTimeAxis: false,
+        maxDisplayFrequency: maxFreq,
+        logAmplitude: logAmplitude,
+        filterQuality: spectrogramFilterQualityFromString(quality),
+        quality: quality,
+      ),
     );
   }
 }

@@ -24,16 +24,17 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../core/theme/score_colors.dart';
 import '../../shared/providers/settings_providers.dart';
-import '../../shared/services/weather_service.dart';
+import '../../shared/utils/app_icons.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
+import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../audio/ring_buffer.dart';
 import '../explore/explore_providers.dart';
+import '../explore/explore_screen.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
@@ -90,7 +91,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   bool _started = false;
   bool _finalizing = false;
   bool _stopDialogShowing = false;
-  Timer? _uiUpdateTimer;
   StreamSubscription<bool>? _micContestedSub;
   late final TabController _tabController;
   late final SurveyController _surveyController;
@@ -98,7 +98,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
     WidgetsBinding.instance.addObserver(this);
 
     _surveyController = ref.read(surveyControllerProvider);
@@ -155,9 +158,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
+    const lifetime = Duration(seconds: 4);
+    final snackBarController = messenger.showSnackBar(
       SnackBar(
         content: Text(l10n.sessionDetectionRemoved),
+        duration: lifetime,
         action: SnackBarAction(
           label: l10n.sessionUndo,
           onPressed: () {
@@ -170,6 +175,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         ),
       ),
     );
+    Future.delayed(lifetime, () {
+      try {
+        snackBarController.close();
+      } catch (_) {}
+    });
   }
 
   /// Open the species picker and, on confirm, log a manual observation.
@@ -239,12 +249,12 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.add_circle_outline),
+                  leading: const Icon(AppIcons.addCircleOutline),
                   title: Text(l10n.sessionAddSpecies),
                   onTap: () => Navigator.of(ctx).pop('species'),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.note_add_outlined),
+                  leading: const Icon(AppIcons.noteAdd),
                   title: Text(l10n.sessionAddAnnotationOption),
                   onTap: () => Navigator.of(ctx).pop('annotation'),
                 ),
@@ -451,7 +461,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   /// *after* survey start).
   String Function(String, String) _buildNameLocalizer() {
     return (sciName, fallback) {
-      final taxonomy = ref.read(taxonomyServiceProvider).valueOrNull;
+      final taxonomy = ref.read(taxonomyServiceProvider).value;
       final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
       return taxonomy?.lookup(sciName)?.commonNameForLocale(speciesLocale) ??
           fallback;
@@ -476,7 +486,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         content: Row(
           children: [
             Icon(
-              Icons.notifications_active_rounded,
+              AppIcons.notificationsActiveRounded,
               color: Theme.of(context).colorScheme.onInverseSurface,
               size: 18,
             ),
@@ -494,6 +504,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     if (_started) return;
     final controller = ref.read(surveyControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
+    final captureService = ref.read(audioCaptureServiceProvider);
     final deviceId = ref.read(selectedDeviceProvider);
     // Capture localizations now — the rest of this method awaits multiple
     // futures and we want to wire foreground-notification strings without
@@ -501,12 +512,19 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final l10n = AppLocalizations.of(context)!;
 
     // Apply user-tunable DSP (gain + high-pass) before capture starts.
-    final captureService = ref.read(audioCaptureServiceProvider);
     captureService.setGain(ref.read(audioGainProvider));
     captureService.setHighPassCutoff(ref.read(highPassFilterProvider));
 
     // Start audio capture.
     await captureNotifier.start(deviceId: deviceId);
+    if (captureService.state != CaptureState.capturing) {
+      _showStartError(
+        captureService.lastError == 'Microphone permission not granted'
+            ? l10n.errorMicrophoneRequired
+            : captureService.lastError ?? l10n.statusError,
+      );
+      return;
+    }
 
     // Read settings.
     final windowDuration = ref.read(windowDurationProvider);
@@ -601,13 +619,24 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       );
     }
 
+    if (controller.state == SurveyState.error) {
+      await captureNotifier.stop();
+      _showStartError(controller.errorMessage ?? l10n.statusError);
+      _onControllerStateChanged();
+      return;
+    }
+
     _started = true;
     _onControllerStateChanged();
+  }
 
-    // Update UI periodically (elapsed time, stats).
-    _uiUpdateTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
-    });
+  void _showStartError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 4)),
+      );
   }
 
   Future<void> _confirmStop() async {
@@ -636,7 +665,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   Future<void> _finalizeAndReview() async {
     if (_finalizing) return;
     _finalizing = true;
-    _uiUpdateTimer?.cancel();
 
     try {
       final controller = ref.read(surveyControllerProvider);
@@ -649,16 +677,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       if (session != null && mounted) {
         final repo = ref.read(sessionRepositoryProvider);
         session.sessionNumber = await repo.nextSessionNumber(session.type);
-        if (session.latitude != null && session.longitude != null) {
-          try {
-            final svc = ref.read(weatherServiceProvider);
-            session.weather = await svc.fetch(
-              latitude: session.latitude!,
-              longitude: session.longitude!,
-              observedAt: session.endTime ?? DateTime.now(),
-            );
-          } catch (_) {}
-        }
         await repo.save(session);
         ref.invalidate(sessionListProvider);
 
@@ -668,7 +686,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
             PageRouteBuilder<void>(
               transitionDuration: Duration.zero,
               reverseTransitionDuration: Duration.zero,
-              pageBuilder: (_, __, ___) => const SessionLibraryScreen(),
+              pageBuilder: (a, b, c) => const SessionLibraryScreen(),
             ),
           );
           navigator.push(
@@ -693,11 +711,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       }
     } finally {
       _finalizing = false;
-      if (mounted) {
-        _uiUpdateTimer ??= Timer.periodic(const Duration(seconds: 1), (_) {
-          if (mounted) setState(() {});
-        });
-      }
     }
   }
 
@@ -720,7 +733,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     WidgetsBinding.instance.removeObserver(this);
     FlutterForegroundTask.removeTaskDataCallback(_onNotificationData);
     _micContestedSub?.cancel();
-    _uiUpdateTimer?.cancel();
     _tabController.dispose();
     super.dispose();
   }
@@ -728,6 +740,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   @override
   Widget build(BuildContext context) {
     final surveyState = ref.watch(surveyStateProvider);
+    // The active survey session is mutated in place, so watching the
+    // per-cycle live detections provides a reliable rebuild signal for the
+    // map/list shell even when the session object identity stays unchanged.
+    final _ = ref.watch(surveyDetectionsProvider);
     final session = ref.watch(surveySessionProvider);
     final controller = ref.read(surveyControllerProvider);
     final ringBuffer = ref.read(ringBufferProvider);
@@ -790,7 +806,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                 ? FloatingActionButton.small(
                   onPressed: _showAddMenu,
                   tooltip: l10n.surveyAddMenuTitle,
-                  child: const Icon(Icons.add),
+                  child: const Icon(AppIcons.add),
                 )
                 : null,
       ),
@@ -810,7 +826,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     final statusBar = _SurveyStatusBar(
-      elapsed: controller.elapsed,
       isActive: isActive,
       alertMode: AlertMode.fromPrefValue(ref.watch(surveyAlertModeProvider)),
       onStop: _confirmStop,
@@ -818,17 +833,18 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final tabBar = TabBar(
       controller: _tabController,
       tabs: [
+        Tab(icon: const Icon(AppIcons.map, size: 18), text: l10n.surveyTabMap),
         Tab(
-          icon: const Icon(Icons.map_outlined, size: 18),
-          text: l10n.surveyTabMap,
-        ),
-        Tab(
-          icon: const Icon(Icons.graphic_eq, size: 18),
+          icon: const Icon(AppIcons.graphicEq, size: 18),
           text: l10n.surveyTabSpectrogram,
         ),
         Tab(
-          icon: Icon(MdiIcons.chartBar, size: 18),
+          icon: Icon(AppIcons.summaryChart, size: 18),
           text: l10n.surveyTabSummary,
+        ),
+        Tab(
+          icon: const Icon(AppIcons.search, size: 18),
+          text: l10n.exploreTitle,
         ),
       ],
       labelPadding: const EdgeInsets.symmetric(horizontal: 8),
@@ -837,6 +853,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     );
     final tabContent = TabBarView(
       controller: _tabController,
+      physics: const NeverScrollableScrollPhysics(),
       children: [
         SurveyMapWidget(
           gpsTrack: controller.gpsTracker?.track ?? [],
@@ -862,15 +879,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         ),
         _SurveySpectrogram(ringBuffer: ringBuffer, isActive: isActive),
         _SurveySummaryTab(session: session),
+        const ExploreScreen(isEmbedded: true),
       ],
     );
-    final statsBar = SurveyStatsBar(
-      distanceMeters: controller.gpsTracker?.distanceMeters ?? 0,
-      detectionCount: session?.detections.length ?? 0,
-      speciesCount: session?.uniqueSpeciesCount ?? 0,
-      audioLevel: ringBuffer.rmsLevel(),
-      peakLevel: ringBuffer.peakLevel(),
-    );
+    final statsBar = _LiveSurveyStatsBar(isActive: isActive);
     final detectionList = Padding(
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
       child: ClipRRect(
@@ -907,6 +919,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       ),
     );
 
+    final showFullPageTab =
+        _tabController.index == 2 || _tabController.index == 3;
+
     if (isLandscape) {
       return Column(
         children: [
@@ -918,11 +933,15 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                 Expanded(
                   flex: 1,
                   child: Column(
-                    children: [tabBar, Expanded(child: tabContent), statsBar],
+                    children: [
+                      tabBar,
+                      Expanded(child: tabContent),
+                      if (!showFullPageTab) statsBar,
+                    ],
                   ),
                 ),
                 // Right: detection list
-                Expanded(flex: 1, child: detectionList),
+                if (!showFullPageTab) Expanded(flex: 1, child: detectionList),
               ],
             ),
           ),
@@ -936,9 +955,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       children: [
         statusBar,
         tabBar,
-        Expanded(flex: 2, child: tabContent),
-        statsBar,
-        Expanded(flex: 3, child: detectionList),
+        Expanded(flex: showFullPageTab ? 1 : 2, child: tabContent),
+        if (!showFullPageTab) ...[
+          statsBar,
+          Expanded(flex: 3, child: detectionList),
+        ],
         const SizedBox(height: 16),
       ],
     );
@@ -949,27 +970,73 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 // Survey App Bar
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _SurveyStatusBar extends StatelessWidget {
+class _SurveyStatusBar extends ConsumerStatefulWidget {
   const _SurveyStatusBar({
-    required this.elapsed,
     required this.isActive,
     required this.alertMode,
     required this.onStop,
   });
 
-  final Duration elapsed;
   final bool isActive;
   final AlertMode alertMode;
   final VoidCallback onStop;
+
+  @override
+  ConsumerState<_SurveyStatusBar> createState() => _SurveyStatusBarState();
+}
+
+class _SurveyStatusBarState extends ConsumerState<_SurveyStatusBar> {
+  Timer? _timer;
+  Duration _elapsed = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _elapsed = ref.read(surveyControllerProvider).elapsed;
+    if (widget.isActive) {
+      _startTimer();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _SurveyStatusBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && _timer == null) {
+      _startTimer();
+    } else if (!widget.isActive && _timer != null) {
+      _stopTimer();
+    }
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {
+          _elapsed = ref.read(surveyControllerProvider).elapsed;
+        });
+      }
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  @override
+  void dispose() {
+    _stopTimer();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    final hours = elapsed.inHours.toString().padLeft(2, '0');
-    final minutes = (elapsed.inMinutes % 60).toString().padLeft(2, '0');
-    final seconds = (elapsed.inSeconds % 60).toString().padLeft(2, '0');
+    final hours = _elapsed.inHours.toString().padLeft(2, '0');
+    final minutes = (_elapsed.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (_elapsed.inSeconds % 60).toString().padLeft(2, '0');
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
@@ -977,12 +1044,15 @@ class _SurveyStatusBar extends StatelessWidget {
         children: [
           // Stop button (matches point count).
           IconButton(
-            icon: const Icon(Icons.stop_rounded, size: 22),
+            icon: const Icon(AppIcons.stopRounded, size: 22),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-            onPressed: isActive ? onStop : () => Navigator.of(context).pop(),
+            onPressed:
+                widget.isActive
+                    ? widget.onStop
+                    : () => Navigator.of(context).pop(),
             tooltip: l10n.surveyStop,
-            color: isActive ? theme.colorScheme.error : null,
+            color: widget.isActive ? theme.colorScheme.error : null,
           ),
 
           // Elapsed timer (center).
@@ -992,7 +1062,7 @@ class _SurveyStatusBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.timer_rounded,
+                    AppIcons.timerRounded,
                     size: 18,
                     color: theme.colorScheme.primary,
                   ),
@@ -1013,7 +1083,7 @@ class _SurveyStatusBar extends StatelessWidget {
           // Help button.
           IconButton(
             icon: Icon(
-              Icons.help_outline_rounded,
+              AppIcons.helpOutlineRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -1024,13 +1094,13 @@ class _SurveyStatusBar extends StatelessWidget {
           ),
 
           // Alert mode indicator.
-          if (alertMode != AlertMode.off)
+          if (widget.alertMode != AlertMode.off)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Tooltip(
                 message: l10n.surveyAlertsTitle,
                 child: Icon(
-                  Icons.notifications_active_rounded,
+                  AppIcons.notificationsActiveRounded,
                   size: 18,
                   color: theme.colorScheme.primary,
                 ),
@@ -1040,7 +1110,7 @@ class _SurveyStatusBar extends StatelessWidget {
           // Settings gear (matches point count).
           IconButton(
             icon: Icon(
-              Icons.tune_rounded,
+              AppIcons.tuneRounded,
               size: 20,
               color: theme.colorScheme.onSurface.withAlpha(180),
             ),
@@ -1060,6 +1130,74 @@ class _SurveyStatusBar extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Survey Live Stats Bar Wrapper
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _LiveSurveyStatsBar extends ConsumerStatefulWidget {
+  const _LiveSurveyStatsBar({required this.isActive});
+
+  final bool isActive;
+
+  @override
+  ConsumerState<_LiveSurveyStatsBar> createState() =>
+      _LiveSurveyStatsBarState();
+}
+
+class _LiveSurveyStatsBarState extends ConsumerState<_LiveSurveyStatsBar> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isActive) {
+      _startTimer();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _LiveSurveyStatsBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && _timer == null) {
+      _startTimer();
+    } else if (!widget.isActive && _timer != null) {
+      _stopTimer();
+    }
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  @override
+  void dispose() {
+    _stopTimer();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = ref.read(surveyControllerProvider);
+    final session = ref.watch(surveySessionProvider);
+    final ringBuffer = ref.read(ringBufferProvider);
+
+    return SurveyStatsBar(
+      distanceMeters: controller.gpsTracker?.distanceMeters ?? 0,
+      detectionCount: session?.detections.length ?? 0,
+      speciesCount: session?.uniqueSpeciesCount ?? 0,
+      audioLevel: ringBuffer.rmsLevel(),
+      peakLevel: ringBuffer.peakLevel(),
     );
   }
 }
@@ -1102,6 +1240,7 @@ class _SurveySpectrogram extends ConsumerWidget {
       maxDisplayFrequency: maxFreq,
       logAmplitude: logAmplitude,
       filterQuality: spectrogramFilterQualityFromString(quality),
+      quality: quality,
     );
   }
 }
@@ -1120,7 +1259,7 @@ class _SurveySummaryTab extends ConsumerWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
-    final taxonomy = ref.watch(taxonomyServiceProvider).valueOrNull;
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
     final showSciNames = ref.watch(showSciNamesProvider);
 
     if (session == null) {
@@ -1345,17 +1484,17 @@ class _SurveyLiveHelpSheet extends StatelessWidget {
       title: l10n.surveyLiveHelpTitle,
       sections: [
         AppHelpSection(
-          icon: Icons.info_outline,
+          icon: AppIcons.infoOutline,
           body: l10n.surveyLiveHelpOverview,
         ),
         AppHelpSection(
-          icon: Icons.help_outline_rounded,
+          icon: AppIcons.helpOutlineRounded,
           body: l10n.surveyLiveHelpTopBar,
         ),
-        AppHelpSection(icon: Icons.map_outlined, body: l10n.surveyLiveHelpTabs),
-        AppHelpSection(icon: Icons.mic, body: l10n.surveyLiveHelpSignal),
+        AppHelpSection(icon: AppIcons.map, body: l10n.surveyLiveHelpTabs),
+        AppHelpSection(icon: AppIcons.mic, body: l10n.surveyLiveHelpSignal),
         AppHelpSection(
-          icon: MdiIcons.feather,
+          icon: AppIcons.species,
           body: l10n.surveyLiveHelpDetections,
         ),
       ],

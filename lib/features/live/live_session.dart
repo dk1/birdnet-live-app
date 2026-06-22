@@ -18,6 +18,7 @@ import 'package:intl/intl.dart';
 import '../../shared/models/weather_snapshot.dart';
 
 import '../../shared/models/gps_point.dart';
+import '../aru/aru_schedule.dart';
 import '../inference/models/detection.dart';
 import '../inference/models/species.dart';
 
@@ -42,6 +43,15 @@ class SessionSettings {
     this.poolingWindows,
     this.gainLinear,
     this.highPassHz,
+    this.recordingMode,
+    this.recordingFormat,
+    this.detectionSamplingMode,
+    this.topNPerSpecies,
+    this.gpsIntervalSeconds,
+    this.maxDurationHours,
+    this.targetDurationSeconds,
+    this.autoStopBatteryPercent,
+    this.backgroundGps,
   });
 
   /// Window duration in seconds.
@@ -122,6 +132,33 @@ class SessionSettings {
   /// High-pass filter cutoff in Hz (0 disables the filter).
   final double? highPassHz;
 
+  /// Recording behavior applied for this session (`full`, `detections`, `off`).
+  final String? recordingMode;
+
+  /// Recording container/codec format applied for this session (`flac`, `wav`).
+  final String? recordingFormat;
+
+  /// Detection retention/sampling mode applied by survey-like workflows.
+  final String? detectionSamplingMode;
+
+  /// Per-species retention cap when [detectionSamplingMode] uses Top N/Smart.
+  final int? topNPerSpecies;
+
+  /// GPS sampling interval applied by Survey Mode.
+  final int? gpsIntervalSeconds;
+
+  /// Maximum survey duration applied by Survey Mode.
+  final int? maxDurationHours;
+
+  /// Target protocol duration applied by timer-based sessions.
+  final int? targetDurationSeconds;
+
+  /// Battery percentage threshold applied by Survey Mode (`0` disables).
+  final int? autoStopBatteryPercent;
+
+  /// Whether Survey Mode used background GPS tracking.
+  final bool? backgroundGps;
+
   /// Deserialize from JSON.
   factory SessionSettings.fromJson(Map<String, dynamic> json) {
     return SessionSettings(
@@ -145,6 +182,15 @@ class SessionSettings {
       poolingWindows: (json['poolingWindows'] as num?)?.toInt(),
       gainLinear: (json['gainLinear'] as num?)?.toDouble(),
       highPassHz: (json['highPassHz'] as num?)?.toDouble(),
+      recordingMode: json['recordingMode'] as String?,
+      recordingFormat: json['recordingFormat'] as String?,
+      detectionSamplingMode: json['detectionSamplingMode'] as String?,
+      topNPerSpecies: (json['topNPerSpecies'] as num?)?.toInt(),
+      gpsIntervalSeconds: (json['gpsIntervalSeconds'] as num?)?.toInt(),
+      maxDurationHours: (json['maxDurationHours'] as num?)?.toInt(),
+      targetDurationSeconds: (json['targetDurationSeconds'] as num?)?.toInt(),
+      autoStopBatteryPercent: (json['autoStopBatteryPercent'] as num?)?.toInt(),
+      backgroundGps: json['backgroundGps'] as bool?,
     );
   }
 
@@ -168,6 +214,18 @@ class SessionSettings {
     if (poolingWindows != null) 'poolingWindows': poolingWindows,
     if (gainLinear != null) 'gainLinear': gainLinear,
     if (highPassHz != null) 'highPassHz': highPassHz,
+    if (recordingMode != null) 'recordingMode': recordingMode,
+    if (recordingFormat != null) 'recordingFormat': recordingFormat,
+    if (detectionSamplingMode != null)
+      'detectionSamplingMode': detectionSamplingMode,
+    if (topNPerSpecies != null) 'topNPerSpecies': topNPerSpecies,
+    if (gpsIntervalSeconds != null) 'gpsIntervalSeconds': gpsIntervalSeconds,
+    if (maxDurationHours != null) 'maxDurationHours': maxDurationHours,
+    if (targetDurationSeconds != null)
+      'targetDurationSeconds': targetDurationSeconds,
+    if (autoStopBatteryPercent != null)
+      'autoStopBatteryPercent': autoStopBatteryPercent,
+    if (backgroundGps != null) 'backgroundGps': backgroundGps,
   };
 }
 
@@ -184,6 +242,12 @@ enum SessionType {
 
   /// Background survey session with GPS tracking.
   survey,
+
+  /// Bulk processing of audio files.
+  batchAnalysis,
+
+  /// Autonomous Recording Unit mode.
+  aru,
 }
 
 /// Why a session ended.
@@ -468,6 +532,219 @@ class SessionAnnotation {
   };
 }
 
+/// Status of an ARU recording cycle.
+enum AruCycleStatus {
+  /// Planned but not reached yet.
+  scheduled,
+
+  /// Currently recording.
+  recording,
+
+  /// Completed normally.
+  completed,
+
+  /// Partially recorded before a stop, crash, or deployment end.
+  partial,
+
+  /// Stopped by the user or an expected guard such as low battery/storage.
+  stopped,
+
+  /// Skipped without recording because the battery was below the pause
+  /// threshold for the whole cycle window (see ARU low-battery pause/resume).
+  skipped,
+}
+
+/// Persisted metadata for one ARU cycle.
+class AruCycleMetadata {
+  const AruCycleMetadata({
+    required this.index,
+    required this.plannedStart,
+    required this.plannedEnd,
+    this.actualStart,
+    this.actualEnd,
+    this.status = AruCycleStatus.scheduled,
+    this.recordingPath,
+    this.detectionCount = 0,
+    this.retainedClipCount = 0,
+    this.droppedClipCount = 0,
+    this.note,
+  });
+
+  final int index;
+  final DateTime plannedStart;
+  final DateTime plannedEnd;
+  final DateTime? actualStart;
+  final DateTime? actualEnd;
+  final AruCycleStatus status;
+  final String? recordingPath;
+  final int detectionCount;
+  final int retainedClipCount;
+  final int droppedClipCount;
+  final String? note;
+
+  factory AruCycleMetadata.fromJson(Map<String, dynamic> json) {
+    return AruCycleMetadata(
+      index: (json['index'] as num).toInt(),
+      plannedStart: DateTime.parse(json['plannedStart'] as String),
+      plannedEnd: DateTime.parse(json['plannedEnd'] as String),
+      actualStart:
+          json['actualStart'] != null
+              ? DateTime.parse(json['actualStart'] as String)
+              : null,
+      actualEnd:
+          json['actualEnd'] != null
+              ? DateTime.parse(json['actualEnd'] as String)
+              : null,
+      status: AruCycleStatus.values.firstWhere(
+        (s) => s.name == (json['status'] as String?),
+        orElse: () => AruCycleStatus.scheduled,
+      ),
+      recordingPath: json['recordingPath'] as String?,
+      detectionCount: (json['detectionCount'] as num?)?.toInt() ?? 0,
+      retainedClipCount: (json['retainedClipCount'] as num?)?.toInt() ?? 0,
+      droppedClipCount: (json['droppedClipCount'] as num?)?.toInt() ?? 0,
+      note: json['note'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'index': index,
+    'plannedStart': plannedStart.toUtc().toIso8601String(),
+    'plannedEnd': plannedEnd.toUtc().toIso8601String(),
+    if (actualStart != null)
+      'actualStart': actualStart!.toUtc().toIso8601String(),
+    if (actualEnd != null) 'actualEnd': actualEnd!.toUtc().toIso8601String(),
+    if (status != AruCycleStatus.scheduled) 'status': status.name,
+    if (recordingPath != null) 'recordingPath': recordingPath,
+    if (detectionCount > 0) 'detectionCount': detectionCount,
+    if (retainedClipCount > 0) 'retainedClipCount': retainedClipCount,
+    if (droppedClipCount > 0) 'droppedClipCount': droppedClipCount,
+    if (note != null && note!.trim().isNotEmpty) 'note': note,
+  };
+}
+
+/// Persisted metadata for an ARU deployment session.
+class AruDeploymentMetadata {
+  AruDeploymentMetadata({
+    required this.scheduleStart,
+    required this.cycleDurationSeconds,
+    required this.repeatIntervalSeconds,
+    this.deploymentName,
+    this.stationId,
+    this.scheduleEnd,
+    this.maxCycles,
+    this.lowBatteryStopPercent,
+    this.lowBatteryResumePercent,
+    this.dielPattern = AruDielPattern.anyTime,
+    this.latitude,
+    this.longitude,
+    this.recordingMode = 'full',
+    this.recordingFormat = 'flac',
+    this.samplingMode = 'smart',
+    this.topNPerSpecies = 10,
+    this.testCycleEnabled = false,
+    required this.eachCycleIsSession,
+    List<AruCycleMetadata>? cycles,
+  }) : cycles = cycles ?? [];
+
+  final String? deploymentName;
+  final String? stationId;
+  final DateTime scheduleStart;
+  final int cycleDurationSeconds;
+  final int repeatIntervalSeconds;
+  final DateTime? scheduleEnd;
+  final int? maxCycles;
+  final int? lowBatteryStopPercent;
+  final int? lowBatteryResumePercent;
+  final AruDielPattern dielPattern;
+  final double? latitude;
+  final double? longitude;
+  final String recordingMode;
+  final String recordingFormat;
+  final String samplingMode;
+  final int topNPerSpecies;
+  final bool testCycleEnabled;
+  final bool eachCycleIsSession;
+  final List<AruCycleMetadata> cycles;
+
+  AruScheduleConfig toScheduleConfig() {
+    return AruScheduleConfig(
+      startTime: scheduleStart,
+      cycleDuration: Duration(seconds: cycleDurationSeconds),
+      repeatInterval: Duration(seconds: repeatIntervalSeconds),
+      endTime: scheduleEnd,
+      maxCycles: maxCycles,
+      lowBatteryStopPercent: lowBatteryStopPercent,
+      dielPattern: dielPattern,
+      testCycleEnabled: testCycleEnabled,
+      latitude: latitude,
+      longitude: longitude,
+    );
+  }
+
+  factory AruDeploymentMetadata.fromJson(Map<String, dynamic> json) {
+    return AruDeploymentMetadata(
+      deploymentName: json['deploymentName'] as String?,
+      stationId: json['stationId'] as String?,
+      scheduleStart: DateTime.parse(json['scheduleStart'] as String),
+      cycleDurationSeconds: (json['cycleDurationSeconds'] as num).toInt(),
+      repeatIntervalSeconds: (json['repeatIntervalSeconds'] as num).toInt(),
+      scheduleEnd:
+          json['scheduleEnd'] != null
+              ? DateTime.parse(json['scheduleEnd'] as String)
+              : null,
+      maxCycles: (json['maxCycles'] as num?)?.toInt(),
+      lowBatteryStopPercent: (json['lowBatteryStopPercent'] as num?)?.toInt(),
+      lowBatteryResumePercent:
+          (json['lowBatteryResumePercent'] as num?)?.toInt(),
+      dielPattern: AruDielPattern.values.firstWhere(
+        (p) => p.name == (json['dielPattern'] as String?),
+        orElse: () => AruDielPattern.anyTime,
+      ),
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      recordingMode: json['recordingMode'] as String? ?? 'full',
+      recordingFormat: json['recordingFormat'] as String? ?? 'flac',
+      samplingMode: json['samplingMode'] as String? ?? 'smart',
+      topNPerSpecies: (json['topNPerSpecies'] as num?)?.toInt() ?? 10,
+      testCycleEnabled: json['testCycleEnabled'] as bool? ?? false,
+      eachCycleIsSession: json['eachCycleIsSession'] as bool? ?? false,
+      cycles:
+          (json['cycles'] as List<dynamic>?)
+              ?.map((c) => AruCycleMetadata.fromJson(c as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    if (deploymentName != null && deploymentName!.trim().isNotEmpty)
+      'deploymentName': deploymentName,
+    if (stationId != null && stationId!.trim().isNotEmpty)
+      'stationId': stationId,
+    'scheduleStart': scheduleStart.toUtc().toIso8601String(),
+    'cycleDurationSeconds': cycleDurationSeconds,
+    'repeatIntervalSeconds': repeatIntervalSeconds,
+    if (scheduleEnd != null)
+      'scheduleEnd': scheduleEnd!.toUtc().toIso8601String(),
+    if (maxCycles != null) 'maxCycles': maxCycles,
+    if (lowBatteryStopPercent != null)
+      'lowBatteryStopPercent': lowBatteryStopPercent,
+    if (lowBatteryResumePercent != null)
+      'lowBatteryResumePercent': lowBatteryResumePercent,
+    if (dielPattern != AruDielPattern.anyTime) 'dielPattern': dielPattern.name,
+    if (latitude != null) 'latitude': latitude,
+    if (longitude != null) 'longitude': longitude,
+    'recordingMode': recordingMode,
+    'recordingFormat': recordingFormat,
+    'samplingMode': samplingMode,
+    'topNPerSpecies': topNPerSpecies,
+    if (testCycleEnabled) 'testCycleEnabled': testCycleEnabled,
+    if (eachCycleIsSession) 'eachCycleIsSession': eachCycleIsSession,
+    if (cycles.isNotEmpty) 'cycles': cycles.map((c) => c.toJson()).toList(),
+  };
+}
+
 /// A complete live identification session.
 class LiveSession {
   LiveSession({
@@ -493,10 +770,13 @@ class LiveSession {
     this.stopReason,
     this.stopReasonValue,
     this.weather,
+    this.aruMetadata,
     int? recordedDurationSeconds,
+    List<SessionSegment>? segments,
   }) : detections = detections ?? [],
        annotations = annotations ?? [],
        gpsTrack = gpsTrack ?? [],
+       segments = segments ?? [],
        _recordedDurationSeconds = recordedDurationSeconds;
 
   /// Unique session identifier (ISO 8601 timestamp-based).
@@ -586,11 +866,18 @@ class LiveSession {
   /// degrade gracefully.
   WeatherSnapshot? weather;
 
+  /// Optional ARU deployment metadata. Present only for [SessionType.aru]
+  /// sessions created by ARU Mode.
+  AruDeploymentMetadata? aruMetadata;
+
   /// Persisted total of seconds during which the session was actively
   /// recording, **excluding** any pause/resume gaps. `null` for legacy
   /// sessions saved before this field existed; in that case [duration] is
   /// used as an approximation. Accumulated by the controller via
   /// [accumulateRecordedSeconds] each time a recording segment ends.
+  /// List of active recording segments during this session.
+  final List<SessionSegment> segments;
+
   int? _recordedDurationSeconds;
 
   /// Total recorded seconds, or `null` if not yet tracked.
@@ -629,7 +916,20 @@ class LiveSession {
   /// accumulated.
   Duration get duration {
     final recorded = _recordedDurationSeconds;
-    if (recorded != null) return Duration(seconds: recorded);
+    if (recorded != null) {
+      // Include the currently active segment (if any). Without this,
+      // resumed sessions show a static elapsed time until the next pause/stop
+      // persists another closed segment.
+      Duration activeSegment = Duration.zero;
+      if (endTime == null && segments.isNotEmpty) {
+        final last = segments.last;
+        if (last.endTime == null) {
+          activeSegment = DateTime.now().difference(last.startTime);
+          if (activeSegment.isNegative) activeSegment = Duration.zero;
+        }
+      }
+      return Duration(seconds: recorded) + activeSegment;
+    }
     return (endTime ?? DateTime.now()).difference(startTime);
   }
 
@@ -741,6 +1041,17 @@ class LiveSession {
       stopReasonValue: json['stopReasonValue'] as num?,
       recordedDurationSeconds:
           (json['recordedDurationSeconds'] as num?)?.toInt(),
+      segments:
+          (json['segments'] as List<dynamic>?)
+              ?.map((s) => SessionSegment.fromJson(s as Map<String, dynamic>))
+              .toList() ??
+          [],
+      aruMetadata:
+          json['aru'] != null
+              ? AruDeploymentMetadata.fromJson(
+                json['aru'] as Map<String, dynamic>,
+              )
+              : null,
     )..weather = WeatherSnapshot.fromJson(json['weather']);
   }
 
@@ -772,10 +1083,131 @@ class LiveSession {
     if (weather != null) 'weather': weather!.toJson(),
     if (_recordedDurationSeconds != null)
       'recordedDurationSeconds': _recordedDurationSeconds,
+    if (segments.isNotEmpty) 'segments': segments.map(_segmentToJson).toList(),
+    if (aruMetadata != null) 'aru': aruMetadata!.toJson(),
   };
 
   @override
   String toString() =>
       'LiveSession($id, ${detections.length} detections, '
       '$uniqueSpeciesCount species)';
+
+  /// Starts a new active recording segment.
+  void startSegment() {
+    if (endTime != null) return;
+    final now = DateTime.now();
+    if (segments.isNotEmpty) {
+      final last = segments.last;
+      final lastEnd = last.endTime;
+      if (lastEnd != null && now.difference(lastEnd).inSeconds <= 2) {
+        // Resume/extend the last segment instead of starting a new one,
+        // because it was closed just for a periodic persist tick or a very brief pause.
+        last.endTime = null;
+        return;
+      }
+    }
+    segments.add(SessionSegment(startTime: now));
+  }
+
+  /// Closes the currently active recording segment.
+  void closeSegment() {
+    if (segments.isNotEmpty) {
+      final last = segments.last;
+      last.endTime ??= endTime ?? DateTime.now();
+    }
+  }
+
+  DateTime _effectiveSegmentEnd(SessionSegment segment) {
+    return segment.endTime ?? endTime ?? DateTime.now();
+  }
+
+  Map<String, dynamic> _segmentToJson(SessionSegment segment) {
+    final json = segment.toJson();
+    if (endTime != null && segment.endTime == null) {
+      json['endTime'] = endTime!.toUtc().toIso8601String();
+    }
+    return json;
+  }
+
+  /// Maps an absolute timestamp to a relative offset in seconds within the recorded audio.
+  /// Returns 0.0 if the timestamp is before the session started or in a gap.
+  double absoluteToRelative(DateTime timestamp) {
+    if (segments.isEmpty) {
+      final diff = timestamp.difference(startTime).inMicroseconds / 1e6;
+      return diff < 0 ? 0.0 : diff;
+    }
+
+    double offsetMicros = 0;
+    for (final seg in segments) {
+      final start = seg.startTime;
+      final end = _effectiveSegmentEnd(seg);
+
+      if (timestamp.isBefore(start)) {
+        break;
+      }
+
+      if (timestamp.isBefore(end) || timestamp == end) {
+        offsetMicros += timestamp.difference(start).inMicroseconds;
+        break;
+      }
+
+      offsetMicros += end.difference(start).inMicroseconds;
+    }
+    return offsetMicros / 1e6;
+  }
+
+  /// Maps a relative offset in seconds within the recorded audio back to an absolute timestamp.
+  DateTime relativeToAbsolute(double relativeSec) {
+    if (segments.isEmpty) {
+      return startTime.add(Duration(microseconds: (relativeSec * 1e6).round()));
+    }
+
+    double targetMicros = relativeSec * 1e6;
+    double accumulatedMicros = 0;
+
+    for (final seg in segments) {
+      final start = seg.startTime;
+      final end = _effectiveSegmentEnd(seg);
+      final segDurationMicros = end.difference(start).inMicroseconds;
+
+      if (accumulatedMicros + segDurationMicros >= targetMicros) {
+        final remainingMicros = targetMicros - accumulatedMicros;
+        return start.add(Duration(microseconds: remainingMicros.round()));
+      }
+
+      accumulatedMicros += segDurationMicros;
+    }
+
+    if (segments.isNotEmpty) {
+      final last = segments.last;
+      final end = _effectiveSegmentEnd(last);
+      final remainingMicros = targetMicros - accumulatedMicros;
+      return end.add(Duration(microseconds: remainingMicros.round()));
+    }
+
+    return startTime.add(Duration(microseconds: (relativeSec * 1e6).round()));
+  }
+}
+
+/// Represents an active recording segment during a live session.
+class SessionSegment {
+  final DateTime startTime;
+  DateTime? endTime;
+
+  SessionSegment({required this.startTime, this.endTime});
+
+  factory SessionSegment.fromJson(Map<String, dynamic> json) {
+    return SessionSegment(
+      startTime: DateTime.parse(json['startTime'] as String),
+      endTime:
+          json['endTime'] != null
+              ? DateTime.parse(json['endTime'] as String)
+              : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'startTime': startTime.toUtc().toIso8601String(),
+    if (endTime != null) 'endTime': endTime!.toUtc().toIso8601String(),
+  };
 }

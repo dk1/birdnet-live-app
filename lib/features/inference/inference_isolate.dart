@@ -48,10 +48,12 @@ class InferenceIsolate {
   /// [modelFilePath] — absolute path to the `.onnx` model file on disk.
   /// [labelsCsv] — full content of the labels file.
   /// [config] — model configuration (tensor names, label format, defaults).
+  /// [scoreBlacklistJson] — optional JSON score multiplier map.
   Future<void> start({
     required String modelFilePath,
     required String labelsCsv,
     required ModelConfig config,
+    String? scoreBlacklistJson,
   }) async {
     if (isRunning) return;
 
@@ -65,6 +67,7 @@ class InferenceIsolate {
       modelFilePath: modelFilePath,
       labelsCsv: labelsCsv,
       config: config,
+      scoreBlacklistJson: scoreBlacklistJson,
     );
     _service = svc;
     debugPrint('[InferenceIsolate] model ready');
@@ -99,6 +102,7 @@ class InferenceIsolate {
     double? confidenceThreshold,
     int? topK,
     bool useTemporalPooling = true,
+    DateTime? timestamp,
   }) async {
     final svc = _service;
     if (svc == null) {
@@ -122,6 +126,7 @@ class InferenceIsolate {
         confidenceThreshold: confidenceThreshold,
         topK: topK,
         useTemporalPooling: useTemporalPooling,
+        timestamp: timestamp,
       );
     } finally {
       completer.complete();

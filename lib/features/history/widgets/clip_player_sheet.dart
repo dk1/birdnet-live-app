@@ -22,6 +22,7 @@ import 'dart:ui' as ui;
 import 'package:fftea/fftea.dart';
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
@@ -217,7 +218,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
       binCount,
     );
 
-    final lut = SpectrogramColorMap.lut('viridis');
+    final lut = SpectrogramColorMap.lut(ref.read(colorMapProvider));
     final pixels = Uint8List(numCols * displayBins * 4);
 
     final hann = Float64List(fftSize);
@@ -274,12 +275,6 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
     _player.dispose();
     _spectrogramImage?.dispose();
     super.dispose();
-  }
-
-  String _fmt(Duration d) {
-    final mm = d.inMinutes.toString().padLeft(2, '0');
-    final ss = (d.inSeconds % 60).toString().padLeft(2, '0');
-    return '$mm:$ss';
   }
 
   /// Flip the confirmation flag on the underlying record. We mutate the
@@ -363,6 +358,14 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
     final det = widget.detection;
     final session = widget.session;
     if (session == null) return;
+    try {
+      if (_player.playing) {
+        await _player.pause();
+      }
+    } catch (_) {
+      // Best-effort: if pausing fails, still allow the memo dialog.
+    }
+    if (!mounted) return;
     final result = await showVoiceMemoDialog(
       context: context,
       sessionId: session.id,
@@ -424,13 +427,13 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final showSciNames = ref.watch(showSciNamesProvider);
     final imagePath =
-        taxonomyAsync.valueOrNull?.assetImagePath(det.scientificName) ??
+        taxonomyAsync.value?.assetImagePath(det.scientificName) ??
         'assets/images/dummy_species.png';
     // Resolve the localized common name from the taxonomy when available;
     // fall back to whatever was stored on the record (English at detection
     // time) so legacy or unknown species still render something.
     final displayName =
-        taxonomyAsync.valueOrNull
+        taxonomyAsync.value
             ?.lookup(det.scientificName)
             ?.commonNameForLocale(speciesLocale) ??
         det.commonName;
@@ -477,9 +480,12 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                         imagePath,
                         fit: BoxFit.cover,
                         errorBuilder:
-                            (_, __, ___) => Container(
+                            (a, b, c) => Container(
                               color: scoreColor.withAlpha(60),
-                              child: Icon(Icons.music_note, color: scoreColor),
+                              child: Icon(
+                                AppIcons.brokenImage,
+                                color: scoreColor,
+                              ),
                             ),
                       ),
                     ),
@@ -614,36 +620,64 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                       : _spectrogramImage == null
                       ? Center(
                         child: Icon(
-                          Icons.graphic_eq,
+                          AppIcons.graphicEq,
                           color: Colors.white.withAlpha(80),
                           size: 32,
                         ),
                       )
                       : LayoutBuilder(
                         builder:
-                            (_, c) => CustomPaint(
-                              size: Size(c.maxWidth, c.maxHeight),
-                              painter: _ClipSpectrogramPainter(
-                                image: _spectrogramImage!,
-                                progress:
-                                    _duration.inMicroseconds == 0
-                                        ? 0
-                                        : _position.inMicroseconds /
-                                            _duration.inMicroseconds,
-                                accent: theme.colorScheme.primary,
+                            (_, c) => GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTapDown: (details) {
+                                if (_duration.inMicroseconds == 0) return;
+                                final pct = (details.localPosition.dx /
+                                        c.maxWidth)
+                                    .clamp(0.0, 1.0);
+                                final targetMicroseconds =
+                                    (_duration.inMicroseconds * pct).round();
+                                _player.seek(
+                                  Duration(microseconds: targetMicroseconds),
+                                );
+                                _player.play();
+                              },
+                              child: CustomPaint(
+                                size: Size(c.maxWidth, c.maxHeight),
+                                painter: _ClipSpectrogramPainter(
+                                  image: _spectrogramImage!,
+                                  progress:
+                                      _duration.inMicroseconds == 0
+                                          ? 0
+                                          : _position.inMicroseconds /
+                                              _duration.inMicroseconds,
+                                  accent: theme.colorScheme.primary,
+                                ),
                               ),
                             ),
                       ),
             ),
-            const SizedBox(height: 8),
+            if (!_decoding &&
+                _spectrogramImage != null &&
+                _duration.inMilliseconds > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 2),
+                child: SizedBox(
+                  height: 22,
+                  child: CustomPaint(
+                    size: const Size(double.infinity, 22),
+                    painter: _ClipTicksPainter(
+                      duration: _duration,
+                      color: theme.colorScheme.onSurface.withAlpha(130),
+                    ),
+                  ),
+                ),
+              )
+            else
+              const SizedBox(height: 8),
 
-            // Transport row: prev / play-pause / next inline with the
-            // scrubber so reviewers can step through the active filtered
-            // detection list without leaving the sheet. The skip buttons
-            // grey out at the first / last entry so the boundary is
-            // obvious; tapping pops this sheet and lets the host re-open
-            // it for the neighboring detection.
+            // Transport row: prev / play-pause / next centered.
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
                   iconSize: 28,
@@ -664,16 +698,20 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                               (_) => cb(),
                             );
                           },
-                  icon: const Icon(Icons.skip_previous_rounded),
+                  icon: const Icon(AppIcons.skipPreviousRounded),
                 ),
+                const SizedBox(width: 8),
                 IconButton.filled(
                   iconSize: 28,
                   onPressed:
                       () => _isPlaying ? _player.pause() : _player.play(),
                   icon: Icon(
-                    _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    _isPlaying
+                        ? AppIcons.pauseRounded
+                        : AppIcons.playArrowRounded,
                   ),
                 ),
+                const SizedBox(width: 8),
                 IconButton(
                   iconSize: 28,
                   tooltip: l10n.playerNextDetection,
@@ -687,41 +725,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                               (_) => cb(),
                             );
                           },
-                  icon: const Icon(Icons.skip_next_rounded),
-                ),
-                const SizedBox(width: 8),
-                Text(_fmt(_position), style: theme.textTheme.labelSmall),
-                Expanded(
-                  child: Slider(
-                    value:
-                        _duration.inMilliseconds == 0
-                            ? 0
-                            : _position.inMilliseconds
-                                .clamp(0, _duration.inMilliseconds)
-                                .toDouble(),
-                    max:
-                        _duration.inMilliseconds == 0
-                            ? 1.0
-                            : _duration.inMilliseconds.toDouble(),
-                    onChanged:
-                        _duration.inMilliseconds == 0
-                            ? null
-                            : (v) =>
-                                _player.seek(Duration(milliseconds: v.round())),
-                  ),
-                ),
-                Text(_fmt(_duration), style: theme.textTheme.labelSmall),
-              ],
-            ),
-
-            // Bottom row: close-only.
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton.icon(
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Icons.close),
-                  label: Text(AppLocalizations.of(context)!.tooltipClose),
+                  icon: const Icon(AppIcons.skipNextRounded),
                 ),
               ],
             ),
@@ -766,6 +770,80 @@ class _ClipSpectrogramPainter extends CustomPainter {
       old.image != image || old.progress != progress || old.accent != accent;
 }
 
+class _ClipTicksPainter extends CustomPainter {
+  _ClipTicksPainter({required this.duration, required this.color});
+
+  final Duration duration;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (duration.inMicroseconds == 0) return;
+    final totalSeconds = duration.inMilliseconds / 1000.0;
+
+    final paint =
+        Paint()
+          ..color = color
+          ..strokeWidth = 1.0
+          ..strokeCap = StrokeCap.round;
+
+    // Decide label interval based on total duration to avoid overlap
+    final double labelInterval;
+    if (totalSeconds <= 5.0) {
+      labelInterval = 1.0;
+    } else if (totalSeconds <= 15.0) {
+      labelInterval = 2.0;
+    } else if (totalSeconds <= 60.0) {
+      labelInterval = 5.0;
+    } else {
+      labelInterval = 10.0;
+    }
+
+    // Keep ticks neat and un-crowded
+    final double tickInterval = totalSeconds <= 15.0 ? 0.5 : 1.0;
+
+    for (double sec = 0; sec <= totalSeconds; sec += tickInterval) {
+      final isWholeSecond = (sec * 2).round() % 2 == 0;
+      final pct = sec / totalSeconds;
+      if (pct > 1.0) break;
+      final x = pct * size.width;
+
+      if (isWholeSecond) {
+        canvas.drawLine(Offset(x, 0), Offset(x, 6), paint);
+      } else {
+        canvas.drawLine(Offset(x, 0), Offset(x, 3), paint);
+      }
+
+      // Draw label text on specified intervals
+      final isLabelSec =
+          (sec / labelInterval - (sec / labelInterval).round()).abs() < 0.001;
+      if (isLabelSec) {
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: '${sec.round()}s',
+            style: TextStyle(
+              color: color,
+              fontSize: 9,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          textDirection: ui.TextDirection.ltr,
+        )..layout();
+
+        final textX = (x - textPainter.width / 2).clamp(
+          0.0,
+          size.width - textPainter.width,
+        );
+        textPainter.paint(canvas, Offset(textX, 8));
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ClipTicksPainter old) =>
+      old.duration != duration || old.color != color;
+}
+
 /// Small tap-to-toggle confirm checkmark shown in the player sheet header.
 /// Uses the same green check-circle iconography as the per-row confirm
 /// button in session review and the corner badge on confirmed map markers,
@@ -791,7 +869,7 @@ class _ConfirmToggle extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Icon(
-            confirmed ? Icons.check_circle : Icons.check_circle_outline,
+            confirmed ? AppIcons.checkCircle : AppIcons.checkCircleOutline,
             size: 28,
             color:
                 confirmed

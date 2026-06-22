@@ -31,6 +31,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/services/foreground_service_guard.dart';
 
 // =============================================================================
 // Task handler (runs in a separate isolate — kept minimal)
@@ -56,7 +57,7 @@ class _SurveyTaskHandler extends TaskHandler {
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp) async {
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
     debugPrint('[SurveyTaskHandler] onDestroy');
   }
 
@@ -148,19 +149,27 @@ class SurveyNotificationService {
   }
 
   /// Start the foreground service with an initial notification.
-  Future<void> start({
-    required String title,
-    required String text,
-  }) async {
+  Future<void> start({required String title, required String text}) async {
     if (!Platform.isAndroid) return;
+    await init();
+
+    if (!ForegroundServiceGuard.tryClaim(ForegroundServiceOwner.survey)) {
+      debugPrint(
+        '[SurveyNotification] foreground service already owned by '
+        '${ForegroundServiceGuard.owner}; not starting',
+      );
+      return;
+    }
 
     // Best-effort permission check — don't bail if denied; Android will
     // still create a foreground service (just with a default notification
     // on some OEMs).
     final granted = await ensurePermission();
     if (!granted) {
-      debugPrint('[SurveyNotification] permission not granted — '
-          'attempting startService anyway');
+      debugPrint(
+        '[SurveyNotification] permission not granted — '
+        'attempting startService anyway',
+      );
     }
 
     final result = await FlutterForegroundTask.startService(
@@ -181,15 +190,13 @@ class SurveyNotificationService {
       debugPrint('[SurveyNotification] started');
     } else {
       _running = false;
+      ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
       debugPrint('[SurveyNotification] startService failed: $result');
     }
   }
 
   /// Update the notification text with current survey stats.
-  Future<void> update({
-    required String title,
-    required String text,
-  }) async {
+  Future<void> update({required String title, required String text}) async {
     if (!_running) return;
     await FlutterForegroundTask.updateService(
       notificationTitle: title,
@@ -205,6 +212,7 @@ class SurveyNotificationService {
     if (!_running) return;
     await FlutterForegroundTask.stopService();
     _running = false;
+    ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
     debugPrint('[SurveyNotification] stopped');
   }
 }

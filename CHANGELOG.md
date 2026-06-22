@@ -5,6 +5,589 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.14] - 2026-06-20
+
+### Changed
+
+- Added a per-format help icon to each export format (Raven, CSV, JSON, GPX) explaining what that file contains, and reworded the Export Format help to describe the new bundle-and-audio-only behavior.
+- Replaced the manual Latitude/Longitude sliders in Settings with editable text fields so you can type or paste exact coordinates when GPS is off. Pasting a combined "latitude, longitude" string into either field fills both at once, and out-of-range or invalid entries are flagged inline.
+
+## [0.17.13] - 2026-06-20
+
+### Added
+
+- Added an "Include app metadata" checkbox to Settings > Export, on by default. Turning it off drops the `*.metadata.json` side-file from the export bundle.
+- Added an audio-only share path: untick every export format, the HTML report, and the new app metadata box (leaving only "Include audio files") and Share will hand the platform sheet the raw recording instead of a ZIP — useful for sending a session straight into iNaturalist or eBird.
+
+### Changed
+
+- Converted the "Include audio files" and "Include HTML report" settings from toggles to checkboxes so the entire Export section is now a single consistent checklist.
+
+## [0.17.12] - 2026-06-20
+
+### Fixed
+
+- Fixed Survey session durations in the Session Library continuing to grow after the session ended, caused by a stale open recording segment left behind by the final persist.
+
+## [0.17.11] - 2026-06-19
+
+### Changed
+
+- Changed the main menu in landscape to show all six mode tiles in a 3x2 grid with a full-width footer and a smaller side-by-side logo/title header.
+
+### Fixed
+
+- Fixed the Session Library "new session" picker overflowing in landscape by making it scroll when there is not enough vertical space.
+- Fixed a crash when leaving the Live screen while a session was still starting, caused by reading providers after the screen was closed.
+
+## [0.17.10] - 2026-06-19
+
+### Added
+
+- Added Plasma, Cividis, Jet, Turbo, and BirdNET choices to the spectrogram color map setting.
+
+### Changed
+
+- Changed Window duration and Inference rate settings from dropdowns to sliders, moved Announcements below Recording, changed Recording mode to a dropdown, and hid advanced score pooling controls from Settings.
+- Expanded Window duration to 1, 3, 5, 7, 10, and 15 seconds, and aligned the global Inference rate slider with the Survey and ARU 0.10–1.00 Hz tick grid.
+- Removed the duplicate Inferno color map and migrated saved Inferno preferences to Magma.
+- Moved ARU onto the main live recording modes page and grouped File Analysis with the file workflows page in the home mode carousel.
+
+### Fixed
+
+- Made Session Review and clip playback spectrograms use the configured color map instead of always rendering Viridis.
+- Made Session Review playback overlay previous/next buttons follow the active species sort order while playing all clips for the current species before advancing to the next species.
+
+## [0.17.9] - 2026-06-18
+
+### Changed
+
+- Reduced ARU waiting-state wakeups, unchanged session writes, and redundant foreground notification updates; new ARU deployments also default to 0.33 Hz inference to match Survey while leaving other inference and spectrogram settings unchanged.
+- Tightened home footer spacing, shortened Survey tab labels, clarified ARU setup/help wording, refreshed gender-neutral guide wording, simplified ARU ready storage estimates, and aligned Session Library delete confirmations with the swipe action.
+
+### Fixed
+
+- Fixed ARU detection clips so they now capture the moment a species is first heard, instead of grabbing later audio after the bird had already gone quiet — clips again contain the species they are labeled with, and review results are reliable.
+- Aligned ARU Smart and Top N clip retention with the Survey approach, keeping the strongest clips per species and spreading them across the deployment instead of clustering them on one repeating bird.
+
+## [0.17.8] - 2026-06-17
+
+### Added
+
+- Added live progress to the ARU foreground notification, showing completed cycles, species, and detections so far for the running deployment.
+- Added a "Resume recording at" battery threshold to ARU setup. Recording cycles now pause when the battery falls to the pause level and resume once it charges back to the resume level, while the deployment keeps running in between — useful with an occasional charge source such as a solar panel. Defaults are 10% pause and 20% resume.
+
+### Changed
+
+- Updated the ARU live status display to use the dedicated ARU accent color for the recording and schedule indicators, so it is no longer confused with Live Mode's red or Point Count's blue.
+- Changed the ARU low-battery behavior from stopping the whole deployment to pausing and resuming recording cycles, so a deployment can ride out low-battery periods and continue once charged.
+- Limited the ARU "Resume recording at" setup slider to 5-55% in 5% increments, with the resume threshold kept at least 5% above the selected pause threshold.
+- Moved main menu mode titles higher inside their tiles, tightened tile padding and tile gaps, and reduced wrapped footer spacing so mode descriptions have room for three wrapped lines without making the home screen taller.
+
+### Fixed
+
+- Fixed ARU deployments stalling when the active screen was backgrounded or covered by another screen; the schedule and recording now keep running in the background so cycles fire on time while the phone is in your pocket.
+- Hardened ARU audio capture so the microphone has a single owner across a deployment, ensuring it is reliably released when a deployment stops and avoiding rare start/stop races.
+- Prevented ARU and Survey from starting their foreground recording service at the same time, so the two modes can no longer contend over the same background service.
+- Fixed "one session per cycle" ARU deployments so they no longer leave behind an extra combined session in your history; only the individual per-cycle sessions are kept once the deployment finishes.
+
+## [0.17.7] - 2026-06-17
+
+### Fixed
+
+- Fixed a rare race when a Live session was restarted while the previous one was still starting, so a recording can no longer attach to the wrong session.
+- Fixed ARU cycle audio to clear stale buffered audio and start file recording before capture, keeping each cycle's clips aligned to that cycle.
+- Fixed ARU Smart clip sampling for combined deployments so retained clips spread across cycles within a single session instead of clustering.
+- Fixed clip retention when a detection is updated mid-session so the kept clip stays linked to the correct record.
+
+## [0.17.6] - 2026-06-16
+
+### Added
+
+- Added an ARU schedule option for recording around both sunrise and sunset.
+- Added native Android handling for ARU foreground notification actions so Stop and Open work reliably from notification taps.
+
+### Changed
+
+- Refined ARU setup recording-window summaries to show the effective aligned recording ranges for each diel pattern.
+- Adjusted the home mode carousel spacing and Live Mode tip height to avoid cramped text at larger accessibility scales.
+
+### Fixed
+
+- Fixed clip-only ARU per-cycle deployments so the completed aggregate session metadata is discarded without deleting cycle recording directories.
+- Fixed ARU Smart sampling buckets for combined deployments so retained detections are grouped relative to deployment start.
+
+## [0.17.5] - 2026-06-15
+
+### Added
+
+- Added a new setting "Playback overlay in review" to trigger the modal player sheet with a spectrogram when reviewing clips from clips-only Session reviews.
+- Active by default for sessions that have clips only and no full recording/spectrogram, and bypassed (never shown) for sessions with full audio recordings.
+- Added support for launching the ARU active screen directly from Android foreground notification actions with optional stop confirmation.
+- Added `AruNotificationRoute` to restore unfinished ARU deployments when app launches from notification before routing to active screen or setup.
+
+### Changed
+
+- Updated ARU help and user documentation to reflect current behavior: cycle-level Full Audio or retained detection clips, live inference during active cycles, and Android foreground notification controls.
+- Improved ARU setup summaries and storage estimates to consistently show effective recording and sampling modes when combined-session deployments cannot use Full Audio.
+- Improved locale-aware time/date formatting helpers to prefer localized `intl` formats with safe fallbacks when locale data is unavailable.
+- Optimized ARU schedule evaluation for far-future open-ended deployments by jumping directly to the candidate cycle index instead of scanning from deployment start.
+- Refactored Android foreground task notification callbacks to be handled at app root instead of individual screens, enabling route-based navigation on notification action.
+
+### Fixed
+
+- Restored unfinished ARU deployments from persisted sessions after app relaunch and resumed schedule evaluation instead of leaving deployments stranded.
+- Serialized ARU detection-sync updates during active deployment and guarded finalization to prevent race conditions while stopping.
+- Fixed long-running diel ARU schedules so they continue evaluating correctly beyond large raw interval counts instead of prematurely completing.
+- Fixed ARU deployment storage estimates so long, short-interval schedules no longer freeze the setup UI.
+- Fixed ARU active deployment cycle progress so date/time-ended schedules show the estimated total cycle count instead of "Until stopped".
+- Fixed ARU clip-only storage estimates to use retained clip assumptions, window duration, and clip context instead of prediction-window upper bounds.
+- Refined ARU setup review copy by removing duplicate test-run details and shortening Session grouping labels.
+
+## [0.17.4] - 2026-06-15
+
+### Added
+
+- Added an in-app warning card when ARU combined-session mode is configured with Full Audio recording, explaining the automatic fallback to Smart-sampled clips.
+- Added background weather backfill so saved sessions with GPS coordinates but no weather data are automatically enriched on the next app launch.
+
+### Changed
+
+- Upgraded the weather cache to a per-observation-hour model supporting sessions up to 90 days old via the Open-Meteo forecast API, and older sessions via the archive API; stale entries (older than 30 days) are pruned on each write.
+- Refactor translations for improved readability and maintainability
+
+### Fixed
+
+- Fixed ARU combined-session deployments configured with Full Audio: the session is now saved with Detections Only + Smart sampling instead of an unsupported Full Audio mode.
+- Clear state-change callbacks on dispose to prevent updates on disposed widgets.
+
+## [0.17.3] - 2026-06-15
+
+### Changed
+
+- Refined ARU active deployment dashboards with compact status metrics, clearer tab labels, localized species summaries, and shared destructive confirmation behavior.
+- Reused the latest ARU/station ID in ARU setup, included it in ARU session names, and kept ARU deployment metadata with shared exports.
+- Expanded session export provenance to include session-retained runtime settings and type-specific metadata while limiting export preference snapshots to relevant keys.
+- Updated session, ARU, and Point Count time displays to follow the device 12-hour or 24-hour clock preference consistently.
+
+## [0.17.2] - 2026-06-15
+
+### Changed
+
+- Refined ARU Mode deployment setup, schedule previews, active status tabs, per-cycle recording options, and localized user documentation.
+- Updated ARU scheduling options so short test cycles can run immediately without overlapping regular clock-aligned cycles.
+- Reused the latest Survey, Point Count, or ARU observer name across field-session setup screens.
+
+### Fixed
+
+- Fixed ARU deployment completion so natural schedule endings open Session Review like manual and low-battery stops.
+- Fixed ARU recording cleanup so empty full-cycle audio files are discarded instead of being kept as review artifacts.
+- Fixed ARU per-cycle sessions so cycle recordings remain attached for review and names include both deployment and cycle numbers.
+
+## [0.17.1] - 2026-06-11
+
+### Added
+
+- Added broader ARU mode setup and active-deployment localization coverage across all supported locales.
+
+### Changed
+
+- Refined ARU setup, scheduling, notification, and active-state behavior to better align with long-running fixed-site deployments.
+- Improved ARU storage estimation and deployment flow ergonomics, including active status visibility and schedule handling polish.
+- Updated ARU and live detection list presentation details for clearer in-session monitoring.
+
+### Fixed
+
+- Fixed ARU deployment edge cases around stop/finalization handling, schedule transitions, and retained detection clip behavior.
+
+## [0.17.0] - 2026-06-11
+
+### Added
+
+- Added ARU Mode as a scheduled fixed-site recorder with localized setup, persisted deployment state, cycle metadata, schedule-aware storage estimates, active deployment status, Android foreground notification controls, documentation, and focused tests.
+- Added ARU site setup with GPS, manual/map-picked coordinates, skip-location handling, shared weather context, WAV/FLAC format selection, and JSON/ZIP export support for deployment metadata, segments, and cycle recordings.
+
+### Changed
+
+- Refined ARU setup and ready-state UX with Survey-style field tips, compact review cards, consolidated site/weather context, clearer deployment-end summaries, and schedule controls for manual stop, fixed cycles, fixed date/time, cycle duration, repeat interval, and recording windows.
+- Reworked active ARU deployment screens toward the Survey live layout with clearer recording/waiting state, live spectrogram and detections tabs, persistent detection feed, stats, and shared microphone handling.
+- Streamlined the active ARU deployment dashboard with a full-width spectrogram-first layout, persistent recent detections, and a consolidated runtime summary of recording, sampling, grouping, schedule, and battery settings.
+- Updated ARU scheduling so regular cycles align to wall-clock interval boundaries and a default-on one-minute immediate test run can run as a deployment sanity check.
+- Updated ARU detection sampling and session grouping so Smart/Top N retention distributes clips across cycles or time buckets instead of clustering retained clips in one short span.
+
+### Fixed
+
+- Fixed ARU stop handling, scheduled cycle recording, live inference, and detection-clip retention so deployments stop cleanly, record only at schedule boundaries, and save detections during active cycles.
+- Fixed ARU low-battery stop so the deployment now ends when the configured battery threshold is reached.
+- Fixed ARU stop navigation and full-audio review handoff so stopping opens Session Review for the combined deployment or latest per-cycle session with its recording path attached.
+
+## [0.16.11] - 2026-06-10
+
+### Added
+
+- Added dedicated in-app Help entries for Batch Analysis across all supported locales.
+- Added AGENTS.md with concise repository guidance for coding agents, including localization, documentation, style, and safety rules.
+
+### Changed
+
+- Restored the iOS app icon style to the bird-in-circle on a white background while keeping Android icon behavior unchanged.
+- Updated Batch Analysis accent color from copper to a darker yellow tone for better visual alignment with File Analysis.
+- Updated mode subtitles: Point Count now reads "Record at a fixed point for a set duration" and Survey now emphasizes background recording with shorter wording.
+- Updated locale strings and added missing metadata
+
+## [0.16.10] - 2026-06-09
+
+### Added
+
+- Added iOS-only Open in Apple Maps actions in Session Map and full-screen Survey Review map flows while keeping the in-app survey map overlays.
+- Added localized iOS permission CTA and Apple Maps action labels across all supported app locales.
+
+### Changed
+
+- Updated onboarding permission CTA wording on iOS from Grant to Continue to align with App Review guidance, while keeping Android wording unchanged.
+- Updated survey GPS tracking to use platform-aware geolocator settings and enable iOS background location updates with indicator support.
+- Minimum OS version for iOS updated to 16.0
+
+### Fixed
+
+- Fixed iOS App Review compliance gaps for permission pre-prompt wording and native map handoff availability.
+- Fixed survey session screen updates on iOS by reliably watching live detections
+
+## [0.16.9] - 2026-06-09
+
+### Added
+
+- Added placeholder entry points for Batch Analysis and ARU Mode on the home screen with localized Coming Soon behavior.
+- Added localized documentation pages for Batch Analysis and ARU Mode across all supported docs locales, including site navigation links.
+- Added new session type labels and numbered session title/card strings for Batch Analysis and ARU sessions across all app locales.
+
+### Changed
+
+- Reworked the Home mode selector from a single static grid to a paged carousel with indicator dots, keeping active modes on page one and upcoming modes on page two.
+- Refined shared session-type icon/color mappings so upcoming modes use consistent visual semantics in navigation and session metadata surfaces.
+- Updated upcoming mode accent colors to distinct hues: Batch Analysis now uses copper and ARU Mode now uses violet.
+
+### Fixed
+
+- Fixed Live session elapsed-time and recording-size progression after app background pause and resume, so resumed sessions continue updating instead of showing a static elapsed value.
+
+## [0.16.8] - 2026-06-08
+
+### Added
+
+- Added a sensitivity control to Point Count setup and active Point Count screens so species detection tuning matches Live Mode.
+
+### Fixed
+
+- Fixed Session Review timestamp formatting, seek alignment, and spectrogram time labels for sessions with pause and resume gaps, keeping review playback aligned with the actual recorded audio timeline.
+- Fixed Live and Point Count screens to clear stale session state and old detections when reopening a fresh run, preventing previous-session cards from flashing on load.
+
+### Changed
+
+- Updated and unified app icon for consistent visuals across platforms
+
+## [0.16.7] - 2026-06-04
+
+### Fixed
+
+- Fixed Session Review spectrogram loading and playback alignment for long MP3 and other compressed File Analysis recordings.
+- Fixed lazy spectrogram gaps near chunk boundaries and long recording tails.
+
+## [0.16.6] - 2026-06-04
+
+### Fixed
+
+- Updated session library title translations for Czech, Spanish, Italian, and Portuguese.
+- Updated footer button icon and text sizes for better visibility on tablet and mobile.
+
+### Optimized
+
+- Updated audio decoding logic to improve performance for native formats.
+
+## [0.16.5] - 2026-06-04
+
+### Added
+
+- Added support for compiling experimental Windows builds.
+- Added Windows support for app launcher icons.
+- Implemented Windows Inno Setup installer and Windows MSIX signing support.
+- Configured CI workflows to automatically generate Windows MSIX packages, Inno Setup installers, and Winget manifests.
+
+## [0.16.4] - 2026-06-04
+
+### Fixed
+
+- Made File Analysis keep an app-managed copy of the uploaded audio in its original format, avoiding unnecessary MP3/AAC-to-WAV/FLAC conversion before Session Review.
+- Enabled Session Review spectrograms for copied compressed uploads by loading long review audio through native range decoding instead of hiding the spectrogram when full PCM would be too large.
+
+### Optimized
+
+- Reworked compressed File Analysis inputs such as long MP3, AAC, and OGG recordings to inspect metadata without full decode, analyze bounded native decode chunks, and cancel active native decoding promptly instead of expanding the whole file into memory.
+- Reduced the initial lazy spectrogram bootstrap window for long recordings to keep first review paint responsive while additional chunks load on demand.
+
+## [0.16.3] - 2026-06-03
+
+### Fixed
+
+- Corrected localized documentation homepage screenshot paths and renamed the German documentation navigation entry from "Heim" to "Start".
+
+### Optimized
+
+- Decoupled real-time audio playback position tracking from parent state updates in the Session Review screen by introducing a `ValueNotifier<Duration>` listener interface for spectrogram scrolling and local active status updates on `_SpeciesTile` widgets, completely eliminating full-screen and map component redraw stutters.
+- Localized Point Count countdown updates and active Survey elapsed-time/stat updates into small listenable widgets, preventing full dashboard rebuilds once per second during recording.
+
+## [0.16.2] - 2026-06-03
+
+### Added
+
+- Wired the spectrogram quality setting ('low', 'medium', 'high') to all screens displaying spectrograms, including Live Mode, Point Count Mode, Survey Mode, and Session Review components (Timeline player and Trim editor).
+
+### Changed
+
+- Reverted all non-spectrogram overrides, restoring original UI/UX behaviors (such as inline maps, map markers, and unmounted map overlays) and default/user configured background settings.
+
+### Optimized
+
+- Pre-allocated the Hann window scratch buffer inside `FftProcessor` to prevent repetitive 16KB array heap allocations on every single FFT window calculation, drastically reducing garbage collection overhead and stuttering on budget devices (such as the Samsung A17).
+- Optimized input preparation and output array parsing in `ClassifierModel` by reusing the time-domain sample buffer directly when lengths match (bypassing a redundant 96,000-iteration clamp copy loop and 384KB list allocation) and returning native `Float32List` instances directly without copying to a new list, preventing UI thread stutters when inference runs.
+
+## [0.16.1] - 2026-06-03
+
+### Added
+
+- Integrated dynamic privacy consent toggles (Map, Reverse Geocoding, Weather) directly into the interactive Permissions onboarding page to let users opt into capabilities upfront.
+- Embedded mandatory photo library and camera description purpose strings into iOS `Info.plist` to satisfy Apple App Store submission conditions (`ITMS-90683`).
+- Added native iPad screenshot layout support (`2048 x 2732px`) to the automated mockup workspace in `dev/mockups/` using `empty_ipad_frame.png` as a container backdrop.
+
+### Changed
+
+- Enhanced onboarding screens with responsive maximum-width boundaries (`ContentWidthConstraint`) to prevent horizontal layout stretching, significantly improving native tablet/iPad readability.
+- Enhanced the on-device HTML/CSS mockup canvas scaling rules to render tablet screens using proportional, undistorted top-alignment instead of stretching them.
+- Updated the export filename configuration to prefix all iPad mockups and screenshots with `ipad_` (e.g., `ipad_en-01-menu.png`) and generated them across all localizations.
+
+## [0.16.0] - 2026-06-02
+
+### Added
+
+- Introduced comprehensive iOS platform support configurations and configurations.
+- Integrated standard Darwin-specific local notifications and alert configurations into active survey sequences.
+- Added adaptive fallback to standard PCM16 WAV (.wav) voice memo recording formats specifically on iOS, overcoming Apple CoreAudio AAC compression collisions while maintaining full file-sharing and packaging compatibility.
+
+### Changed
+
+- Reconstructed custom on-device custom FLAC audio encoder stream headers to explicitly restrict min and max block sizes to match nominal values exactly, preventing freezing/stalling bugs with strict decoders like Apple CoreAudio and external soundscape systems (e.g. Raven Pro).
+- Paused active audio playbacks dynamically when launching recording panels to prevent speaker acoustic feedback loops.
+- Avoided cross-thread UI hangs on async dialogue overlays by reinforcing BuildContext safety gates.
+
+## [0.15.9] - 2026-06-02
+
+### Added
+
+- Added manual tap-to-load weather fetching to the Session Review / Summary headers, gated on privacy preferences, and localized for all seven languages.
+
+### Changed
+
+- Optimized session list numbering with a header-only JSON stream parser that scans only the first 1024 bytes of saved files, preventing UI blocking and high memory overhead when dealing with very large recording session files.
+- Deferred weather pre-fetching away from saving/closing processes into localized, user-initiated visual action.
+- Retained startup geographic coordinates correctly during active Live and Point Count session launches.
+
+## [0.15.8] - 2026-06-02
+
+### Added
+
+- Implemented comprehensive multi-session selection, packaging, sharing, and deletion capabilities to resolve Issue #81 in the Session Library.
+- Added multi-session bulk export to aggregate, package, and compress selected sessions into a standalone ZIP archive (`BirdNET_Live_Bulk_Export_<timestamp>.zip`).
+- Added robust multi-selection state, adaptive tile checkboxes, select-all toggles, and contextual actions (share and delete bulk buttons) to the Session Library.
+- Included full multi-lingual localization for all bulk-selection messages and counts across seven supported locales.
+
+### Changed
+
+- Automatically deselect all selected sessions after sharing complete.
+
+## [0.15.7] - 2026-06-01
+
+### Added
+
+- Embedded the Explore screen tool inside the active Survey dashboard as a fourth tab, allowing real-time species discovery in the field.
+
+### Changed
+
+- Expanded both the Explore and Summary tabs to utilize full vertical screenspace when focused in active surveys, hiding the running stats and recent detections lists.
+- Disabled horizontal swiping on the active survey dashboard's TabBarView to prevent interaction conflicts with the nested map, spectrogram, and list views.
+- Reordered external links on the About screen to place documentation, privacy, and terms higher, keeping developer resources, the BirdNET website, and donation links below them.
+
+### Fixed
+
+- Resolved an issue on devices with active background accessibility services (such as password managers, live caption, or custom search gesture services on Pixel devices) where undo SnackBars containing actions could remain on screen indefinitely, by adding a timer-backed safety dismiss fallback on all interactive SnackBar overlays.
+
+## [0.15.6] - 2026-06-01
+
+### Added
+
+- Added a 10-second timeout gate to all temporal score pooling modes (including Log-Mean-Exp) to discard context older than 10 seconds.
+
+### Changed
+
+- Aligned offline file analysis to adhere to user-configured temporal pooling settings and use window-based timestamps.
+
+## [0.15.5] - 2026-06-01
+
+### Changed
+
+- Separated opening species information from expanding detections in Session Review. A normal click or tap on the species row now consistently opens the species information overlay, matching live sessions.
+- Replaced the species card's compact chevron icon with a generous, accessible touch target spanning the entire right side of the card, improving discoverability and ease of use for expanding or collapsing detections on mobile devices.
+- Redesigned on-map review clip playback panel to remove bulky slider bars, duration readouts, and close buttons in favor of an interactive, seekable spectrogram.
+- Added lightweight tick marks with numbered seconds directly beneath the map reviewer spectrogram to indicate the exact length of the playback clip.
+
+## [0.15.4] - 2026-05-24
+
+### Changed
+
+- Tuned LME score pooling to require repeated raw-window support before a new species appears while keeping supported high-confidence calls close to their strongest recent raw score.
+- Made highest confidence the default species sort in Session Review so review starts with the strongest detections first.
+- In Session Review, the highest-confidence sort now also orders detections inside each species, preferring detections with playable audio clips before clipless detections.
+- Raised the default confidence threshold setting from 25% to 35%.
+
+### Fixed
+
+- Unsupported device languages now fall back to English instead of the first generated locale.
+
+## [0.15.3] - 2026-05-22
+
+### Added
+
+- Enabled the Settings Danger Zone Clear All Data action to wipe sessions, recordings, voice memos, custom species lists, preferences, OpenStreetMap tile cache, and temporary playback/review/share caches, then close the app so the next launch starts clean.
+
+### Changed
+
+- Updated localized Clear All Data confirmations, user settings documentation, and privacy policy text to describe the in-app full local wipe.
+- Limited rotating empty-state hints to Live sessions so Point Count and Survey screens stay focused on their protocol-specific UI.
+
+## [0.15.2] - 2026-05-22
+
+### Added
+
+- Added screen-reader labels and tooltips across key controls, detection actions, Explore score badges, wizard steps, and Survey map markers and clusters.
+- Added a screen-reader-aware default that enables spoken detection announcements for users with accessibility navigation active, while preserving explicit user choices.
+- Added widget tests covering Survey map marker and cluster semantics.
+
+### Changed
+
+- Improved localized accessibility strings for capture controls, confidence and likelihood percentages, Survey map marker states, settings help, and announcement templates.
+
+## [0.15.1] - 2026-05-21
+
+### Added
+
+- Added a Donate link to the bottom of the About screen, pointing to the BirdNET donation page.
+
+### Changed
+
+- Expanded weather condition icons so partly cloudy, overcast, drizzle, rain, and snow use more specific symbols in setup and session context views.
+
+## [0.15.0] - 2026-05-20
+
+### Changed
+
+- Hid the offline map download setting while the app uses public OpenStreetMap tiles, centralized a contactable BirdNET Live user agent for map tile, place-name, and weather requests, and extended interactive map tile caching to six months with a 6000-tile storage cap.
+
+## [0.14.12] - 2026-05-20
+
+### Changed
+
+- Replaced the `material_design_icons_flutter` dependency with `material_symbols_icons` for the app's shared icon set.
+- Refactored feature and shared UI code to use centralized `AppIcons` mappings instead of direct package icon references, improving icon consistency across Live, Survey, Point Count, File Analysis, History, Explore, Settings, Help, and onboarding views.
+- Refined centralized app icon choices for species, detections, map actions, filled map pins, stop controls, and survey start/end flags so review and map views read more consistently.
+
+## [0.14.11] - 2026-05-20
+
+### Changed
+
+- Added a concise, scrollable Explore header explaining that the list shows BirdNET geomodel species predictions for the user's location, with a tap hint for opening species details.
+- Improved Explore list scrolling by using fixed-height lazy species rows, reducing per-card widget/provider work, and lowering bundled thumbnail decode sizes.
+- Reworked Explore species cards to keep the 48-week seasonal bars while drawing them with a lightweight painter instead of many per-week widgets.
+
+## [0.14.10] - 2026-05-20
+
+### Changed
+
+- Allowing OpenStreetMap map tiles now also enables place-name lookup automatically, while keeping the place-name lookup setting separately revocable from Settings.
+
+### Fixed
+
+- Prevented the Survey map consent placeholder from overflowing in short embedded map previews by switching to a compact layout when space is limited.
+
+## [0.14.9] - 2026-05-20
+
+### Fixed
+
+- Disabled Flutter Impeller on Android so devices affected by rare Adreno Vulkan driver crashes during offscreen image cleanup fall back to the Skia renderer.
+
+## [0.14.8] - 2026-05-20
+
+### Changed
+
+- Updated Flutter package constraints for improved stability and compatibility, including Riverpod, recording, permissions, foreground tasks, notifications, location, map, sharing, package-info, and ONNX runtime dependencies.
+
+### Fixed
+
+- Verified the updated dependency set with static analysis, the full Flutter test suite, and Android integration tests covering ONNX model output, geo-model soundscape behavior, and memory stress scenarios.
+
+## [0.14.7] - 2026-05-19
+
+### Changed
+
+- Removed the Session Review on-demand-spectrogram hint banner. With lazy loading now smooth, the explanatory card is no longer needed.
+
+### Fixed
+
+- Session Review no longer gets stuck on a perpetual loading spinner after an apply-trim / undo cycle on long lazy-loaded recordings. A failing chunk load now no longer leaves its reservation pinned in the pending set, and clip changes invalidate any in-flight lazy chunk requests so the follow-up viewport request can schedule fresh loads instead of being short-circuited by a stale `_decoding=true` flag.
+- Trim mode in Session Review now works for long lazy-loaded recordings. The trim handles default to the strip's currently visible window and are clamped to it — zoom and scroll to the region of interest first, then drag the handles inward to refine. Previously the trim editor required a full-file spectrogram thumbnail that long recordings never produce, so trim mode silently rendered an empty editor.
+- Stopped Session Review from freezing for several seconds when opening a session with a very long (≥30 MB on disk) recording. Playback normalization is now skipped for large source files instead of decoding the entire file on the calling isolate.
+- Long FLAC recordings now actually show a spectrogram in Session Review. A one-time sequential FLAC → temp-WAV transcode runs in a background isolate the first time a long FLAC session is opened, after which lazy spectrogram chunks use true file-seek range reads instead of an O(N²) re-decode of the full FLAC for every chunk.
+- FLAC range and sequential-window decoding now use a buffered streaming bit reader instead of loading the entire compressed FLAC into memory before walking frames, keeping File Analysis and long-recording review paths bounded by the requested window/cache size.
+- File Analysis now refuses native compressed files whose decoded PCM would exceed the current full-decode memory guard, and also blocks large native files when the platform cannot report duration. Long recordings should be converted to WAV or FLAC so analysis can proceed in bounded chunks.
+- Session Review lazy-spectrogram cache eviction now keeps chunks nearest the active viewport instead of evicting the earliest chunk by timestamp, preventing freshly loaded visible chunks from being discarded when revisiting another part of a long recording.
+- Session Review now defers lazy spectrogram chunk scheduling until after the current frame, preventing a `setState() or markNeedsBuild() called during build` crash when the strip reports a refreshed viewport from `didUpdateWidget`.
+- iOS native audio decoding now explicitly cancels AVAssetReader work on early exit or failure so native buffers are released promptly after large decode errors.
+
+## [0.14.6] - 2026-05-19
+
+### Changed
+
+- Shortened the Session Review on-demand-spectrogram hint to a single sentence and added a close button so the banner can be dismissed.
+
+### Fixed
+
+- Hardened File Analysis and Session Review for long recordings. File inspection now reads metadata without decoding entire audio files, WAV/FLAC analysis reads bounded windows where possible, large decoded-audio footprints are surfaced before analysis, long-session spectrogram detail loads on demand during playback, panning, or zooming, and review/export metadata warns when a recording is shorter than its session events.
+- Added decoder coverage for LPC-encoded FLAC subframes and a sequential FLAC window decoder so real-world recorder files, including hour-long FLAC fixtures, can feed File Analysis without failing on the first window or restarting decoding for every window.
+- Stopped the Session Review spectrogram from getting stuck in a loading state during aggressive pinch-zoom: viewport requests now cap the number of in-flight chunks against the cache size, prioritize chunks nearest the playhead, and bail when a newer viewport supersedes them.
+- Moved on-demand spectrogram chunk decoding (FLAC/WAV range decode + STFT) onto a background isolate so pinch-zoom on long recordings no longer skips frames on the UI thread.
+- Long Session Review recordings now open at a duration-aware default zoom (≈10 % of clip length, clamped) instead of the 10 s detail view, and the on-demand spectrogram renders fewer FFT columns and caps frequency bins to what the strip can actually paint as distinct pixels. Short clips (≤ 5 min) honor your live-spectrogram duration setting as the initial view width, and the lazy loader now refreshes its viewport request the moment a long file's true duration arrives so chunks beyond the first 10 s actually start decoding.
+
+## [0.14.5] - 2026-05-19
+
+### Added
+
+- Added two new hints to the Live Mode carousel explaining that confidence scores are not probabilities and that distance affects detection.
+- Implemented an auto-retry mechanism for GPS location fetching to improve resilience on devices with spotty location reception.
+
+## [0.14.4] - 2026-05-18
+
+### Added
+
+- **Weather lookup can now be enabled from setup.** Point Count and Survey setup both show a compact weather card near the location controls. If weather access is off, the card asks for **Allow weather lookup** consent; once enabled, it previews the selected site with the same condition icon used in Session Review plus temperature and wind only. The lookup uses the same weather cache as session saving, so setup preview, ready preview, and the eventual session save reuse one fetch instead of repeatedly calling Open-Meteo.
+- **Dynamic Color translations completed for all locales.** The Dynamic Color setting added in 0.14.3 is now translated in Czech, Spanish, French, Italian, and Portuguese as well as English and German.
+
+### Changed
+
+- **Live hints now live before recording starts.** The idle Live detection panel now shows the rotating hint carousel instead of the old “Detections / Start a session…” placeholder. Once recording starts, the panel keeps the calmer “Listening… / Species will appear here” empty state until detections arrive.
+- **Setup GPS refresh is more forgiving.** Point Count and Survey setup refresh the GPS fix when the app resumes, so newly granted location permission or a recovered GPS signal can update the coordinates without restarting the wizard. Survey’s unavailable-location copy is now neutral (“Location unavailable”) instead of implying permission is missing when the real issue may be a stale or unavailable fix.
+
+### Documentation
+
+- Documented setup-screen weather consent, setup GPS refresh behavior, and the four-step Point Count setup flow.
+
 ## [0.14.3] - 2026-05-18
 
 ### Added
@@ -172,21 +755,21 @@ defaults to off and the feature has no UI surface in this commit.
   patterns are documented in `dev/announcements.md` §3.8.1 for
   future translators.
 
-## [0.12.3] - 2026-05-22
+## [0.12.3] - 2026-05-14
 
 ### Changed
 
 - **Inline consent prompts on the wizard site-context card.** When the place-name or weather privacy toggle is still off and you reach the "Ready" step of the survey or point-count wizard, the corresponding row now shows a tap-to-allow link instead of being hidden. Tapping flips the privacy toggle on, runs the lookup, and replaces itself with the result — no detour through Settings.
 - **Offline note when a site-context lookup fails.** If you have consent on but the network is unreachable (no signal in the field, service down), the wizard card now shows a small "Offline — you can add place name and weather later from the session review" hint instead of silently dropping the row. Both lookups already retry on session-review open, so the data isn't lost.
 
-## [0.12.2] - 2026-05-22
+## [0.12.2] - 2026-05-14
 
 ### Changed
 
 - **Setup wizard pre-fetches site context.** The "Ready" step in the survey and point-count wizards now resolves the place name and current weather as soon as GPS coordinates are known and shows them in a small card under the parameter summary, so you can confirm what will be recorded with the session before tapping Start. Both lookups go through the same persistent caches as everything else (no network spam).
 - **Weather retry on session review open.** If the original end-of-session weather fetch failed (no consent at the time, no internet, Open-Meteo unreachable), opening the session in Review now tries once more and persists the result — mirroring the existing reverse-geocode retry behavior. Already-captured snapshots are left untouched.
 
-## [0.12.1] - 2026-05-22
+## [0.12.1] - 2026-05-13
 
 ### Changed
 
@@ -195,7 +778,7 @@ defaults to off and the feature has no UI surface in this commit.
 - **6 h persistent weather cache.** Weather snapshots are now persisted across app launches and reused for any session started within 6 hours at the same 0.1° cell. Multiple short sessions at the same site no longer hit the Open-Meteo API repeatedly.
 - **Persistent reverse-geocode cache + library backfill.** Place names returned by Nominatim are cached on a 0.1° lat/lon grid (no expiry — place names don't change on a birding-trip timescale), so a second session at the same site never re-hits the network. The session library also auto-backfills its location chip from this cache on every list load and writes the resolved name back into each session's `locationName`, making the label permanent for that session.
 
-## [0.12.0] - 2026-05-21
+## [0.12.0] - 2026-05-13
 
 ### Added
 

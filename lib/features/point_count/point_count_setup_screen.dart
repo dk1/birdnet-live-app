@@ -17,17 +17,21 @@
 // runs the timed session with a countdown timer.
 // =============================================================================
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/utils/locale_time_format.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/site_context_card.dart';
+import '../../shared/widgets/weather_setup_card.dart';
 import '../../shared/widgets/wizard_scaffold.dart';
 import '../explore/explore_providers.dart';
 import '../settings/settings_screen.dart';
@@ -45,18 +49,30 @@ class PointCountSetupScreen extends ConsumerStatefulWidget {
       _PointCountSetupScreenState();
 }
 
-class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
+class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
+    with WidgetsBindingObserver {
   int _step = 0;
   static const _totalSteps = 4;
 
   /// Available durations in minutes.
   static const _durations = [3, 5, 10, 15, 20];
 
+  // Auto-retry GPS until a fix is acquired or we give up.
+  static const _maxGpsAttempts = 5;
+  static const _gpsRetryDelay = Duration(seconds: 5);
+  // Reuse a recent fix instead of re-fetching when the wizard is reopened
+  // shortly after a previous successful fix. The refresh button forces a
+  // fresh read by passing `Duration.zero`.
+  static const _gpsCacheMaxAge = Duration(minutes: 2);
+
   // ── Location state ──────────────────────────────────────────────────────
   _LocationChoice _locationChoice = _LocationChoice.gps;
   double? _latitude;
   double? _longitude;
   bool _gpsFetching = false;
+  int _gpsAttempts = 0;
+  int _gpsRequestSerial = 0;
+  Timer? _gpsRetryTimer;
   final _latController = TextEditingController();
   final _lonController = TextEditingController();
 
@@ -68,24 +84,31 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
   late int _windowDuration;
   late double _inferenceRate;
   late int _confidenceThreshold;
+  late double _sensitivity;
   late String _speciesFilterMode;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Pre-fill observer with the last value used.
-    _observerController.text = ref.read(pointCountLastObserverProvider);
+    _observerController.text = ref.read(lastObserverProvider);
     // Seed parameter state from the global app defaults.
     _windowDuration = ref.read(windowDurationProvider);
     _inferenceRate = ref.read(inferenceRateProvider);
     _confidenceThreshold = ref.read(confidenceThresholdProvider);
+    _sensitivity = ref.read(sensitivityProvider);
     _speciesFilterMode = ref.read(speciesFilterModeProvider);
-    // Start fetching GPS location immediately.
+    // Start fetching GPS location immediately. Reuse a recent fix if one
+    // is still warm — closing and reopening the wizard within a couple of
+    // minutes shouldn't burn another 10s waiting on the same fix.
     _fetchGpsLocation();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _gpsRetryTimer?.cancel();
     _latController.dispose();
     _lonController.dispose();
     _nameController.dispose();
@@ -93,22 +116,54 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchGpsLocation() async {
-    setState(() => _gpsFetching = true);
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        _locationChoice == _LocationChoice.gps &&
+        _latitude == null &&
+        !_gpsFetching) {
+      // Resuming with no fix yet — restart the auto-retry budget so a user
+      // who came back from settings (or just stepped outdoors) gets another
+      // round of attempts rather than the stale "Location unavailable" card.
+      _fetchGpsLocation();
+    }
+  }
+
+  /// Kick off (or restart) the GPS auto-retry loop.
+  ///
+  /// Pass [resetAttempts] `false` only from the retry timer — callers from
+  /// the UI (initState, refresh button, location-mode toggle) should leave
+  /// it as `true` so the attempt counter resets.
+  ///
+  /// Pass [forceFresh] `true` from the refresh button to bypass the
+  /// service-level cache and re-read GPS hardware.
+  Future<void> _fetchGpsLocation({
+    bool resetAttempts = true,
+    bool forceFresh = false,
+  }) async {
+    if (resetAttempts) {
+      _gpsRetryTimer?.cancel();
+      _gpsRetryTimer = null;
+      _gpsAttempts = 0;
+    }
+    _gpsAttempts++;
+    final serial = ++_gpsRequestSerial;
+    if (!_gpsFetching) setState(() => _gpsFetching = true);
     try {
-      // Force a fresh fix — the user just tapped this button explicitly
-      // because they wanted up-to-date coordinates, not whatever the
-      // FutureProvider happened to cache on a previous open.
-      ref.invalidate(currentLocationProvider);
-      final location = await ref.read(currentLocationProvider.future);
-      if (location != null && mounted) {
+      final service = ref.read(locationServiceProvider);
+      final location = await service.getCurrentLocation(
+        maxAge: forceFresh ? Duration.zero : _gpsCacheMaxAge,
+      );
+      if (!mounted || serial != _gpsRequestSerial) return;
+      if (location != null) {
+        _gpsRetryTimer?.cancel();
+        _gpsRetryTimer = null;
         setState(() {
           _latitude = location.latitude;
           _longitude = location.longitude;
           _gpsFetching = false;
         });
-        final svc = ref.read(locationServiceProvider);
-        if (svc.lastFetchUsedCachedFallback) {
+        if (service.lastFetchUsedCachedFallback) {
           final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
@@ -119,11 +174,35 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
               ),
             );
         }
-      } else {
-        if (mounted) setState(() => _gpsFetching = false);
+        return;
       }
+      _scheduleGpsRetryOrStop();
     } catch (_) {
+      if (!mounted || serial != _gpsRequestSerial) return;
+      _scheduleGpsRetryOrStop();
+    }
+  }
+
+  void _scheduleGpsRetryOrStop() {
+    if (!mounted ||
+        _locationChoice != _LocationChoice.gps ||
+        _gpsAttempts >= _maxGpsAttempts) {
       if (mounted) setState(() => _gpsFetching = false);
+      return;
+    }
+    _gpsRetryTimer?.cancel();
+    _gpsRetryTimer = Timer(_gpsRetryDelay, () {
+      if (!mounted || _locationChoice != _LocationChoice.gps) return;
+      _fetchGpsLocation(resetAttempts: false);
+    });
+  }
+
+  void _cancelGpsAutoRetry() {
+    _gpsRetryTimer?.cancel();
+    _gpsRetryTimer = null;
+    _gpsRequestSerial++;
+    if (_gpsFetching && mounted) {
+      setState(() => _gpsFetching = false);
     }
   }
 
@@ -155,7 +234,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
 
     // Persist observer for next time.
     if (observer.isNotEmpty) {
-      ref.read(pointCountLastObserverProvider.notifier).set(observer);
+      ref.read(lastObserverProvider.notifier).set(observer);
     }
 
     Navigator.of(context).pushReplacement(
@@ -171,6 +250,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
               inferenceRateOverride: _inferenceRate,
               confidenceThresholdOverride: _confidenceThreshold,
               speciesFilterModeOverride: _speciesFilterMode,
+              sensitivityOverride: _sensitivity,
             ),
       ),
     );
@@ -188,15 +268,15 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
             title: l10n.pointCountSetupHelpTitle,
             sections: [
               AppHelpSection(
-                icon: Icons.timer_rounded,
+                icon: AppIcons.timerRounded,
                 body: l10n.pointCountSetupHelpSteps,
               ),
               AppHelpSection(
-                icon: Icons.location_on_rounded,
+                icon: AppIcons.locationOnRounded,
                 body: l10n.pointCountSetupHelpLocation,
               ),
               AppHelpSection(
-                icon: Icons.play_arrow_rounded,
+                icon: AppIcons.playArrowRounded,
                 body: l10n.pointCountSetupHelpStart,
               ),
             ],
@@ -215,12 +295,12 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
       totalSteps: _totalSteps,
       actions: [
         IconButton(
-          icon: const Icon(Icons.help_outline_rounded, size: 20),
+          icon: const Icon(AppIcons.helpOutlineRounded, size: 20),
           onPressed: _showHelp,
           tooltip: l10n.pointCountSetupHelpTitle,
         ),
         IconButton(
-          icon: const Icon(Icons.tune_rounded, size: 20),
+          icon: const Icon(AppIcons.tuneRounded, size: 20),
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
@@ -238,7 +318,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
       onNext: isLastStep ? _start : _next,
       backLabel: _step == 0 ? l10n.cancel : l10n.pointCountBack,
       nextLabel: isLastStep ? l10n.pointCountStart : l10n.pointCountNext,
-      nextIcon: isLastStep ? Icons.play_arrow_rounded : null,
+      nextIcon: isLastStep ? AppIcons.playArrowRounded : null,
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 250),
         child: switch (_step) {
@@ -255,9 +335,13 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
             lonController: _lonController,
             onLocationChoiceChanged: (c) {
               setState(() => _locationChoice = c);
-              if (c == _LocationChoice.gps) _fetchGpsLocation();
+              if (c == _LocationChoice.gps) {
+                _fetchGpsLocation();
+              } else {
+                _cancelGpsAutoRetry();
+              }
             },
-            onFetchGps: _fetchGpsLocation,
+            onFetchGps: () => _fetchGpsLocation(forceFresh: true),
             onMapPick: (lat, lon) {
               setState(() {
                 _latitude = lat;
@@ -267,14 +351,14 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
           ),
           1 => _ParametersStep(
             key: const ValueKey(1),
-            windowDuration: _windowDuration,
             inferenceRate: _inferenceRate,
             confidenceThreshold: _confidenceThreshold,
+            sensitivity: _sensitivity,
             speciesFilterMode: _speciesFilterMode,
-            onWindowDurationChanged: (v) => setState(() => _windowDuration = v),
             onInferenceRateChanged: (v) => setState(() => _inferenceRate = v),
             onConfidenceChanged:
                 (v) => setState(() => _confidenceThreshold = v),
+            onSensitivityChanged: (v) => setState(() => _sensitivity = v),
             onFilterModeChanged: (v) => setState(() => _speciesFilterMode = v),
           ),
           2 => _TipsStep(key: const ValueKey(2)),
@@ -340,7 +424,7 @@ class _DurationStep extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: l10n.pointCountName,
             hintText: l10n.pointCountNameHint,
-            prefixIcon: const Icon(Icons.edit),
+            prefixIcon: const Icon(AppIcons.edit),
           ),
         ),
         const SizedBox(height: 16),
@@ -349,7 +433,7 @@ class _DurationStep extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: l10n.surveyObserverName,
             hintText: l10n.surveyObserverNameHint,
-            prefixIcon: const Icon(Icons.person_rounded),
+            prefixIcon: const Icon(AppIcons.personRounded),
           ),
         ),
         const SizedBox(height: 24),
@@ -396,13 +480,19 @@ class _DurationStep extends ConsumerWidget {
             child: Row(
               children: [
                 Icon(
-                  Icons.calendar_today_rounded,
+                  AppIcons.calendarTodayRounded,
                   size: 18,
                   color: theme.colorScheme.primary,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  DateFormat.yMMMMd().add_jm().format(DateTime.now()),
+                  formatLocaleDateTime(
+                    DateTime.now(),
+                    l10n.localeName,
+                    longMonth: true,
+                    alwaysUse24HourFormat:
+                        MediaQuery.of(context).alwaysUse24HourFormat,
+                  ),
                   style: theme.textTheme.bodyMedium,
                 ),
               ],
@@ -417,17 +507,17 @@ class _DurationStep extends ConsumerWidget {
           segments: [
             ButtonSegment(
               value: _LocationChoice.gps,
-              icon: const Icon(Icons.my_location, size: 18),
+              icon: const Icon(AppIcons.myLocation, size: 18),
               label: Text(l10n.pointCountLocationGps),
             ),
             ButtonSegment(
               value: _LocationChoice.manual,
-              icon: const Icon(Icons.edit_location_alt, size: 18),
+              icon: const Icon(AppIcons.editLocationAlt, size: 18),
               label: Text(l10n.pointCountLocationManual),
             ),
             ButtonSegment(
               value: _LocationChoice.skip,
-              icon: const Icon(Icons.location_off, size: 18),
+              icon: const Icon(AppIcons.locationOff, size: 18),
               label: Text(l10n.pointCountLocationSkip),
             ),
           ],
@@ -443,10 +533,30 @@ class _DurationStep extends ConsumerWidget {
         if (locationChoice == _LocationChoice.gps) ...[
           const SizedBox(height: 16),
           if (gpsFetching)
-            const Center(
+            Card(
               child: Padding(
-                padding: EdgeInsets.all(16),
-                child: CircularProgressIndicator(),
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        l10n.pointCountLocationAcquiring,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             )
           else if (latitude != null && longitude != null)
@@ -456,9 +566,8 @@ class _DurationStep extends ConsumerWidget {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.location_on_rounded,
-                      size: 18,
-                      color: theme.colorScheme.primary,
+                      AppIcons.locationOnRounded,
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -472,7 +581,7 @@ class _DurationStep extends ConsumerWidget {
                     ),
                     IconButton(
                       onPressed: onFetchGps,
-                      icon: const Icon(Icons.refresh, size: 18),
+                      icon: const Icon(AppIcons.refresh),
                       tooltip: l10n.pointCountLocationRefresh,
                     ),
                   ],
@@ -486,9 +595,8 @@ class _DurationStep extends ConsumerWidget {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.location_off_rounded,
-                      size: 18,
-                      color: theme.colorScheme.onSurface.withAlpha(153),
+                      AppIcons.locationOffRounded,
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -501,7 +609,7 @@ class _DurationStep extends ConsumerWidget {
                     ),
                     IconButton(
                       onPressed: onFetchGps,
-                      icon: const Icon(Icons.refresh, size: 18),
+                      icon: const Icon(AppIcons.refresh),
                       tooltip: l10n.pointCountLocationRefresh,
                     ),
                   ],
@@ -564,7 +672,7 @@ class _DurationStep extends ConsumerWidget {
                 onMapPick(result.latitude, result.longitude);
               }
             },
-            icon: const Icon(Icons.map, size: 18),
+            icon: const Icon(AppIcons.map, size: 18),
             label: Text(l10n.pointCountPickOnMap),
           ),
         ],
@@ -579,6 +687,13 @@ class _DurationStep extends ConsumerWidget {
             ),
           ),
         ],
+
+        const SizedBox(height: 16),
+        WeatherSetupCard(
+          latitude: locationChoice == _LocationChoice.skip ? null : latitude,
+          longitude: locationChoice == _LocationChoice.skip ? null : longitude,
+          locationUnavailableLabel: l10n.pointCountLocationUnavailable,
+        ),
       ],
     );
   }
@@ -591,23 +706,23 @@ class _DurationStep extends ConsumerWidget {
 class _ParametersStep extends StatelessWidget {
   const _ParametersStep({
     super.key,
-    required this.windowDuration,
     required this.inferenceRate,
     required this.confidenceThreshold,
+    required this.sensitivity,
     required this.speciesFilterMode,
-    required this.onWindowDurationChanged,
     required this.onInferenceRateChanged,
     required this.onConfidenceChanged,
+    required this.onSensitivityChanged,
     required this.onFilterModeChanged,
   });
 
-  final int windowDuration;
   final double inferenceRate;
   final int confidenceThreshold;
+  final double sensitivity;
   final String speciesFilterMode;
-  final ValueChanged<int> onWindowDurationChanged;
   final ValueChanged<double> onInferenceRateChanged;
   final ValueChanged<int> onConfidenceChanged;
+  final ValueChanged<double> onSensitivityChanged;
   final ValueChanged<String> onFilterModeChanged;
 
   @override
@@ -633,25 +748,6 @@ class _ParametersStep extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // ── Window duration ──────────────────────────────────
-          _ParamTile(
-            title: l10n.settingsWindowDuration,
-            value: '${windowDuration}s',
-            child: SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 3, label: Text('3s')),
-                ButtonSegment(value: 5, label: Text('5s')),
-                ButtonSegment(value: 10, label: Text('10s')),
-              ],
-              selected: {windowDuration},
-              onSelectionChanged: (s) {
-                HapticFeedback.selectionClick();
-                onWindowDurationChanged(s.first);
-              },
-              showSelectedIcon: false,
-            ),
-          ),
-
           // ── Inference rate ───────────────────────────────────
           _ParamTile(
             title: l10n.settingsInferenceRate,
@@ -675,6 +771,19 @@ class _ParametersStep extends StatelessWidget {
               max: 99,
               divisions: 98,
               onChanged: (v) => onConfidenceChanged(v.round()),
+            ),
+          ),
+
+          // ── Sensitivity ──────────────────────────────────────
+          _ParamTile(
+            title: l10n.settingsSensitivity,
+            value: sensitivity.toStringAsFixed(1),
+            child: Slider(
+              value: sensitivity,
+              min: 0.5,
+              max: 1.5,
+              divisions: 10,
+              onChanged: onSensitivityChanged,
             ),
           ),
 
@@ -770,12 +879,12 @@ class _TipsStep extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     final tips = [
-      (Icons.landscape_rounded, l10n.pointCountTipStableSurface),
-      (Icons.air_rounded, l10n.pointCountTipWind),
-      (Icons.volume_off_rounded, l10n.pointCountTipQuiet),
-      (Icons.mic_external_on_rounded, l10n.pointCountTipMicrophone),
-      (Icons.volume_mute_rounded, l10n.pointCountTipDisturbance),
-      (Icons.science_rounded, l10n.pointCountTipConsistency),
+      (AppIcons.landscapeRounded, l10n.pointCountTipStableSurface),
+      (AppIcons.airRounded, l10n.pointCountTipWind),
+      (AppIcons.volumeOffRounded, l10n.pointCountTipQuiet),
+      (AppIcons.micExternalOnRounded, l10n.pointCountTipMicrophone),
+      (AppIcons.volumeMuteRounded, l10n.pointCountTipDisturbance),
+      (AppIcons.scienceRounded, l10n.pointCountTipConsistency),
     ];
 
     return ListView(
@@ -829,7 +938,11 @@ class _ReadyStep extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.timer_rounded, size: 64, color: theme.colorScheme.primary),
+          Icon(
+            AppIcons.timerRounded,
+            size: 64,
+            color: theme.colorScheme.primary,
+          ),
           const SizedBox(height: 24),
           Text(
             l10n.pointCountReady,

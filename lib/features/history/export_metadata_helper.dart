@@ -7,7 +7,7 @@
 // Captures:
 //   * App name + version + build number + package name (PackageInfo).
 //   * Both ONNX model blocks from `assets/models/model_config.json`.
-//   * A snapshot of every SharedPreferences key/value at export time.
+//   * A curated snapshot of relevant SharedPreferences key/value pairs.
 //   * Session-level provenance (id, type, timestamps, observer, weather…)
 //     via `buildExportMetadata` in `session_export.dart`.
 //
@@ -67,8 +67,7 @@ Future<Map<String, dynamic>> buildSessionExportMetadata(
   Map<String, dynamic>? prefsMap;
   try {
     final prefs = await SharedPreferences.getInstance();
-    final keys = prefs.getKeys().toList()..sort();
-    prefsMap = {for (final k in keys) k: prefs.get(k)};
+    prefsMap = _relevantExportPreferences(prefs);
   } catch (_) {
     /* non-fatal */
   }
@@ -84,3 +83,21 @@ Future<Map<String, dynamic>> buildSessionExportMetadata(
     session: session,
   );
 }
+
+Map<String, dynamic> _relevantExportPreferences(SharedPreferences prefs) {
+  final keys = _relevantPrefKeys.toList()..sort();
+  return {
+    for (final key in keys)
+      if (prefs.containsKey(key)) key: prefs.get(key),
+  };
+}
+
+const Set<String> _relevantPrefKeys = {
+  // Export and review settings that affect artifact content or interpretation.
+  // Runtime session settings are persisted on LiveSession.settings instead.
+  PrefKeys.exportSelection,
+  PrefKeys.includeAudio,
+  PrefKeys.exportHtmlReport,
+  PrefKeys.timestampDisplayMode,
+  PrefKeys.timestampShowSeconds,
+};

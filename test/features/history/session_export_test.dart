@@ -1,4 +1,4 @@
-﻿// =============================================================================
+// =============================================================================
 // Session Export Tests â€” Raven selection table and ZIP bundle
 // =============================================================================
 
@@ -637,6 +637,79 @@ void main() {
       expect(gpxContent, contains('<wpt'));
       expect(gpxContent, contains('Eurasian Blackbird'));
     });
+
+    test(
+      'audio-only export returns raw audio file (no ZIP) when every '
+      'companion is disabled',
+      () async {
+        final wavPath = '${tempDir.path}/full.wav';
+        File(wavPath).writeAsBytesSync([0x52, 0x49, 0x46, 0x46]);
+
+        final session = _makeSession(
+          recordingPath: wavPath,
+          detections: [
+            _det(
+              'Turdus merula',
+              'Eurasian Blackbird',
+              0.91,
+              const Duration(seconds: 5),
+              DateTime.utc(2025, 6, 15, 8, 0, 0),
+            ),
+          ],
+        );
+
+        final result = await buildSessionExport(
+          session,
+          formats: const <String>{},
+          includeAudio: true,
+          includeHtmlReport: false,
+          includeAppMetadata: false,
+        );
+
+        expect(result, isNotNull);
+        expect(result!.endsWith('.wav'), isTrue);
+        expect(p.basename(result), '$_prefix.wav');
+        expect(File(result).existsSync(), isTrue);
+      },
+    );
+
+    test(
+      'disabling app metadata drops the .metadata.json side-file from the ZIP',
+      () async {
+        final wavPath = '${tempDir.path}/full.wav';
+        File(wavPath).writeAsBytesSync([0x52, 0x49, 0x46, 0x46]);
+
+        final session = _makeSession(
+          recordingPath: wavPath,
+          detections: [
+            _det(
+              'Turdus merula',
+              'Eurasian Blackbird',
+              0.91,
+              const Duration(seconds: 5),
+              DateTime.utc(2025, 6, 15, 8, 0, 0),
+            ),
+          ],
+        );
+
+        final zipPath = await buildSessionExport(
+          session,
+          formats: const {'raven'},
+          includeAudio: true,
+          includeAppMetadata: false,
+          metadata: {'app': 'birdnet-live'},
+        );
+
+        expect(zipPath, isNotNull);
+        final archive = ZipDecoder().decodeBytes(
+          File(zipPath!).readAsBytesSync(),
+        );
+        final names = archive.map((f) => f.name).toList();
+        expect(names, contains('$_prefix.wav'));
+        expect(names, contains('$_prefix.selections.txt'));
+        expect(names.any((n) => n.endsWith('.metadata.json')), isFalse);
+      },
+    );
   });
 
   // â”€â”€ JSON export: new fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -748,6 +821,151 @@ void main() {
       final map = jsonDecode(jsonStr) as Map<String, dynamic>;
 
       expect(map.containsKey('annotations'), isFalse);
+    });
+
+    test('includes ARU metadata and segments when present', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(type: SessionType.aru);
+      session.segments.add(
+        SessionSegment(
+          startTime: start,
+          endTime: start.add(const Duration(minutes: 10)),
+        ),
+      );
+      session.aruMetadata = AruDeploymentMetadata(
+        deploymentName: 'Wetland ARU',
+        stationId: 'ARU-01',
+        scheduleStart: start,
+        eachCycleIsSession: false,
+        cycleDurationSeconds: 600,
+        repeatIntervalSeconds: 3600,
+        maxCycles: 2,
+        cycles: [
+          AruCycleMetadata(
+            index: 0,
+            plannedStart: start,
+            plannedEnd: start.add(const Duration(minutes: 10)),
+            status: AruCycleStatus.completed,
+          ),
+        ],
+      );
+
+      final map = jsonDecode(buildJsonExport(session)) as Map<String, dynamic>;
+
+      expect(map['type'], 'aru');
+      expect(map['segments'], isA<List<dynamic>>());
+      expect((map['aru'] as Map<String, dynamic>)['stationId'], 'ARU-01');
+      expect(
+        ((map['aru'] as Map<String, dynamic>)['cycles'] as List).single,
+        containsPair('status', 'completed'),
+      );
+    });
+  });
+
+  group('ARU segmented recording export', () {
+    late Directory tempDir;
+
+    setUp(() {
+      tempDir = Directory.systemTemp.createTempSync('aru_export_test_');
+    });
+
+    tearDown(() {
+      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+    });
+
+    test('bundles cycle recordings under aru_cycles', () async {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final cyclePath = p.join(tempDir.path, 'cycle_000.flac');
+      File(cyclePath).writeAsBytesSync([0x66, 0x4c, 0x61, 0x43]);
+
+      final session = _makeSession(type: SessionType.aru);
+      session.aruMetadata = AruDeploymentMetadata(
+        deploymentName: 'Wetland ARU',
+        scheduleStart: start,
+        eachCycleIsSession: false,
+        cycleDurationSeconds: 600,
+        repeatIntervalSeconds: 3600,
+        maxCycles: 1,
+        cycles: [
+          AruCycleMetadata(
+            index: 0,
+            plannedStart: start,
+            plannedEnd: start.add(const Duration(minutes: 10)),
+            status: AruCycleStatus.completed,
+            recordingPath: cyclePath,
+          ),
+        ],
+      );
+
+      final zipPath = await buildSessionExport(
+        session,
+        formats: const {'json'},
+        includeAudio: true,
+      );
+
+      expect(zipPath, isNotNull);
+      final archive = ZipDecoder().decodeBytes(
+        File(zipPath!).readAsBytesSync(),
+      );
+      final names = archive.map((f) => f.name).toList();
+
+      expect(names, contains(startsWith('aru_cycles/')));
+      expect(names, contains(endsWith('_cycle_000.flac')));
+      expect(names, contains(endsWith('.json')));
+      expect(names, contains(endsWith('.metadata.json')));
+
+      final metaFile = archive.firstWhere(
+        (f) => f.name.endsWith('.metadata.json'),
+      );
+      final meta =
+          jsonDecode(String.fromCharCodes(metaFile.content as List<int>))
+              as Map<String, dynamic>;
+      expect(
+        (meta['aruCycleAudioFiles'] as Map<String, dynamic>)['0'],
+        startsWith('aru_cycles/'),
+      );
+    });
+
+    test('keeps ARU metadata sidecar for non-JSON exports', () async {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(type: SessionType.aru);
+      session.aruMetadata = AruDeploymentMetadata(
+        deploymentName: 'Wetland ARU',
+        stationId: 'ARU-01',
+        scheduleStart: start,
+        eachCycleIsSession: false,
+        cycleDurationSeconds: 600,
+        repeatIntervalSeconds: 3600,
+        maxCycles: 1,
+      );
+
+      final zipPath = await buildSessionExport(
+        session,
+        formats: const {'raven'},
+        includeAudio: false,
+      );
+
+      expect(zipPath, isNotNull);
+      expect(p.extension(zipPath!), '.zip');
+
+      final archive = ZipDecoder().decodeBytes(File(zipPath).readAsBytesSync());
+      final names = archive.map((f) => f.name).toList();
+
+      expect(names, contains(endsWith('.selections.txt')));
+      expect(names, contains(endsWith('.metadata.json')));
+
+      final metaFile = archive.firstWhere(
+        (f) => f.name.endsWith('.metadata.json'),
+      );
+      final meta =
+          jsonDecode(String.fromCharCodes(metaFile.content as List<int>))
+              as Map<String, dynamic>;
+      final sessionMeta = meta['session'] as Map<String, dynamic>;
+      expect(sessionMeta['type'], 'aru');
+      expect(sessionMeta['displayName'], session.displayName);
+      final typeMetadata = meta['typeMetadata'] as Map<String, dynamic>;
+      final aru = typeMetadata['aru'] as Map<String, dynamic>;
+      expect(aru['stationId'], 'ARU-01');
     });
   });
 
@@ -1003,5 +1221,89 @@ void main() {
         expect('<cmt>'.allMatches(gpx).length, 1);
       },
     );
+  });
+
+  group('buildMultiSessionExport', () {
+    late Directory tempDir;
+
+    setUp(() {
+      tempDir = Directory.systemTemp.createTempSync('bulk_export_test_');
+    });
+
+    tearDown(() {
+      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+    });
+
+    test('returns null for empty sessions', () async {
+      final result = await buildMultiSessionExport(
+        [],
+        formats: const {'json'},
+        includeAudio: false,
+      );
+      expect(result, isNull);
+    });
+
+    test('creates a bulk zip containing multiple session exports', () async {
+      final start1 = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session1 = _makeSession(
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.95,
+            const Duration(seconds: 10),
+            start1,
+          ),
+        ],
+      );
+
+      final start2 = DateTime.utc(2025, 6, 16, 9, 30, 0);
+      final session2 = LiveSession(
+        id: '2025-06-16T09-30-00',
+        startTime: start2,
+        endTime: start2.add(const Duration(minutes: 5)),
+        type: SessionType.live,
+        detections: [
+          _det(
+            'Parus major',
+            'Great Tit',
+            0.85,
+            const Duration(seconds: 5),
+            start2,
+          ),
+        ],
+        settings: SessionSettings(
+          windowDuration: 3,
+          confidenceThreshold: 25,
+          inferenceRate: 1.0,
+          speciesFilterMode: 'off',
+        ),
+      );
+
+      final bulkZipPath = await buildMultiSessionExport(
+        [session1, session2],
+        formats: const {'json'},
+        includeAudio: false,
+      );
+
+      expect(bulkZipPath, isNotNull);
+      final file = File(bulkZipPath!);
+      expect(file.existsSync(), isTrue);
+      expect(p.basename(file.path), startsWith('BirdNET_Live_Bulk_Export_'));
+
+      final zipBytes = file.readAsBytesSync();
+      final archive = ZipDecoder().decodeBytes(zipBytes);
+      final names = archive.map((f) => f.name).toList();
+
+      expect(names.length, 2);
+      expect(
+        names.any((n) => n.contains('2025-06-15') && n.endsWith('.json')),
+        isTrue,
+      );
+      expect(
+        names.any((n) => n.contains('2025-06-16') && n.endsWith('.json')),
+        isTrue,
+      );
+    });
   });
 }

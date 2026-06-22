@@ -1,4 +1,4 @@
-# Guide de l'utilisateur
+# Guide d'utilisation
 
 Ce guide explique BirdNET Live en tant qu'outil de flux de travail sur le terrain : ce que fait chaque écran, ce que signifient les icônes récurrentes et comment les paramètres modifient le comportement de l'application.
 
@@ -48,6 +48,14 @@ Configuration de l'enquête, tableau de bord de l'enquête en direct et onglets 
 
 L'assistant d'analyse de fichiers en quatre étapes, les choix de paramètres et la façon dont les résultats sont transférés dans Session Review.
 
+### [Analyse par lots](batch-analysis.md)
+
+Traiter et analyser plusieurs fichiers audio par lots. (Prochainement)
+
+### [Mode ARU](aru-mode.md)
+
+Créez une session de déploiement ARU planifiée, enregistrez l'audio complet des cycles ou les clips de détection conservés, exécutez l'inférence en direct pendant les cycles actifs et suivez les cycles d'enregistrement prévus.
+
 ## Référence
 
 ### [FAQ](faq.md)
@@ -63,7 +71,7 @@ Réponses rapides sur l'utilisation hors ligne, le comportement d'enregistrement
 
 ## Astuce mobile
 
-Sur mobile, la barre latérale de navigation est cachée derrière le bouton de menu dans le coin supérieur gauche. Cette page est censée être le point d’entrée mobile pour l’ensemble du guide de l’utilisateur.
+Sur mobile, la barre latérale de navigation est cachée derrière le bouton de menu dans le coin supérieur gauche. Cette page est censée être le point d’entrée mobile pour l’ensemble du guide d’utilisation.
 
 ## Plus de documentation
 

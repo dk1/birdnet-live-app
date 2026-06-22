@@ -129,7 +129,15 @@ void main() {
 
       expect(
         () => container.read(sharedPreferencesProvider),
-        throwsA(isA<UnimplementedError>()),
+        throwsA(
+          predicate(
+            (error) => error
+                .toString()
+                .contains(
+                  'sharedPreferencesProvider must be overridden with a real instance',
+                ),
+          ),
+        ),
       );
     });
 

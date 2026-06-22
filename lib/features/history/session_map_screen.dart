@@ -13,14 +13,18 @@
 // is drawn locally.
 // =============================================================================
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
+import '../../shared/services/link_launcher.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/app_providers.dart';
+import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/open_street_map_tile_layer.dart';
 
 /// Map screen showing the recording location with a pin marker.
@@ -80,8 +84,7 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
           ),
     );
     if (agreed == true) {
-      final prefs = ref.read(sharedPreferencesProvider);
-      await prefs.setBool(PrefKeys.privacyAllowMap, true);
+      await ref.read(privacyAllowMapProvider.notifier).set(true);
       setState(() => _hasConsent = true);
     }
   }
@@ -95,6 +98,17 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.locationName ?? l10n.recordingLocation),
+        actions: [
+          if (Platform.isIOS)
+            IconButton(
+              icon: const Icon(AppIcons.openInNew),
+              tooltip: l10n.openInAppleMaps,
+              onPressed: () => openExternalUrl(
+                context,
+                'https://maps.apple.com/?q=${widget.latitude},${widget.longitude}',
+              ),
+            ),
+        ],
       ),
       body:
           _hasConsent == true
@@ -115,7 +129,7 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
               width: 40,
               height: 40,
               child: Icon(
-                Icons.location_on,
+                AppIcons.locationOnFilled,
                 color: theme.colorScheme.error,
                 size: 40,
               ),
@@ -141,7 +155,7 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.map_outlined,
+              AppIcons.map,
               size: 64,
               color: theme.colorScheme.onSurface.withAlpha(100),
             ),
@@ -154,7 +168,7 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _requestConsent,
-              icon: const Icon(Icons.map),
+              icon: const Icon(AppIcons.map),
               label: Text(l10n.mapLoadButton),
             ),
             const SizedBox(height: 8),

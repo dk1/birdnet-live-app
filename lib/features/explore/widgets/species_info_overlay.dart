@@ -23,6 +23,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import '../../../shared/models/taxonomy_species.dart';
 import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/services/link_launcher.dart';
+import '../../../shared/utils/app_icons.dart';
 import '../explore_providers.dart';
 import '../../inference/geo_model.dart';
 import '../../history/global_species_history.dart';
@@ -166,7 +167,7 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                           'assets/images/dummy_species.png',
                       fit: BoxFit.contain,
                       errorBuilder:
-                          (_, __, ___) => Image.asset(
+                          (a, b, c) => Image.asset(
                             'assets/images/dummy_species.png',
                             fit: BoxFit.contain,
                           ),
@@ -355,7 +356,7 @@ class _BioSkeletonState extends State<_BioSkeleton>
       widthFactor: widthFactor,
       child: AnimatedBuilder(
         animation: _controller,
-        builder: (_, __) {
+        builder: (a, b) {
           final t = Curves.easeInOut.transform(_controller.value);
           final alpha = (40 + (t * 80)).round().clamp(0, 255);
           return Container(
@@ -413,7 +414,7 @@ class _LinkChip extends StatelessWidget {
         width: 18,
         height: 18,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => const Icon(Icons.public, size: 18),
+        errorBuilder: (a, b, c) => const Icon(AppIcons.public, size: 18),
       ),
       label: Row(
         mainAxisSize: MainAxisSize.min,
@@ -421,7 +422,7 @@ class _LinkChip extends StatelessWidget {
           Text(label),
           const SizedBox(width: 4),
           Icon(
-            Icons.open_in_new,
+            AppIcons.openInNew,
             size: 12,
             color: theme.colorScheme.onSurface.withAlpha(120),
           ),
@@ -604,7 +605,7 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
             child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
           ),
       error:
-          (_, __) => Padding(
+          (a, b) => Padding(
             padding: const EdgeInsets.all(16),
             child: Center(child: Text(l10n.speciesChartLoadFailed)),
           ),
@@ -643,7 +644,7 @@ class _OverlayDetectedBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(Icons.check, size: 18, color: theme.colorScheme.onPrimary),
+      child: Icon(AppIcons.check, size: 18, color: theme.colorScheme.onPrimary),
     );
   }
 }
@@ -666,7 +667,7 @@ class _DetectionStatsTile extends ConsumerWidget {
 
     return asyncSessions.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (a, b) => const SizedBox.shrink(),
       data: (sessions) {
         // Walk every session once. We aggregate three numbers in one pass
         // so that opening the overlay never depends on session count: total
@@ -709,7 +710,7 @@ class _DetectionStatsTile extends ConsumerWidget {
             child: Row(
               children: [
                 Icon(
-                  Icons.check_circle,
+                  AppIcons.checkCircle,
                   size: 20,
                   color: theme.colorScheme.primary,
                 ),

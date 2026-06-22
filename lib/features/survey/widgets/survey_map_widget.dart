@@ -10,9 +10,11 @@
 // =============================================================================
 
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,9 +25,23 @@ import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/score_colors.dart';
 import '../../../shared/models/gps_point.dart';
 import '../../../shared/providers/app_providers.dart';
+import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/widgets/open_street_map_tile_layer.dart';
 import '../../explore/explore_providers.dart';
 import '../../live/live_session.dart';
+
+const double _minClusterBubbleDiameter = 40;
+const double _maxClusterBubbleDiameter = 60;
+
+double surveyMapClusterBubbleDiameter(int count) {
+  final normalizedCount = math.max(1, count);
+  final scaledDiameter =
+      _minClusterBubbleDiameter + math.log(normalizedCount) / math.ln10 * 10;
+  return scaledDiameter.clamp(
+    _minClusterBubbleDiameter,
+    _maxClusterBubbleDiameter,
+  );
+}
 
 /// Live map showing GPS track and detection markers.
 ///
@@ -50,6 +66,7 @@ class SurveyMapWidget extends ConsumerStatefulWidget {
     this.onMarkerTap,
     this.initialCenter,
     this.interactionOptions,
+    this.tileLayerBuilder,
   });
 
   /// GPS track points.
@@ -80,6 +97,11 @@ class SurveyMapWidget extends ConsumerStatefulWidget {
   /// Custom interaction options for controlling which gestures the map
   /// responds to.  When null, all gestures are enabled (the default).
   final InteractionOptions? interactionOptions;
+
+  /// Optional override for the base map tile layer. Tests can inject a
+  /// placeholder here to avoid network-backed tile loading while still
+  /// exercising marker and cluster semantics.
+  final WidgetBuilder? tileLayerBuilder;
 
   @override
   ConsumerState<SurveyMapWidget> createState() => _SurveyMapWidgetState();
@@ -168,8 +190,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           ),
     );
     if (agreed == true) {
-      final prefs = ref.read(sharedPreferencesProvider);
-      await prefs.setBool(PrefKeys.privacyAllowMap, true);
+      await ref.read(privacyAllowMapProvider.notifier).set(true);
       setState(() => _hasConsent = true);
     }
   }
@@ -206,6 +227,9 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
 
   Widget _buildMap(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
+    final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
 
     // Build polyline from GPS track.
     final trackPoints =
@@ -282,7 +306,11 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           det.scientificName == widget.highlightedDetection!.scientificName &&
           det.timestamp == widget.highlightedDetection!.timestamp;
       final hasAudio = _hasPlayableClip(det);
-
+      final displayName =
+          taxonomy
+              ?.lookup(det.scientificName)
+              ?.commonNameForLocale(speciesLocale) ??
+          det.commonName;
       speciesMarkers.add(
         Marker(
           point: LatLng(det.latitude!, det.longitude!),
@@ -290,9 +318,14 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           // the corner play badge needs a few extra pixels of padding either
           // way. Slightly larger than the pre-#33 sizes so silhouettes stay
           // legible when zoomed in.
-          width: isHighlighted ? 56 : 44,
-          height: isHighlighted ? 56 : 44,
-          child: GestureDetector(
+          width: isHighlighted ? 56 : 48,
+          height: isHighlighted ? 56 : 48,
+          child: SurveyMapMarkerSemantics(
+            label: displayName,
+            confidence: det.confidence,
+            hasAudio: hasAudio,
+            isConfirmed: det.isConfirmed,
+            isHighlighted: isHighlighted,
             onTap:
                 widget.onMarkerTap != null
                     ? () => widget.onMarkerTap!(det)
@@ -317,10 +350,38 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           point: trackPoints.first,
           width: 28,
           height: 28,
-          child: Icon(
-            Icons.flag_rounded,
-            color: AppSemanticColors.of(context).success,
-            size: 28,
+          child: Semantics(
+            label: l10n.a11ySurveyMapMarkerStart,
+            child: ExcludeSemantics(
+              child: Icon(
+                AppIcons.flagFilled,
+                color: AppSemanticColors.of(context).success,
+                size: 28,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Add end (flag) marker when reviewing a completed survey track. During
+    // live tracking the last point is represented by the current-position
+    // marker below instead.
+    if (widget.fitAllPoints && trackPoints.length >= 2) {
+      auxMarkers.add(
+        Marker(
+          point: trackPoints.last,
+          width: 28,
+          height: 28,
+          child: Semantics(
+            label: l10n.a11ySurveyMapMarkerEnd,
+            child: ExcludeSemantics(
+              child: Icon(
+                AppIcons.flagFilled,
+                color: theme.colorScheme.error,
+                size: 28,
+              ),
+            ),
           ),
         ),
       );
@@ -338,10 +399,15 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
             point: currentPosition,
             width: 28,
             height: 28,
-            child: Icon(
-              Icons.person_pin_circle_rounded,
-              color: theme.colorScheme.primary,
-              size: 28,
+            child: Semantics(
+              label: l10n.a11ySurveyMapMarkerCurrentPosition,
+              child: ExcludeSemantics(
+                child: Icon(
+                  AppIcons.personPinCircleRounded,
+                  color: theme.colorScheme.primary,
+                  size: 28,
+                ),
+              ),
             ),
           ),
         );
@@ -434,7 +500,9 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
         },
       ),
       children: [
-        buildOpenStreetMapTileLayer(),
+        (widget.tileLayerBuilder ?? (_) => buildOpenStreetMapTileLayer())(
+          context,
+        ),
         if (trackPoints.length >= 2)
           PolylineLayer(
             polylines: [
@@ -452,7 +520,10 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           options: MarkerClusterLayerOptions(
             maxClusterRadius: 80,
             disableClusteringAtZoom: _disableClusteringAtZoom.toInt(),
-            size: const Size(40, 40),
+            size: const Size(
+              _maxClusterBubbleDiameter,
+              _maxClusterBubbleDiameter,
+            ),
             padding: const EdgeInsets.all(50),
             markers: speciesMarkers,
             polygonOptions: PolygonOptions(
@@ -461,7 +532,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
               borderStrokeWidth: 2,
             ),
             builder: (context, clusterMarkers) {
-              return _ClusterBubble(count: clusterMarkers.length);
+              return SurveyMapClusterBubble(count: clusterMarkers.length);
             },
           ),
         ),
@@ -494,34 +565,57 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
   Widget _buildConsentPlaceholder(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.map_outlined,
-              size: 48,
-              color: theme.colorScheme.onSurface.withAlpha(100),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxHeight = constraints.maxHeight;
+        final tiny = maxHeight.isFinite && maxHeight < 80;
+        final compact = maxHeight.isFinite && maxHeight < 220;
+        final cramped = maxHeight.isFinite && maxHeight < 130;
+        final showIcon = !compact;
+        final showHint = !cramped;
+        final padding = tiny ? 4.0 : (compact ? 12.0 : 32.0);
+
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.all(padding),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (showIcon) ...[
+                  Icon(
+                    AppIcons.map,
+                    size: 48,
+                    color: theme.colorScheme.onSurface.withAlpha(100),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                if (tiny)
+                  IconButton.filled(
+                    onPressed: _requestConsent,
+                    tooltip: l10n.mapLoadButton,
+                    icon: const Icon(AppIcons.map),
+                  )
+                else
+                  FilledButton.icon(
+                    onPressed: _requestConsent,
+                    icon: const Icon(AppIcons.map),
+                    label: Text(l10n.mapLoadButton),
+                  ),
+                if (showHint) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.mapLoadHint,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(120),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: _requestConsent,
-              icon: const Icon(Icons.map),
-              label: Text(l10n.mapLoadButton),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.mapLoadHint,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withAlpha(120),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -535,6 +629,61 @@ bool _hasPlayableClip(DetectionRecord det) {
   final path = det.audioClipPath;
   if (path == null) return false;
   return File(path).existsSync();
+}
+
+class SurveyMapMarkerSemantics extends StatelessWidget {
+  const SurveyMapMarkerSemantics({
+    super.key,
+    required this.label,
+    required this.confidence,
+    required this.child,
+    this.hasAudio = false,
+    this.isConfirmed = false,
+    this.isHighlighted = false,
+    this.onTap,
+  });
+
+  final String label;
+  final double confidence;
+  final bool hasAudio;
+  final bool isConfirmed;
+  final bool isHighlighted;
+  final VoidCallback? onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Semantics(
+      button: onTap != null,
+      enabled: onTap != null,
+      selected: isHighlighted,
+      label: label,
+      value: buildSurveyMapMarkerSemanticsValue(
+        l10n: l10n,
+        confidence: confidence,
+        hasAudio: hasAudio,
+        isConfirmed: isConfirmed,
+      ),
+      child: GestureDetector(
+        onTap: onTap,
+        child: ExcludeSemantics(child: child),
+      ),
+    );
+  }
+}
+
+String buildSurveyMapMarkerSemanticsValue({
+  required AppLocalizations l10n,
+  required double confidence,
+  required bool hasAudio,
+  required bool isConfirmed,
+}) {
+  return <String>[
+    l10n.a11yConfidencePercent((confidence * 100).round()),
+    if (hasAudio) l10n.a11ySurveyMapMarkerAudio,
+    if (isConfirmed) l10n.a11ySurveyMapMarkerConfirmed,
+  ].join(', ');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -626,7 +775,7 @@ class _SpeciesMarker extends ConsumerWidget {
 
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
     final path =
-        taxonomyAsync.valueOrNull?.assetImagePath(scientificName) ??
+        taxonomyAsync.value?.assetImagePath(scientificName) ??
         'assets/images/dummy_species.png';
 
     // Silent markers are desaturated to grayscale so the user can tell at
@@ -664,10 +813,10 @@ class _SpeciesMarker extends ConsumerWidget {
       path,
       fit: BoxFit.cover,
       errorBuilder:
-          (_, __, ___) => Container(
+          (a, b, c) => Container(
             color: borderColor.withAlpha(60),
             child: Icon(
-              Icons.music_note,
+              AppIcons.brokenImage,
               size: size * 0.45,
               color: borderColor,
             ),
@@ -754,7 +903,7 @@ class _SpeciesMarker extends ConsumerWidget {
                   ],
                 ),
                 child: Icon(
-                  Icons.play_arrow_rounded,
+                  AppIcons.playArrowRounded,
                   size: badgeSize * 0.85,
                   color: theme.colorScheme.onPrimary,
                 ),
@@ -813,7 +962,7 @@ class _SpeciesMarker extends ConsumerWidget {
                 ],
               ),
               child: Icon(
-                Icons.check_rounded,
+                AppIcons.checkRounded,
                 size: badgeSize * 0.85,
                 color: semanticColors.onSuccess,
               ),
@@ -832,38 +981,41 @@ class _SpeciesMarker extends ConsumerWidget {
 // different at a glance.
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ClusterBubble extends StatelessWidget {
-  const _ClusterBubble({required this.count});
+class SurveyMapClusterBubble extends StatelessWidget {
+  const SurveyMapClusterBubble({super.key, required this.count});
 
   final int count;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Scale 40 px → 64 px across log10(count) ≈ 0..3 (1 → 1000+).
-    final scale = (count > 1) ? (1 + (count.bitLength - 1) * 0.06) : 1.0;
-    final size = (40.0 * scale).clamp(40.0, 64.0);
-    return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
-        shape: BoxShape.circle,
-        border: Border.all(color: theme.colorScheme.surface, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withAlpha(70),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+    final l10n = AppLocalizations.of(context)!;
+    final diameter = surveyMapClusterBubbleDiameter(count);
+    return Semantics(
+      label: l10n.sessionDetectionCount(count),
+      child: ExcludeSemantics(
+        child: Container(
+          width: diameter,
+          height: diameter,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: theme.colorScheme.primary,
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.shadow.withAlpha(70),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Text(
-        count.toString(),
-        style: theme.textTheme.labelLarge?.copyWith(
-          color: theme.colorScheme.onPrimary,
-          fontWeight: FontWeight.w700,
+          alignment: Alignment.center,
+          child: Text(
+            count.toString(),
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: theme.colorScheme.onPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ),
     );

@@ -27,6 +27,18 @@ Controls the language used for species names. **Follow app language** uses the s
 
 Shows scientific names below common names across the app.
 
+### Playback overlay in review
+
+When enabled (which is the default), reviewing an audio clip in a clips-only Session Review (where no full audio recording/spectrogram is available) triggers a dedicated modal player overlay with transport controls and a spectrogram preview, rather than playing the clip in the background. If a session has full audio, this setting is bypassed and the playback overlay is never shown.
+
+### Observer name
+
+Survey, Point Count, and ARU setup remember the latest non-empty observer name entered in any of those modes and prefill it the next time you set up a field session. This keeps repeat use quick on a personal field phone while still letting you edit or clear the observer before starting a session.
+
+### ARU/station ID
+
+ARU setup remembers the latest non-empty ARU/station ID and pre-fills it for the next deployment. When present, the ID is included in the ARU session name and export filenames so repeated fixed-site deployments stay identifiable outside the app.
+
 ### Timestamp display
 
 Controls how per-detection times appear in session review.
@@ -60,11 +72,11 @@ Lets you choose a specific input device or keep the **System default**. Your sel
 
 ### Window duration
 
-Controls the length of the analysis window.
+Controls the length of the analysis window. Available steps are **1**, **3**, **5**, **7**, **10**, and **15** seconds.
 
 ### Confidence threshold
 
-Sets how conservative detections should be.
+Sets how conservative detections should be. The default is **35%**, which keeps the live list focused on stronger matches while still leaving room for distant or partially masked calls. Lower it if you are surveying rare or quiet species and plan to review more candidates later; raise it when background noise or common false positives are crowding the session.
 
 ### Sensitivity
 
@@ -72,21 +84,7 @@ Sigmoid steepness applied to the raw classifier output before the confidence thr
 
 ### Inference rate
 
-Controls how frequently BirdNET runs inference.
-
-### Score pooling
-
-Combines scores across recent inference windows so a single noisy window doesn't dominate the result. **Off** uses each window's raw probability — most reactive, noisiest. **Average** arithmetic-means the recent windows for the smoothest output. **Max** keeps the loudest peak per species, which is the most reactive smoothing mode and good for brief, sharp calls. **LME** (log-mean-exp, the default) is BirdNET's reference soft-maximum: it behaves like *max* when one window dominates and like *average* when several windows agree, which is usually what you want. Switching modes mid-session clears the rolling buffer so old logits don't leak into the new mode.
-
-### Pooling window count
-
-Controls how many consecutive inference windows participate in score pooling.
-A larger value smooths each species' score over a longer time horizon, which
-suppresses spurious one-off detections — useful for steady, distant calls
-where you'd rather wait for a few corroborating windows before raising a
-detection. A smaller value reacts faster to brief vocalizations but lets
-through more noise. The default of **5** matches the value historically
-hard-coded into the model and is a sensible starting point for live use.
+Controls how frequently BirdNET runs inference. The slider uses the same **0.10–1.00 Hz** steps as Survey and ARU setup.
 
 ## Spectrogram
 
@@ -96,7 +94,7 @@ Controls frequency resolution in the spectrogram.
 
 ### Color map
 
-Choose **Viridis**, **Magma**, or **Grayscale**.
+Choose **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Grayscale**, or **BirdNET**. **Turbo** is the modern Jet-like rainbow option.
 
 ### Duration (scroll speed)
 
@@ -109,6 +107,10 @@ Sets the upper display frequency.
 ### Log amplitude
 
 Applies logarithmic scaling to the spectrogram for easier visual reading.
+
+### Quality
+
+Controls how smoothly the spectrogram image is scaled. **Medium** is the default balance. Choose **Low** on older phones when scrolling stutters or the device gets hot; choose **High** when you prefer smoother visuals and your device has enough GPU headroom. The intuition: this changes rendering cost only, not the audio analysis or detection results.
 
 ## Announcements
 
@@ -154,7 +156,9 @@ When **Detections only** is active, the app shows a single **Clip context** slid
 
 ### Format
 
-Choose **WAV** or **FLAC**.
+Choose **WAV** or **FLAC**. WAV is larger but widely compatible and quick to inspect. FLAC keeps the same lossless audio quality while using less storage, which is usually better for long sessions.
+
+This setting applies to audio recorded by BirdNET Live. **File Analysis** keeps an app-managed copy of the imported file in its original format, so MP3, AAC, WAV, and FLAC uploads stay reviewable without an extra conversion step.
 
 ### Auto-start recording (Live mode only)
 
@@ -166,17 +170,17 @@ When enabled, Live mode begins recording as soon as the screen opens and the mod
 
 Use device GPS instead of manual coordinates.
 
-### Latitude / Longitude
+### Manual coordinates
 
-Manual coordinates used when GPS is disabled.
+The coordinates used when **Use GPS** is off. Both Latitude and Longitude are editable text fields, so you can **type** an exact value or **paste** one copied from another app — far more precise than dragging a slider on a touch screen. Enter decimal degrees (e.g. `52.5200` and `13.4050`). You can also paste a combined `latitude, longitude` string (comma-, semicolon-, or space-separated) into *either* field and both fields fill at once, which matches what most maps and websites put on the clipboard. Out-of-range or non-numeric input is flagged inline and not saved; valid values persist as you type. The intuition: the most common reason to set a manual location is to ID a sound recorded somewhere other than where you are now, and that location usually comes as text from elsewhere — typing and pasting make that a single accurate step.
 
 ### Refresh GPS now
 
 Forces a fresh location fix instead of reusing the last value the app cached. The intuition: GPS lookups are cached per-screen so a setup screen does not block waiting for a satellite fix on every open, but that cache can be miles out of date if you have driven to a new spot since the last session. Tap this when you have moved and want the geo-filter to use *here*, not where you started the morning. The current cached coordinates are shown in the subtitle so you can verify what the app thinks your location is. If GPS cannot get a fix within ~10 seconds, the app falls back to the OS-provided last-known location and warns you with a snackbar so you know the value is stale.
 
-### Download offline maps
+### Offline map downloads
 
-Pre-caches OpenStreetMap tiles around your current GPS fix so the Survey live map and the exported HTML report still render a basemap when you're out of signal. The intuition: map tiles are streamed on demand by default, which is fine in town but useless in a forest valley with no cell service. Pick a radius (1, 5, 10, or 25 km) and the app downloads every tile in that square at zoom levels 12 through 16 — coarse enough to navigate, fine enough to read trails. The dialog shows an estimate (typically about 30 KB per tile) before you commit, and the request is rejected if it would exceed 50 MB to keep us a polite OpenStreetMap citizen. Downloads are paced under the 2 req/s tile-usage policy, and you can cancel mid-batch. Tiles land in the same on-disk cache that every map widget reads from, so a download done here is immediately visible everywhere — no extra wiring per feature.
+Offline map downloads are currently hidden while BirdNET Live uses the public OpenStreetMap tile service. OpenStreetMap supports normal interactive map browsing with attribution, a clear user agent, and local caching, but it does not allow bulk prefetching or offline map-download features from `tile.openstreetmap.org`. The downloader implementation is kept for a future tile source that explicitly permits offline packs.
 
 ### Species filter
 
@@ -205,9 +209,17 @@ The intuition: many workflows need more than one format at the same time — a C
 
 Include saved audio alongside the exported tables or metadata when supported by the export workflow.
 
+### Include app metadata
+
+When on, the export ZIP carries a `*.metadata.json` side-file describing how the session was produced: BirdNET Live version, model identity, the weather snapshot captured at session start, and any audio integrity warnings detected during recording. The intuition: that provenance is what lets you (or a reviewer) reproduce or audit a session months later. Turn it off when you want a clean share of just the audio and your selected formats — for example, dropping a single WAV into iNaturalist or eBird without any app-specific files riding along.
+
 ### Include HTML report
 
 When on, every export ZIP also contains a `report.html` file alongside the table, audio clips, and GPX. Open it in any web browser and you get a print-ready summary of the session: header card with date, location, observer, and totals; an interactive map of the GPS track and detection markers; a card per detection with the Cornell taxonomy thumbnail, names, score pill, your confirmation, any note you typed, and the original audio clip inline as a player; and the analysis settings used. The intuition: a CSV is great for analysis pipelines but useless for sharing with a non-technical collaborator or printing a quick field summary — the HTML report fills that gap with one tap. Species thumbnails and map tiles need a connection the first time the file is opened (they're fetched live from the BirdNET taxonomy API and OpenStreetMap), but everything else — text, layout, audio playback, links — works fully offline. Turn this off if you only need the raw data and want to keep the ZIP a few KB smaller.
+
+### Audio-only sharing
+
+Untick every format **and** the HTML report **and** the app metadata box, leaving only **Include audio files**, and Share will hand the platform sheet the raw recording (e.g. `BirdNET_Live_…flac`) instead of a ZIP. That is the low-friction path for sending a session straight into iNaturalist, eBird, or any other app that wants an unwrapped audio file. Sessions made of detection clips (no full recording) still produce a ZIP because there is more than one file to share.
 
 ## Privacy
 
@@ -215,7 +227,7 @@ This section controls **which third-party services BirdNET Live may contact on y
 
 ### Allow map tiles
 
-Required for any interactive map in the app (the location picker, the Survey live map, the session map, and the map tiles inside the offline-tile downloader). When on, map widgets fetch raster tiles from the public **OpenStreetMap** servers; tile-coordinate requests reveal which area of the world you're viewing. When off, every map screen falls back to a placeholder card so the rest of the app still works without network leakage.
+Required for any interactive map in the app (the location picker, the Survey live map, and the session map). When on, map widgets fetch raster tiles from the public **OpenStreetMap** servers; tile-coordinate requests reveal which area of the world you're viewing. Tiles are cached locally for up to six months, capped at 6000 tiles so repeated map views stay efficient without growing unbounded. Turning this on also enables **Allow place name lookup**, because most users who load maps expect sessions to show readable place names too. You can turn place-name lookup off again separately. When map tiles are off, every map screen falls back to a placeholder card so the rest of the app still works without network leakage.
 
 ### Allow place name lookup
 
@@ -223,7 +235,7 @@ When on, the app sends your recorded coordinates to **OpenStreetMap's Nominatim*
 
 ### Allow weather lookup
 
-When on, every saved session captures a one-shot snapshot of local conditions (temperature, precipitation, wind, cloud cover) at the recording coordinates and end time via **Open-Meteo**. The snapshot lands in Session Review under the location row and is mirrored into the JSON export, the per-session metadata block, and the HTML report. The intuition: weather is one of the strongest predictors of bird activity, and capturing it automatically — without you having to remember to check a separate app — turns every session into a more complete record. Open-Meteo is a free service and requires neither an account nor an API key. When off, no weather data is fetched or stored.
+When on, every saved session captures a one-shot snapshot of local conditions (temperature, precipitation, wind, cloud cover) at the recording coordinates and end time via **Open-Meteo**. The snapshot lands in Session Review under the location row and is mirrored into the JSON export, the per-session metadata block, and the HTML report. The intuition: weather is one of the strongest predictors of bird activity, and capturing it automatically — without you having to remember to check a separate app — turns every session into a more complete record. Open-Meteo is a free service and requires neither an account nor an API key. When off, no weather data is fetched or stored. Point Count and Survey setup also show a compact weather card near their location controls: it asks for this consent only when needed, previews the result as icon + temperature + wind once enabled, and reuses the same cached snapshot when the session is saved.
 
 ## About
 
@@ -237,13 +249,15 @@ Shows the onboarding sequence again the next time the app launches.
 
 ### Reset All Settings
 
-Restores every preference on this screen to its default value. Sessions, recordings, voice memos, exports and downloaded map tiles are kept untouched — only the saved preferences (sliders, switches, picker choices) get wiped. The app closes after confirmation so the new defaults take effect on next launch.
+Restores every preference on this screen to its default value. Sessions, recordings, voice memos, exports, and cached map tiles are kept untouched — only the saved preferences (sliders, switches, picker choices) get wiped. The app closes after confirmation so the new defaults take effect on next launch.
 
 Useful when you are not sure which slider you nudged that broke something, or when handing the device to someone else and you want a clean configuration without losing the data you collected.
 
 ### Clear All Data
 
-Opens a confirmation flow for permanently removing stored app data.
+Permanently deletes sessions, detections, recordings, voice memos, custom species lists, saved preferences, and cached map, place-name, weather, playback, review, and share data. The confirmation dialog requires typing `DELETE`, then closes the app so the next launch starts from a clean local state.
+
+Use this before handing a device to another observer, retiring a field phone, or removing location-linked history from the app. Export anything you need first; this action cannot be undone.
 
 ## Workflow-Specific Parameters Outside Settings
 

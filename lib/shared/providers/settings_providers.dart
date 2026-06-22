@@ -1,6 +1,7 @@
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -37,18 +38,18 @@ final windowDurationProvider = StateNotifierProvider<IntSettingNotifier, int>((
   return IntSettingNotifier(prefs, PrefKeys.windowDuration, 3);
 });
 
-/// Confidence threshold (0 – 100, default 25).
+/// Confidence threshold (0 – 100, default 35).
 final confidenceThresholdProvider =
     StateNotifierProvider<IntSettingNotifier, int>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return IntSettingNotifier(prefs, PrefKeys.confidenceThreshold, 25);
+      return IntSettingNotifier(prefs, PrefKeys.confidenceThreshold, 35);
     });
 
-/// Inference rate in Hz (0.25, 0.5, 1.0, 2.0 — default 1.0).
+/// Inference rate in Hz (0.1–1.0 in 0.1 Hz steps — default 1.0).
 final inferenceRateProvider =
     StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return DoubleSettingNotifier(prefs, PrefKeys.inferenceRate, 1.0);
+      return InferenceRateSettingNotifier(prefs);
     });
 
 /// Sensitivity (0.5 – 1.5, default 1.0).
@@ -107,7 +108,7 @@ final colorMapProvider = StateNotifierProvider<StringSettingNotifier, String>((
   ref,
 ) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return StringSettingNotifier(prefs, PrefKeys.colorMap, 'viridis');
+  return ColorMapSettingNotifier(prefs);
 });
 
 /// dB floor (default -80).
@@ -151,12 +152,16 @@ final logAmplitudeProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
 /// Spectrogram rendering quality — controls the GPU upscale [FilterQuality]
 /// used to draw the live spectrogram image.
 ///
-/// Values: `'low'` | `'medium'` | `'high'`.  Default `'high'`.
+/// Values: `'low'` | `'medium'` | `'high'`.  Default `'medium'`.
 /// Older / low-end devices can drop to `'low'` to reduce GPU load.
 final spectrogramQualityProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return StringSettingNotifier(prefs, PrefKeys.spectrogramQuality, 'high');
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.spectrogramQuality,
+        'medium',
+      );
     });
 
 // ---------------------------------------------------------------------------
@@ -219,9 +224,9 @@ final exportFormatProvider =
     });
 
 /// Set of formats included in every export ZIP, persisted as a
-/// comma-separated string under [PrefKeys.exportSelection]. Empty
-/// selections fall back to `{'raven'}` at read time so the pipeline
-/// always produces at least one document.
+/// comma-separated string under [PrefKeys.exportSelection]. Defaults to
+/// `{'raven'}` for new installs; users may deselect every format to
+/// share the raw audio file without a ZIP container.
 final exportSelectionProvider =
     StateNotifierProvider<ExportSelectionNotifier, Set<String>>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
@@ -231,6 +236,10 @@ final exportSelectionProvider =
 class ExportSelectionNotifier extends StateNotifier<Set<String>> {
   ExportSelectionNotifier(this._prefs) : super(_load(_prefs));
 
+  // Sentinel string used to persist an intentionally-empty selection,
+  // so SharedPreferences can distinguish "never set" from "explicitly
+  // none" (the latter must NOT trigger the new-install default).
+  static const String _emptySentinel = '__none__';
   static const Set<String> _allFormats = {'raven', 'csv', 'json', 'gpx'};
   static const Set<String> _defaultFormats = {'raven'};
 
@@ -238,7 +247,7 @@ class ExportSelectionNotifier extends StateNotifier<Set<String>> {
 
   static Set<String> _load(SharedPreferences prefs) {
     final raw = prefs.getString(PrefKeys.exportSelection);
-    if (raw == null || raw.isEmpty) {
+    if (raw == null) {
       // Migrate from the legacy single-choice key when present.
       final legacy = prefs.getString(PrefKeys.exportFormat);
       if (legacy != null && _allFormats.contains(legacy)) {
@@ -246,8 +255,8 @@ class ExportSelectionNotifier extends StateNotifier<Set<String>> {
       }
       return {..._defaultFormats};
     }
-    final parts = raw.split(',').where(_allFormats.contains).toSet();
-    return parts.isEmpty ? {..._defaultFormats} : parts;
+    if (raw.isEmpty || raw == _emptySentinel) return <String>{};
+    return raw.split(',').where(_allFormats.contains).toSet();
   }
 
   void toggle(String format, bool enabled) {
@@ -258,16 +267,19 @@ class ExportSelectionNotifier extends StateNotifier<Set<String>> {
     } else {
       next.remove(format);
     }
-    if (next.isEmpty) next.addAll(_defaultFormats);
-    state = next;
-    _prefs.setString(PrefKeys.exportSelection, next.join(','));
+    _persist(next);
   }
 
   void set(Set<String> formats) {
-    final filtered = formats.where(_allFormats.contains).toSet();
-    final next = filtered.isEmpty ? {..._defaultFormats} : filtered;
+    _persist(formats.where(_allFormats.contains).toSet());
+  }
+
+  void _persist(Set<String> next) {
     state = next;
-    _prefs.setString(PrefKeys.exportSelection, next.join(','));
+    _prefs.setString(
+      PrefKeys.exportSelection,
+      next.isEmpty ? _emptySentinel : next.join(','),
+    );
   }
 }
 
@@ -288,6 +300,17 @@ final exportHtmlReportProvider =
     StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
       return BoolSettingNotifier(prefs, PrefKeys.exportHtmlReport, true);
+    });
+
+/// Bundle the BirdNET Live app metadata side-file (`*.metadata.json`)
+/// inside the export ZIP (default true). The side-file carries
+/// provenance such as app version, model identity, weather snapshot,
+/// and audio integrity warnings. Disable to share audio + selected
+/// formats without app-specific metadata.
+final includeAppMetadataProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(prefs, PrefKeys.includeAppMetadata, true);
     });
 
 // ---------------------------------------------------------------------------
@@ -311,13 +334,6 @@ final useGpsProvider = StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
 // in `main()`. Consumer code reads these providers and short-circuits
 // every network call when the corresponding gate is off.
 
-/// Allow OSM map tile fetches (tile.openstreetmap.org).
-final privacyAllowMapProvider =
-    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
-      final prefs = ref.watch(sharedPreferencesProvider);
-      return BoolSettingNotifier(prefs, PrefKeys.privacyAllowMap, false);
-    });
-
 /// Allow reverse geocoding via Nominatim (nominatim.openstreetmap.org).
 final privacyAllowReverseGeocodingProvider =
     StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
@@ -327,6 +343,16 @@ final privacyAllowReverseGeocodingProvider =
         PrefKeys.privacyAllowReverseGeocoding,
         false,
       );
+    });
+
+/// Allow OSM map tile fetches (tile.openstreetmap.org).
+final privacyAllowMapProvider =
+    StateNotifierProvider<MapPrivacySettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      final reverseGeocodingNotifier = ref.watch(
+        privacyAllowReverseGeocodingProvider.notifier,
+      );
+      return MapPrivacySettingNotifier(prefs, reverseGeocodingNotifier);
     });
 
 /// Allow weather snapshot fetches via Open-Meteo (api.open-meteo.com).
@@ -343,6 +369,17 @@ final showSciNamesProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
   final prefs = ref.watch(sharedPreferencesProvider);
   return BoolSettingNotifier(prefs, PrefKeys.showSciNames, true);
 });
+
+/// Whether to show the playback overlay (clip player sheet) in session review (default true).
+final sessionReviewPlaybackOverlayProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(
+        prefs,
+        PrefKeys.sessionReviewPlaybackOverlay,
+        true,
+      );
+    });
 
 /// Timestamp display mode: `'relative'` (session-relative `MM:SS`) or
 /// `'absolute'` (local clock `HH:mm:ss`).  Default `'relative'`.
@@ -427,12 +464,50 @@ final pointCountDurationProvider =
       return IntSettingNotifier(prefs, PrefKeys.pointCountDuration, 5);
     });
 
-/// Last used observer name in Point Count (persisted for convenience).
+/// Last used observer name in Point Count (shared across field modes).
 final pointCountLastObserverProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return StringSettingNotifier(prefs, PrefKeys.pointCountLastObserver, '');
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.lastObserver,
+        _legacyLastObserver(prefs),
+      );
     });
+
+/// Last used observer name across field-session modes.
+final lastObserverProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.lastObserver,
+        _legacyLastObserver(prefs),
+      );
+    });
+
+/// Last used ARU/station ID for fixed-site deployments.
+final aruLastStationIdProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return StringSettingNotifier(prefs, PrefKeys.aruLastStationId, '');
+    });
+
+String _legacyLastObserver(SharedPreferences prefs) {
+  final surveyObserver = prefs.getString(PrefKeys.legacySurveyLastObserver);
+  if (surveyObserver != null && surveyObserver.trim().isNotEmpty) {
+    return surveyObserver;
+  }
+
+  final pointCountObserver = prefs.getString(
+    PrefKeys.legacyPointCountLastObserver,
+  );
+  if (pointCountObserver != null && pointCountObserver.trim().isNotEmpty) {
+    return pointCountObserver;
+  }
+
+  return '';
+}
 
 // ---------------------------------------------------------------------------
 // Survey Mode
@@ -504,11 +579,15 @@ final surveyTopNPerSpeciesProvider =
       return IntSettingNotifier(prefs, PrefKeys.surveyTopNPerSpecies, 10);
     });
 
-/// Last used observer name (persisted for convenience).
+/// Last used observer name (shared across field modes).
 final surveyLastObserverProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return StringSettingNotifier(prefs, PrefKeys.surveyLastObserver, '');
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.lastObserver,
+        _legacyLastObserver(prefs),
+      );
     });
 
 /// Last used transect ID (persisted for convenience).
@@ -643,6 +722,28 @@ class DoubleSettingNotifier extends StateNotifier<double> {
   }
 }
 
+class InferenceRateSettingNotifier extends DoubleSettingNotifier {
+  InferenceRateSettingNotifier(this._inferenceRatePrefs)
+    : super(_inferenceRatePrefs, PrefKeys.inferenceRate, _defaultRate) {
+    final sanitized = _sanitize(state);
+    if (sanitized != state) {
+      state = sanitized;
+      _inferenceRatePrefs.setDouble(PrefKeys.inferenceRate, sanitized);
+    }
+  }
+
+  static const double _defaultRate = 1.0;
+  final SharedPreferences _inferenceRatePrefs;
+
+  static double _sanitize(double value) {
+    final tick = (value * 10).round().clamp(1, 10);
+    return tick / 10.0;
+  }
+
+  @override
+  Future<void> set(double value) => super.set(_sanitize(value));
+}
+
 /// [StateNotifier] for an `int` setting backed by [SharedPreferences].
 class IntSettingNotifier extends StateNotifier<int> {
   IntSettingNotifier(this._prefs, this._key, int defaultValue)
@@ -671,6 +772,39 @@ class StringSettingNotifier extends StateNotifier<String> {
   }
 }
 
+class ColorMapSettingNotifier extends StringSettingNotifier {
+  ColorMapSettingNotifier(this._colorMapPrefs)
+    : super(_colorMapPrefs, PrefKeys.colorMap, _defaultColorMap) {
+    final sanitized = _sanitize(state);
+    if (sanitized != state) {
+      state = sanitized;
+      _colorMapPrefs.setString(PrefKeys.colorMap, sanitized);
+    }
+  }
+
+  static const String _defaultColorMap = 'viridis';
+  static const Set<String> _allowedColorMaps = {
+    'viridis',
+    'magma',
+    'plasma',
+    'cividis',
+    'jet',
+    'turbo',
+    'grayscale',
+    'birdnet',
+  };
+
+  final SharedPreferences _colorMapPrefs;
+
+  static String _sanitize(String value) {
+    if (value == 'inferno') return 'magma';
+    return _allowedColorMaps.contains(value) ? value : _defaultColorMap;
+  }
+
+  @override
+  Future<void> set(String value) => super.set(_sanitize(value));
+}
+
 /// [StateNotifier] for a `bool` setting backed by [SharedPreferences].
 class BoolSettingNotifier extends StateNotifier<bool> {
   BoolSettingNotifier(this._prefs, this._key, bool defaultValue)
@@ -682,5 +816,25 @@ class BoolSettingNotifier extends StateNotifier<bool> {
   Future<void> set(bool value) async {
     state = value;
     await _prefs.setBool(_key, value);
+  }
+}
+
+/// Map tile consent also grants city-name lookup as a convenience, while the
+/// reverse-geocoding toggle remains independently revocable in Settings.
+class MapPrivacySettingNotifier extends BoolSettingNotifier {
+  MapPrivacySettingNotifier(
+    SharedPreferences prefs,
+    this._reverseGeocodingNotifier,
+  ) : super(prefs, PrefKeys.privacyAllowMap, false);
+
+  final BoolSettingNotifier _reverseGeocodingNotifier;
+
+  @override
+  Future<void> set(bool value) async {
+    final wasAllowed = state;
+    await super.set(value);
+    if (value && !wasAllowed) {
+      await _reverseGeocodingNotifier.set(true);
+    }
   }
 }

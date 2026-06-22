@@ -17,10 +17,12 @@
 //   the recorder when popped via the back gesture.
 //
 // Recording format:
-//   AAC-LC inside an MP4 container (.m4a). 16 kHz mono, 64 kbps. This is
-//   well below the audio classifier's 32 kHz sample rate but more than
-//   enough fidelity for spoken commentary, and yields ~8 KB/s — a 30-s
-//   memo is ~240 KB, comfortable to bundle in ZIP exports.
+//   iOS uses WAV/PCM16 (.wav) because the `record_ios` AAC path can
+//   produce header-only files on some iPhone / iOS combinations in this
+//   app's audio-session mix. Other platforms keep AAC-LC in an MP4
+//   container (.m4a). Both are 16 kHz mono, which is more than enough
+//   fidelity for spoken commentary while staying small enough for ZIP
+//   exports.
 //
 // UI design:
 //   The dialog has a single transport area that switches between three
@@ -51,6 +53,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -121,6 +124,7 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
   Duration _playDuration = Duration.zero;
   bool _isRecording = false;
   bool _isPlaying = false;
+  String? _loadedPlayerPath;
   String? _pendingPath; // freshly-recorded but not yet committed
   String? _committedExistingPath; // the original memo if any
   String? _errorMessage;
@@ -200,7 +204,25 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
       await dir.create(recursive: true);
     }
     final stamp = DateTime.now().millisecondsSinceEpoch;
-    return p.join(dir.path, 'memo_$stamp.m4a');
+    return p.join(dir.path, 'memo_$stamp.$_memoFileExtension');
+  }
+
+  String get _memoFileExtension => Platform.isIOS ? 'wav' : 'm4a';
+
+  RecordConfig get _recordConfig {
+    if (Platform.isIOS) {
+      return const RecordConfig(
+        encoder: AudioEncoder.wav,
+        sampleRate: 16000,
+        numChannels: 1,
+      );
+    }
+    return const RecordConfig(
+      encoder: AudioEncoder.aacLc,
+      sampleRate: 16000,
+      numChannels: 1,
+      bitRate: 64000,
+    );
   }
 
   Future<void> _startRecording() async {
@@ -221,17 +243,10 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
       if (_player.playing) {
         await _player.stop();
       }
+      _loadedPlayerPath = null;
 
       final path = await _newMemoPath();
-      await _recorder.start(
-        const RecordConfig(
-          encoder: AudioEncoder.aacLc,
-          sampleRate: 16000,
-          numChannels: 1,
-          bitRate: 64000,
-        ),
-        path: path,
-      );
+      await _recorder.start(_recordConfig, path: path);
 
       _elapsed = Duration.zero;
       _waveform.clear();
@@ -294,22 +309,52 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
     _ampTimer?.cancel();
     _ampTimer = null;
     _waveAnim.stop();
+    String? stoppedPath;
     try {
-      await _recorder.stop();
-    } catch (_) {
-      // The recorder is best-effort; ignore stop errors.
+      stoppedPath = await _recorder.stop();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isRecording = false;
+        _errorMessage = e.toString();
+      });
+      return;
     }
     if (!mounted) return;
+
+    final resolvedPath =
+        (stoppedPath != null && stoppedPath.isNotEmpty)
+            ? stoppedPath
+            : _pendingPath;
+    if (resolvedPath == null) {
+      setState(() {
+        _isRecording = false;
+        _errorMessage = AppLocalizations.of(context)!.statusError;
+      });
+      return;
+    }
+
+    final recordedFile = File(resolvedPath);
+    final exists = await recordedFile.exists();
+    final size = exists ? await recordedFile.length() : 0;
+    if (!exists || size <= 0) {
+      if (exists) {
+        // ignore: discarded_futures
+        recordedFile.delete().catchError((_) => recordedFile);
+      }
+      setState(() {
+        _isRecording = false;
+        _pendingPath = null;
+        _errorMessage = AppLocalizations.of(context)!.statusError;
+      });
+      return;
+    }
+
+    _pendingPath = resolvedPath;
+
     // Pre-load the freshly-recorded file into the player so the play
     // affordance lights up with an accurate duration.
-    final path = _pendingPath;
-    if (path != null) {
-      try {
-        await _player.setFilePath(path);
-      } catch (_) {
-        // Non-fatal: playback simply won't be available until Save.
-      }
-    }
+    await _ensurePlayerLoaded(resolvedPath);
     if (!mounted) return;
     setState(() => _isRecording = false);
   }
@@ -322,11 +367,16 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
       return;
     }
     try {
-      // Lazy-load: only call setFilePath when the source isn't already
-      // wired up (existing memo on first play). This avoids a re-load
-      // round-trip on every play/pause toggle.
-      if (_player.duration == null) {
-        await _player.setFilePath(path);
+      // Lazy-load by path: duration can stay non-null from a previous
+      // source, so comparing against duration causes stale-source bugs.
+      if (_loadedPlayerPath != path) {
+        final ok = await _ensurePlayerLoaded(path);
+        if (!ok) {
+          if (mounted) {
+            setState(() => _errorMessage = 'Cannot open voice memo file.');
+          }
+          return;
+        }
       }
       if (_player.processingState == ProcessingState.completed) {
         await _player.seek(Duration.zero);
@@ -334,6 +384,26 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
       await _player.play();
     } catch (e) {
       if (mounted) setState(() => _errorMessage = e.toString());
+    }
+  }
+
+  Future<bool> _ensurePlayerLoaded(String path) async {
+    try {
+      await _player.setFilePath(path);
+      _loadedPlayerPath = path;
+      return true;
+    } catch (_) {
+      // iOS can briefly report "Cannot open" right after recorder stop
+      // while the container headers are still being finalized.
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+      try {
+        await _player.setFilePath(path);
+        _loadedPlayerPath = path;
+        return true;
+      } catch (_) {
+        _loadedPlayerPath = null;
+        return false;
+      }
     }
   }
 
@@ -524,7 +594,7 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
         Row(
           children: [
             IconButton.filled(
-              icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+              icon: Icon(_isPlaying ? AppIcons.pause : AppIcons.playArrow),
               tooltip: l10n.detectionVoiceMemoTooltip,
               onPressed: _togglePlay,
             ),
@@ -569,7 +639,7 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
         Center(
           child: OutlinedButton.icon(
             onPressed: _startRecording,
-            icon: const Icon(Icons.fiber_manual_record, size: 16),
+            icon: const Icon(AppIcons.fiberManualRecord, size: 16),
             label: Text(l10n.detectionReplaceVoiceMemo),
           ),
         ),
@@ -596,9 +666,10 @@ class _RecordButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Semantics(
       button: true,
-      label: isRecording ? 'Stop recording' : 'Start recording',
+      label: isRecording ? l10n.a11yLiveCaptureStop : l10n.a11yLiveCaptureStart,
       child: GestureDetector(
         onTap: onTap,
         child: Container(
@@ -622,7 +693,7 @@ class _RecordButton extends StatelessWidget {
                     : null,
           ),
           child: Icon(
-            isRecording ? Icons.stop : Icons.mic,
+            isRecording ? AppIcons.stop : AppIcons.mic,
             size: 40,
             color:
                 isRecording

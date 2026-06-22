@@ -44,6 +44,15 @@ void main() {
         'confidenceThreshold': 50,
         'inferenceRate': 2.0,
         'speciesFilterMode': 'geoMerge',
+        'recordingMode': 'detectionsOnly',
+        'recordingFormat': 'flac',
+        'detectionSamplingMode': 'smart',
+        'topNPerSpecies': 7,
+        'gpsIntervalSeconds': 15,
+        'maxDurationHours': 4,
+        'targetDurationSeconds': 600,
+        'autoStopBatteryPercent': 25,
+        'backgroundGps': true,
       };
       final settings = SessionSettings.fromJson(json);
 
@@ -51,6 +60,15 @@ void main() {
       expect(settings.confidenceThreshold, 50);
       expect(settings.inferenceRate, 2.0);
       expect(settings.speciesFilterMode, 'geoMerge');
+      expect(settings.recordingMode, 'detectionsOnly');
+      expect(settings.recordingFormat, 'flac');
+      expect(settings.detectionSamplingMode, 'smart');
+      expect(settings.topNPerSpecies, 7);
+      expect(settings.gpsIntervalSeconds, 15);
+      expect(settings.maxDurationHours, 4);
+      expect(settings.targetDurationSeconds, 600);
+      expect(settings.autoStopBatteryPercent, 25);
+      expect(settings.backgroundGps, isTrue);
     });
 
     test('fromJson uses defaults for missing fields', () {
@@ -68,6 +86,15 @@ void main() {
         confidenceThreshold: 75,
         inferenceRate: 0.5,
         speciesFilterMode: 'customList',
+        recordingMode: 'full',
+        recordingFormat: 'wav',
+        detectionSamplingMode: 'topN',
+        topNPerSpecies: 5,
+        gpsIntervalSeconds: 30,
+        maxDurationHours: 8,
+        targetDurationSeconds: 300,
+        autoStopBatteryPercent: 10,
+        backgroundGps: false,
       );
       final json = settings.toJson();
       final roundTripped = SessionSettings.fromJson(json);
@@ -76,6 +103,15 @@ void main() {
       expect(roundTripped.confidenceThreshold, 75);
       expect(roundTripped.inferenceRate, 0.5);
       expect(roundTripped.speciesFilterMode, 'customList');
+      expect(roundTripped.recordingMode, 'full');
+      expect(roundTripped.recordingFormat, 'wav');
+      expect(roundTripped.detectionSamplingMode, 'topN');
+      expect(roundTripped.topNPerSpecies, 5);
+      expect(roundTripped.gpsIntervalSeconds, 30);
+      expect(roundTripped.maxDurationHours, 8);
+      expect(roundTripped.targetDurationSeconds, 300);
+      expect(roundTripped.autoStopBatteryPercent, 10);
+      expect(roundTripped.backgroundGps, isFalse);
     });
   });
 
@@ -445,6 +481,66 @@ void main() {
       session.endTime = DateTime(2026, 2, 28, 14, 30);
 
       expect(session.duration, const Duration(minutes: 30));
+    });
+
+    test('ended recorded session duration ignores stale open segment', () {
+      final start = DateTime(2026, 2, 28, 14, 0);
+      final session = LiveSession(
+        id: 'test',
+        startTime: start,
+        endTime: start.add(const Duration(minutes: 10)),
+        type: SessionType.survey,
+        settings: testSettings,
+        recordedDurationSeconds: 600,
+        segments: [
+          SessionSegment(
+            startTime: start,
+            endTime: start.add(const Duration(minutes: 10)),
+          ),
+          SessionSegment(startTime: start.add(const Duration(minutes: 10))),
+        ],
+      );
+
+      expect(session.duration, const Duration(minutes: 10));
+    });
+
+    test('startSegment does not reopen ended session', () {
+      final start = DateTime(2026, 2, 28, 14, 0);
+      final session = LiveSession(
+        id: 'test',
+        startTime: start,
+        endTime: start.add(const Duration(minutes: 10)),
+        settings: testSettings,
+        segments: [
+          SessionSegment(
+            startTime: start,
+            endTime: start.add(const Duration(minutes: 10)),
+          ),
+        ],
+      );
+
+      session.startSegment();
+
+      expect(session.segments, hasLength(1));
+      expect(session.segments.single.endTime, isNotNull);
+    });
+
+    test('toJson closes stale open segment for ended session', () {
+      final start = DateTime(2026, 2, 28, 14, 0);
+      final end = start.add(const Duration(minutes: 10));
+      final session = LiveSession(
+        id: 'test',
+        startTime: start,
+        endTime: end,
+        settings: testSettings,
+        segments: [SessionSegment(startTime: start)],
+      );
+
+      final json = session.toJson();
+      final segments = json['segments'] as List<dynamic>;
+      final segment = segments.single as Map<String, dynamic>;
+
+      expect(segment['endTime'], end.toUtc().toIso8601String());
     });
 
     test('toJson / fromJson round-trip', () {

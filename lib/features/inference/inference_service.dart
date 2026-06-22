@@ -40,6 +40,7 @@ import 'model_config.dart';
 import 'models/detection.dart';
 import 'models/species.dart';
 import 'post_processor.dart';
+import 'score_blacklist.dart';
 
 /// High-level inference coordinator.
 ///
@@ -58,11 +59,15 @@ class InferenceService {
 
   final ClassifierModel _model = ClassifierModel();
   List<Species> _labels = const [];
+  List<double> _scoreMultipliers = const [];
   ModelConfig? _config;
 
   /// Rolling buffer of recent per-class probability vectors for temporal
-  /// pooling (newest last).
-  final List<List<double>> _recentScores = [];
+  /// pooling (newest last) with their start timestamps.
+  final List<_TimestampedScores> _recentScores = [];
+
+  /// Class indexes that were emitted on the previous cycle.
+  final Set<int> _confirmedDetectionIndexes = {};
 
   /// Whether the service has been successfully initialized.
   bool get isReady => _model.isLoaded && _labels.isNotEmpty && _config != null;
@@ -124,6 +129,7 @@ class InferenceService {
     if (next == _poolingMode) return;
     _poolingMode = next;
     _recentScores.clear();
+    _confirmedDetectionIndexes.clear();
   }
 
   // ---------------------------------------------------------------------------
@@ -136,13 +142,24 @@ class InferenceService {
   /// [labelsCsv] — full text content of the labels file.
   /// [config] — model configuration describing tensor names, label format,
   ///   and inference defaults.
+  /// [scoreBlacklistJson] — optional JSON map from English common names to
+  ///   confidence multipliers in [0, 1].
   Future<void> initialize({
     required String modelFilePath,
     required String labelsCsv,
     required ModelConfig config,
+    String? scoreBlacklistJson,
   }) async {
     _config = config;
     _labels = LabelParser.parse(labelsCsv, config: config.labels);
+    final blacklist =
+        scoreBlacklistJson == null
+            ? const <String, double>{}
+            : ScoreBlacklist.parse(scoreBlacklistJson);
+    _scoreMultipliers = ScoreBlacklist.buildMultiplierVector(
+      labels: _labels,
+      fractions: blacklist,
+    );
     await _model.loadModelFromFile(
       modelFilePath,
       inputName: config.onnx.inputName,
@@ -155,8 +172,10 @@ class InferenceService {
   Future<void> dispose() async {
     await _model.dispose();
     _labels = const [];
+    _scoreMultipliers = const [];
     _config = null;
     _recentScores.clear();
+    _confirmedDetectionIndexes.clear();
   }
 
   // ---------------------------------------------------------------------------
@@ -183,6 +202,7 @@ class InferenceService {
     double? confidenceThreshold,
     int? topK,
     bool useTemporalPooling = true,
+    DateTime? timestamp,
   }) async {
     if (!isReady) {
       throw StateError(
@@ -204,7 +224,7 @@ class InferenceService {
     // sample corresponds to (now - ws). Using this start-of-window
     // timestamp keeps the session-review offsets and the audio playhead
     // aligned with where the call actually is in the recording.
-    final now = DateTime.now().subtract(Duration(seconds: ws));
+    final now = timestamp ?? DateTime.now().subtract(Duration(seconds: ws));
 
     // Run model.
     final output = await _model.predict(
@@ -223,42 +243,85 @@ class InferenceService {
     // [useTemporalPooling] flag still acts as a hard override (set to
     // `false` by callers that want raw single-window probs).
     List<double> finalScores;
+    List<List<double>> poolingInputScores = [];
+
     if (!useTemporalPooling || _poolingMode == 'off') {
       // Don't grow the rolling buffer when pooling is off — it would
       // re-pollute results if the user switches back to a pooled mode
       // mid-session.
       finalScores = probs;
     } else {
-      _recentScores.add(probs);
+      _recentScores.add(_TimestampedScores(now, probs));
       if (_recentScores.length > maxPoolWindows) {
         _recentScores.removeAt(0);
       }
+
+      // Filter out chunks whose start timestamp is older than 10 seconds than "now"
+      final validRecentTimestamped =
+          _recentScores.where((ts) {
+            final age = now.difference(ts.timestamp);
+            return age.inMicroseconds >= 0 && age.inSeconds <= 10;
+          }).toList();
+
+      poolingInputScores =
+          validRecentTimestamped.map((ts) => ts.scores).toList();
+
       switch (_poolingMode) {
         case 'average':
-          finalScores = PostProcessor.average(_recentScores);
+          finalScores = PostProcessor.average(poolingInputScores);
           break;
         case 'max':
-          finalScores = PostProcessor.max(_recentScores);
+          finalScores = PostProcessor.max(poolingInputScores);
           break;
         case 'lme':
         default:
           finalScores = PostProcessor.logMeanExp(
-            _recentScores,
+            poolingInputScores,
             alpha: poolingAlpha,
+            peakRetention: cfg.inference.temporalPooling.peakRetention,
           );
       }
     }
 
     // Sensitivity + top-K + threshold.
-    final adjusted = PostProcessor.applySensitivityAll(finalScores, sens);
+    final sensitivityAdjusted = PostProcessor.applySensitivityAll(
+      finalScores,
+      sens,
+    );
+    final adjusted = ScoreBlacklist.applyMultipliers(
+      scores: sensitivityAdjusted,
+      multipliers: _scoreMultipliers,
+    );
+
+    final gated =
+        _poolingMode == 'lme' &&
+                useTemporalPooling &&
+                poolingInputScores.isNotEmpty
+            ? PostProcessor.applyTemporalSupportGate(
+              scores: adjusted,
+              windowScores: poolingInputScores,
+              confirmedIndexes: _confirmedDetectionIndexes,
+              confidenceThreshold: thresh,
+              supportThreshold: cfg.inference.temporalPooling
+                  .supportThresholdFor(thresh),
+              minSupportWindows:
+                  cfg.inference.temporalPooling.minSupportWindows,
+              veryHighImmediateThreshold:
+                  cfg.inference.temporalPooling.veryHighImmediateThreshold,
+            )
+            : adjusted;
 
     final detections = PostProcessor.topK(
-      scores: adjusted,
+      scores: gated,
       labels: _labels,
       k: k,
       threshold: thresh,
       timestamp: now,
     );
+
+    _confirmedDetectionIndexes
+      ..clear()
+      ..addAll(detections.map((detection) => detection.species.index));
 
     return detections;
   }
@@ -268,5 +331,12 @@ class InferenceService {
   /// Call this when switching modes or resetting the analysis context.
   void resetPooling() {
     _recentScores.clear();
+    _confirmedDetectionIndexes.clear();
   }
+}
+
+class _TimestampedScores {
+  final DateTime timestamp;
+  final List<double> scores;
+  _TimestampedScores(this.timestamp, this.scores);
 }

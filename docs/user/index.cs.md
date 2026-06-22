@@ -48,6 +48,14 @@ Nastavení průzkumu, ovládací panel živého průzkumu a karty mapy, spektrog
 
 Průvodce analýzou souborů ve čtyřech krocích, volby parametrů a způsob přesunutí výsledků do relace.
 
+### [Dávková analýza](batch-analysis.md)
+
+Zpracovat a analyzovat více zvukových souborů hromadně. (Již brzy)
+
+### [Režim ARU](aru-mode.md)
+
+Vytvořte naplánovanou relaci nasazení ARU, nahrávejte plný zvuk cyklů nebo ponechané detekční klipy, spouštějte živou inferenci během aktivních cyklů a sledujte plánované nahrávací cykly.
+
 ## Reference
 
 ### [FAQ](faq.md)

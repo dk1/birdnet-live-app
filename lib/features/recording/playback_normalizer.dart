@@ -63,6 +63,14 @@ class PlaybackNormalizer {
   /// well under 100 MB.
   static const int _cacheMaxEntries = 32;
 
+  /// Files larger than this skip normalization entirely. Full-decode-
+  /// and-rewrite scales linearly with PCM size, so a 1 h FLAC would
+  /// blow up to ~230 MB of int16 in RAM plus ~460 MB of Float32 on
+  /// disk — all on whichever isolate calls us. For long field
+  /// recordings that's both impractical and unnecessary (they're
+  /// usually loud enough already), so we just play the original.
+  static const int _maxNormalizeBytes = 30 * 1024 * 1024;
+
   /// Resolve a playback path for [originalPath]. When [decoded] is
   /// provided it is used directly to compute the peak (saves a redundant
   /// decode in callers that already needed the samples for a
@@ -78,6 +86,14 @@ class PlaybackNormalizer {
     try {
       final file = File(originalPath);
       if (!await file.exists()) return originalPath;
+
+      // Skip normalization for large source files — the full decode is
+      // far too expensive to run on the calling isolate, and quiet long
+      // recordings are rare in practice.
+      if (decoded == null) {
+        final size = await file.length();
+        if (size > _maxNormalizeBytes) return originalPath;
+      }
 
       // Decode if the caller didn't hand us samples already.
       DecodedAudio audio;
