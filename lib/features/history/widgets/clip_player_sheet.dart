@@ -513,7 +513,10 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                         ),
                         if (showSciNames)
                           Text(
-                            det.scientificName,
+                            taxonomyAsync.value?.displayScientificName(
+                                  det.scientificName,
+                                ) ??
+                                det.scientificName,
                             style: theme.textTheme.bodySmall?.copyWith(
                               fontStyle: FontStyle.italic,
                             ),

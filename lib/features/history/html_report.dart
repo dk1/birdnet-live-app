@@ -550,7 +550,8 @@ String _buildDataPayload(
     final clipName = clipFileMap?[i];
     detections.add({
       'common': _localizedCommon(d, taxonomy, speciesLocale),
-      'sci': d.scientificName,
+      'sci': taxonomy?.displayScientificName(d.scientificName) ??
+          d.scientificName,
       'conf': d.confidence,
       'lat': d.latitude,
       'lon': d.longitude,
@@ -632,7 +633,9 @@ String _buildDetectionsHtml(
     buf.writeln('  <div class="body">');
     buf.writeln('    <div class="title-row">');
     buf.writeln('      <span class="common">${_esc(common)}</span>');
-    buf.writeln('      <span class="sci">${_esc(sci)}</span>');
+    buf.writeln(
+      '      <span class="sci">${_esc(taxon?.displayScientificName ?? sci)}</span>',
+    );
     buf.writeln('    </div>');
     buf.writeln('    <div class="stats">');
     buf.writeln('      <span class="score $bestClass">$bestPct%</span>');

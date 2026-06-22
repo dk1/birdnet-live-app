@@ -22,7 +22,7 @@ files at WebP quality 70 to keep bundle size under control.
 ## Prerequisites
 
 - Python 3.11+ available on your path.
-- The BirdNET labels CSV present at `assets/models/BirdNET+_V3.0-preview3_Global_5K-pruned_Labels.csv`.
+- The audio model labels CSV referenced by `assets/models/model_config.json` (the build script reads `audioModel.labels.file` automatically).
 - Python dependencies installed:
 
 ```bash

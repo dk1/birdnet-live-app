@@ -102,6 +102,13 @@ String _localizedCommon(
   return localized.isNotEmpty ? localized : d.commonName;
 }
 
+/// Resolves the canonical (taxonomy-current) scientific name for a detection.
+///
+/// Falls back to the detection's stored model-label scientific name when no
+/// taxonomy is supplied or the species does not resolve.
+String _displaySci(DetectionRecord d, {TaxonomyService? taxonomy}) =>
+    taxonomy?.displayScientificName(d.scientificName) ?? d.scientificName;
+
 /// Generates a Raven Pro-compatible selection table from session detections.
 ///
 /// When [audioFileName] is provided every row references that single file.
@@ -249,7 +256,7 @@ String buildRavenSelectionTable(
       '0\t'
       '$_highFreqHz\t'
       '$commonName\t'
-      '${d.scientificName}\t'
+      '${_displaySci(d, taxonomy: taxonomy)}\t'
       '${d.confidence.toStringAsFixed(4)}'
       '$surveyTimeSuffix'
       '$confirmedSuffix'
@@ -353,10 +360,8 @@ String buildCsvExport(
     );
     final commonName =
         localizedCommon.contains(',') ? '"$localizedCommon"' : localizedCommon;
-    final sciName =
-        d.scientificName.contains(',')
-            ? '"${d.scientificName}"'
-            : d.scientificName;
+    final displaySci = _displaySci(d, taxonomy: taxonomy);
+    final sciName = displaySci.contains(',') ? '"$displaySci"' : displaySci;
 
     final fileRef = hasFileRefs ? ',${clipName ?? audioFileName ?? ''}' : '';
     final surveyTimeValue =
@@ -647,7 +652,11 @@ Map<String, dynamic>? _batchAnalysisExportMetadata(LiveSession session) {
 /// Generates a JSON representation of the session and its detections.
 ///
 /// When [metadata] is provided it is embedded under a top-level `meta` key.
-String buildJsonExport(LiveSession session, {Map<String, dynamic>? metadata}) {
+String buildJsonExport(
+  LiveSession session, {
+  Map<String, dynamic>? metadata,
+  TaxonomyService? taxonomy,
+}) {
   final map = {
     if (metadata != null) 'meta': metadata,
     'session': session.displayName,
@@ -685,7 +694,7 @@ String buildJsonExport(LiveSession session, {Map<String, dynamic>? metadata}) {
             'timestamp': d.timestamp.toUtc().toIso8601String(),
             'beginTimeSec': num.parse(beginSec.toStringAsFixed(3)),
             'commonName': d.commonName,
-            'scientificName': d.scientificName,
+            'scientificName': _displaySci(d, taxonomy: taxonomy),
             'confidence': num.parse(d.confidence.toStringAsFixed(4)),
             if (d.latitude != null) 'latitude': d.latitude,
             if (d.longitude != null) 'longitude': d.longitude,
@@ -912,11 +921,18 @@ Future<String?> buildSessionExport(
       case 'json':
         docs[fmt] = (
           extension: '.json',
-          content: buildJsonExport(session, metadata: exportMetadata),
+          content: buildJsonExport(
+            session,
+            metadata: exportMetadata,
+            taxonomy: taxonomy,
+          ),
         );
         break;
       case 'gpx':
-        docs[fmt] = (extension: '.gpx', content: buildGpxExport(session));
+        docs[fmt] = (
+          extension: '.gpx',
+          content: buildGpxExport(session, taxonomy: taxonomy),
+        );
         break;
       case 'raven':
       default:
@@ -1084,7 +1100,7 @@ Future<String?> buildSessionExport(
     if (session.type == SessionType.survey &&
         !selected.contains('gpx') &&
         docs.isNotEmpty) {
-      final gpxContent = buildGpxExport(session);
+      final gpxContent = buildGpxExport(session, taxonomy: taxonomy);
       final gpxBytes = Uint8List.fromList(utf8.encode(gpxContent));
       archive.addFile(ArchiveFile('$prefix.gpx', gpxBytes.length, gpxBytes));
     }
@@ -1186,7 +1202,7 @@ String _buildAnnotationsText(LiveSession session) {
 /// Contains:
 ///   • `<trk>` with `<trkseg>` of GPS track points
 ///   • `<wpt>` for each detection with lat/lon coordinates
-String buildGpxExport(LiveSession session) {
+String buildGpxExport(LiveSession session, {TaxonomyService? taxonomy}) {
   final buf = StringBuffer();
 
   buf.writeln('<?xml version="1.0" encoding="UTF-8"?>');
@@ -1218,7 +1234,7 @@ String buildGpxExport(LiveSession session) {
     buf.writeln('    <time>${d.timestamp.toUtc().toIso8601String()}</time>');
     buf.writeln('    <name>${_xmlEscape(d.commonName)}</name>');
     buf.writeln(
-      '    <desc>${_xmlEscape(d.scientificName)} (${(d.confidence * 100).toStringAsFixed(1)}%)</desc>',
+      '    <desc>${_xmlEscape(_displaySci(d, taxonomy: taxonomy))} (${(d.confidence * 100).toStringAsFixed(1)}%)</desc>',
     );
     if (d.isConfirmed) {
       // GPX <sym> is a free-form symbol hint; downstream tools (QGIS,

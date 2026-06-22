@@ -1224,7 +1224,10 @@ class _SummaryPanelState extends ConsumerState<_SummaryPanel> {
                       ),
                       if (showSciNames)
                         Text(
-                          item.scientificName,
+                          taxonomy?.displayScientificName(
+                                item.scientificName,
+                              ) ??
+                              item.scientificName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.labelSmall?.copyWith(

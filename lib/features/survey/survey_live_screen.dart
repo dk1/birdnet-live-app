@@ -1376,7 +1376,8 @@ class _SurveySummaryTab extends ConsumerWidget {
                       ),
                       if (showSciNames)
                         Text(
-                          sp.scientificName,
+                          taxonomy?.displayScientificName(sp.scientificName) ??
+                              sp.scientificName,
                           style: theme.textTheme.labelSmall?.copyWith(
                             fontStyle: FontStyle.italic,
                             color: theme.colorScheme.onSurface.withAlpha(140),
