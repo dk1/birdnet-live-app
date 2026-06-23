@@ -2092,7 +2092,7 @@
   "@settingsHelpShowSciNames": {
     "description": "Help text for the show scientific names setting"
   },
-  "settingsHelpPlaybackOverlay": "When enabled, tapping a detection plays its clip in a dedicated modal overlay with transport controls and a spectrogram preview. When disabled, playback is triggered in the background. Active by default for sessions that have clips only and don't show a spectrogram.",
+  "settingsHelpPlaybackOverlay": "When enabled, tapping a detection plays its clip in a dedicated modal overlay with transport controls and a spectrogram preview. When disabled, playback is triggered in the background. Active by default for sessions that only have clips and don't show a spectrogram.",
   "@settingsHelpPlaybackOverlay": {
     "description": "Help text for the playback overlay setting"
   },
@@ -2664,7 +2664,7 @@
     "description": "Metadata for surveyAlertMinConfidenceLabel"
 
   },
-  "surveyAlertMinConfidenceHelp": "Detections below this confidence are never alerted on. Floor is your session confidence threshold so alerts can never be more sensitive than detections themselves.",
+  "surveyAlertMinConfidenceHelp": "Detections below this confidence are never alerted on. The floor is your session confidence threshold, so alerts can never be more sensitive than the detections themselves.",
   "@surveyAlertMinConfidenceHelp": {
 
     "description": "Metadata for surveyAlertMinConfidenceHelp"
@@ -3931,7 +3931,7 @@
     "description": "Metadata for liveTipBluetoothMicTitle"
 
   },
-  "liveTipBluetoothMicBody": "For surveys, pair a Bluetooth or wired external microphone — point it at the source and improve range and clarity over the built-in mic.",
+  "liveTipBluetoothMicBody": "For surveys, pair a Bluetooth or wired external microphone — pointing it at the source improves range and clarity over the built-in mic.",
   "@liveTipBluetoothMicBody": {
 
     "description": "Metadata for liveTipBluetoothMicBody"
