@@ -16,10 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added domestic Dog, Cat, and Cattle to the recognized species so common backyard and farm animals can appear in Explore and detections.
 
-### Removed
-
-- Removed the Human class, which the model could not reliably detect.
-
 ## [0.17.14] - 2026-06-20
 
 ### Changed
