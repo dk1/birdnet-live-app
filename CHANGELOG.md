@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.15] - 2026-06-23
+
 ### Changed
 
+- Refined user and developer documentation across guides, localized pages, and navigation labels.
 - Spoken announcements now remain off by default for all users until manually enabled in Settings.
+
+### Fixed
+
+- Fixed imported Survey species lists to use the supported file picker read API.
 
 ## [0.17.14] - 2026-06-20
 
