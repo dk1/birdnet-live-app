@@ -1,60 +1,60 @@
-# Modo en vivo
+# Modo Live
 
-El modo en vivo es la forma más rápida de escuchar a través del micrófono del teléfono y revisar las detecciones a medida que aparecen.
+El Modo Live es la forma más rápida de escuchar a través del micrófono del teléfono y revisar las detecciones a medida que aparecen en tiempo real.
 
 ## Cómo abrirlo
 
-Desde la pantalla de inicio, toque la tarjeta **Modo en vivo** con el ícono :material-micrófono:.
+Desde la pantalla de Inicio, toca la tarjeta **Modo Live** con el icono :material-microphone:.
 
 ## Barra superior
 
 La barra superior contiene tres elementos:
 
-- :material-arrow-left: — salir del modo en vivo
-- texto de estado central: "Inicializando", "Cargando modelo", "Listo", "Identificando especies", "Pausado" o "Error".
-- :material-tune: — abre la vista de Configuración específica de Live
+- :material-arrow-left: — salir del Modo Live
+- texto de estado central — `Inicializando…`, `Cargando modelo…`, `Listo`, `Identificando especies…`, `En pausa` o `Error`
+- :material-tune: — abre la vista de Ajustes específica de Live
 
 ## Botón de acción principal
 
-El gran botón circular en la parte inferior central cambia de estado:
+El gran botón circular de la parte inferior central cambia de estado:
 
-- :material-micrófono: — empieza a escuchar
-- :material-stop: — detener la sesión activa
+- :material-microphone: — empezar a escuchar
+- :material-stop: — detener la Session activa
 - :material-play: — reanudar desde un estado en pausa y listo
 
 ## Lo que ves mientras escuchas
 
 ### Espectrograma
 
-El espectrograma se desplaza continuamente mientras la captura está activa. Muestra contenido de frecuencia a lo largo del tiempo y utiliza el mapa de colores, el tamaño de FFT, el rango de frecuencia y la duración de Configuración.
+El espectrograma se desplaza continuamente mientras la captura está activa. Muestra el contenido de frecuencia a lo largo del tiempo, usando el mapa de colores, el tamaño de FFT, el rango de frecuencia y la duración configurados en Ajustes.
 
-### Lista de detección
+### Lista de detecciones
 
 Las detecciones recientes aparecen debajo del espectrograma. Cada fila puede mostrar:
 
-- imagen de especie
+- imagen de la especie
 - nombre común
 - nombre científico opcional
 - valor de confianza
 
-Toque una fila de especie para abrir la superposición de detalles de la especie.
+Toca una fila de especie para abrir el panel de detalles de la especie.
 
-### Barra de información de la sesión
+### Barra de información de la Session
 
-La línea de información compacta debajo del espectrograma resume la sesión actual, por ejemplo:
+La línea de información compacta debajo del espectrograma resume la Session actual, por ejemplo:
 
-- las detecciones actuales se muestran ahora
+- las detecciones que se muestran ahora
 - recuento de especies únicas (`spp`)
 - detecciones totales (`det`)
 - duración transcurrida
 - tamaño de grabación estimado cuando la grabación está habilitada
 
-## Comportamiento de grabación
+## Comportamiento de la grabación
 
-La grabación se controla en [Configuración] (settings.md).
+La grabación se controla en [Ajustes](settings.md).
 
-- **Completo** registra toda la sesión.
+- **Completo** graba toda la Session.
 - **Solo detecciones** graba clips alrededor de las detecciones.
-- **Apagado** desactiva la grabación.
+- **Desactivado** desactiva la grabación.
 
-Cuando detiene el modo en vivo, BirdNET Live guarda la sesión y abre [Revisión de sesión] (session-review.md).
+Cuando detienes el Modo Live, BirdNET Live guarda la Session y abre el [Resumen de la Session](session-review.md).

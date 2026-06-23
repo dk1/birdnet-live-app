@@ -3,11 +3,11 @@
 !!! note "Demnächst"
     Diese Funktion befindet sich in der Entwicklung und wird in einer zukünftigen Version verfügbar sein.
 
-Die Batch-Analyse ermöglicht es, mehrere Audiodateien im Batch-Modus (z. B. von einer über ein USB-Lesegerät angeschlossenen SD-Karte) mit eigenen Analyseparametern zu verarbeiten und zu analysieren.
+Mit der Batch-Analyse können Sie mehrere Audiodateien gebündelt verarbeiten und analysieren (zum Beispiel von einer über ein USB-Lesegerät angeschlossenen SD-Karte) und dabei eigene Analyseparameter verwenden.
 
 ## Geplante Funktionen
 
 - **Zugriff auf externen Speicher**: Ordner direkt von externen SD-Karten oder USB-Laufwerken scannen und lesen.
-- **Stapelverarbeitung**: Ganze Verzeichnisse von Audiodateien in einem einzigen Batch-Lauf analysieren.
-- **Flexibler Export**: Ergebnisse direkt auf dem externen Speicher im Raven Selection Table-, CSV-, TSV- oder JSON-Format speichern.
-- **Sitzungs-Subsampling**: Option zum Importieren von Ergebnissen in die App-Datenbank mithilfe intelligenter Subsampling-Filter, um ein Überlaufen der Datenbank zu verhindern.
+- **Stapelverarbeitung**: Ganze Verzeichnisse mit Audiodateien in einem einzigen Batch-Lauf analysieren.
+- **Flexibler Export**: Ergebnisse direkt auf dem externen Speicher im Format Raven Selection Table, CSV, TSV oder JSON speichern.
+- **Session-Subsampling**: Option, Ergebnisse mithilfe intelligenter Subsampling-Filter in die App-Datenbank zu importieren, um ein Aufblähen der Datenbank zu verhindern.

@@ -1,68 +1,68 @@
 # Analyse de fichiers
 
-File Analysis traite un enregistrement existant via le même pipeline BirdNET utilisé par les flux de travail en direct.
+L'Analyse de fichiers traite un enregistrement existant via le même pipeline BirdNET que les flux de travail en direct.
 
 ## Comment l'ouvrir
 
-Depuis Accueil, appuyez sur la carte **File Analysis** avec l'icône :material-file-music:.
+Depuis l'accueil, appuyez sur la carte **Analyse de fichiers** avec l'icône :material-file-music:.
 
-## Barre d'applications
+## Barre supérieure
 
-- :material-tune : — ouvre les paramètres d'analyse de fichiers
-- :material-close: — annuler une analyse active
+- :material-tune: — ouvrir les paramètres de l'Analyse de fichiers
+- :material-close: — annuler une analyse en cours
 
-## Entrées prises en charge
+## Formats pris en charge
 
-Le sélecteur de fichiers actuel accepte :
+Le sélecteur de fichiers actuel accepte :
 
-- WAV/ONDE
--FLAC
--MP3
--OGG/OGA/Opus
--M4A/AAC/MP4
--WMA/AMR
+- WAV / WAVE
+- FLAC
+- MP3
+- OGG / OGA / Opus
+- M4A / AAC / MP4
+- WMA / AMR
 
 ## Assistant en quatre étapes
 
 ### 1. Choisir un fichier
 
-Choisissez un fichier et examinez sa fiche de métadonnées :
+Choisissez un fichier et examinez sa fiche de métadonnées :
 
 - nom du fichier
--format
+- format
 - durée
 - taille du fichier
-- taux d'échantillonnage
+- fréquence d'échantillonnage
 
 ### 2. Lieu et date
 
-Tu peux:
+Vous pouvez :
 
 - utiliser le GPS actuel
 - saisir les coordonnées manuellement
-- ignorer l'emplacement
-- choisissez un point sur la carte
+- ignorer la localisation
+- choisir un point sur la carte
 - définir une date d'enregistrement facultative
 
 ### 3. Paramètres
 
-L'assistant expose :
+L'assistant donne accès à :
 
-- durée de la fenêtre
-- chevauchement
-- sensibilité
-- seuil de confiance
-- mode de filtrage des espèces
+- la durée de la fenêtre
+- le chevauchement
+- la sensibilité
+- le seuil de confiance
+- le mode de filtre d'espèces
 
 ### 4. Analyser
 
-L'écran de progression affiche :
+L'écran de progression affiche :
 
-- fenêtres traitées
-- détections trouvées
-- espèces trouvées
-- bouton annuler
+- les fenêtres traitées
+- les détections trouvées
+- les espèces trouvées
+- le bouton d'annulation
 
 ## Résultat
 
-Une fois l'analyse terminée, BirdNET Live convertit la sortie en une session enregistrée et ouvre [Session Review] (session-review.md).
+Une fois l'analyse terminée, BirdNET Live convertit le résultat en une session enregistrée et ouvre le [Résumé de la session](session-review.md).

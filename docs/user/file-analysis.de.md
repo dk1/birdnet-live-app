@@ -1,32 +1,32 @@
 # Dateianalyse
 
-File Analysis verarbeitet eine vorhandene Aufzeichnung über dieselbe BirdNET-Pipeline, die von den Live-Workflows verwendet wird.
+Die Dateianalyse verarbeitet eine vorhandene Aufnahme über dieselbe BirdNET-Pipeline, die auch die Live-Workflows antreibt.
 
-## So öffnen Sie es
+## So öffnen Sie sie
 
 Tippen Sie auf der Startseite auf die Karte **Dateianalyse** mit dem Symbol :material-file-music:.
 
 ## App-Leiste
 
-- :material-tune: – Dateianalyse-Einstellungen öffnen
-- :material-close: – einen aktiven Analyselauf abbrechen
+- :material-tune: — Dateianalyse-Einstellungen öffnen
+- :material-close: — einen laufenden Analyselauf abbrechen
 
 ## Unterstützte Eingaben
 
 Die aktuelle Dateiauswahl akzeptiert:
 
-- WAV / WELLE
+- WAV / WAVE
 - FLAC
 - MP3
 - OGG / OGA / Opus
 - M4A / AAC / MP4
 - WMA / AMR
 
-## Vier-Schritte-Assistent
+## Vierstufiger Assistent
 
 ### 1. Datei auswählen
 
-Wählen Sie eine Datei aus und überprüfen Sie deren Metadatenkarte:
+Wählen Sie eine Datei und prüfen Sie ihre Metadatenkarte:
 
 - Dateiname
 - Format
@@ -34,35 +34,35 @@ Wählen Sie eine Datei aus und überprüfen Sie deren Metadatenkarte:
 - Dateigröße
 - Abtastrate
 
-### 2. Ort und Datum
+### 2. Standort und Datum
 
-Du kannst:
+Sie können:
 
-- Verwenden Sie aktuelles GPS
+- aktuelles GPS verwenden
 - Koordinaten manuell eingeben
-- Standort überspringen
-- Wählen Sie einen Punkt auf der Karte
-- Legen Sie ein optionales Aufnahmedatum fest
+- den Standort überspringen
+- einen Punkt auf der Karte wählen
+- ein optionales Aufnahmedatum festlegen
 
 ### 3. Parameter
 
-Der Assistent zeigt Folgendes an:
+Der Assistent zeigt:
 
 - Fensterdauer
 - Überlappung
-- Sensibilität
-- Vertrauensschwelle
-- Artenfiltermodus
+- Empfindlichkeit
+- Konfidenzschwelle
+- Modus des Artenfilters
 
 ### 4. Analysieren
 
 Der Fortschrittsbildschirm zeigt:
 
-- Fenster verarbeitet
-- Detektionen gefunden
-- Arten gefunden
-- Abbrechen-Taste
+- verarbeitete Fenster
+- gefundene Detektionen
+- gefundene Arten
+- Abbrechen-Schaltfläche
 
 ## Ergebnis
 
-Wenn die Analyse abgeschlossen ist, konvertiert BirdNET Live die Ausgabe in eine gespeicherte Sitzung und öffnet [Sitzungsüberprüfung] (session-review.md).
+Wenn die Analyse abgeschlossen ist, wandelt BirdNET Live die Ausgabe in eine gespeicherte Session um und öffnet die [Session-Übersicht](session-review.md).

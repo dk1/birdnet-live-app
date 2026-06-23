@@ -1,30 +1,28 @@
-<!-- TRANSLATION TODO (de) -->
-
 # BirdNET Live
 
 **Professionelle Bioakustik in der Hosentasche.**
 
-BirdNET Live is a Flutter app built for field researchers, conservationists, and birders who need dependable acoustic evidence in the field. It runs the BirdNET+ audio classifier and geo-model directly on your device, so species identification works offline after installation.
+BirdNET Live ist eine Flutter-App für Feldforschende, im Naturschutz Tätige und Vogelbegeisterte, die im Feld auf verlässliche akustische Nachweise angewiesen sind. Der BirdNET+ Audio-Klassifikator und das Geo-Modell laufen direkt auf Ihrem Gerät, sodass die Artbestimmung nach der Installation vollständig offline funktioniert.
 
 <p align="center">
-  <img src="https://img.shields.io/badge/latest-v0.17.14-orange.svg" alt="Latest release: v0.17.14">
+  <img src="https://img.shields.io/badge/latest-v0.17.15-orange.svg" alt="Latest release: v0.17.15">
   <img src="https://img.shields.io/badge/species-5%2C250-brightgreen.svg" alt="Species: 5,250">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
 
 ## Features
 
-- **Live Mode** - Real-time scrolling spectrogram with species identification
-- **Point Count Mode** - Timed survey sessions with countdown timer and station metadata
-- **Survey Mode** - Long-running transect surveys with GPS tracking, background monitoring, and detection sampling
-- **File Analysis Mode** - Offline analysis of existing recordings (WAV, FLAC, MP3, OGG, and more)
-- **Explore** - Browse species expected at your location using the BirdNET geo-model
-- **Session Library** - Review, edit, and export past sessions with audio playback
-- **Export** - Raven Pro, CSV, JSON, GPX, and ZIP bundle formats with provenance metadata
-- **On-device inference** - BirdNET+ model coverage for 5,250 species, no internet required
-- **FLAC recording** - Compressed audio capture with smaller files for long surveys
-- **Accessibility** - Screen-reader labels, tooltips, and optional spoken detection announcements
-- **Responsive layouts** - Adaptive phone, tablet, portrait, and landscape interfaces
+- **Live-Modus** - Echtzeit-Spektrogramm mit fortlaufendem Bildlauf und Artbestimmung
+- **Point-Count-Modus** - Zeitlich begrenzte Sessions mit Countdown-Timer und Stationsmetadaten
+- **Survey-Modus** - Langlaufende Transekt-Surveys mit GPS-Tracking, Hintergrundüberwachung und Detektions-Sampling
+- **Dateianalyse** - Offline-Analyse vorhandener Aufnahmen (WAV, FLAC, MP3, OGG und mehr)
+- **Erkunden** - Durchsuchen Sie die für Ihren Standort erwarteten Arten mithilfe des BirdNET-Geo-Modells
+- **Session-Bibliothek** - Vergangene Sessions ansehen, bearbeiten und mit Audiowiedergabe exportieren
+- **Export** - Formate Raven Pro, CSV, JSON, GPX und ZIP-Bundle mit Herkunftsmetadaten
+- **On-Device-Inferenz** - BirdNET+ Modellabdeckung für 5.250 Arten, kein Internet erforderlich
+- **FLAC-Aufnahme** - Komprimierte Audioaufnahme mit kleineren Dateien für lange Surveys
+- **Barrierefreiheit** - Screenreader-Beschriftungen, Tooltips und optionale gesprochene Ansagen von Detektionen
+- **Responsive Layouts** - Anpassbare Oberflächen für Smartphone, Tablet, Hoch- und Querformat
 
 <p align="center">
   <img src="../assets/screenshots/live-mode.png" alt="Live Mode" width="150">
@@ -44,20 +42,20 @@ BirdNET Live is a Flutter app built for field researchers, conservationists, and
   <a href="https://github.com/birdnet-team/birdnet-live-app/releases"><b>All Releases</b></a>
 </p>
 
-## Quick Start
+## Schnellstart
 
-See the [User Guide](user/index.md) for an overview, then open [Getting Started](user/getting-started.md) to install and run BirdNET Live.
+Im [Benutzerhandbuch](user/index.md) finden Sie einen Überblick. Öffnen Sie anschließend [Erste Schritte](user/getting-started.md), um BirdNET Live zu installieren und auszuführen.
 
-## Install on Android
+## Unter Android installieren
 
-BirdNET Live is available as a signed APK for sideloading. Download the latest release from the [GitHub Releases page](https://github.com/birdnet-team/birdnet-live-app/releases/latest), transfer the `.apk` file to your phone, and open it to install. You may need to allow installation from unknown sources in your device settings.
+BirdNET Live ist als signiertes APK zum Sideloading verfügbar. Laden Sie die neueste Version von der [GitHub-Releases-Seite](https://github.com/birdnet-team/birdnet-live-app/releases/latest) herunter, übertragen Sie die `.apk`-Datei auf Ihr Smartphone und öffnen Sie sie zur Installation. Möglicherweise müssen Sie in den Geräteeinstellungen zunächst die Installation aus unbekannten Quellen erlauben.
 
-> **Note:** The APK is ~253 MB because it includes the BirdNET+ model assets for offline inference.
+> **Hinweis:** Das APK ist etwa 253 MB groß, da es die BirdNET+ Modelldaten für die Offline-Inferenz enthält.
 
-## For Developers
+## Für Entwicklerinnen und Entwickler
 
-Check the [Developer Guide](developer/index.md) for architecture, building, and contributing.
+Im [Entwicklerhandbuch](developer/index.md) finden Sie Informationen zu Architektur, Build und Mitwirkung.
 
-## License
+## Lizenz
 
-BirdNET Live is open source under the [MIT License](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE).
+BirdNET Live ist Open Source unter der [MIT-Lizenz](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE).

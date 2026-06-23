@@ -13,7 +13,7 @@ Le mode ARU (Autonomous Recording Unit) est le flux de travail pour les déploie
     - **Format d'enregistrement** : choisissez entre les formats FLAC (compressé sans perte) et WAV (non compressé).
     - **Mode d'enregistrement** :
         - *Complet* : enregistre toute la durée de chaque cycle actif.
-        - *Uniquement détections* : enregistre de courts clips audio autour des chants d'oiseaux détectés. Vous pouvez personnaliser le contexte du clip (ajout de 0 à 5 secondes de tampon audio pré- et post-détection) et choisir la méthode d'échantillonnage (*Tout*, *Top N* ou échantillonnage *Intelligent* afin de limiter l'espace de stockage utilisé).
+        - *Uniquement détections* : enregistre de courts clips audio autour des chants d'oiseaux détectés. Vous pouvez personnaliser le contexte du clip (ajout de 0 à 5 secondes de tampon audio pré- et post-détection) et choisir la méthode d'échantillonnage (*Toutes*, *Top N* ou échantillonnage *Smart* afin de limiter l'espace de stockage utilisé).
         - *Désactivé* : exécute l'inférence en temps réel pendant les cycles et journalise les détections, mais n'enregistre aucun fichier audio.
 - **Planning (Plan)** :
     - **Durée et répétition** : sélectionnez la durée de chaque cycle d'enregistrement actif et sa fréquence de répétition.
@@ -31,18 +31,18 @@ Les exports JSON et ZIP incluent les métadonnées du déploiement ARU. Les expo
 ## Écran de déploiement actif
 
 L'écran ARU actif indique si le déploiement est en attente, en enregistrement ou terminé. Sa mise en page utilise quatre onglets :
-- **État** : affiche l'état actuel du déploiement, le minuteur de cycle actif et une liste des détections en temps réel.
+- **Statut** : affiche l'état actuel du déploiement, le minuteur de cycle actif et une liste des détections en temps réel.
 - **Audio** : affiche un spectrogramme en direct pour vérifier l'entrée audio tout en gardant les détections visibles en dessous.
-- **Planning** : liste les 10 prochains horaires de cycle programmés, avec les indications d'alignement lever/coucher de soleil si un profil nycthéméral est actif.
+- **Plan** : liste les 10 prochains horaires de cycle programmés, avec les indications d'alignement lever/coucher de soleil si un profil nycthéméral est actif.
 - **Résumé** : résume le temps écoulé, la durée totale de l'audio enregistré et les statistiques de détection.
 
 Sur Android, les déploiements actifs affichent une notification de premier plan avec les actions Arrêter et Ouvrir.
 
-L'arrêt d'un déploiement ouvre Révision de session. Si les cycles ont été regroupés dans une seule Session, cette Session combinée s'ouvre ; s'ils ont été enregistrés séparément, la dernière Session de cycle terminée s'ouvre.
+L'arrêt d'un déploiement ouvre le Résumé de la session. Si les cycles ont été regroupés dans une seule Session, cette Session combinée s'ouvre ; s'ils ont été enregistrés séparément, la dernière Session de cycle terminée s'ouvre.
 
 Sur iOS, cette implémentation préliminaire doit être traitée comme un flux de travail de premier plan jusqu'à ce que le comportement d'audio/arrière-plan programmé ait été validé sur iOS.
 
 ## Toujours prévu
 
 - Validation du comportement en arrière-plan sur iOS.
-- Prise en charge complète de la lecture et du spectrogramme dans Session Review pour les enregistrements ARU segmentés.
+- Prise en charge complète de la lecture et du spectrogramme dans le Résumé de la session pour les enregistrements ARU segmentés.

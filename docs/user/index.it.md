@@ -1,80 +1,80 @@
 # Guida all'uso
 
-Questa guida spiega BirdNET Live come strumento per il flusso di lavoro sul campo: cosa fa ciascuna schermata, cosa significano le icone ricorrenti e come le impostazioni modificano il comportamento dell'app.
+Questa guida illustra BirdNET Live come strumento per il lavoro sul campo: cosa fa ciascuna schermata, cosa significano le icone ricorrenti e come le impostazioni modellano il comportamento dell'app.
 
-È stato scritto per ecologisti e professionisti del rilevamento degli uccelli che già conoscono i metodi sul campo e desiderano una mappa chiara dell'app stessa.
+È pensata per ecologi e professionisti del rilevamento ornitologico che conoscono già i metodi sul campo e desiderano semplicemente una mappa chiara dell'app.
 
 ## Inizia qui
 
-### [Per iniziare](getting-started.md)
+### [Primi passi](getting-started.md)
 
 Installazione, autorizzazioni, primo avvio e navigazione principale nella schermata Home.
 
 ### [Icone e controlli](icons-and-controls.md)
 
-Le icone, i pulsanti, i simboli e gli indicatori di stato condivisi visualizzati su BirdNET Live.
+Le icone, i pulsanti, i simboli e gli indicatori di stato condivisi che ricorrono in BirdNET Live.
 
 ### [Impostazioni](settings.md)
 
-Tutte le impostazioni attualmente esposte nell'app, raggruppate allo stesso modo della schermata Impostazioni in-app.
+Tutte le impostazioni attualmente disponibili nell'app, raggruppate allo stesso modo della schermata Impostazioni in-app.
 
 ## Guide alle modalità
 
-### [Modalità live](live-mode.md)
+### [Modalità Live](live-mode.md)
 
-Ascolto continuo con il microfono, rilevazioni in tempo reale, lo spettrogramma e la barra informativa della sessione.
+Ascolto continuo con il microfono, rilevazioni in tempo reale, lo spettrogramma e la barra informativa della Session.
 
 ### [Esplora](explore.md)
 
-Specie previste per la posizione e la stagione attuali, oltre alla sovrapposizione dei dettagli della specie.
+Specie previste per la posizione e la stagione attuali, oltre al pannello dei dettagli della specie.
 
-### [Libreria di sessione](session-library.md)
+### [Libreria Sessions](session-library.md)
 
-Sessioni salvate, ricerca, ordinamento, modalità di visualizzazione e navigazione raggruppata per specie.
+Sessions salvate, ricerca, ordinamento, modalità di visualizzazione e navigazione raggruppata per specie.
 
-### [Revisione della sessione](session-review.md)
+### [Riepilogo sessione](session-review.md)
 
 Riproduzione, modifica, ritaglio, annotazioni, esportazione e barra degli strumenti di revisione.
 
-### [Modalità conteggio punti](point-count-mode.md)
+### [Modalità Point Count](point-count-mode.md)
 
-Il flusso di lavoro di configurazione del conteggio dei punti, le opzioni di posizione e la schermata del timer live.
+Il flusso di configurazione del Point Count, le opzioni di posizione e la schermata del timer in tempo reale.
 
-### [Modalità sondaggio](survey-mode.md)
+### [Modalità Survey](survey-mode.md)
 
-Configurazione del sondaggio, dashboard del sondaggio in tempo reale e schede mappa, spettrogramma e riepilogo.
+Configurazione del Survey, dashboard del Survey in tempo reale e schede Mappa, Spettrogramma e Riepilogo.
 
 ### [Analisi file](file-analysis.md)
 
-La procedura guidata di analisi dei file in quattro passaggi, le scelte dei parametri e il modo in cui i risultati vengono spostati nella revisione della sessione.
+La procedura guidata di Analisi file in quattro passaggi, le scelte dei parametri e come i risultati confluiscono nel Riepilogo sessione.
 
 ### [Analisi in batch](batch-analysis.md)
 
-Elaborare e analizzare più file audio in batch. (Prossimamente)
+Elabora e analizza più file audio in blocco. (Prossimamente)
 
 ### [Modalità ARU](aru-mode.md)
 
-Crea una Session ARU programmata, registra l'audio completo dei cicli o clip di rilevamento conservate, esegui inferenza live durante i cicli attivi e segui i cicli di registrazione pianificati.
+Crea una Session ARU programmata, registra l'audio completo dei cicli o clip di rilevazione conservate, esegui l'inferenza live durante i cicli attivi e tieni traccia dei cicli di registrazione pianificati.
 
 ## Riferimento
 
 ### [FAQ](faq.md)
 
-Risposte rapide sull'utilizzo offline, sul comportamento di registrazione, sul conteggio dei punti e sulle prestazioni.
+Risposte rapide sull'uso offline, sul comportamento di registrazione, sui Point Count e sulle prestazioni.
 
 ## Ordine di lettura
 
-1. Leggi [Per iniziare](getting-started.md).
-2. Scorri [Icone e controlli](icons-and-controls.md) in modo che i simboli ricorrenti abbiano un senso.
-3. Apri la guida per la modalità che usi più spesso.
-4. Utilizza [Impostazioni](settings.md) quando devi ottimizzare l'app per un flusso di lavoro diverso.
+1. Leggi [Primi passi](getting-started.md).
+2. Scorri [Icone e controlli](icons-and-controls.md) così che i simboli ricorrenti abbiano un senso.
+3. Apri la guida della modalità che usi più spesso.
+4. Usa [Impostazioni](settings.md) quando devi adattare l'app a un flusso di lavoro diverso.
 
 ## Suggerimento per dispositivi mobili
 
-Sui dispositivi mobili, la barra laterale di navigazione è nascosta dietro il pulsante del menu nell'angolo in alto a sinistra. Questa pagina vuole essere il punto di accesso mobile per l'intera guida dell'utente.
+Sui dispositivi mobili la barra laterale di navigazione è nascosta dietro il pulsante del menu nell'angolo in alto a sinistra. Questa pagina è pensata come punto di accesso mobile all'intera guida per l'utente.
 
-## Ulteriore documentazione
+## Altra documentazione
 
-- La [Home page](../index.md) fornisce una panoramica della versione e delle funzionalità.
-- La [Guida per gli sviluppatori](../developer/index.md) copre l'architettura, gli strumenti e i flussi di lavoro di creazione.
-- La [Informativa sulla privacy](../privacy.md) e i [Termini di utilizzo](../terms.md) si trovano su questo stesso sito.
+- La [Home page](../index.md) offre una panoramica della versione e delle funzionalità.
+- La [Guida per sviluppatori](../developer/index.md) copre architettura, strumenti e flussi di compilazione.
+- L'[Informativa sulla privacy](../privacy.md) e i [Termini di utilizzo](../terms.md) si trovano su questo stesso sito.

@@ -1,7 +1,7 @@
 # Releasing
 
 End-to-end recipe for cutting a Play Store release. The Flutter side is
-straightforward; most of the moving parts live around signing and the
+straightforward; most of the moving parts are around signing and the
 artifacts that go into the `release/` folder.
 
 ## 1. Version
@@ -54,8 +54,8 @@ Console (Google holds the actual app-signing key in Play App Signing).
 
 ## 4. Build the App Bundle
 
-The Play Store wants an `.aab`, not an APK. App Bundles deliver only the
-target device's ABI / resources, which trims our ~253 MB APK to ~221 MB on
+The Play Store expects an `.aab`, not an APK. App Bundles deliver only the
+target device's ABI and resources, which trims our ~253 MB APK to ~221 MB on
 device.
 
 ```pwsh
@@ -67,9 +67,9 @@ Output:
 - Bundle: `build/app/outputs/bundle/release/app-release.aab`
 - ProGuard / R8 mapping: `build/app/outputs/mapping/release/mapping.txt`
 
-The mapping file is critical: without it, Play Console will not be able to
-de-obfuscate stack traces from crash reports, and you will never figure out
-what's broken in the field.
+The mapping file is critical: without it, Play Console cannot de-obfuscate
+stack traces from crash reports, leaving you unable to tell what's broken in
+the field.
 
 (If you also need a sideloadable APK for testers, run
 `flutter build apk --release` — output at
@@ -97,16 +97,16 @@ release/0.15.2/
 
 Keep this folder around — it is the canonical record of what was uploaded.
 If you need to roll back or re-symbolicate a crash months later, the
-`mapping.txt` for the build that's actually running on users' devices is the
-only thing that matters.
+`mapping.txt` for the exact build running on users' devices is the only thing
+that matters.
 
 ### Release notes
 
-Each `release-notes/<locale>.txt` is plain text, max ~500 chars (Play Store
-limit). Mirror the CHANGELOG entry but written for users, not developers.
-Cover the same set of locales the app ships in: en-US, de-DE, cs-CZ, es-ES,
-fr-FR, it-IT, pt-PT. If a locale is missing on Play Console, it falls back
-to en-US.
+Each `release-notes/<locale>.txt` is plain text, max ~500 chars (the Play
+Store limit). Mirror the CHANGELOG entry, but write it for users rather than
+developers. Cover the same set of locales the app ships in: en-US, de-DE,
+cs-CZ, es-ES, fr-FR, it-IT, pt-PT. Any locale missing on Play Console falls
+back to en-US.
 
 ## 6. Upload to Play Console
 
@@ -129,8 +129,8 @@ git tag v0.15.2
 git push origin v0.15.2
 ```
 
-Tags are the easiest way to map a Play Console version code back to the
-exact source commit.
+Tags are the easiest way to map a Play Console version code back to its exact
+source commit.
 
 ## 8. Post-release
 
@@ -149,7 +149,7 @@ iOS builds and App Store/TestFlight releases require a macOS environment with Xc
 - **Xcode Integration**: Open `ios/Runner.xcworkspace` in Xcode and under the **Runner** target → **Signing & Capabilities**, make sure the correct **Development Team** is selected and the Bundle Identifier (`com.birdnet.birdnetLive` or your custom identifier) is registered.
 
 ### 2. Build the iOS Archive
-To compile the project and generate the release xcarchive with symbols:
+To compile the project and generate the release xcarchive with symbols, run:
 
 ```bash
 # Pull model assets if needed

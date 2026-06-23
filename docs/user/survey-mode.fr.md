@@ -1,108 +1,125 @@
-# Mode enquête
+# Mode Relevé
 
-Le mode Enquête est le flux de travail basé sur les itinéraires pour les enquêtes mobiles de longue durée.
+Le mode Relevé est le flux de travail basé sur l'itinéraire, destiné aux relevés mobiles de longue durée.
 
 ## Comment l'ouvrir
 
-From Home, tap the **Survey Mode** card with the :material-routes: icon.
+Depuis l'accueil, appuyez sur la carte **Mode Relevé** avec l'icône :material-routes:.
 
 ## Flux de configuration
 
-La configuration de l'enquête est un assistant en cinq étapes.
+La configuration du relevé est un assistant en cinq étapes.
 
 ### 1. Détails
 
-Vous pouvez saisir :
+Vous pouvez saisir :
 
-- nom de l'enquête
-- identifiant du transect
-- nom de l'observateur
-- GPS, coordonnées manuelles ou aucun lieu de départ
+- le nom du relevé
+- l'identifiant du transect
+- le nom de l'observateur
+- le GPS, des coordonnées manuelles ou aucun point de départ
 
-Cette étape expose également le sélecteur de carte et le rappel d'autorisation GPS en arrière-plan si nécessaire.
+Cette étape donne aussi accès au sélecteur de carte, actualise le GPS lorsque
+vous revenez des écrans d'autorisation du système et affiche le rappel
+d'autorisation du GPS en arrière-plan si nécessaire. Une carte météo est
+disponible dans la même zone de localisation. Si l'accès à la météo est
+désactivé, elle demande le consentement **Autoriser la recherche météo** ; une
+fois activée, elle donne un aperçu du site avec une icône météo, la température
+et le vent uniquement. Le même instantané Open-Meteo mis en cache est réutilisé
+lors de l'enregistrement du relevé.
 
 ### 2. Paramètres
 
-Cette étape contient des paramètres spécifiques à l'enquête tels que :
+Cette étape contient des paramètres propres au Relevé, tels que :
 
-- sélection du microphone
-- taux d'inférence
-- seuil de confiance
-- Intervalle GPS
-- durée maximale
-- mode d'enregistrement
-- contexte de clip pour l'enregistrement avec détection uniquement
-- mode d'échantillonnage de détection
-- limite du top N par espèce lorsque l'échantillonnage est limité
+- la sélection du microphone
+- la fréquence d'inférence
+- le seuil de confiance
+- l'intervalle GPS
+- la durée maximale
+- le mode d'enregistrement
+- le contexte du clip pour l'enregistrement des détections uniquement
+- le mode d'échantillonnage des détections
+- la limite Top N par espèce lorsque l'échantillonnage est limité
 
-#### Échantillonnage de détection
+#### Échantillonnage des détections
 
-Une longue enquête peut produire des milliers de détections, et l’enregistrement d’un clip audio pour chacune d’entre elles remplit rapidement l’espace de stockage. L'échantillonnage de détection contrôle **quels clips sont conservés sur le disque** — *les enregistrements de détection eux-mêmes sont toujours conservés*, de sorte que votre journal de session complet reste intact quel que soit le mode. Les enregistrements dont l'audio a été supprimé n'ont tout simplement aucun clip lisible dans Session Review.
+Un long relevé peut produire des milliers de détections, et enregistrer un clip audio pour chacune remplit vite l'espace de stockage. L'échantillonnage des détections contrôle **quels clips sont conservés sur le disque** — *les enregistrements de détection eux-mêmes sont toujours conservés*, de sorte que votre journal de session complet reste intact quel que soit le mode. Les détections dont l'audio a été supprimé n'ont simplement aucun clip lisible dans le Résumé de la session.
 
 Trois modes sont disponibles :
 
 | Mode | Ce qu'il fait |
 |---|---|
-| **Tous** | Gardez chaque clip. Utilisation maximale du disque. Recommandé pour les enquêtes courtes ou lorsque vous souhaitez que l'audio de chaque détection soit analysé ultérieurement. |
-| **Haut N** | Conservez uniquement les **N clips ayant le niveau de confiance le plus élevé par espèce**. D'autres clips sont supprimés au fur et à mesure de l'exécution de l'enquête. N par défaut est 10, configurable de 1 à 50. |
-| **Intelligent** | Même plafond de N par espèce que Top N, **plus** distribution spatiale : si une nouvelle détection atterrit au même « endroit » qu'un clip déjà conservé (à environ 500 m et ~ 2 min l'un de l'autre), seul celui avec le niveau de confiance le plus élevé conserve son clip. Cela empêche un chanteur stationnaire de monopoliser tous les N créneaux et oriente les clips conservés vers la couverture du transect complet. |
+| **Toutes** | Conserve tous les clips. Utilisation maximale du disque. Recommandé pour les relevés courts ou lorsque vous souhaitez disposer de l'audio de chaque détection pour une analyse ultérieure. |
+| **Top N** | Conserve uniquement les **N clips ayant la confiance la plus élevée par espèce**. Les autres clips sont supprimés au fur et à mesure du relevé. La valeur N par défaut est 10, configurable de 1 à 50. |
+| **Smart** | Même plafond de N par espèce que Top N, **plus** une distribution spatiale : si une nouvelle détection se situe au même « endroit » qu'un clip déjà conservé (à environ 500 m et 2 min l'un de l'autre), seul celui ayant la confiance la plus élevée conserve son clip. Cela évite qu'un chanteur stationnaire monopolise les N créneaux et oriente les clips conservés vers une couverture du transect entier. |
 
-La limite N est **par espèce, et non globale** — si vous enregistrez 10 merles et 10 pinsons, vous conservez 20 clips. Il n’y a pas de limite globale au nombre de clips qu’une enquête peut produire.
+La limite N est **par espèce, pas globale** — si vous enregistrez 10 rougegorges et 10 pinsons, vous conservez 20 clips. Il n'y a aucune limite globale au nombre de clips qu'un relevé peut produire.
 
-En mode Smart, si le GPS manque lors d'une détection, la vérification au même endroit revient à une fenêtre temporelle uniquement (~ 2 min). Avec le GPS disponible, la distance et le temps doivent se chevaucher pour que deux détections comptent comme le même point.
+En mode Smart, si le GPS manque sur une détection, la vérification « même endroit » se rabat sur une fenêtre temporelle uniquement (environ 2 min). Avec le GPS disponible, la distance et le temps doivent tous deux se chevaucher pour que deux détections comptent comme le même endroit.
 
-### 3. Alertes sur les espèces
+### 3. Alertes d'espèces
 
-Notifications de type push qui se déclenchent au milieu de l'enquête lorsque quelque chose d'intéressant est détecté. Choisissez-en un :
+Des notifications de type push qui se déclenchent en cours de relevé lorsqu'une espèce notable est détectée. Choisissez l'une des options suivantes :
 
 - **Désactivé** — aucune alerte (par défaut).
-- **Première session** — une alerte la première fois que chaque espèce est entendue au cours de cette enquête.
-- **Tout premier** : alertez uniquement lorsque l'application rencontre une espèce pour la toute première fois au cours de toutes vos sessions (une alerte "à perpétuité"). Soutenu par un historique des espèces à vie qui est automatiquement renseigné à partir de vos sessions existantes lors du premier lancement.
-- **Rare pour cet emplacement** — alerte lorsque la probabilité de géomodèle pour l'emplacement actuel est inférieure à un seuil configurable. Une lecture en direct sous le curseur explique exactement sur quoi la valeur actuelle se déclenchera (par exemple *"Alertes sur les espèces avec une probabilité inférieure à 5 % à cet endroit."*).
-- **Liste de surveillance** : alerte uniquement sur les espèces que vous avez ajoutées à une liste personnalisée enregistrée. L'étape de l'assistant elle-même vous permet de créer de nouvelles listes de surveillance, de modifier celles existantes dans un éditeur plein écran dédié avec une taxonomie consultable et *Importer à partir d'un fichier* (n'importe quel simple `.txt`/`.csv` de noms scientifiques) et de supprimer les listes dont vous n'avez plus besoin.
+- **Première de la session** — une alerte à la première détection de chaque espèce pendant ce relevé.
+- **Toute première** — alerter uniquement lorsque l'application rencontre une espèce pour la toute première fois sur l'ensemble de vos sessions (une alerte « lifer »). S'appuie sur un historique des espèces sur la durée, renseigné automatiquement à partir de vos sessions existantes au premier lancement.
+- **Rare ici** — alerter lorsque la probabilité du géo-modèle pour la position actuelle est inférieure à un seuil configurable. Un affichage en direct sous le curseur explique exactement ce qui déclenchera la valeur actuelle (par exemple *« Alerte sur les espèces avec moins de 5 % de probabilité à cet endroit. »*).
+- **Liste de suivi** — alerter uniquement sur les espèces que vous avez ajoutées à une liste personnalisée enregistrée. L'étape de l'assistant permet de créer de nouvelles listes de suivi, de modifier celles existantes dans un éditeur plein écran dédié avec taxonomie consultable et *Importer depuis un fichier* (n'importe quel fichier `.txt`/`.csv` simple de noms scientifiques), et de supprimer les listes dont vous n'avez plus besoin.
 
-Un curseur *Confiance minimale* se trouve sous le sélecteur de mode et est automatiquement réglé sur le seuil de confiance de votre session (les alertes ne sont jamais plus sensibles que les détections elles-mêmes). Une section **Avancé** expose les contrôles de limitation : une fenêtre de grâce au démarrage, un intervalle minimum strict entre deux alertes et un plafond glissant par minute avec une fusion facultative des alertes de dépassement de plafond en une seule notification récapitulative - le tout avec des sélecteurs de puces en un seul clic. La première fois que vous passez en mode non désactivé, l'assistant demande l'autorisation de notification Android pour vous.
+Un curseur *Confiance minimale* se trouve sous le sélecteur de mode et est automatiquement plafonné à votre seuil de confiance de session (les alertes ne sont jamais plus sensibles que les détections elles-mêmes). Une section **Avancé** donne accès aux contrôles de fréquence — un délai de démarrage, un intervalle minimum strict entre deux alertes et un plafond glissant par minute, avec regroupement facultatif des alertes en excès dans une seule notification récapitulative — le tout avec des sélecteurs en un toucher. La première fois que vous passez à un mode autre que Désactivé, l'assistant demande pour vous l'autorisation de notification Android.
 
-### 4. Conseils sur le terrain
+### 4. Conseils de terrain
 
-Une courte liste de contrôle de pré-démarrage dans le flux de configuration.
+Une courte liste de vérification avant le départ, intégrée au flux de configuration.
 
 ### 5. Prêt
 
-L'écran prêt résume la configuration d'enquête active avant de commencer avec :material-play:.
+L'écran prêt récapitule la configuration active du relevé avant de démarrer avec :material-play:.
 
-## Tableau de bord de l'enquête en direct
+## Tableau de bord du relevé en direct
 
-L'écran Enquête en direct comporte trois onglets principaux ainsi qu'une liste de détections récentes.
+L'écran du Relevé en direct comporte trois onglets principaux ainsi qu'une liste des détections récentes.
 
 ### Barre supérieure
 
-- :material-stop: — terminer l'enquête
+- :material-stop: — terminer le relevé
 - :material-timer: — temps écoulé
-- :material-help-circle-outline : — ouvre la feuille d'aide à l'enquête
-- :material-tune : — ouvre les paramètres de l'enquête
+- :material-help-circle-outline: — ouvrir la fiche d'aide du Relevé
+- :material-tune: — ouvrir les paramètres du Relevé
 
 ### Onglets
 
-- :material-map-outline : — carte d'itinéraire et détections cartographiées
+- :material-map-outline: — carte de l'itinéraire et détections cartographiées
 - :material-equalizer: — spectrogramme
-- icône de graphique - statistiques récapitulatives et répartition des espèces
+- icône de graphique — statistiques récapitulatives et répartition des espèces
 
 ### Statistiques et détections
 
-Sous le contenu de l'onglet, le tableau de bord de l'enquête affiche une barre de statistiques et une liste de détections récentes. Appuyer sur une détection ouvre la superposition des détails de l’espèce.
+Sous le contenu de l'onglet, le tableau de bord du relevé affiche une barre de statistiques et une liste des détections récentes. Appuyer sur une détection ouvre le panneau de détails de l'espèce.
 
-## Opération en arrière-plan
+Chaque ligne de détection donne aussi accès aux mêmes actions par détection que dans le [Résumé de la session](session-review.md) : une coche :material-check: **Confirmer** en un toucher et un menu :material-dots-vertical: **Plus** avec **Partager la détection** et **Supprimer la détection** (avec annulation par notification) — vous pouvez ainsi valider, partager ou supprimer une détection bruitée en pleine capture, sans attendre la révision après la session.
 
-Le mode Enquête maintient une notification persistante au premier plan visible pendant l'enregistrement afin qu'Android ne suspende pas le pipeline audio. La notification se développe pour afficher :
+Les mêmes actions sont disponibles depuis la **carte de l'itinéraire en direct** : appuyez sur un marqueur de détection pour ouvrir le lecteur de clips avec confirmation, partage et suppression. Le partage pendant un relevé fonctionne même si vous avez choisi un seul enregistrement WAV continu au lieu de clips par détection — la fenêtre audio correspondante est extraite à la volée du fichier en cours. Voir [Résumé de la session → Partage d'une seule détection](session-review.md#partage-dune-seule-détection) pour plus de détails.
+
+## Fonctionnement en arrière-plan
+
+Le mode Relevé garde une notification persistante de premier plan visible pendant l'enregistrement pour qu'Android ne suspende pas le pipeline audio. La notification se déplie pour afficher :
 
 - le temps écoulé, le nombre de détections, le nombre d'espèces et la distance parcourue, et
-- les **trois espèces uniques les plus récentes** avec leur niveau de confiance et un horodatage relatif (« tout à l'heure », « il y a 42 secondes », « il y a 5 mois », « il y a 2 heures »).
+- les **trois espèces uniques les plus récentes** avec leur confiance et un horodatage relatif (« à l'instant », « il y a 42 s », « il y a 5 min », « il y a 2 h »).
 
-La notification (titre, détections récentes et pied de page des statistiques) est entièrement traduite dans la langue sélectionnée de l'application et utilise les mêmes paramètres régionaux d'espèce et les mêmes préférences *Afficher les noms scientifiques* que les cartes intégrées à l'application.
+La notification — titre, détections récentes et pied de statistiques — est entièrement traduite dans la langue sélectionnée de l'application et utilise les mêmes préférences de langue des espèces et *Afficher les noms scientifiques* que les fiches dans l'application.
 
-Les alertes d'espèces (lorsqu'elles sont activées) apparaissent sur un canal de notification Android distinct afin que vous puissiez désactiver les alertes indépendamment de la notification d'enregistrement silencieux en cours. L'icône d'alerte correspond à l'icône de notification au premier plan (un oiseau monochrome) et les corps d'alerte affichent uniquement la *raison* — *"Première détection de cette enquête"*, *"Sur votre liste de surveillance"*, *"Détecté à cet endroit avec moins de 4 % de probabilité"* — laissant le nom de l'espèce dans le titre de notification en gras là où Android le rend le plus grand.
+Les alertes d'espèces (lorsqu'elles sont activées) apparaissent sur un canal de notification Android distinct, afin que vous puissiez les couper indépendamment de la notification silencieuse d'enregistrement en cours. L'icône d'alerte correspond à celle de la notification de premier plan (un oiseau monochrome), et le corps des alertes n'affiche que la *raison* — *« Première détection de ce relevé »*, *« Sur votre liste de suivi »*, *« Détecté à cet endroit avec moins de 4 % de probabilité »* — en laissant le nom de l'espèce dans le titre en gras, là où Android l'affiche le plus grand.
+
+Lorsque vous **reprenez** un relevé inachevé depuis la Bibliothèque de sessions, le système d'alertes est réarmé à partir de vos préférences de notification *actuelles* — et non de celles configurées le jour où vous avez commencé le relevé. Désactivez les alertes (ou changez le mode, la liste de suivi ou la limitation de fréquence) avant d'appuyer sur Reprendre, et le relevé repris respectera immédiatement les nouveaux réglages.
+
+## Révision sur la carte
+
+La vue carte plein écran du relevé (le bouton :material-fullscreen: dans le Résumé de la session) ouvre un lecteur de clips lorsque vous appuyez sur un marqueur. La barre de transport comporte des boutons précédent et suivant de part et d'autre de la commande de lecture — ils parcourent les détections par ordre chronologique, mais **uniquement celles actuellement visibles sur la carte** : tout filtre actif d'espèce, de confiance ou de mode restreint donc la liste de lecture en conséquence. Les boutons se grisent à la première et à la dernière détection de la liste filtrée.
 
 ## Après l'arrêt
 
-BirdNET Live enregistre l'enquête terminée et ouvre [Session Review] (session-review.md).
+BirdNET Live enregistre le relevé terminé et ouvre le [Résumé de la session](session-review.md).

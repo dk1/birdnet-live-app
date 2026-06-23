@@ -13,7 +13,7 @@ O modo ARU (Autonomous Recording Unit) é o fluxo de trabalho em local fixo para
     - **Formato de gravação**: escolha entre os formatos FLAC (comprimido sem perdas) e WAV (não comprimido).
     - **Modo de gravação**:
         - *Completo*: grava a duração total de cada ciclo ativo.
-        - *Apenas detecções*: salva pequenos clipes de áudio ao redor dos cantos de aves identificados. Você pode personalizar o contexto do clipe (adicionando de 0 a 5 segundos de buffer de áudio pré e pós-detecção) e escolher o método de amostragem (*Tudo*, *Top N* ou amostragem *Inteligente* para limitar o uso de armazenamento).
+        - *Apenas detecções*: salva pequenos clipes de áudio ao redor dos cantos de aves identificados. Você pode personalizar o contexto do clipe (adicionando de 0 a 5 segundos de buffer de áudio pré e pós-detecção) e escolher o método de amostragem (*Todas*, *Top N* ou amostragem *Smart* para limitar o uso de armazenamento).
         - *Desativado*: executa inferência em tempo real durante os ciclos e registra detecções, mas não salva arquivos de áudio.
 - **Cronograma (Agenda)**:
     - **Duração e repetição**: selecione a duração de cada ciclo de gravação ativo e a frequência de repetição.
@@ -24,9 +24,9 @@ O modo ARU (Autonomous Recording Unit) é o fluxo de trabalho em local fixo para
     - **Agrupamento de Sessions**: configure se deseja salvar cada ciclo como uma Session separada (recomendado para carregamentos mais rápidos e visualização modular) ou combinar todos os ciclos em uma única Session multisegmentada.
 - **Pronto**: revise o cronograma, a estimativa de consumo de armazenamento de áudio e as restrições baseadas no sol, depois inicie a implantação.
 
-Ao iniciar, salva-se imediatamente uma Session `SessionType.aru` com metadatos de cronograma ARU, de forma que o estado dos ciclos possa ser recuperado posteriormente.
+Ao iniciar uma implantação, salva-se imediatamente uma Session `SessionType.aru` com os metadados de cronograma do ARU, para que o estado dos ciclos possa ser recuperado posteriormente.
 
-As exportações JSON e ZIP incluem metadatos da implantação ARU. As exportações ZIP agrupam arquivos de gravação salvos por ciclo sob `aru_cycles/`.
+As exportações JSON e ZIP incluem os metadados da implantação ARU. As exportações ZIP agrupam os arquivos de gravação salvos por ciclo sob `aru_cycles/`.
 
 ## Tela de implantação ativa
 
@@ -38,11 +38,11 @@ A tela ARU ativa mostra se a implantação está aguardando, gravando ou conclu�
 
 No Android, implantações ativas exibem uma notificação em primeiro plano com ações Parar e Abrir.
 
-Parar uma implantação abre a Revisão de Session. Se os ciclos foram agrupados em uma única Session, abre-se essa Session combinada; se salvos como Sessions separadas, abre-se a Session de ciclo concluída mais recente.
+Parar uma implantação abre o Resumo da Session. Se os ciclos foram agrupados em uma única Session, abre-se essa Session combinada; se foram salvos como Sessions separadas, abre-se a Session do ciclo concluído mais recente.
 
-No iOS, esta implantação preliminar deve ser tratada como um fluxo de trabalho em primeiro plano até que o comportamento de áudio/segundo plano agendado tenha sido validado no iOS.
+No iOS, trate esta implementação preliminar como um fluxo de trabalho em primeiro plano até que o áudio agendado e o comportamento em segundo plano tenham sido validados na plataforma.
 
 ## Ainda planejado
 
 - Validação do comportamento em segundo plano no iOS.
-- Suporte completo para reprodução e espectrograma na Revisão de Session para gravações ARU segmentadas.
+- Suporte completo para reprodução e espectrograma no Resumo da Session para gravações ARU segmentadas em vários arquivos.

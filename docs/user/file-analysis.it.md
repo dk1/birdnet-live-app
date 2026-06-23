@@ -1,32 +1,32 @@
-# Analisi dei file
+# Analisi file
 
-L'analisi dei file elabora una registrazione esistente attraverso la stessa pipeline BirdNET utilizzata dai flussi di lavoro live.
+L'Analisi file elabora una registrazione esistente attraverso la stessa pipeline BirdNET che alimenta i flussi di lavoro in tempo reale.
 
-## Come aprirlo
+## Come aprirla
 
 Dalla Home, tocca la scheda **Analisi file** con l'icona :material-file-music:.
 
-## Barra delle applicazioni
+## Barra dell'app
 
-- :material-tune: - apre le impostazioni di analisi dei file
-- :material-close: — annulla un'analisi attiva
+- :material-tune: — apre le impostazioni di Analisi file
+- :material-close: — annulla un'analisi in corso
 
-## Ingressi supportati
+## Formati supportati
 
-Il selettore file corrente accetta:
+Il selettore file attuale accetta:
 
--WAV/ONDA
--FLAC
--MP3
--OGG/OGA/Opus
--M4A/AAC/MP4
-- WMA/AMR
+- WAV / WAVE
+- FLAC
+- MP3
+- OGG / OGA / Opus
+- M4A / AAC / MP4
+- WMA / AMR
 
 ## Procedura guidata in quattro passaggi
 
 ### 1. Seleziona file
 
-Scegli un file e rivedi la relativa scheda di metadati:
+Scegli un file ed esamina la relativa scheda dei metadati:
 
 - nome del file
 - formato
@@ -34,35 +34,35 @@ Scegli un file e rivedi la relativa scheda di metadati:
 - dimensione del file
 - frequenza di campionamento
 
-### 2. Luogo e data
+### 2. Posizione e data
 
 Puoi:
 
-- utilizzare il GPS attuale
+- usare il GPS attuale
 - inserire le coordinate manualmente
-- salta la posizione
-- scegli un punto sulla mappa
-- impostare una data di registrazione opzionale
+- saltare la posizione
+- scegliere un punto sulla mappa
+- impostare una data di registrazione facoltativa
 
 ### 3. Parametri
 
-La procedura guidata espone:
+La procedura guidata mostra:
 
 - durata della finestra
 - sovrapposizione
 - sensibilità
 - soglia di confidenza
-- modalità filtro specie
+- modalità del filtro specie
 
 ### 4. Analizza
 
 La schermata di avanzamento mostra:
 
 - finestre elaborate
-- rilevamenti trovati
+- rilevazioni trovate
 - specie trovate
-- pulsante annulla
+- pulsante di annullamento
 
 ## Risultato
 
-Al termine dell'analisi, BirdNET Live converte l'output in una sessione salvata e apre [Revisione sessione](session-review.md).
+Al termine dell'analisi, BirdNET Live converte l'output in una Session salvata e apre il [Riepilogo sessione](session-review.md).

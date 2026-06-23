@@ -17,11 +17,11 @@ flutter test --coverage
 
 ## Test Coverage
 
-426 unit tests across 24 test files, plus 3 integration tests. All tests are pure Dart (no widget tests requiring `testWidgets`).
+There are 426 unit tests across 24 test files, plus 3 integration tests. All tests are pure Dart (no widget tests requiring `testWidgets`).
 
 ## Integration Tests
 
-Integration tests require a connected device and test fixtures pushed to the device:
+Integration tests require a connected device, with the test fixtures pushed to it first:
 
 ```bash
 adb push assets/test_fixtures /data/local/tmp/test_fixtures

@@ -1,50 +1,56 @@
-# Režim počítání bodů
+# Režim Point Count
 
-Point Count Mode je časovaný stacionární pracovní postup v BirdNET Live.
+Režim Point Count je časovaný stacionární pracovní postup v BirdNET Live.
 
-## Jak to otevřít
+## Jak jej otevřít
 
-Na domovské stránce klepněte na kartu **Režim počítání bodů** s ikonou :material-map-marker:.
+Na domovské obrazovce klepněte na kartu **Point Count** s ikonou :material-map-marker:.
 
-## Nastavení toku
+## Postup nastavení
 
-Nastavení počtu bodů se skládá ze tří kroků.
+Nastavení Point Count má čtyři kroky.
 
-### 1. Doba trvání a umístění
+### 1. Doba trvání a poloha
 
-Vybrat:
+Vyberte:
 
-- jeden z dostupných žetonů trvání
-- aktuální GPS s :material-crosshairs-gps:
-- manuální souřadnice pomocí :material-map-marker-plus:
-- žádné místo s :material-map-marker-off:
-- výběr map s :material-map:
+- jeden z dostupných čipů doby trvání
+- aktuální GPS pomocí :material-crosshairs-gps:
+- ruční souřadnice pomocí :material-map-marker-plus:
+- žádnou polohu pomocí :material-map-marker-off:
+- výběr na mapě pomocí :material-map:
 
-### 2. Tipy v terénu
+Obrazovka nastavení obnoví GPS, když se vrátíte ze systémového dialogu oprávnění nebo z nastavení aplikace, takže nově udělené oprávnění k poloze by mělo souřadnice aktualizovat bez restartu průvodce. Tatáž sekce obsahuje i kartu počasí. Pokud je přístup k počasí vypnutý, karta požádá o souhlas **Povolit vyhledání počasí**; po zapnutí zobrazí náhled místa s ikonou počasí, teplotou a pouze větrem. Stejný uložený snímek z Open-Meteo se znovu použije při uložení point countu.
 
-Tato obrazovka poskytuje před spuštěním krátký kontrolní seznam v aplikaci.
+### 2. Parametry inference
 
-### 3. Připraveno
+Zvolte nastavení analýzy pro tuto session, například dobu okna, rychlost inference, práh spolehlivosti a režim filtru druhů. Vycházejí z vašich globálních nastavení, ale lze je pro tento count upravit beze změny výchozích hodnot.
 
-Připravená obrazovka shrnuje vybranou dobu trvání a umožňuje vám začít s :material-play:.
+### 3. Terénní tipy
 
-## Obrazovka počtu živých bodů
+Tato obrazovka nabízí krátký kontrolní seznam v aplikaci, který je dobré projít před spuštěním.
 
-Živá obrazovka počítání bodů se zaměřuje na časovanou palubní desku.
+### 4. Připraveno
+
+Obrazovka připravenosti shrnuje zvolenou dobu trvání a umožní začít pomocí :material-play:.
+
+## Živá obrazovka Point Count
+
+Živá obrazovka point countu se soustředí na časovaný panel.
 
 ### Horní lišta
 
-- :material-stop: — předčasné ukončení počítání bodů
+- :material-stop: — předčasné ukončení point countu
 - :material-timer: — zobrazení zbývajícího času
-- :material-tune: — otevřete nastavení počtu bodů
+- :material-tune: — otevření nastavení Point Count
 
 ### Hlavní ukazatele
 
-- ukazatel průběhu odpočítávání
-- kompaktní informační panel s aktuálními detekcemi, unikátním počtem druhů a celkovým počtem detekcí
-- spektrogramový pohled
-- detekční seznam
+- ukazatel průběhu odpočtu
+- kompaktní informační lišta s aktuálními detekcemi, počtem jedinečných druhů a celkovým počtem detekcí
+- zobrazení spektrogramu
+- seznam detekcí
 
-## Po počtu
+## Po sčítání
 
-Když počítání bodů skončí, BirdNET Live relaci uloží a otevře [Přehled relace] (session-review.md).
+Když point count skončí, BirdNET Live session uloží a otevře [Přehled Session](session-review.md).

@@ -44,6 +44,6 @@ The overlay can show:
 
 ## What Explore Is For
 
-Explore is a location-aware reference view inside the app. It helps you compare the app's current location context with the species you expect to encounter.
+Explore is a location-aware reference view inside the app. It helps you compare the app's current location context with the species you might expect to encounter.
 
 It does **not** change saved session data by itself. Detection filtering is controlled separately through [Settings](settings.md).
