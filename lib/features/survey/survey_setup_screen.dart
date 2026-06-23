@@ -1655,10 +1655,10 @@ class _CreateWatchlistScreenState
       if (result == null || result.files.isEmpty) return;
       final file = result.files.single;
       final filePath = file.path;
-      if (file.bytes == null && (filePath == null || filePath.isEmpty)) {
+      if (filePath == null || filePath.isEmpty) {
         throw const FileSystemException('Selected file has no readable path');
       }
-      final bytes = file.bytes ?? await File(filePath!).readAsBytes();
+      final bytes = await file.xFile.readAsBytes();
       final content = utf8.decode(bytes, allowMalformed: true);
       final names = CustomSpeciesList.parse(content);
       if (names.isEmpty) {

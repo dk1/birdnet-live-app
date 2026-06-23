@@ -1,42 +1,59 @@
-# Knihovna relací
+# Knihovna Sessions
 
-Knihovna relací je archiv uložených relací a zpracovaných souborů.
+Knihovna Sessions je archiv uložených sessions a zpracovaných souborů.
 
-## Jak to otevřít
+## Jak ji otevřít
 
 Použijte tlačítko :material-music-box-multiple-outline: v zápatí Domů.
 
-## Co ukazuje knihovna
+## Co knihovna zobrazuje
 
-Každý záznam relace shrnuje uloženou sadu výsledků, včetně jejího typu, data, trvání, počtu druhů a počtu detekcí.
+Každý záznam session shrnuje uloženou sadu výsledků, včetně typu, data, doby trvání, počtu druhů a počtu detekcí.
 
-Typy relací používají stejné ikony jako domovská obrazovka:
+Typy sessions používají stejné ikony jako domovská obrazovka:
 
-- :material-microphone: — Živá relace
-- :material-file-music: — Relace Analýza souborů
-- :material-map-marker: — Relace počtu bodů
-- :material-routes: — Průzkum
+- :material-microphone: — Live session
+- :material-file-music: — session Analýzy souborů
+- :material-map-marker: — session Point Count
+- :material-routes: — session Survey
 
-## Ovládací prvky panelu aplikací
+## Ovládací prvky horní lišty
 
-- :material-magnify: – vyhledávání podle data, typu relace, názvu místa, souřadnic, běžného názvu nebo vědeckého názvu
-- nabídka režimu zobrazení – přepínejte mezi **Podrobné**, **Kompaktní** a **Podle druhu**
+- :material-magnify: — vyhledávání podle data, typu session, názvu místa, souřadnic, běžného nebo vědeckého názvu
+- nabídka režimu zobrazení — přepínání mezi **Podrobný**, **Kompaktní** a **Podle druhu**
 - :material-swap-vertical: — změna pořadí řazení
 
 ## Režimy zobrazení
 
-### Podrobné
+### Podrobný
 
-Zobrazuje karty celé relace s více metadaty.
+Zobrazuje úplné karty session s více metadaty.
 
 ### Kompaktní
 
-Zobrazuje užší řádky pro rychlejší procházení.
+Zobrazuje sevřenější řádky pro rychlejší procházení. Každý řádek má vpravo tlačítko :material-chevron-down:, které řádek na místě rozbalí do plné karty podrobného zobrazení — hodí se, když chcete rychle nahlédnout na statistiky jedné konkrétní session, aniž byste ztratili pozici posuvníku.
 
-### Podle druhů
+### Podle druhu
 
-Seskupuje relace podle druhů a rozšiřuje se na relace, které daný druh obsahují.
+Seskupuje sessions podle druhu a rozbalí se na sessions, které daný druh obsahují.
 
-## Co se stane dál
+## Řazení
 
-Klepnutím na kteroukoli relaci otevřete [Přehled relace] (session-review.md).
+Seřaďte sessions podle **data** (nejnovější nebo nejstarší první), **názvu** (A–Z nebo Z–A) nebo **doby trvání** (nejdelší nebo nejkratší první). Řazení podle doby trvání se hodí, když chcete najít nejdelší survey týdne nebo nejkratší 30sekundový test, který jste omylem uložili.
+
+Když jsou sessions seskupené podle dne, řádek záhlaví každého dne ukazuje nejprve nabídku tří teček (:material-dots-vertical:) pro akce pro celý den a šipku rozbalení/sbalení na konci řádku. Šipka je *poslední* prvek — stejně jako u každého jiného rozbalitelného seznamu v aplikaci — takže klepnutí u pravého okraje vždy přepne skupinu.
+
+## Místní čas
+
+Každý časový údaj v Knihovně Sessions — řádky seznamu, záhlaví denních skupin, odznaky „začátek“ / „konec“ — se vykresluje v *aktuálním* místním časovém pásmu vašeho telefonu. Časové údaje session se ukládají v UTC, takže session, kterou jste pořídili v Berlíně a poté otevřeli v New Yorku, se prostě zobrazí o pět (nebo šest) hodin dříve — data na disku se nemění. Při cestování během dlouhé survey zobrazený čas sleduje zařízení.
+
+## Akce řádku
+
+S každým řádkem session lze pracovat dvěma způsoby:
+
+- **Nabídka tří teček** (:material-dots-vertical:) vpravo na každé kartě otevře malou nabídku s položkami **Otevřít**, **Sdílet** a **Smazat**. Sdílení používá vaše aktuální nastavení v Nastavení → Export a synchronizace (formát a „zahrnout zvukové soubory“) a otevře systémový panel sdílení přímo — není nutné nejprve otevírat Přehled Session, abyste session poslali kolegovi.
+- **Přejetí** řádku doleva nebo doprava jej smaže. Před odstraněním se stále zobrazí potvrzovací dialog, takže náhodné přejetí lze vrátit.
+
+## Co následuje
+
+Klepnutím na kteroukoli session otevřete [Přehled Session](session-review.md).

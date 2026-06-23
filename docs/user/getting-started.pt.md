@@ -1,76 +1,76 @@
-# Começando
+# Primeiros passos
 
 ## Instalação
 
-BirdNET Live está disponível para Android, iOS e Windows.
+O BirdNET Live está disponível para Android, iOS e Windows.
 
 ### Requisitos
 
 - **Android**: 8.0 (API 26) ou posterior
 - **iOS**: 15.0 ou posterior
 - **Windows**: 10 ou posterior (experimental)
-- ~300 MB de armazenamento para aplicativos + modelos
+- ~300 MB de armazenamento para o aplicativo e os modelos
 
 ### Download
 
-*Links de distribuição serão adicionados quando disponíveis.*
+*Os links de distribuição serão adicionados quando estiverem disponíveis.*
 
-## Fluxo de aplicativos pela primeira vez
+## Fluxo na primeira utilização
 
-Quando você abre o BirdNET Live pela primeira vez, o aplicativo percorre um breve fluxo de integração e configuração de permissão.
+Ao abrir o BirdNET Live pela primeira vez, o aplicativo apresenta um breve fluxo de introdução e configuração de permissões.
 
-1. Leia as telas de integração.
+1. Leia as telas de introdução.
 2. Aceite os Termos de Uso e a Política de Privacidade.
-3. Conceda permissão de microfone para que o BirdNET Live possa processar o áudio.
-4. Opcionalmente, conceda permissão de localização para marcação geográfica, exploração, contagem de pontos e pesquisa.
-5. Opcionalmente, permita notificações para pesquisas de longa duração.
+3. Conceda a permissão de microfone para que o BirdNET Live possa processar o áudio.
+4. Opcionalmente, conceda a permissão de localização para georreferenciamento, Explorar, Point Count e Survey.
+5. Opcionalmente, permita notificações para Surveys de longa duração.
 
-## Primeiro lançamento
+## Primeira inicialização
 
-1. **Onboarding** — Introdução rápida aos recursos e permissões
+1. **Introdução** — Apresentação rápida dos recursos e das permissões
 2. **Termos e Privacidade** — Aceite os Termos de Uso e a Política de Privacidade
 3. **Permissões** — Conceda acesso ao microfone (obrigatório para todos os modos)
-4. **Pronto** — Comece a identificar pássaros!
+4. **Pronto** — Comece a identificar aves!
 
-## Visão geral da tela inicial
+## Visão geral da tela de Início
 
-A tela inicial é o hub principal.
+A tela de Início é o hub principal.
 
-### Cartões de modo principal
+### Cartões dos modos principais
 
-- :material-microfone: **Modo ao vivo**
-- :material-map-marker: **Modo de contagem de pontos**
-- :material-routes: **Modo de pesquisa**
-- :material-file-music: **Análise de arquivo**
+- :material-microphone: **Modo Live**
+- :material-map-marker: **Modo Point Count**
+- :material-routes: **Modo Survey**
+- :material-file-music: **Análise de arquivos**
 
-### Botões de rodapé
+### Botões do rodapé
 
 - :material-tune: **Configurações**
 - :material-magnify: **Explorar**
-- :material-music-box-multiple-outline: **Biblioteca de Sessões**
+- :material-music-box-multiple-outline: **Sessões**
 - :material-help-circle-outline: **Ajuda**
 - :material-information-outline: **Sobre**
 
 ## O que é salvo
 
-O BirdNET Live salva automaticamente as sessões concluídas e as abre na Revisão da Sessão após a interrupção do processamento.
+O BirdNET Live salva automaticamente cada Session concluída e a abre no Resumo da Session assim que o processamento termina.
 
-- As sessões ao vivo salvam detecções e, dependendo de suas configurações, gravações ou clipes.
-- As sessões de contagem de pontos são salvas como sessões cronometradas de contagem de pontos.
-- As sessões de pesquisa salvam a rota, as detecções e os metadados relacionados.
-- Os resultados da análise de arquivos são convertidos em uma sessão revisável.
+- As Live Sessions salvam as detecções e, dependendo das suas configurações, gravações ou clipes.
+- As Sessions de Point Count são salvas como Sessions de Point Count cronometradas.
+- As Sessions de Survey salvam o percurso, as detecções e os metadados relacionados.
+- Os resultados da Análise de arquivos são convertidos em uma Session que pode ser revisada.
 
 ## Próximas páginas recomendadas
 
-- Leia [Ícones e controles](icons-and-controls.md) se quiser uma explicação rápida sobre os símbolos recorrentes da interface do usuário.
-- Leia [Configurações](settings.md) antes de alterar limites, filtros, comportamento de gravação ou exibição do espectrograma.
-- Abra o guia do fluxo de trabalho que você usa com mais frequência: [Modo ao vivo](live-mode.md), [Modo de contagem de pontos](point-count-mode.md), [Modo de pesquisa](survey-mode.md) ou [Análise de arquivo](file-analysis.md).
+- Leia [Ícones e controles](icons-and-controls.md) se quiser uma explicação rápida dos símbolos recorrentes da interface.
+- Leia [Configurações](settings.md) antes de alterar limiares, filtros, comportamento de gravação ou exibição do espectrograma.
+- Abra o guia do fluxo de trabalho que você usa com mais frequência: [Modo Live](live-mode.md), [Modo Point Count](point-count-mode.md), [Modo Survey](survey-mode.md) ou [Análise de arquivos](file-analysis.md).
 
 ## Permissões
 
-| Permissão | Obrigatório para | Opcional? |
+| Permissão | Necessária para | Opcional? |
 |------------|-------------|-----------|
-| Microfone | Todos os modos de gravação | Obrigatório |
-| Localização | Marcação GPS, levantamento/contagem de pontos | Opcional para Live |
-| Armazenamento | Salvando gravações, exportações | Necessário para gravação |
-| Notificações | Alertas de pesquisa de antecedentes | Opcional |
+| Microfone | Todos os modos de gravação | Obrigatória |
+| Localização | Marcação GPS, Survey/Point Count | Opcional no Live |
+| Armazenamento | Salvar gravações e exportações | Necessária para gravação |
+| Notificações | Alertas de Survey em segundo plano | Opcional |

@@ -64,7 +64,7 @@ plugins:
         API Reference: API-Referenz
         Architecture: Architektur
         Audio Pipeline: Audio-Pipeline
-        Building: Gebäude
+        Building: Build
         Code Style: Codestil
         Developer Guide: Entwicklerhandbuch
         Explore: Erkunden
@@ -79,17 +79,17 @@ plugins:
         Live Mode: Live-Modus
         Localization: Lokalisierung
         Overview: Überblick
-        Point Count Mode: Punktzählmodus
+        Point Count Mode: Point-Count-Modus
         Privacy Policy: Datenschutzrichtlinie
-        Releasing: Loslassen
-        Session Library: Sitzungsbibliothek
-        Session Review: Sitzungsrückblick
+        Releasing: Veröffentlichen
+        Session Library: Session-Bibliothek
+        Session Review: Session-Übersicht
         Settings: Einstellungen
         Species Bundle: Artenpaket
         Spectrogram: Spektrogramm
-        State Management: Staatsmanagement
-        Storage: Lagerung
-        Survey Mode: Umfragemodus
+        State Management: Zustandsverwaltung
+        Storage: Speicher
+        Survey Mode: Survey-Modus
         Taxonomy & Sync API: Taxonomie- und Synchronisierungs-API
         Terms of Use: Nutzungsbedingungen
         Testing: Testen
@@ -101,8 +101,8 @@ plugins:
         API Integration: Integrace API
         API Reference: Reference API
         Architecture: Architektura
-        Audio Pipeline: Audio potrubí
-        Building: Budova
+        Audio Pipeline: Audio pipeline
+        Building: Sestavení
         Code Style: Styl kódu
         Developer Guide: Příručka pro vývojáře
         Explore: Prozkoumat
@@ -111,23 +111,23 @@ plugins:
         ARU Mode: Režim ARU
         File Analysis: Analýza souborů
         Getting Started: Začínáme
-        Home: Domov
+        Home: Domů
         Icons & Controls: Ikony a ovládací prvky
         Inference Engine: Inference Engine
-        Live Mode: Živý režim
+        Live Mode: Režim Live
         Localization: Lokalizace
         Overview: Přehled
-        Point Count Mode: Režim počítání bodů
+        Point Count Mode: Režim Point Count
         Privacy Policy: Zásady ochrany osobních údajů
-        Releasing: Uvolnění
-        Session Library: Knihovna relací
-        Session Review: Recenze relace
+        Releasing: Vydávání
+        Session Library: Knihovna sessions
+        Session Review: Přehled session
         Settings: Nastavení
         Species Bundle: Svazek druhů
         Spectrogram: Spektrogram
-        State Management: Řízení státu
-        Storage: Skladování
-        Survey Mode: Režim průzkumu
+        State Management: Správa stavu
+        Storage: Úložiště
+        Survey Mode: Režim Survey
         Taxonomy & Sync API: Taxonomy & Sync API
         Terms of Use: Podmínky použití
         Testing: Testování
@@ -140,7 +140,7 @@ plugins:
         API Reference: Referencia de API
         Architecture: Arquitectura
         Audio Pipeline: Canalización de audio
-        Building: Edificio
+        Building: Compilación
         Code Style: Estilo de código
         Developer Guide: Guía para desarrolladores
         Explore: Explorar
@@ -148,24 +148,24 @@ plugins:
         Batch Analysis: Análisis por lotes
         ARU Mode: Modo ARU
         File Analysis: Análisis de archivos
-        Getting Started: Empezando
-        Home: Hogar
+        Getting Started: Primeros pasos
+        Home: Inicio
         Icons & Controls: Iconos y controles
         Inference Engine: Motor de inferencia
-        Live Mode: Modo en vivo
+        Live Mode: Modo Live
         Localization: Localización
         Overview: Descripción general
-        Point Count Mode: Modo de recuento de puntos
-        Privacy Policy: política de privacidad
-        Releasing: Liberando
+        Point Count Mode: Modo Point Count
+        Privacy Policy: Política de privacidad
+        Releasing: Publicación
         Session Library: Biblioteca de sesiones
-        Session Review: Revisión de la sesión
+        Session Review: Resumen de la sesión
         Settings: Ajustes
         Species Bundle: Paquete de especies
-        Spectrogram: espectrograma
-        State Management: Gestión del Estado
+        Spectrogram: Espectrograma
+        State Management: Gestión de estado
         Storage: Almacenamiento
-        Survey Mode: Modo de encuesta
+        Survey Mode: Modo Survey
         Taxonomy & Sync API: API de taxonomía y sincronización
         Terms of Use: Condiciones de uso
         Testing: Pruebas
@@ -178,7 +178,7 @@ plugins:
         API Reference: Référence API
         Architecture: Architecture
         Audio Pipeline: Pipeline audio
-        Building: Bâtiment
+        Building: Compilation
         Code Style: Style de code
         Developer Guide: Guide du développeur
         Explore: Explorer
@@ -186,24 +186,24 @@ plugins:
         Batch Analysis: Analyse par lots
         ARU Mode: Mode ARU
         File Analysis: Analyse de fichiers
-        Getting Started: Commencer
-        Home: Maison
+        Getting Started: Premiers pas
+        Home: Accueil
         Icons & Controls: Icônes et commandes
         Inference Engine: Moteur d'inférence
-        Live Mode: Mode direct
+        Live Mode: Mode En direct
         Localization: Localisation
         Overview: Aperçu
-        Point Count Mode: Mode de comptage de points
-        Privacy Policy: politique de confidentialité
-        Releasing: Libération
+        Point Count Mode: Mode Point d'écoute
+        Privacy Policy: Politique de confidentialité
+        Releasing: Publication
         Session Library: Bibliothèque de sessions
-        Session Review: Examen de la séance
+        Session Review: Résumé de la session
         Settings: Paramètres
         Species Bundle: Ensemble d'espèces
         Spectrogram: Spectrogramme
-        State Management: Gestion de l'État
+        State Management: Gestion d'état
         Storage: Stockage
-        Survey Mode: Mode enquête
+        Survey Mode: Mode Relevé
         Taxonomy & Sync API: API de taxonomie et de synchronisation
         Terms of Use: Conditions d'utilisation
         Testing: Essai
@@ -215,33 +215,33 @@ plugins:
         API Integration: Integrazione API
         API Reference: Riferimento API
         Architecture: Architettura
-        Audio Pipeline: Conduttura audio
-        Building: Edificio
+        Audio Pipeline: Pipeline audio
+        Building: Compilazione
         Code Style: Stile del codice
         Developer Guide: Guida per gli sviluppatori
-        Explore: Esplorare
+        Explore: Esplora
         FAQ: Domande frequenti
         Batch Analysis: Analisi in batch
         ARU Mode: Modalità ARU
-        File Analysis: Analisi dei file
-        Getting Started: Iniziare
-        Home: Casa
+        File Analysis: Analisi file
+        Getting Started: Per iniziare
+        Home: Home
         Icons & Controls: Icone e controlli
         Inference Engine: Motore di inferenza
-        Live Mode: Modalità dal vivo
+        Live Mode: Modalità Live
         Localization: Localizzazione
         Overview: Panoramica
-        Point Count Mode: Modalità conteggio punti
-        Privacy Policy: politica sulla riservatezza
-        Releasing: Rilasciando
-        Session Library: Libreria di sessione
-        Session Review: Revisione della sessione
+        Point Count Mode: Modalità Point Count
+        Privacy Policy: Informativa sulla privacy
+        Releasing: Pubblicazione
+        Session Library: Libreria delle sessioni
+        Session Review: Riepilogo sessione
         Settings: Impostazioni
         Species Bundle: Pacchetto specie
         Spectrogram: Spettrogramma
-        State Management: Gestione statale
-        Storage: Magazzinaggio
-        Survey Mode: Modalità sondaggio
+        State Management: Gestione dello stato
+        Storage: Archiviazione
+        Survey Mode: Modalità Survey
         Taxonomy & Sync API: API di tassonomia e sincronizzazione
         Terms of Use: Termini di utilizzo
         Testing: Test
@@ -255,32 +255,32 @@ plugins:
         API Reference: Referência de API
         Architecture: Arquitetura
         Audio Pipeline: Pipeline de áudio
-        Building: Prédio
+        Building: Compilação
         Code Style: Estilo de código
         Developer Guide: Guia do desenvolvedor
         Explore: Explorar
         FAQ: Perguntas frequentes
         Batch Analysis: Análise em lote
         ARU Mode: Modo ARU
-        File Analysis: Análise de arquivo
-        Getting Started: Começando
-        Home: Lar
+        File Analysis: Análise de arquivos
+        Getting Started: Primeiros passos
+        Home: Início
         Icons & Controls: Ícones e controles
-        Inference Engine: Mecanismo de Inferência
-        Live Mode: Modo ao vivo
+        Inference Engine: Motor de inferência
+        Live Mode: Modo Live
         Localization: Localização
         Overview: Visão geral
-        Point Count Mode: Modo de contagem de pontos
-        Privacy Policy: política de Privacidade
-        Releasing: Liberando
-        Session Library: Biblioteca de Sessões
-        Session Review: Revisão da sessão
+        Point Count Mode: Modo Point Count
+        Privacy Policy: Política de privacidade
+        Releasing: Publicação
+        Session Library: Biblioteca de sessões
+        Session Review: Resumo da sessão
         Settings: Configurações
-        Species Bundle: Pacote de Espécies
+        Species Bundle: Pacote de espécies
         Spectrogram: Espectrograma
-        State Management: Gestão Estadual
-        Storage: Armazenar
-        Survey Mode: Modo de pesquisa
+        State Management: Gerenciamento de estado
+        Storage: Armazenamento
+        Survey Mode: Modo Survey
         Taxonomy & Sync API: API de taxonomia e sincronização
         Terms of Use: Termos de Uso
         Testing: Teste

@@ -22,13 +22,13 @@ Microphone (Oboe / AVAudioEngine)
 
 ## Audio Capture Service
 
-`AudioCaptureService` wraps the platform microphone and pushes PCM16 data to the ring buffer. It also provides an RMS level stream (~15 Hz) for UI metering.
+`AudioCaptureService` wraps the platform microphone and pushes PCM16 data into the ring buffer. It also exposes an RMS level stream (~15 Hz) for UI metering.
 
 ## Recording Service
 
 `RecordingService` supports two modes:
 
-- **Full**: Continuously flush the ring buffer to an audio file (WAV or FLAC depending on user settings) at 1-second intervals via `AudioFileWriter` (implemented by `WavWriter` and `FlacEncoder`).
-- **Detections Only**: Save audio clips centered on detection timestamps (pre-context + inference window + post-context) in the chosen format (WAV or FLAC).
+- **Full**: Continuously flushes the ring buffer to an audio file (WAV or FLAC, depending on user settings) at 1-second intervals via `AudioFileWriter` (implemented by `WavWriter` and `FlacEncoder`).
+- **Detections Only**: Saves audio clips centered on detection timestamps (pre-context + inference window + post-context) in the chosen format (WAV or FLAC).
 
-On iOS, voice memos automatically fall back to `.wav` (PCM16) format to prevent Apple CoreAudio AAC compression collisions while maintaining full file-sharing and packaging compatibility.
+On iOS, voice memos automatically fall back to `.wav` (PCM16) format to avoid Apple CoreAudio AAC compression collisions, while preserving full file-sharing and packaging compatibility.

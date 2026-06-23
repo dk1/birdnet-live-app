@@ -30,7 +30,7 @@ Shared utilities live under `lib/shared/` (models, providers, services) and `lib
 
 ### On-Device Inference
 
-All classification runs locally using ONNX Runtime. No audio data leaves the device. The audio classifier (~152 MB) and geo-model (~6 MB) are resolved through `AssetPackService`: Play Store App Bundles read them from the install-time `models_pack` asset pack, while sideload APKs, iOS, Windows, and tests fall back to Flutter assets. The models are extracted to an on-device file path so ONNX Runtime can memory-map them.
+All classification runs locally using ONNX Runtime, so no audio data ever leaves the device. The audio classifier (~152 MB) and geo-model (~6 MB) are resolved through `AssetPackService`: Play Store App Bundles read them from the install-time `models_pack` asset pack, while sideload APKs, iOS, Windows, and tests fall back to Flutter assets. The models are then extracted to an on-device file path so ONNX Runtime can memory-map them.
 
 ### Native Background Queue for Inference
 
@@ -44,7 +44,7 @@ Audio flows through a shared `RingBuffer`:
 Microphone → PCM16 → Float32 → RingBuffer → { Spectrogram, Inference, Recording }
 ```
 
-Multiple consumers read from the same buffer without copies.
+Multiple consumers read from the same buffer without copying the data.
 
 ### JSON-Driven Model Config
 

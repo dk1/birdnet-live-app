@@ -1,60 +1,60 @@
-# Modalità dal vivo
+# Modalità Live
 
-La modalità live è il modo più veloce per ascoltare attraverso il microfono del telefono e rivedere i rilevamenti man mano che appaiono.
+La modalità Live è il modo più veloce per ascoltare tramite il microfono del telefono ed esaminare le rilevazioni man mano che appaiono in tempo reale.
 
-## Come aprirlo
+## Come aprirla
 
-Dalla schermata Home, tocca la scheda **Modalità live** con l'icona :material-microphone:.
+Dalla schermata Home, tocca la scheda **Modalità Live** con l'icona :material-microphone:.
 
 ## Barra superiore
 
 La barra superiore contiene tre elementi:
 
-- :material-arrow-left: - lascia la modalità Live
-- Testo dello stato del centro: "Inizializzazione in corso", "Caricamento del modello", "Pronto", "Identificazione della specie", "In pausa" o "Errore"
-- :material-tune: — apre la vista Impostazioni specifiche di Live
+- :material-arrow-left: — esce dalla modalità Live
+- testo di stato al centro — `Inizializzazione…`, `Caricamento modello…`, `Pronto`, `Identificazione delle specie…`, `In pausa` o `Errore`
+- :material-tune: — apre la vista Impostazioni specifica di Live
 
 ## Pulsante di azione principale
 
 Il grande pulsante circolare in basso al centro cambia stato:
 
-- :material-microphone: — inizia ad ascoltare
-- :material-stop: — interrompe la sessione attiva
-- :material-play: - riprendi da uno stato di pausa-pronto
+- :material-microphone: — avvia l'ascolto
+- :material-stop: — interrompe la Session attiva
+- :material-play: — riprende da uno stato in pausa pronto a partire
 
-## Cosa vedi mentre ascolti
+## Cosa vedi durante l'ascolto
 
 ### Spettrogramma
 
-Lo spettrogramma scorre continuamente mentre la cattura è attiva. Mostra il contenuto della frequenza nel tempo e utilizza la mappa dei colori, la dimensione FFT, l'intervallo di frequenza e la durata dalle Impostazioni.
+Lo spettrogramma scorre continuamente mentre la cattura è attiva. Mostra il contenuto in frequenza nel tempo, usando la mappa colori, la dimensione FFT, l'intervallo di frequenza e la durata configurati nelle Impostazioni.
 
-### Elenco rilevamenti
+### Elenco delle rilevazioni
 
-I rilevamenti recenti vengono visualizzati sotto lo spettrogramma. Ogni riga può mostrare:
+Le rilevazioni recenti compaiono sotto lo spettrogramma. Ogni riga può mostrare:
 
 - immagine della specie
 - nome comune
 - nome scientifico facoltativo
-- valore di fiducia
+- valore di confidenza
 
-Tocca la riga di una specie per aprire la sovrapposizione dei dettagli della specie.
+Tocca la riga di una specie per aprire il pannello dei dettagli della specie.
 
-### Barra delle informazioni sulla sessione
+### Barra informativa della Session
 
-La linea informativa compatta sotto lo spettrogramma riassume la sessione corrente, ad esempio:
+La riga informativa compatta sotto lo spettrogramma riassume la Session corrente, ad esempio:
 
-- rilevamenti attuali mostrati ora
-- conteggio delle specie uniche (`spp`)
+- rilevazioni attualmente visibili
+- numero di specie uniche (`spp`)
 - rilevazioni totali (`det`)
 - durata trascorsa
-- dimensione di registrazione stimata quando la registrazione è abilitata
+- dimensione stimata della registrazione quando la registrazione è attiva
 
-## Comportamento in registrazione
+## Comportamento della registrazione
 
-La registrazione è controllata in [Impostazioni](settings.md).
+La registrazione si controlla in [Impostazioni](settings.md).
 
-- **Completo** registra l'intera sessione.
-- **Solo rilevamenti** registra clip attorno ai rilevamenti.
-- **Off** disabilita la registrazione.
+- **Completa** registra l'intera Session.
+- **Solo rilevazioni** registra clip attorno alle rilevazioni.
+- **Disattivata** disabilita la registrazione.
 
-Quando interrompi la modalità Live, BirdNET Live salva la sessione e apre [Revisione sessione](session-review.md).
+Quando interrompi la modalità Live, BirdNET Live salva la Session e apre il [Riepilogo sessione](session-review.md).

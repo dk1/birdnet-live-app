@@ -1,30 +1,30 @@
-# Análise de arquivo
+# Análise de arquivos
 
-A Análise de Arquivo processa uma gravação existente por meio do mesmo pipeline BirdNET usado pelos fluxos de trabalho ao vivo.
+A Análise de arquivos processa uma gravação existente pelo mesmo pipeline do BirdNET que alimenta os fluxos de trabalho ao vivo.
 
-## Como abri-lo
+## Como abrir
 
-Na página inicial, toque no cartão **Análise de arquivo** com o ícone :material-file-music:.
+Na tela de Início, toque no cartão **Análise de arquivos** com o ícone :material-file-music:.
 
-## Barra de aplicativos
+## Barra de aplicativo
 
-- :material-tune: — abra as configurações de análise de arquivo
+- :material-tune: — abre as configurações da Análise de arquivos
 - :material-close: — cancela uma execução de análise ativa
 
 ## Entradas suportadas
 
 O seletor de arquivos atual aceita:
 
-- WAV / ONDA
--FLAC
--MP3
+- WAV / WAVE
+- FLAC
+- MP3
 - OGG / OGA / Opus
--M4A/AAC/MP4
-- WMA/AMR
+- M4A / AAC / MP4
+- WMA / AMR
 
 ## Assistente de quatro etapas
 
-### 1. Escolha o arquivo
+### 1. Escolher arquivo
 
 Escolha um arquivo e revise seu cartão de metadados:
 
@@ -38,10 +38,10 @@ Escolha um arquivo e revise seu cartão de metadados:
 
 Você pode:
 
-- usar GPS atual
-- insira as coordenadas manualmente
-- pular localização
-- escolha um ponto no mapa
+- usar o GPS atual
+- inserir as coordenadas manualmente
+- ignorar a localização
+- escolher um ponto no mapa
 - definir uma data de gravação opcional
 
 ### 3. Parâmetros
@@ -51,18 +51,18 @@ O assistente expõe:
 - duração da janela
 - sobreposição
 - sensibilidade
-- limite de confiança
-- modo de filtro de espécies
+- limiar de confiança
+- modo do filtro de espécies
 
-### 4. Analise
+### 4. Analisar
 
 A tela de progresso mostra:
 
 - janelas processadas
 - detecções encontradas
 - espécies encontradas
-- botão cancelar
+- botão de cancelar
 
 ## Resultado
 
-Quando a análise termina, o BirdNET Live converte a saída em uma sessão salva e abre [Session Review](session-review.md).
+Quando a análise termina, o BirdNET Live converte a saída em uma Session salva e abre o [Resumo da Session](session-review.md).

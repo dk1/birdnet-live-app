@@ -1,78 +1,105 @@
 # Einstellungen
 
-BirdNET Live verwendet einen Einstellungsbildschirm für mehrere Arbeitsabläufe wieder. Der :material-tune:-Button öffnet die Abschnitte, die für den Bildschirm, von dem Sie gekommen sind, relevant sind.
+BirdNET Live nutzt einen einzigen Einstellungsbildschirm für mehrere Arbeitsabläufe. Die Schaltfläche :material-tune: öffnet die Abschnitte, die für den Bildschirm relevant sind, von dem aus Sie gekommen sind.
 
-## Funktionsweise des Einstellungsbereichs
+## Funktionsweise des Einstellungsumfangs
 
-- Wenn Sie die Einstellungen von zu Hause aus öffnen, wird der Vollbildmodus angezeigt.
-- Wenn Sie die Einstellungen in Live, Vermessung, Punktzählung oder Dateianalyse öffnen, wird der Bildschirm nach den relevanten Abschnitten gefiltert.
+- Öffnen Sie die Einstellungen über die Startseite, wird der vollständige Bildschirm angezeigt.
+- Öffnen Sie die Einstellungen aus Live, Survey, Point Count oder Dateianalyse, wird der Bildschirm auf die jeweils relevanten Abschnitte gefiltert.
 
 ## Allgemein
 
-### Thema
+### Design
 
 Wählen Sie **Dunkel**, **Hell** oder **System**.
 
+Ist **Dynamische Farben** aktiviert, versucht BirdNET Live außerdem, die Systemfarbpalette Ihres Android-Geräts zu übernehmen. Das wirkt sich nur auf unterstützten Android-Geräten aus; auf iPhone und iPad behält die App das Standard-Design von BirdNET Live bei, sodass das Aktivieren des Schalters dort nichts ändert.
+
 ### App-Sprache
 
-Legt die Sprache der App-Oberfläche fest.
+Legt die Sprache der Benutzeroberfläche fest.
 
 ### Artennamen
 
-Steuert die Sprache, die für Artennamen verwendet wird. **App-Sprache folgen** verwendet dieselbe Sprache wie die App-Oberfläche, wenn dieser Name verfügbar ist.
+Steuert die Sprache, die für Artennamen verwendet wird. **App-Sprache folgen** verwendet dieselbe Sprache wie die Benutzeroberfläche, sofern dieser Name verfügbar ist.
 
 ### Wissenschaftliche Namen anzeigen
 
-Zeigt wissenschaftliche Namen unterhalb gebräuchlicher Namen in der App an.
+Zeigt in der gesamten App wissenschaftliche Namen unterhalb der gebräuchlichen Namen an.
+
+### Wiedergabe-Overlay in Review
+
+Wenn aktiviert (das ist der Standard), löst das Anhören eines Audioclips in einer Session-Übersicht, die nur Clips enthält (also ohne vollständige Audioaufnahme bzw. Spektrogramm), ein eigenes modales Player-Overlay mit Wiedergabesteuerung und einer Spektrogramm-Vorschau aus, anstatt den Clip im Hintergrund abzuspielen. Hat eine Session vollständiges Audio, wird diese Einstellung übergangen und das Wiedergabe-Overlay nie angezeigt.
+
+### Beobachtername
+
+Die Einrichtung von Survey, Point Count und ARU merkt sich den zuletzt in einem dieser Modi eingegebenen, nicht leeren Beobachternamen und füllt ihn beim nächsten Aufsetzen einer Feld-Session vor. So bleibt die wiederholte Nutzung auf einem persönlichen Feldtelefon schnell, während Sie den Beobachternamen vor dem Start einer Session weiterhin bearbeiten oder löschen können.
+
+### ARU-/Stations-ID
+
+Die ARU-Einrichtung merkt sich die zuletzt eingegebene, nicht leere ARU-/Stations-ID und füllt sie für die nächste Aufstellung vor. Wenn vorhanden, wird die ID in den Namen der ARU-Session und in die Export-Dateinamen aufgenommen, sodass wiederholte Aufstellungen an festen Standorten auch außerhalb der App identifizierbar bleiben.
 
 ### Zeitstempel-Anzeige
 
-Bestimmt, wie Zeitangaben einzelner Detektionen in der Sitzungsübersicht erscheinen.
+Steuert, wie die Zeiten einzelner Detektionen in der Session-Übersicht erscheinen.
 
-- **Relativ** zeigt den Versatz seit Aufnahmebeginn, z. B. `00:12:34`. Am besten zum Durchsehen einer einzelnen Sitzung und zur Synchronisierung mit dem Spektrogramm.
-- **Absolut** zeigt die lokale Uhrzeit der Detektion, z. B. `08:42:17`. Am besten zum Abgleich mit Feldnotizen, Wetterprotokollen oder gleichzeitigen Aufnahmen.
+- **Relativ** zeigt den Versatz ab Aufnahmebeginn, z. B. `00:12:34`. Am besten zum Durchsehen einer einzelnen Session und zum Abgleich mit der Spektrogramm-Wiedergabeposition.
+- **Absolut** zeigt die lokale Uhrzeit, zu der die Detektion erfasst wurde, z. B. `08:42:17`. Am besten zum Abgleich mit Feldnotizen, Wetterprotokollen oder parallelen Aufnahmen.
 
-Liegt eine Detektion an einem anderen Kalendertag als der Sitzungsbeginn (z. B. bei einer Nachtaufnahme), wird der absoluten Zeit ein `+1d`-Suffix angehängt, damit man die morgige Morgendämmerung nicht mit der heutigen verwechselt.
+Fällt eine Detektion auf einen anderen Kalendertag als der Session-Beginn (z. B. bei einem Survey über Nacht), erhält die absolute Zeit ein `+1d`-Suffix, damit man das morgige Morgenkonzert nicht versehentlich als das heutige liest.
 
-Wenn **Absolut** ausgewählt ist, erscheint zusätzlich der Schalter **Sekunden in Zeitstempeln anzeigen**. Deaktiviere ihn, wenn du das kompaktere `08:42` dem `08:42:17` vorziehst — hilfreich beim Überfliegen langer Detektionslisten. Relative Versatzangaben zeigen immer Sekunden, weil zur Synchronisation mit dem Spektrogramm Sub-Minuten-Genauigkeit nötig ist.
+Ist **Absolut** ausgewählt, erscheint zusätzlich der Schalter **Sekunden in Zeitstempeln anzeigen**. Deaktivieren Sie ihn, wenn Sie das kompaktere `08:42` dem `08:42:17` vorziehen – hilfreich beim Überfliegen langer Detektionslisten. Relative Versatzangaben zeigen immer Sekunden, weil zum Abgleich mit der Spektrogramm-Wiedergabeposition eine Genauigkeit unterhalb der Minute nötig ist.
 
-Wenn **Absolut** ausgewählt ist, erscheint zusätzlich der Schalter **Sekunden in Zeitstempeln anzeigen**. Deaktiviere ihn, wenn du das kompaktere `08:42` dem `08:42:17` vorziehst — hilfreich beim Überfliegen langer Detektionslisten. Relative Versatzangaben zeigen immer Sekunden, weil zur Synchronisation mit dem Spektrogramm Sub-Minuten-Genauigkeit nötig ist.
-
-Speicherung und Export verwenden unabhängig von dieser Einstellung immer UTC, sodass die Auswahl niemals die Daten verändert — nur deren Darstellung.
+Speicherung und Exporte verwenden unabhängig von dieser Einstellung immer UTC-Zeitpunkte, sodass die Auswahl niemals die Daten verändert – nur deren Darstellung.
 
 ## Audio
 
-Diese Steuerelemente werden in audiogesteuerten Live-Workflows angezeigt.
+Diese Bedienelemente erscheinen in audiogesteuerten Live-Workflows.
 
-### Gewinnen
+### Verstärkung
 
-Passt die in der App angezeigte Eingangsverstärkung an. Verwenden Sie dies nur, wenn Sie sehr leise Aufnahmen oder Eingänge ausgleichen müssen.
+Linearer Verstärker, der auf das eingehende Audio angewendet wird, bevor es das Spektrogramm und den Klassifikator erreicht. Belassen Sie ihn bei **1,0×**, sofern Ihr Eingang nicht durchgängig zu leise ist – etwa ein hochohmiges Lavalier-Mikrofon am Smartphone oder ein USB-Interface, dessen Vorverstärker zu niedrig eingestellt ist. Eine Verstärkung über 1,0 lässt keine Rufe erscheinen, die das Mikrofon nie aufgenommen hat; sie skaliert nur, was das Mikrofon geliefert hat, sodass laute Geräusche in der Nähe übersteuern können. Werte unter 1,0 sind im seltenen Fall nützlich, dass ein zu starker Eingang das Spektrogramm sättigt.
 
 ### Hochpassfilter (Hz)
 
-Reduziert niederfrequentes Rumpeln vor der Schlussfolgerung.
+Schneidet niederfrequente Anteile vor der Inferenz mit einem Butterworth-Filter mit 24 dB/Oktave ab – der Schiebereglerwert ist die −3-dB-Grenzfrequenz. **0 Hz deaktiviert ihn.** Eine Grenzfrequenz von 100–200 Hz entfernt Wind, Verkehrsrauschen und Handhabungsgeräusche, ohne die meisten Arten zu berühren; bei 500–1000 Hz beginnen tiefe Rufe, Eulen, Raufußhühner und das Dröhnen der Rohrdommel verloren zu gehen. Gehen Sie also nur so hoch, wenn Sie diese Arten bewusst zugunsten eines deutlich saubereren Spektrogramms in einer lauten städtischen Umgebung ausblenden. Die gewählte Grenzfrequenz sollte als scharfe waagerechte Linie im Live-Spektrogramm sichtbar sein.
 
 ### Mikrofon
 
-Hier können Sie ein bestimmtes Eingabegerät auswählen oder die **Systemstandards** beibehalten.
+Hier können Sie ein bestimmtes Eingabegerät auswählen oder den **Systemstandard** beibehalten. Ihre Auswahl bleibt über App-Starts hinweg erhalten, sodass Sie ein USB- oder Bluetooth-Mikrofon, das Sie regelmäßig im Feld verwenden, nur einmal auswählen müssen. Dasselbe Auswahlfeld erscheint auch im Einrichtungsbildschirm des Surveys.
 
-## Schlussfolgerung
+## Inferenz
 
 ### Fensterdauer
 
-Steuert die Länge des Analysefensters. Verfügbare Schritte sind **1**, **3**, **5**, **7**, **10** und **15** Sekunden.
+Steuert die Länge des Analysefensters.
 
-### Vertrauensschwelle
+### Konfidenzschwellenwert
 
-Legt fest, wie konservativ Detektionen sein sollen.
+Legt fest, wie konservativ Detektionen sein sollen. Der Standard ist **35 %**, was die Live-Liste auf stärkere Treffer fokussiert und zugleich Raum für entfernte oder teilweise verdeckte Rufe lässt. Senken Sie ihn, wenn Sie seltene oder leise Arten erfassen und mehr Kandidaten später prüfen möchten; erhöhen Sie ihn, wenn Hintergrundgeräusche oder häufige Fehltreffer die Session überfüllen.
 
 ### Empfindlichkeit
 
-Höhere Werte machen den Detektor freizügiger, wodurch schwächere Anrufe auf Kosten von mehr Fehlalarmen erkannt werden können.
+Steilheit der Sigmoidfunktion, die auf die rohe Klassifikatorausgabe angewendet wird, bevor der Konfidenzschwellenwert geprüft wird. Höhere Werte machen den Detektor freizügiger – schwächere oder mehrdeutige Rufe überschreiten die Schwelle, auf Kosten von mehr Fehltreffern. Niedrigere Werte sind strenger und lassen nur sichere Detektionen durch. Der Standard von **1,0** entspricht der BirdNET-Referenz. Probieren Sie **1,25**, wenn Sie vermuten, dass das Modell entfernte Rufe übersieht; gehen Sie auf **0,75**, wenn Sie von minderwertigen Detektionen häufiger Arten überflutet werden. Die Empfindlichkeit wird sofort angewendet: Eine Änderung während der Session greift im nächsten Inferenzfenster.
 
 ### Inferenzrate
 
-Steuert, wie oft BirdNET die Inferenz ausführt. Der Slider nutzt dieselben **0,10–1,00 Hz**-Schritte wie Survey- und ARU-Setup.
+Steuert, wie oft BirdNET die Inferenz ausführt.
+
+### Score-Pooling
+
+Kombiniert die Scores über die jüngsten Inferenzfenster, sodass ein einzelnes verrauschtes Fenster das Ergebnis nicht dominiert. **Aus** verwendet die rohe Wahrscheinlichkeit jedes Fensters – am reaktivsten, am verrauschtesten. **Durchschnitt** bildet das arithmetische Mittel der jüngsten Fenster für die glatteste Ausgabe. **Max** behält den lautesten Spitzenwert pro Art und ist damit der reaktivste Glättungsmodus, gut für kurze, scharfe Rufe. **LME** (Log-Mean-Exp, der Standard) ist BirdNETs Referenz-Softmaximum: Es verhält sich wie *Max*, wenn ein Fenster dominiert, und wie *Durchschnitt*, wenn mehrere Fenster übereinstimmen. Im LME-Modus benötigt eine neue Art zudem wiederholte Unterstützung über mehrere Rohfenster, bevor sie erstmals erscheint, während gestützte Detektionen den Großteil ihres stärksten jüngsten Roh-Scores behalten und bereits sichtbare Arten so lange bestehen bleiben, bis ihr gepoolter Score unter den Konfidenzschwellenwert fällt. Ein Moduswechsel während der Session leert den gleitenden Puffer, damit keine alten Scores in den neuen Modus übergehen.
+
+### Anzahl Pooling-Fenster
+
+Steuert, wie viele aufeinanderfolgende Inferenzfenster am Score-Pooling teilnehmen.
+Ein größerer Wert glättet den Score jeder Art über einen längeren Zeithorizont, was
+vereinzelte Fehldetektionen unterdrückt – nützlich bei gleichmäßigen, entfernten
+Rufen, bei denen Sie lieber einige bestätigende Fenster abwarten, bevor Sie eine
+Detektion auslösen. Ein kleinerer Wert reagiert schneller auf kurze Lautäußerungen,
+lässt aber mehr Rauschen durch. Der Standard von **5** entspricht dem Wert, der
+historisch fest im Modell verankert war, und ist ein sinnvoller Ausgangspunkt für
+den Live-Einsatz.
 
 ## Spektrogramm
 
@@ -80,9 +107,9 @@ Steuert, wie oft BirdNET die Inferenz ausführt. Der Slider nutzt dieselben **0,
 
 Steuert die Frequenzauflösung im Spektrogramm.
 
-### Farbkarte
+### Farbpalette
 
-Wählen Sie **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Graustufen** oder **BirdNET**. **Turbo** ist die moderne, Jet-ähnliche Regenbogenoption.
+Wählen Sie **Viridis**, **Magma** oder **Graustufen**.
 
 ### Dauer (Scrollgeschwindigkeit)
 
@@ -92,86 +119,134 @@ Steuert, wie viel Zeit im Spektrogrammfenster sichtbar ist.
 
 Legt die obere Anzeigefrequenz fest.
 
-### Log amplitude
+### Log-Amplitude
 
 Wendet eine logarithmische Skalierung auf das Spektrogramm an, um das visuelle Ablesen zu erleichtern.
 
 ### Qualität
 
-Steuert, wie glatt das Spektrogrammbild skaliert wird. **Mittel** ist die ausgewogene Standardeinstellung. Wählen Sie **Niedrig** auf älteren Geräten, wenn das Scrollen ruckelt oder das Gerät warm wird; wählen Sie **Hoch**, wenn Sie eine weichere Darstellung bevorzugen und Ihr Gerät genug GPU-Reserve hat. Die Intuition: Diese Einstellung verändert nur die Darstellungskosten, nicht die Audioanalyse oder die Detektionsergebnisse.
+Steuert, wie glatt das Spektrogrammbild skaliert wird. **Mittel** ist die ausgewogene Standardeinstellung. Wählen Sie **Niedrig** auf älteren Smartphones, wenn das Scrollen ruckelt oder das Gerät warm wird; wählen Sie **Hoch**, wenn Sie eine weichere Darstellung bevorzugen und Ihr Gerät genug GPU-Reserve hat. Zur Orientierung: Diese Einstellung verändert nur den Darstellungsaufwand, nicht die Audioanalyse oder die Detektionsergebnisse.
+
+## Ansagen
+
+Dieser Abschnitt steuert, ob BirdNET Live **Detektionen über Ihre Kopfhörer oder den Smartphone-Lautsprecher vorliest**, während eine Session aufgenommen wird. Die gesamte Funktion ist **standardmäßig aus**, weil sie die akustische Umgebung rund um das Mikrofon verändert – sie zu aktivieren ist eine bewusste Abwägung. Es gibt keinen Einrichtungsassistenten: Die Auswahlfelder für Ausführlichkeit × Häufigkeit weiter unten *sind* die gesamte Einrichtung, sodass Sie jederzeit eine andere Voreinstellung antippen und den Unterschied sofort hören können. Zur Orientierung: Bei langen Surveys können Sie nicht ständig auf den Bildschirm schauen; eine dezente Stimme im Ohr bedeutet, dass Sie Ihren Blick auf den Lebensraum richten und trotzdem wissen, was gerade gehört wurde.
+
+### Detektionen vorlesen (Hauptschalter)
+
+Standardmäßig aus. Wenn aktiviert, spricht die App jede angenommene Detektion über die geräteeigene Text-to-Speech-Funktion aus. **Kopfhörer werden dringend empfohlen** – beim Smartphone-Lautsprecher besteht die Gefahr, dass die Ansage vom Mikrofon aufgenommen und erneut erkannt wird. Daher schaltet die App den Recorder rund um jede Ausgabe kurz stumm, um diese Schleife zu verhindern (siehe *Mikrofon beim Sprechen stummschalten* weiter unten).
+
+### Voreinstellung für die Ausführlichkeit
+
+Wie viel die App zu jeder Detektion sagt. **Minimal** spricht nur den Artnamen (am besten für sehr lange Surveys, bei denen Sie nur das Stichwort möchten). **Ausgewogen** ist der Standard – kurze, abwechslungsreiche Formulierungen wie *„Rotkehlchen“*, *„Rotkehlchen gehört“*, *„Wieder ein Rotkehlchen“*. **Gesprächig** fügt etwas mehr Kontext hinzu und kommt dem Gefühl näher, dass jemand neben Ihnen kommentiert. **Individuell** erscheint automatisch, wenn Sie die numerischen Werte unter „Erweitert“ von Hand anpassen. Zur Orientierung: Dieselben Drosselungseinstellungen können je nach Formulierung zu still oder zu geschwätzig wirken – über die Ausführlichkeit behalten Sie die Taktung bei und regeln nur die Wortfülle.
+
+### Voreinstellung für die Häufigkeit
+
+Wie oft die App überhaupt sprechen darf. Fünf Stufen von am leisesten bis am gesprächigsten. **Selten** und **Sparsam** warten lange zwischen den Ansagen und begrenzen die Rate – gut geeignet für mehrstündige Surveys, bei denen Sie ein Gefühl für die Aktivität ohne fortlaufenden Kommentar möchten. **Normal** ist die standardmäßige Gesprächstaktung. **Häufig** verkürzt die Abstände und hebt die Obergrenze an; passend für kurze Live-Sessions oder wenn Sie eine Rückmeldung näher an Echtzeit wünschen. **Ständig** entfernt die Startverzögerung vollständig und lässt die App bei nahezu jedem Detektionszyklus sprechen – nützlich für Demos, Barrierefreiheit oder immer dann, wenn die Pause vor der ersten Ansage bei *Häufig* zu lang wirkt. **Individuell** erscheint, wenn Sie die Timing-Felder unter „Erweitert“ ändern. Zur Orientierung: Dies ist der eine Regler, der entscheidet, ob die App im Hintergrund bleibt oder zur Präsenz wird – tippen Sie eine andere Voreinstellung an und Sie hören die neue Taktung schon im nächsten Detektionszyklus, ohne Speichern-Schaltfläche.
+
+### Stimme (Geschwindigkeit und Tonhöhe)
+
+Zwei Schieberegler, die die TTS-Stimme der Plattform anpassen. **Geschwindigkeit** reicht von 0,5× bis 1,5×; der Standard von 1,0× ist das „normale“ Tempo der Plattform. **Tonhöhe** reicht von 0,7× bis 1,3×. Zur Orientierung: Eine leichte Absenkung der Tonhöhe und eine kleine Verlangsamung können Ansagen im Freien bei Wind oder fließendem Wasser im Hintergrund deutlich verständlicher machen; die Schaltfläche *Beispiel sprechen* darunter spielt drei gängige Vogelnamen mit den aktuellen Einstellungen vor, sodass Sie ohne Bildschirmwechsel ausprobieren können.
+
+### Erweitert
+
+Ein aufklappbarer Bereich mit einigen Schaltern für die Audio-Wegeführung sowie dem Auswahlfeld für den Auslösemodus. In der Regel müssen Sie ihn nicht öffnen – die Voreinstellungen für Ausführlichkeit und Häufigkeit oben sind die einzigen Regler, die im Alltag zählen. Die numerischen Werte zur Ratenbegrenzung (Startverzögerung, Mindestabstand, Maximum pro Minute, Serienpause, Aktualität zurücksetzen) sind im Schieberegler **Häufigkeit** gebündelt, sodass es eine offensichtliche Stelle gibt, an der Sie die Taktung höher oder niedriger drehen.
+
+- **Telefonlautsprecher erlauben** – Wenn aus, werden Ansagen stillschweigend übersprungen, falls keine Kopfhörer oder externen Lautsprecher angeschlossen sind. Wenn an, dient der Smartphone-Lautsprecher als Ausweichlösung. Aktivieren Sie dies für entspanntes Zuhören zu Hause; lassen Sie es bei Feldarbeit aus, um akustische Rückkopplung ins Mikrofon auszuschließen.
+- **Mikrofon beim Sprechen stummschalten** – Ersetzt das eingehende Audio während des Sprechens durch Stille, sodass die Lautsprecherausgabe nicht vom Mikrofon aufgenommen und erneut erkannt werden kann. Sehr empfohlen (und der Standard). Schalten Sie dies nur aus, wenn Ihr Mikrofon akustisch vom Smartphone-Lautsprecher getrennt ist – etwa ein Ansteckmikrofon an einem anderen Kabel oder ein Bluetooth-Headset.
+- **Andere Audioausgabe absenken** – Senkt während der Ansage kurz die Lautstärke von Musik oder Podcasts anderer Apps und stellt sie danach wieder her. Standardmäßig an. Aus spielt in voller Mischung.
+- **Signalton vor der Ansage** – Spielt vor jeder Ausgabe einen kurzen, leisen Ton, damit Ihr Ohr einen Moment hat, vom passiven Zuhören zur Stimme umzuschalten. Standardmäßig an. Besonders hilfreich, wenn Ansagen selten sind oder im Hintergrund Musik läuft.
+- **Was angesagt wird** – Legt fest, welche Detektionen überhaupt für eine Ansage in Frage kommen. *Jede Detektion* (Standard) überlässt die Entscheidung der Drosselung. *Erste pro Session* sagt eine Art nur beim ersten Auftreten in der aktuellen Session an. *Nur Beobachtungsliste* beschränkt Ansagen auf Arten Ihrer Beobachtungsliste (nützlich für gezielte Survey-Arbeit, bei der Sie nur von Ihren prioritären Taxa hören möchten und von nichts sonst).
 
 ## Aufnahme
 
 ### Modus
 
-- **Vollständig** – Speichern Sie die gesamte Aufnahme
+- **Vollständig** – die gesamte Aufnahme speichern
 - **Nur Detektionen** – Clips rund um Detektionen speichern
 - **Aus** – keine Audioaufnahme
 
 ### Clip-Kontext
 
-Wenn **Nur Detektionen** aktiv ist, zeigt die App einen einzelnen **Clip-Kontext**-Schieberegler (0–5 s) an, der festlegt, wie viel Audio auf **beiden Seiten** jeder Detektion erhalten bleibt. Jeder Clip ist „Analysefenster + 2 × Clip-Kontext“ lang, sodass der gespeicherte Clip bei einem Analysefenster von 3 Sekunden und dem Standardkontext von 1 Sekunde 5 Sekunden lang ist. Wenn Sie den Kontext auf 2 s festlegen, erhalten Sie einen 7 s langen Clip (2 s Pre-Roll + 3 s analysiertes Audio + 2 s Post-Roll). Größere Werte geben Ihnen mehr Platz für visuelle Inspektions- oder externe Überprüfungstools auf Kosten von Speicherplatz. 0 speichert nur das analysierte Fenster selbst.
+Wenn **Nur Detektionen** aktiv ist, zeigt die App einen einzelnen Schieberegler **Clip-Kontext** (0–5 s), der festlegt, wie viel Audio auf **beiden Seiten** jeder Detektion erhalten bleibt. Jeder Clip ist `Analysefenster + 2 × Clip-Kontext` lang, sodass der gespeicherte Clip bei einem Analysefenster von 3 s und dem Standardkontext von 1 s 5 s lang ist. Ein Kontext von 2 s ergibt einen 7 s langen Clip (2 s Pre-Roll + 3 s analysiertes Audio + 2 s Post-Roll). Größere Werte geben Ihnen mehr Spielraum für die visuelle Prüfung oder externe Analysewerkzeuge, kosten aber Speicherplatz; 0 speichert nur das analysierte Fenster selbst.
 
 ### Format
 
-Wählen Sie **WAV** oder **FLAC**.
+Wählen Sie **WAV** oder **FLAC**. WAV ist größer, aber breit kompatibel und schnell zu prüfen. FLAC behält dieselbe verlustfreie Audioqualität bei geringerem Speicherbedarf, was bei langen Sessions meist die bessere Wahl ist.
+
+Diese Einstellung gilt für von BirdNET Live aufgenommenes Audio. Die **Dateianalyse** behält eine von der App verwaltete Kopie der importierten Datei in ihrem Originalformat, sodass MP3-, AAC-, WAV- und FLAC-Importe ohne zusätzlichen Konvertierungsschritt prüfbar bleiben.
+
+### Aufnahme automatisch starten (nur Live-Modus)
+
+Wenn aktiviert, beginnt der Live-Modus mit der Aufnahme, sobald der Bildschirm geöffnet und das Modell geladen ist – ein Tippen auf die Mikrofontaste ist nicht nötig. Nützlich für kioskartige Aufstellungen, freihändige Nutzung (z. B. wenn das Gerät im Feld montiert ist) oder jeden Arbeitsablauf, bei dem von vornherein klar ist, dass das Öffnen von Live immer „jetzt starten“ bedeutet. Standardmäßig deaktiviert, damit ein versehentliches Tippen auf die Live-Kachel auf der Startseite nicht still eine Session beginnt. Der automatische Start löst nur einmal pro Bildschirmaufruf aus, sodass das Stoppen einer Session und erneutes Antippen des Mikrofons weiterhin als manueller Neustart funktioniert.
 
 ## Standort
 
-### Verwenden Sie GPS
+### GPS verwenden
 
-Verwenden Sie Geräte-GPS anstelle manueller Koordinaten.
+Geräte-GPS anstelle manueller Koordinaten verwenden.
 
 ### Breiten-/Längengrad
 
-Manuelle Koordinaten werden verwendet, wenn GPS deaktiviert ist.
+Manuelle Koordinaten, die verwendet werden, wenn GPS deaktiviert ist.
+
+### GPS jetzt aktualisieren
+
+Erzwingt eine neue Standortbestimmung, anstatt den letzten von der App zwischengespeicherten Wert wiederzuverwenden. Zur Orientierung: GPS-Abfragen werden pro Bildschirm zwischengespeichert, damit ein Einrichtungsbildschirm nicht bei jedem Öffnen auf einen Satellitenfix wartet, doch dieser Zwischenspeicher kann meilenweit veraltet sein, wenn Sie seit der letzten Session zu einem neuen Ort gefahren sind. Tippen Sie hier, wenn Sie sich bewegt haben und möchten, dass der Geo-Filter *hier* statt dort verwendet, wo Sie morgens gestartet sind. Die aktuell zwischengespeicherten Koordinaten werden im Untertitel angezeigt, sodass Sie prüfen können, wovon die App ausgeht. Kann GPS innerhalb von etwa 10 Sekunden keinen Fix ermitteln, greift die App auf den vom Betriebssystem gemeldeten letzten bekannten Standort zurück und warnt Sie per SnackBar, sodass Sie wissen, dass der Wert veraltet ist.
+
+### Offline-Karten-Downloads
+
+Offline-Karten-Downloads sind derzeit ausgeblendet, solange BirdNET Live den öffentlichen Kachel-Dienst von OpenStreetMap nutzt. OpenStreetMap unterstützt normales interaktives Durchsuchen von Karten mit Quellenangabe, eindeutigem User-Agent und lokalem Caching, erlaubt jedoch kein Massen-Vorabrufen oder Offline-Karten-Downloads von `tile.openstreetmap.org`. Die Downloader-Implementierung wird für eine künftige Kachelquelle aufbewahrt, die Offline-Pakete ausdrücklich erlaubt.
 
 ### Artenfilter
 
 - **Aus** – keine geografische Filterung
 - **Standortfilter** – Arten ausschließen, die unter den geografischen Schwellenwert fallen
-- **Standortgewichtung** – Verwenden Sie das Geomodell als zusätzliches Gewichtungssignal
+- **Standortgewichtung** – das Geo-Modell als zusätzliches Gewichtungssignal verwenden
 
 ### Geofilter-Schwellenwert
 
 Erscheint, wenn ein standortbasierter Filtermodus aktiv ist.
 
-## Exportieren und synchronisieren
+## Export & Sync
 
 ### Formate
 
-Wähle eine beliebige Kombination von Exportformaten – jeder Speicher- bzw. Teilen-Vorgang bündelt alle ausgewählten Formate gemeinsam in ein ZIP. Wählst du nur ein Format ohne Audioclips und ohne HTML-Bericht, erhältst du aus Kompatibilitätsgründen direkt eine Rohdatei (z. B. `session.csv`):
+Wählen Sie eine beliebige Kombination von Exportformaten – jeder Speicher- bzw. Teilen-Vorgang bündelt alle ausgewählten Formate gemeinsam in einem einzigen ZIP. Wählen Sie ein einzelnes Format ohne Audioclips und ohne HTML-Report, erhalten Sie aus Kompatibilitätsgründen eine Rohdatei (z. B. `session.csv`) statt eines ZIP:
 
-- Raven Selection Table – für Cornell Raven Pro.
+- Raven Selection Table – zur Verwendung in Cornell Raven Pro.
 - CSV – öffnet sich in jeder Tabellenkalkulation.
-- JSON – ideal für programmatische Verarbeitung; enthält die vollständigen Sitzungsmetadaten.
-- GPX – Track und Wegpunkte für Karten-Apps (nur sinnvoll, wenn GPS aktiv war).
+- JSON – am einfachsten für die programmatische Verarbeitung; enthält die vollständigen Metadaten je Session.
+- GPX – Track und Wegpunkte zur Verwendung in Kartenwerkzeugen (nur sinnvoll, wenn GPS aktiv war).
 
-Die Intuition: Viele Workflows brauchen mehrere Formate gleichzeitig – ein CSV für die Tabelle, eine Raven-Tabelle für den Desktop-Reviewer und ein JSON für das Auswertungsskript. Mit dem früheren Einzelformat-Schalter musste man dieselbe Sitzung dreimal exportieren. Jetzt klickst du alle drei einmal an und sie wandern gemeinsam ins ZIP.
+Zur Orientierung: Viele Arbeitsabläufe brauchen mehr als ein Format gleichzeitig – eine CSV für die Tabelle, eine Raven-Tabelle für die Durchsicht am Desktop und eine JSON für das Analyseskript. Mit dem früheren Einzelformat-Schalter musste man dieselbe Session dreimal exportieren. Jetzt haken Sie alle drei einmal an und sie wandern gemeinsam ins ZIP.
 
-### Audiodateien einbinden
+### Audiodateien einschließen
 
-Fügen Sie gespeicherte Audiodaten neben den exportierten Tabellen oder Metadaten ein, wenn dies vom Export-Workflow unterstützt wird.
+Schließt gespeichertes Audio neben den exportierten Tabellen oder Metadaten ein, sofern der Export-Workflow dies unterstützt.
+
+### HTML-Bericht einschließen
+
+Wenn aktiviert, enthält jedes Export-ZIP neben der Tabelle, den Audioclips und der GPX-Datei auch eine Datei `report.html`. Öffnen Sie sie in einem beliebigen Webbrowser und Sie erhalten eine druckfertige Zusammenfassung der Session: eine Kopfkarte mit Datum, Standort, Beobachterin oder Beobachter und Summen; eine interaktive Karte des GPS-Tracks samt Detektionsmarkierungen; eine Karte je Detektion mit der Cornell-Taxonomie-Miniatur, Namen, Score-Pille, Ihrer Bestätigung, einer von Ihnen eingegebenen Notiz und dem Original-Audioclip direkt als Player; sowie die verwendeten Analyseeinstellungen. Zur Orientierung: Eine CSV ist großartig für Analyse-Pipelines, aber nutzlos zum Teilen mit nicht-technischen Mitwirkenden oder zum Ausdrucken einer kurzen Feldzusammenfassung – der HTML-Bericht füllt diese Lücke mit einem Tipp. Artenminiaturen und Kartenkacheln benötigen beim ersten Öffnen der Datei eine Verbindung (sie werden live von der BirdNET-Taxonomie-API und von OpenStreetMap geladen), aber alles andere – Text, Layout, Audiowiedergabe, Links – funktioniert vollständig offline. Schalten Sie dies aus, wenn Sie nur die Rohdaten benötigen und das ZIP einige KB kleiner halten möchten.
 
 ## Datenschutz
 
-Dieser Abschnitt steuert, **welche externen Dienste BirdNET Live in deinem Namen kontaktieren darf**. Die Inferenz selbst läuft vollständig auf deinem Gerät – diese Schalter regeln nur optionale Netzwerkfunktionen. Alle drei Schalter sind bei einer Neuinstallation **standardmäßig aus**; nichts wird abgerufen, bevor du es erlaubst. Die Intuition: Jeder Schalter ist auf genau einen Dienst und einen konkreten Nutzen zugeschnitten, sodass du gezielt aktivierst, was du brauchst.
+Dieser Abschnitt steuert, **welche Drittanbieter-Dienste BirdNET Live in Ihrem Namen kontaktieren darf**. Die Inferenz selbst läuft vollständig auf Ihrem Gerät – diese Schalter regeln nur optionale Netzwerkfunktionen, die das Erlebnis erweitern. Alle drei Schalter sind bei einer Neuinstallation **standardmäßig aus**; nichts wird abgerufen, bevor Sie es erlauben. Zur Orientierung: Jeder Schalter ist auf genau einen konkreten Dienst und einen konkreten Nutzen zugeschnitten, sodass Sie gezielt aktivieren, was für Ihren Arbeitsablauf nützlich ist – und sonst nichts.
 
 ### Kartenkacheln erlauben
 
-Erforderlich für jede interaktive Karte (Standort-Picker, Survey-Live-Karte, Sitzungskarte). Wenn aktiv, laden Kartenansichten Rasterkacheln von den öffentlichen **OpenStreetMap**-Servern; Kachelanfragen verraten, welchen Bereich der Welt du gerade ansiehst. Wenn aus, zeigen alle Kartenbildschirme einen Platzhalter.
+Erforderlich für jede interaktive Karte in der App (die Standortauswahl, die Survey-Live-Karte und die Session-Karte). Wenn aktiviert, laden die Karten-Widgets Rasterkacheln von den öffentlichen **OpenStreetMap**-Servern; die Kachelkoordinaten-Anfragen verraten, welchen Bereich der Welt Sie gerade ansehen. Kacheln werden bis zu sechs Monate lokal zwischengespeichert, begrenzt auf 6000 Kacheln, sodass wiederholte Kartenansichten effizient bleiben, ohne unbegrenzt zu wachsen. Das Aktivieren schaltet außerdem **Ortsnamen-Suche erlauben** ein, da die meisten Nutzenden, die Karten laden, auch lesbare Ortsnamen in ihren Sessions erwarten. Sie können die Ortsnamen-Suche separat wieder ausschalten. Sind Kartenkacheln aus, greift jeder Kartenbildschirm auf eine Platzhalterkarte zurück, sodass der Rest der App ohne Netzwerkzugriff weiterhin funktioniert.
 
 ### Ortsnamen-Suche erlauben
 
-Wenn aktiv, sendet die App deine aufgezeichneten Koordinaten an den **Nominatim**-Dienst von OpenStreetMap, um einen kurzen Ortsnamen (z. B. „Berlin, Deutschland“) aufzulösen, der in der Sessions-Bibliothek und im Session-Review angezeigt wird. Die Intuition: Numerische Koordinaten sind präzise, aber beim Scrollen schwer zu lesen – ein Ortsname macht die Liste auf einen Blick verständlich. Wenn aus, werden nur die Rohkoordinaten gezeigt und Nominatim wird nie kontaktiert.
+Wenn aktiviert, sendet die App Ihre aufgezeichneten Koordinaten an den Dienst **Nominatim** von OpenStreetMap, um einen kurzen Ortsnamen aufzulösen (z. B. *„Berlin, Deutschland“*), der neben der Session in der Session-Bibliothek und in der Session-Übersicht angezeigt wird. Zur Orientierung: Numerische Koordinaten sind präzise, aber beim Scrollen durch eine lange Session-Liste schwer zu erfassen – ein Ortsname macht die Liste auf einen Blick lesbar. Wenn aus, zeigen Sessions nur die rohen Breiten-/Längengrade, und Nominatim wird nie kontaktiert.
 
 ### Wetterabfrage erlauben
 
-Wenn aktiv, erfasst jede gespeicherte Aufnahme eine einmalige Momentaufnahme der lokalen Bedingungen (Temperatur, Niederschlag, Wind, Bewölkung) an den Aufnahmekoordinaten und der Endzeit über **Open-Meteo**. Die Daten erscheinen im Session-Review unter der Standortzeile und werden in den JSON-Export, den Metadaten-Block und den HTML-Bericht eingebettet. Die Intuition: Wetter ist einer der stärksten Prädiktoren für Vogelaktivität – automatische Erfassung macht jede Aufnahme zu einer vollständigeren Dokumentation. Open-Meteo ist kostenlos und benötigt weder Konto noch API-Schlüssel. Wenn aus, werden keine Wetterdaten abgerufen oder gespeichert.
+Wenn aktiviert, erfasst jede gespeicherte Session eine einmalige Momentaufnahme der lokalen Bedingungen (Temperatur, Niederschlag, Wind, Bewölkung) an den Aufnahmekoordinaten und zur Endzeit über **Open-Meteo**. Die Momentaufnahme erscheint in der Session-Übersicht unter der Standortzeile und wird in den JSON-Export, den Metadatenblock der Session und den HTML-Bericht übernommen. Zur Orientierung: Das Wetter ist einer der stärksten Prädiktoren für Vogelaktivität, und es automatisch zu erfassen – ohne dass Sie an eine separate App denken müssen – macht jede Session zu einer vollständigeren Dokumentation. Open-Meteo ist ein kostenloser Dienst und benötigt weder ein Konto noch einen API-Schlüssel. Wenn aus, werden keine Wetterdaten abgerufen oder gespeichert. Die Einrichtung von Point Count und Survey zeigt nahe ihren Standort-Bedienelementen ebenfalls eine kompakte Wetterkarte: Sie fragt diese Zustimmung nur bei Bedarf ab, zeigt nach der Aktivierung eine Vorschau aus Symbol + Temperatur + Wind und verwendet beim Speichern der Session dieselbe zwischengespeicherte Momentaufnahme.
 
-## Um
+## Über
 
-Die Zeile **Info** öffnet den In-App-Info-Bildschirm.
+Die Zeile **Über** öffnet den In-App-Bildschirm „Über“.
 
 ## Gefahrenzone
 
@@ -179,16 +254,22 @@ Die Zeile **Info** öffnet den In-App-Info-Bildschirm.
 
 Zeigt die Onboarding-Sequenz beim nächsten Start der App erneut an.
 
+### Alle Einstellungen zurücksetzen
+
+Setzt jede Einstellung auf diesem Bildschirm auf ihren Standardwert zurück. Sessions, Aufnahmen, Sprachmemos, Exporte und zwischengespeicherte Kartenkacheln bleiben unangetastet – nur die gespeicherten Einstellungen (Schieberegler, Schalter, Auswahlen) werden gelöscht. Nach der Bestätigung wird die App geschlossen, damit die neuen Standardwerte beim nächsten Start wirksam werden.
+
+Nützlich, wenn Sie nicht sicher sind, welchen Schieberegler Sie verstellt haben, der etwas durcheinandergebracht hat, oder wenn Sie das Gerät jemandem übergeben und eine saubere Konfiguration möchten, ohne die gesammelten Daten zu verlieren.
+
 ### Alle Daten löschen
 
-Löscht dauerhaft Sessions, Detektionen, Aufnahmen, Sprachnotizen, eigene Artenlisten, gespeicherte Einstellungen sowie zwischengespeicherte Karten-, Orts-, Wetter-, Wiedergabe-, Review- und Teilen-Daten. Der Bestätigungsdialog verlangt die Eingabe von `DELETE` und schließt danach die App, damit der nächste Start aus einem sauberen lokalen Zustand erfolgt.
+Löscht dauerhaft Sessions, Detektionen, Aufnahmen, Sprachmemos, eigene Artenlisten, gespeicherte Einstellungen sowie zwischengespeicherte Karten-, Ortsnamen-, Wetter-, Wiedergabe-, Review- und Teilen-Daten. Der Bestätigungsdialog verlangt die Eingabe von `DELETE` und schließt danach die App, sodass der nächste Start aus einem sauberen lokalen Zustand erfolgt.
 
-Verwenden Sie dies, bevor Sie ein Gerät an eine andere beobachtende Person weitergeben, ein Feldtelefon außer Dienst nehmen oder ortsbezogene Historie aus der App entfernen. Exportieren Sie zuerst alles, was Sie behalten möchten; diese Aktion kann nicht rückgängig gemacht werden.
+Verwenden Sie dies, bevor Sie ein Gerät an eine andere beobachtende Person weitergeben, ein Feldtelefon außer Dienst nehmen oder ortsbezogene Historie aus der App entfernen. Exportieren Sie zuerst alles, was Sie benötigen; diese Aktion kann nicht rückgängig gemacht werden.
 
 ## Workflowspezifische Parameter außerhalb der Einstellungen
 
-Einige Parameter werden in ihren eigenen Setup-Bildschirmen konfiguriert und nicht im gemeinsamen Einstellungsbildschirm.
+Einige Parameter werden in ihren eigenen Einrichtungsbildschirmen konfiguriert und nicht im gemeinsamen Einstellungsbildschirm.
 
-- [Punktzählmodus] (point-count-mode.md) hat seine eigene Dauer und Standorteinstellung.
-- [Umfragemodus] (survey-mode.md) verfügt über einen eigenen Bildschirm mit Umfrageparametern.
-- [Dateianalyse](file-analysis.md) verfügt über einen eigenen Analyseparameterschritt.
+- [Point-Count-Modus](point-count-mode.md) hat eine eigene Einrichtung für Dauer und Standort.
+- [Survey-Modus](survey-mode.md) hat einen eigenen Bildschirm mit Survey-Parametern.
+- [Dateianalyse](file-analysis.md) hat einen eigenen Schritt für die Analyseparameter.

@@ -1,50 +1,67 @@
-# Punktzählmodus
+# Point-Count-Modus
 
-Der Punktzählmodus ist der zeitgesteuerte stationäre Workflow in BirdNET Live.
+Der Point-Count-Modus ist der zeitgesteuerte, stationäre Arbeitsablauf in BirdNET Live.
 
-## So öffnen Sie es
+## So öffnen Sie ihn
 
-Tippen Sie auf der Startseite auf die Karte **Punktzählmodus** mit dem Symbol :material-map-marker:.
+Tippen Sie auf der Startseite auf die Karte **Point-Count-Modus** mit dem Symbol :material-map-marker:.
 
-## Setup-Ablauf
+## Einrichtungsablauf
 
-Die Einrichtung der Punktanzahl erfolgt in drei Schritten.
+Die Einrichtung eines Point Counts erfolgt in vier Schritten.
 
-### 1. Dauer und Ort
+### 1. Dauer und Standort
 
-Wählen:
+Wählen Sie:
 
-- einer der verfügbaren Dauerchips
+- einen der verfügbaren Dauer-Chips
 - aktuelles GPS mit :material-crosshairs-gps:
-- Manuelle Koordinaten mit :material-map-marker-plus:
-- kein Standort mit :material-map-marker-off:
-- Kartenauswahl mit :material-map:
+- manuelle Koordinaten mit :material-map-marker-plus:
+- keinen Standort mit :material-map-marker-off:
+- die Kartenauswahl mit :material-map:
 
-### 2. Feldtipps
+Der Einrichtungsbildschirm aktualisiert das GPS, sobald Sie aus dem
+System-Berechtigungsdialog oder den App-Einstellungen zurückkehren, sodass eine
+neu erteilte Standortberechtigung die Koordinaten aktualisiert, ohne den
+Assistenten neu zu starten. Im selben Bereich befindet sich außerdem eine
+Wetterkarte. Ist der Wetterzugriff deaktiviert, fragt die Karte die Zustimmung
+**Wetterabfrage erlauben** ab; nach der Aktivierung zeigt sie eine Vorschau des
+Standorts – allerdings nur mit Wettersymbol, Temperatur und Wind. Beim Speichern
+des Point Counts wird dieselbe zwischengespeicherte Open-Meteo-Momentaufnahme
+wiederverwendet.
+
+### 2. Inferenzparameter
+
+Wählen Sie sessionspezifische Analyseeinstellungen wie Fensterdauer, Inferenzrate,
+Konfidenzschwelle und Modus des Artenfilters. Diese gehen von Ihren globalen
+Einstellungen aus, lassen sich aber für diese Zählung anpassen, ohne Ihre
+Standardwerte zu ändern.
+
+### 3. Feldtipps
 
 Dieser Bildschirm bietet vor dem Start eine kurze In-App-Checkliste.
 
-### 3. Fertig
+### 4. Fertig
 
-Der Bereitschaftsbildschirm fasst die ausgewählte Dauer zusammen und ermöglicht Ihnen den Start mit :material-play:.
+Der Bereitschaftsbildschirm fasst die gewählte Dauer zusammen und ermöglicht den Start mit :material-play:.
 
-## Bildschirm zur Live-Punktzählung
+## Live-Bildschirm des Point Counts
 
-Der Live-Punktezähler-Bildschirm konzentriert sich auf ein zeitgesteuertes Dashboard.
+Der Live-Bildschirm des Point Counts konzentriert sich auf ein zeitgesteuertes Dashboard.
 
 ### Obere Leiste
 
-- :material-stop: — Beende die Punktezählung vorzeitig
+- :material-stop: — den Point Count vorzeitig beenden
 - :material-timer: — verbleibende Zeit anzeigen
-- :material-tune: – Punktanzahl-Einstellungen öffnen
+- :material-tune: — Point-Count-Einstellungen öffnen
 
-### Hauptindikatoren
+### Hauptanzeigen
 
 - Countdown-Fortschrittsbalken
-- Kompakte Infoleiste mit aktuellen Funden, einzigartiger Artenzahl und Gesamtfunden
+- kompakte Infoleiste mit aktuellen Detektionen, Anzahl der eindeutigen Arten und Gesamtzahl der Detektionen
 - Spektrogrammansicht
 - Detektionsliste
 
 ## Nach der Zählung
 
-Wenn die Punktezählung endet, speichert BirdNET Live die Sitzung und öffnet [Sitzungsüberprüfung] (session-review.md).
+Wenn der Point Count endet, speichert BirdNET Live die Session und öffnet die [Session-Übersicht](session-review.md).

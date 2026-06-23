@@ -31,12 +31,12 @@ the point count is saved.
 ### 2. Inference parameters
 
 Choose per-session analysis settings such as window duration, inference rate,
-confidence threshold, and species-filter mode. These start from the global
+confidence threshold, and species-filter mode. These start from your global
 settings but can be adjusted for this count without changing your defaults.
 
 ### 3. Field tips
 
-This screen provides a short in-app checklist before starting.
+This screen presents a short in-app checklist to run through before starting.
 
 ### 4. Ready
 

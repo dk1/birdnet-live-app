@@ -1,14 +1,14 @@
 # Esplora
 
-Esplora mostra le specie previste per la posizione e la stagione attuali utilizzando il geomodello BirdNET.
+Esplora mostra le specie previste per la posizione e la stagione attuali usando il geo-modello BirdNET.
 
 ## Come aprirlo
 
-Apri **Esplora** dal piè di pagina Home utilizzando il pulsante :material-magnify:.
+Apri **Esplora** dal piè di pagina della Home usando il pulsante :material-magnify:.
 
 ## Barra dell'app e intestazione
 
-### Barra delle applicazioni
+### Barra dell'app
 
 - :material-refresh: — aggiorna la posizione e ricostruisce l'elenco delle specie previste
 
@@ -16,34 +16,34 @@ Apri **Esplora** dal piè di pagina Home utilizzando il pulsante :material-magni
 
 L'intestazione mostra:
 
-- nome del luogo corrente geocodificato inverso, quando disponibile
-- coordinate sotto il nome del luogo
-- :material-help-circle-outline: - apre il foglio di aiuto Esplora
+- il nome del luogo ottenuto tramite geocoding inverso, quando disponibile
+- le coordinate sotto il nome del luogo
+- :material-help-circle-outline: — apre il pannello di aiuto di Esplora
 
 ## Elenco delle specie
 
 Ogni scheda di specie può includere:
 
-- immagine delle specie in bundle
+- immagine della specie inclusa nell'app
 - nome comune
 - nome scientifico facoltativo
-- badge punteggio geomodello
+- badge del punteggio del geo-modello
 
-Tocca una scheda per aprire la sovrapposizione dei dettagli della specie.
+Tocca una scheda per aprire il pannello dei dettagli della specie.
 
-## Sovrapposizione dei dettagli della specie
+## Pannello dei dettagli della specie
 
-La sovrapposizione può mostrare:
+Il pannello può mostrare:
 
-- immagine più grande
-- credito d'immagine
+- un'immagine più grande
+- i crediti dell'immagine
 - nomi comuni e scientifici
-- Testo descrittivo in bundle quando disponibile
-- grafico settimanale della frequenza attesa
-- Collegamenti esterni come eBird, iNaturalist o Wikipedia quando disponibili per quella specie
+- testo descrittivo incluso nell'app, quando disponibile
+- il grafico settimanale della frequenza prevista
+- link esterni come eBird, iNaturalist o Wikipedia, quando disponibili per quella specie
 
 ## A cosa serve Esplora
 
-Esplora è una vista di riferimento in grado di riconoscere la posizione all'interno dell'app. Ti aiuta a confrontare il contesto della posizione attuale dell'app con le specie che prevedi di incontrare.
+Esplora è una vista di riferimento sensibile alla posizione all'interno dell'app. Ti aiuta a confrontare il contesto della posizione attuale dell'app con le specie che potresti aspettarti di incontrare.
 
-**Non** modifica da solo i dati della sessione salvata. Il filtraggio del rilevamento è controllato separatamente tramite [Impostazioni](settings.md).
+Da sola **non** modifica i dati delle Sessions salvate. Il filtraggio delle rilevazioni si controlla separatamente tramite le [Impostazioni](settings.md).

@@ -1,50 +1,66 @@
-# Modalità conteggio punti
+# Modalità Point Count
 
-La modalità conteggio punti è il flusso di lavoro stazionario temporizzato in BirdNET Live.
+La modalità Point Count è il flusso di lavoro stazionario a tempo di BirdNET Live.
 
-## Come aprirlo
+## Come aprirla
 
-Da Home, tocca la scheda **Modalità conteggio punti** con l'icona :material-map-marker:.
+Dalla Home, tocca la scheda **Modalità Point Count** con l'icona :material-map-marker:.
 
 ## Flusso di configurazione
 
-L'impostazione del conteggio dei punti utilizza tre passaggi.
+La configurazione del Point Count si articola in quattro passaggi.
 
-### 1. Durata e luogo
+### 1. Durata e posizione
 
-Scegliere:
+Scegli:
 
-- uno dei gettoni di durata disponibili
-- GPS attuale con:material-crosshairs-gps:
-- coordinate manuali con: material-map-marker-plus:
-- nessuna posizione con: material-map-marker-off:
-- selettore di mappe con :material-map:
+- uno dei chip di durata disponibili
+- GPS attuale con :material-crosshairs-gps:
+- coordinate manuali con :material-map-marker-plus:
+- nessuna posizione con :material-map-marker-off:
+- selettore sulla mappa con :material-map:
 
-### 2. Suggerimenti sul campo
+La schermata di configurazione aggiorna il GPS quando torni dalla finestra di
+autorizzazione di sistema o dalle impostazioni dell'app, così un'autorizzazione
+alla posizione appena concessa dovrebbe aggiornare le coordinate senza riavviare
+la procedura guidata. La stessa sezione include anche una scheda meteo. Se
+l'accesso al meteo è disattivato, la scheda chiede il consenso **Consenti
+ricerca meteo**; una volta abilitato, mostra un'anteprima del sito con un'icona
+meteo, solo temperatura e vento. Lo stesso snapshot di Open-Meteo memorizzato
+nella cache viene riutilizzato quando il Point Count viene salvato.
 
-Questa schermata fornisce un breve elenco di controllo in-app prima di iniziare.
+### 2. Parametri di inferenza
 
-### 3. Pronto
+Scegli impostazioni di analisi specifiche per la Session, come durata della
+finestra, frequenza di inferenza, soglia di confidenza e modalità del filtro
+specie. Partono dalle tue impostazioni globali, ma possono essere regolate per
+questo conteggio senza modificare i valori predefiniti.
+
+### 3. Consigli sul campo
+
+Questa schermata presenta una breve lista di controllo in-app da seguire prima di iniziare.
+
+### 4. Pronto
 
 La schermata di pronto riassume la durata selezionata e ti consente di iniziare con :material-play:.
 
-## Schermata di conteggio dei punti in tempo reale
+## Schermata del Point Count in tempo reale
 
-La schermata di conteggio dei punti in tempo reale si concentra su un dashboard temporizzato.
+La schermata del Point Count in tempo reale è incentrata su una dashboard a tempo.
 
 ### Barra superiore
 
-- :material-stop: — termina in anticipo il conteggio dei punti
-- :material-timer: - mostra il tempo rimanente
-- :material-tune: - apre le impostazioni del conteggio dei punti
+- :material-stop: — termina il Point Count in anticipo
+- :material-timer: — mostra il tempo rimanente
+- :material-tune: — apre le impostazioni Point Count
 
-### Principali indicatori
+### Indicatori principali
 
 - barra di avanzamento del conto alla rovescia
-- Barra informativa compatta con rilevamenti attuali, conteggio di specie uniche e rilevamenti totali
-- visualizzazione dello spettrogramma
-- elenco di rilevamento
+- barra informativa compatta con rilevazioni attuali, numero di specie uniche e rilevazioni totali
+- vista dello spettrogramma
+- elenco delle rilevazioni
 
 ## Dopo il conteggio
 
-Al termine del conteggio dei punti, BirdNET Live salva la sessione e apre [Revisione sessione](session-review.md).
+Al termine del Point Count, BirdNET Live salva la Session e apre il [Riepilogo sessione](session-review.md).

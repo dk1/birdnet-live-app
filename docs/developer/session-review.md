@@ -58,7 +58,7 @@ Detection accumulation during live sessions uses **card-visibility-based countin
    - **Appeared**: species in current detections but not in active set → new `DetectionRecord`
    - **Ongoing**: species in both → update confidence if higher
    - **Disappeared**: species in active set but not current → remove from tracking
-3. Only `appeared` species create new detection records. This means a bird calling continuously counts as one detection, and a gap (card removal + reappearance) creates a second detection.
+3. Only `appeared` species create new detection records. As a result, a bird calling continuously counts as a single detection, while a gap (card removal followed by reappearance) creates a second detection.
 
 ## Spectrogram
 
@@ -76,7 +76,7 @@ The review spectrogram is computed dynamically to balance RAM usage and CPU perf
   3. The decode and FFT calculations run inside a background isolate (`Isolate.run` / `_runSpectrogramChunkIsolate`) to prevent the UI thread from dropping frames during scroll or pinch-to-zoom actions.
 
 - **FLAC-to-WAV Transcoding Optimization**:
-  FLAC files do not have a constant-bitrate layout or a seek table, meaning range-decoding requires sequentially decoding the file from the beginning—leading to O(N²) time complexity for lazy chunk loading on long sessions. To avoid this:
+  FLAC files have neither a constant-bitrate layout nor a seek table, so range-decoding requires sequentially decoding the file from the beginning—leading to O(N²) time complexity for lazy chunk loading on long sessions. To avoid this:
   1. If a session is large (≥ 128 MB PCM) and recorded in FLAC format, the app runs a one-time sequential transcode to a temporary WAV file in a background isolate (`_runFlacTranscodeIsolate`).
   2. The lazy spectrogram pipeline then uses the temporary WAV file, enabling fast O(1) random-access seek-and-read operations for individual chunks.
   3. The temporary WAV file is session-scoped and deleted when the review screen is disposed.

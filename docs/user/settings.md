@@ -13,7 +13,7 @@ BirdNET Live reuses one Settings screen across multiple workflows. The :material
 
 Choose **Dark**, **Light**, or **System**.
 
-If **Dynamic Color** is enabled, BirdNET Live also tries to use your Android device's system palette. This only does something on supported Android devices; on iPhone and iPad the app keeps using the normal BirdNET Live theme, so turning the toggle on there changes nothing.
+If **Dynamic Color** is enabled, BirdNET Live also tries to match your Android device's system palette. This has an effect only on supported Android devices; on iPhone and iPad the app keeps using the standard BirdNET Live theme, so turning the toggle on there changes nothing.
 
 ### App Language
 
@@ -118,7 +118,7 @@ This section controls whether BirdNET Live **reads detections aloud through your
 
 ### Speak detections aloud (master toggle)
 
-Off by default. When on, the app speaks each accepted detection using your device's built-in text-to-speech. **Headphones are strongly recommended** — using the phone speaker risks the announcement being picked up by the microphone and re-detected, so the app briefly mutes the recorder around each utterance to prevent that loop (see *Mute mic while speaking* below). When you have a screen reader (TalkBack on Android, VoiceOver on iOS) active the *first* time you launch the app, this toggle is enabled automatically as an accessibility default — you can turn it back off here at any time.
+Off by default. When on, the app speaks each accepted detection using your device's built-in text-to-speech. **Headphones are strongly recommended** — using the phone speaker risks the announcement being picked up by the microphone and re-detected, so the app briefly mutes the recorder around each utterance to prevent that loop (see *Mute mic while speaking* below).
 
 ### Verbosity preset
 

@@ -1,4 +1,4 @@
-# Empezando
+# Primeros pasos
 
 ## Instalación
 
@@ -9,68 +9,68 @@ BirdNET Live está disponible para Android, iOS y Windows.
 - **Android**: 8.0 (API 26) o posterior
 - **iOS**: 15.0 o posterior
 - **Windows**: 10 o posterior (experimental)
-- ~300 MB de almacenamiento para aplicaciones y modelos
+- ~300 MB de almacenamiento para la app y los modelos
 
-### Descargar
+### Descarga
 
-*Los enlaces de distribución se agregarán cuando estén disponibles.*
+*Los enlaces de distribución se añadirán cuando estén disponibles.*
 
-## Flujo de aplicación por primera vez
+## Primer uso de la app
 
-Cuando abre BirdNET Live por primera vez, la aplicación recorre un breve flujo de incorporación y configuración de permisos.
+La primera vez que abres BirdNET Live, la app te guía por una breve introducción y la configuración de permisos.
 
-1. Lea las pantallas de incorporación.
-2. Acepte los Términos de uso y la Política de privacidad.
-3. Otorgue permiso al micrófono para que BirdNET Live pueda procesar el audio.
-4. Opcionalmente, permita el permiso de ubicación para geoetiquetado, Explorar, Conteo de puntos y Encuesta.
-5. Opcionalmente, permita notificaciones para encuestas de larga duración.
+1. Lee las pantallas de introducción.
+2. Acepta los Términos de Uso y la Política de Privacidad.
+3. Concede el permiso de micrófono para que BirdNET Live pueda procesar el audio.
+4. Opcionalmente, concede el permiso de ubicación para el geoetiquetado, Explorar, Point Count y Survey.
+5. Opcionalmente, permite las notificaciones para los Surveys de larga duración.
 
-## Primer lanzamiento
+## Primer inicio
 
-1. **Incorporación**: introducción rápida a funciones y permisos
-2. **Términos y privacidad**: acepte los términos de uso y la política de privacidad
-3. **Permisos**: otorgar acceso al micrófono (obligatorio para todos los modos)
-4. **Listo** — ¡Empiece a identificar aves!
+1. **Introducción** — Presentación rápida de las funciones y los permisos
+2. **Términos y privacidad** — Acepta los Términos de Uso y la Política de Privacidad
+3. **Permisos** — Concede el acceso al micrófono (obligatorio para todos los modos)
+4. **Listo** — ¡Empieza a identificar aves!
 
-## Descripción general de la pantalla de inicio
+## La pantalla de inicio
 
 La pantalla de inicio es el centro principal.
 
-### Tarjetas de modo principal
+### Tarjetas de los modos principales
 
-- :material-micrófono: **Modo En Vivo**
-- :material-map-marker: **Modo de recuento de puntos**
-- :material-routes: **Modo Encuesta**
+- :material-microphone: **Modo Live**
+- :material-map-marker: **Modo Point Count**
+- :material-routes: **Modo Survey**
 - :material-file-music: **Análisis de archivos**
 
-### Botones de pie de página
+### Botones del pie
 
-- :material-tune: **Configuración**
+- :material-tune: **Ajustes**
 - :material-magnify: **Explorar**
 - :material-music-box-multiple-outline: **Biblioteca de sesiones**
 - :material-help-circle-outline: **Ayuda**
 - :material-information-outline: **Acerca de**
 
-## Lo que se guarda
+## Qué se guarda
 
-BirdNET Live guarda automáticamente las sesiones completadas y las abre en Revisión de sesión después de que se detiene el procesamiento.
+BirdNET Live guarda automáticamente cada Session completada y la abre en el Resumen de la Session cuando se detiene el procesamiento.
 
-- Las sesiones en vivo guardan detecciones y, según su configuración, grabaciones o clips.
-- Las sesiones de conteo de puntos se guardan como sesiones de conteo de puntos cronometradas.
-- Las sesiones de encuesta guardan la ruta, las detecciones y los metadatos relacionados.
-- Los resultados del análisis de archivos se convierten en una sesión revisable.
+- Las Live Sessions guardan las detecciones y, según tus ajustes, las grabaciones o los clips.
+- Las Sessions de Point Count se guardan como Sessions de Point Count cronometradas.
+- Las Sessions de Survey guardan el recorrido, las detecciones y los metadatos relacionados.
+- Los resultados del Análisis de archivos se convierten en una Session que puedes revisar.
 
-## Páginas siguientes recomendadas
+## Páginas recomendadas a continuación
 
-- Lea [Iconos y controles](icons-and-controls.md) si desea una explicación rápida de los símbolos recurrentes de la interfaz de usuario.
-- Lea [Configuración] (settings.md) antes de cambiar umbrales, filtros, comportamiento de grabación o visualización del espectrograma.
-- Abra la guía para el flujo de trabajo que utiliza con más frecuencia: [Modo en vivo](live-mode.md), [Modo de recuento de puntos](point-count-mode.md), [Modo de encuesta](survey-mode.md) o [Análisis de archivos](file-analysis.md).
+- Lee [Iconos y controles](icons-and-controls.md) si quieres una explicación rápida de los símbolos recurrentes de la interfaz.
+- Lee [Ajustes](settings.md) antes de cambiar umbrales, filtros, el comportamiento de la grabación o la visualización del espectrograma.
+- Abre la guía del flujo de trabajo que más utilices: [Modo Live](live-mode.md), [Modo Point Count](point-count-mode.md), [Modo Survey](survey-mode.md) o [Análisis de archivos](file-analysis.md).
 
 ## Permisos
 
-| Permiso | Requerido para | ¿Opcional? |
+| Permiso | Necesario para | ¿Opcional? |
 |------------|-------------|-----------|
-| Micrófono | Todos los modos de grabación | Requerido |
-| Ubicación | Etiquetado GPS, levantamiento/recuento de puntos | Opcional para vivir |
-| Almacenamiento | Guardar grabaciones, exportaciones | Requerido para grabar |
-| Notificaciones | Alertas de encuestas de antecedentes | Opcional |
+| Micrófono | Todos los modos de grabación | Obligatorio |
+| Ubicación | Geoetiquetado, Survey/Point Count | Opcional en Live |
+| Almacenamiento | Guardar grabaciones y exportaciones | Obligatorio para grabar |
+| Notificaciones | Alertas de Survey en segundo plano | Opcional |
