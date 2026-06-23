@@ -1,6 +1,6 @@
 # Session Review
 
-Session Review is where BirdNET Live turns detections into an editable record.
+Session Review is where BirdNET Live turns raw detections into an editable record.
 
 ## How You Reach It
 

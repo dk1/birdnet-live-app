@@ -3,7 +3,7 @@
 !!! note "Em breve"
     Este recurso está em desenvolvimento e estará disponível em uma versão futura.
 
-A análise em lote permitirá processar e analisar múltiplos arquivos de áudio em lote (por exemplo, a partir de um cartão SD conectado por meio de um leitor USB) usando parâmetros de análise personalizados.
+A Análise em lote permitirá processar e analisar vários arquivos de áudio de uma só vez (por exemplo, a partir de um cartão SD conectado por meio de um leitor USB) usando parâmetros de análise personalizados.
 
 ## Recursos planejados
 

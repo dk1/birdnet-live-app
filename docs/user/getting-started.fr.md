@@ -1,76 +1,76 @@
-# Commencer
+# Mise en route
 
-##Installation
+## Installation
 
 BirdNET Live est disponible pour Android, iOS et Windows.
 
-### Exigences
+### Configuration requise
 
-- **Android** : 8.0 (API 26) ou version ultérieure
-- **iOS** : 15.0 ou version ultérieure
-- **Windows** : 10 ou version ultérieure (expérimental)
-- ~ 300 Mo de stockage pour l'application + les modèles
+- **Android** : 8.0 (API 26) ou version ultérieure
+- **iOS** : 15.0 ou version ultérieure
+- **Windows** : 10 ou version ultérieure (expérimental)
+- ~300 Mo de stockage pour l'application et les modèles
 
-### Télécharger
+### Téléchargement
 
 *Des liens de distribution seront ajoutés lorsqu'ils seront disponibles.*
 
-## Flux d'application pour la première fois
+## Premier lancement de l'application
 
-Lorsque vous ouvrez BirdNET Live pour la première fois, l'application parcourt un bref processus d'intégration et de configuration des autorisations.
+Lorsque vous ouvrez BirdNET Live pour la première fois, l'application vous guide à travers une courte introduction et la configuration des autorisations.
 
-1. Lisez les écrans d'intégration.
+1. Lisez les écrans d'introduction.
 2. Acceptez les conditions d'utilisation et la politique de confidentialité.
-3. Accordez l'autorisation au microphone pour que BirdNET Live puisse traiter l'audio.
-4. Autorisez éventuellement l'autorisation de localisation pour la géolocalisation, l'exploration, le comptage de points et l'enquête.
-5. Autorisez éventuellement les notifications pour les enquêtes de longue durée.
+3. Accordez l'autorisation du microphone pour que BirdNET Live puisse traiter l'audio.
+4. Autorisez éventuellement la localisation pour la géolocalisation, Explorer, le Point d'écoute et le Relevé.
+5. Autorisez éventuellement les notifications pour les relevés de longue durée.
 
-## Premier lancement
+## Premier démarrage
 
-1. **Intégration** – Introduction rapide aux fonctionnalités et aux autorisations
+1. **Introduction** — Présentation rapide des fonctionnalités et des autorisations
 2. **Conditions et confidentialité** — Acceptez les conditions d'utilisation et la politique de confidentialité
-3. **Autorisations** — Accorder l'accès au microphone (obligatoire pour tous les modes)
-4. **Prêt** — Commencez à identifier les oiseaux !
+3. **Autorisations** — Accordez l'accès au microphone (obligatoire pour tous les modes)
+4. **Prêt** — Commencez à identifier les oiseaux !
 
 ## Aperçu de l'écran d'accueil
 
-L'écran d'accueil est le hub principal.
+L'écran d'accueil est le point central de l'application.
 
-### Cartes du mode principal
+### Cartes des modes principaux
 
-- :matériel-microphone : **Mode Live**
-- :material-map-marker : **Mode de comptage de points**
-- :material-routes : **Mode enquête**
-- :material-file-music : **Analyse de fichiers**
+- :material-microphone: **Mode En direct**
+- :material-map-marker: **Mode Point d'écoute**
+- :material-routes: **Mode Relevé**
+- :material-file-music: **Analyse de fichiers**
 
-### Boutons de pied de page
+### Boutons du bas
 
-- :material-tune : **Paramètres**
-- :material-magnify : **Explorer**
-- :material-music-box-multiple-outline : **Bibliothèque de sessions**
-- :material-help-circle-outline : **Aide**
-- :material-information-outline : **À propos**
+- :material-tune: **Paramètres**
+- :material-magnify: **Explorer**
+- :material-music-box-multiple-outline: **Bibliothèque de sessions**
+- :material-help-circle-outline: **Aide**
+- :material-information-outline: **À propos**
 
 ## Ce qui est enregistré
 
-BirdNET Live enregistre automatiquement les sessions terminées et les ouvre dans Session Review après l'arrêt du traitement.
+BirdNET Live enregistre automatiquement chaque session terminée et l'ouvre dans le Résumé de la session une fois le traitement arrêté.
 
-- Les sessions live sauvegardent les détections et, selon vos paramètres, les enregistrements ou les clips.
-- Les sessions de comptage de points sont enregistrées sous forme de sessions de comptage de points chronométrées.
-- Les sessions d'enquête enregistrent l'itinéraire, les détections et les métadonnées associées.
-- Les résultats de l'analyse des fichiers sont convertis en une session révisable.
+- Les sessions En direct enregistrent les détections et, selon vos paramètres, les enregistrements ou les clips.
+- Les sessions Point d'écoute sont enregistrées comme des points d'écoute minutés.
+- Les sessions Relevé enregistrent l'itinéraire, les détections et les métadonnées associées.
+- Les résultats de l'Analyse de fichiers sont convertis en une session consultable.
 
 ## Pages suivantes recommandées
 
-- Lisez [Icônes et contrôles] (icons-and-controls.md) si vous souhaitez une explication rapide des symboles récurrents de l'interface utilisateur.
-- Lisez [Paramètres] (settings.md) avant de modifier les seuils, les filtres, le comportement d'enregistrement ou l'affichage du spectrogramme.
-- Ouvrez le guide du flux de travail que vous utilisez le plus souvent : [Mode direct] (live-mode.md), [Mode comptage de points] (point-count-mode.md), [Mode enquête] (survey-mode.md) ou [Analyse de fichiers] (file-analysis.md).
+- Lisez [Icônes et contrôles](icons-and-controls.md) si vous souhaitez une explication rapide des symboles récurrents de l'interface.
+- Lisez [Paramètres](settings.md) avant de modifier les seuils, les filtres, le comportement d'enregistrement ou l'affichage du spectrogramme.
+- Ouvrez le guide du type de travail que vous utilisez le plus souvent : [Mode En direct](live-mode.md), [Mode Point d'écoute](point-count-mode.md), [Mode Relevé](survey-mode.md) ou [Analyse de fichiers](file-analysis.md).
 
 ## Autorisations
 
-| Autorisation | Requis pour | Facultatif? |
+| Autorisation | Requise pour | Facultative ? |
 |------------|-------------|---------------|
-| Micro | Tous les modes d'enregistrement | Obligatoire |
-| Localisation | Marquage GPS, relevé/compte de points | Facultatif pour Live |
-| Stockage | Sauvegarde des enregistrements, exportations | Nécessaire pour l'enregistrement |
-| Notifications | Alertes d'enquête de fond | Facultatif |
+| Microphone | Tous les modes d'enregistrement | Obligatoire |
+| Localisation | Géolocalisation GPS, Relevé/Point d'écoute | Facultative pour le mode En direct |
+| Stockage | Sauvegarde des enregistrements, exports | Nécessaire pour l'enregistrement |
+| Notifications | Alertes de relevé en arrière-plan | Facultative |

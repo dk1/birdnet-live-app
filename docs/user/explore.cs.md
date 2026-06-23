@@ -2,48 +2,48 @@
 
 Prozkoumat ukazuje druhy předpovězené pro aktuální polohu a roční období pomocí geomodelu BirdNET.
 
-## Jak to otevřít
+## Jak jej otevřít
 
-Otevřete **Prozkoumat** v zápatí plochy pomocí tlačítka :material-magnify:.
+Otevřete **Prozkoumat** v zápatí Domů tlačítkem :material-magnify:.
 
-## Lišta a záhlaví aplikací
+## Horní lišta a záhlaví
 
-### Lišta aplikací
+### Horní lišta
 
-- :material-refresh: — obnoví umístění a znovu sestaví předpokládaný seznam druhů
+- :material-refresh: — obnoví polohu a znovu sestaví předpovězený seznam druhů
 
-### Záhlaví umístění
+### Záhlaví polohy
 
-V záhlaví je uvedeno:
+V záhlaví se zobrazuje:
 
-- aktuální reverzně geokódovaný název místa, pokud je k dispozici
+- aktuální reverzně geokódovaný název místa, je-li k dispozici
 - souřadnice pod názvem místa
-- :material-help-circle-outline: — otevřete list nápovědy Prozkoumat
+- :material-help-circle-outline: — otevře panel nápovědy Prozkoumat
 
 ## Seznam druhů
 
 Každá karta druhu může obsahovat:
 
-- obrázek sdruženého druhu
-- běžné jméno
-- nepovinný vědecký název
-- odznak s výsledkem geo-modelu
+- přibalený obrázek druhu
+- běžný název
+- volitelný vědecký název
+- odznak se skóre geomodelu
 
-Klepnutím na kartu otevřete překrytí podrobností o druhu.
+Klepnutím na kartu otevřete překryvný panel s podrobnostmi o druhu.
 
-## Překrytí podrobností o druzích
+## Překryvný panel s podrobnostmi o druhu
 
-Překryvná vrstva může zobrazovat:
+Překryvný panel může zobrazovat:
 
 - větší obrázek
-- obrazový kredit
-- běžné a vědecké názvy
-- přibalený popisný text, pokud je k dispozici
-- týdenní graf očekávané frekvence
-- externí odkazy, jako je eBird, iNaturalist nebo Wikipedia, pokud jsou pro daný druh k dispozici
+- autora obrázku
+- běžný a vědecký název
+- přibalený popisný text, je-li k dispozici
+- týdenní graf očekávané četnosti
+- externí odkazy jako eBird, iNaturalist nebo Wikipedia, jsou-li pro daný druh k dispozici
 
-## K čemu je Prozkoumat
+## K čemu Prozkoumat slouží
 
-Prozkoumat je referenční zobrazení s ohledem na umístění uvnitř aplikace. Pomůže vám porovnat aktuální kontext umístění aplikace s druhy, se kterými se očekáváte, že se setkáte.
+Prozkoumat je referenční zobrazení v aplikaci zohledňující polohu. Pomáhá porovnat aktuální polohový kontext aplikace s druhy, se kterými se můžete setkat.
 
-**nemění** uložená data relace sama o sobě. Filtrování detekce se ovládá samostatně pomocí [Settings] (settings.md).
+Samo o sobě **nemění** uložená data session. Filtrování detekcí se ovládá samostatně v [Nastavení](settings.md).

@@ -60,7 +60,7 @@ Downloads the full BirdNET taxonomy dataset as JSON.
 | Delivery | Attachment download |
 | Typical filename | `birdnet_taxonomy_0.1-Mar2026.json` |
 
-This is the endpoint used by the local species bundle tooling to reproduce the
+This is the endpoint the local species bundle tooling uses to reproduce the
 bundled taxonomy assets.
 
 ## Sync API

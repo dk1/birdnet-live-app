@@ -34,7 +34,7 @@ Keeps the historical public API while delegating to `InferenceService` on the ro
 - `infer(audioSamples)` — serialize the request and run it through the native session
 - `stop()` — release the service and close native resources
 
-`flutter_onnxruntime` runs native inference on a platform background queue, so there is no dedicated Dart inference isolate now. Inference calls are serialized before entering the native session.
+`flutter_onnxruntime` runs native inference on a platform background queue, so there is no longer a dedicated Dart inference isolate. Inference calls are serialized before entering the native session.
 
 ## Geo-Model
 

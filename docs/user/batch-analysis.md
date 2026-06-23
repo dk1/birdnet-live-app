@@ -3,7 +3,7 @@
 !!! note "Coming Soon"
     This feature is under development and will be available in a future release.
 
-Batch Analysis will allow users to process and analyze multiple audio files in bulk (e.g., from an SD card connected via a USB reader) using custom analysis parameters.
+Batch Analysis will let you process and analyze multiple audio files in bulk (for example, from an SD card connected via a USB reader) using custom analysis parameters.
 
 ## Planned Features
 

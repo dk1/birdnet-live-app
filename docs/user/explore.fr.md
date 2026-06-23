@@ -1,49 +1,49 @@
 # Explorer
 
-Explore montre les espèces prévues pour l'emplacement et la saison actuels à l'aide du géomodèle BirdNET.
+Explorer affiche les espèces prévues pour la position et la saison actuelles à l'aide du géo-modèle BirdNET.
 
 ## Comment l'ouvrir
 
-Ouvrez **Explorer** depuis le pied de page Accueil à l'aide du bouton :material-magnify:.
+Ouvrez **Explorer** depuis le bas de l'écran d'accueil à l'aide du bouton :material-magnify:.
 
-## Barre d'application et en-tête
+## Barre supérieure et en-tête
 
-### Barre d'applications
+### Barre supérieure
 
-- :material-refresh : - actualiser l'emplacement et reconstruire la liste des espèces prévues
+- :material-refresh: — actualiser la position et reconstruire la liste des espèces prédites
 
-### En-tête d'emplacement
+### En-tête de localisation
 
-L'en-tête indique :
+L'en-tête affiche :
 
-- nom de lieu actuel à géocodage inversé lorsqu'il est disponible
-- coordonnées sous le nom du lieu
-- :material-help-circle-outline : — ouvre la feuille d'aide Explorer
+- le nom du lieu obtenu par géocodage inverse lorsqu'il est disponible
+- les coordonnées sous le nom du lieu
+- :material-help-circle-outline: — ouvrir la fiche d'aide d'Explorer
 
 ## Liste des espèces
 
-Chaque fiche d’espèce peut comprendre :
+Chaque fiche d'espèce peut comprendre :
 
-- image d'espèces regroupées
-- nom commun
-- nom scientifique facultatif
-- badge de score géo-modèle
+- l'image fournie de l'espèce
+- le nom commun
+- le nom scientifique (facultatif)
+- le badge de score du géo-modèle
 
-Appuyez sur une carte pour ouvrir la superposition des détails de l'espèce.
+Appuyez sur une fiche pour ouvrir le panneau de détails de l'espèce.
 
-## Superposition des détails de l'espèce
+## Panneau de détails de l'espèce
 
-La superposition peut afficher :
+Le panneau peut afficher :
 
-- image plus grande
-- crédit image
-- noms communs et scientifiques
-- texte de description groupé lorsqu'il est disponible
-- graphique hebdomadaire des fréquences attendues
+- une image plus grande
+- le crédit de l'image
+- les noms commun et scientifique
+- le texte descriptif fourni lorsqu'il est disponible
+- le graphique hebdomadaire des fréquences attendues
 - des liens externes tels que eBird, iNaturalist ou Wikipedia lorsqu'ils sont disponibles pour cette espèce
 
 ## À quoi sert Explorer
 
-Explore est une vue de référence géolocalisée dans l'application. Il vous aide à comparer le contexte de localisation actuel de l'application avec les espèces que vous prévoyez rencontrer.
+Explorer est une vue de référence géolocalisée dans l'application. Elle vous aide à comparer le contexte de localisation actuel de l'application avec les espèces que vous pourriez rencontrer.
 
-Il ne modifie **pas** les données de session enregistrées par lui-même. Le filtrage de détection est contrôlé séparément via [Paramètres] (settings.md).
+Elle ne modifie **pas** par elle-même les données des sessions enregistrées. Le filtrage des détections est contrôlé séparément via les [Paramètres](settings.md).

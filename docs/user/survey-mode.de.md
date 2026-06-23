@@ -1,108 +1,198 @@
-# Umfragemodus
+# Survey-Modus
 
-Der Vermessungsmodus ist der routenbasierte Arbeitsablauf für lang andauernde Vermessungen in Bewegung.
+Der Survey-Modus ist der routenbasierte Arbeitsablauf für lange Surveys in Bewegung.
 
-## So öffnen Sie es
+## So öffnen Sie ihn
 
-Tippen Sie auf der Startseite auf die Karte **Umfragemodus** mit dem Symbol :material-routes:.
+Tippen Sie auf der Startseite auf die Karte **Survey** mit dem Symbol :material-routes:.
 
-## Setup-Ablauf
+## Einrichtung
 
-Die Einrichtung der Umfrage erfolgt über einen Assistenten mit fünf Schritten.
+Die Einrichtung eines Surveys erfolgt über einen Assistenten mit fünf Schritten.
 
-### 1. Einzelheiten
+### 1. Details
 
 Sie können Folgendes eingeben:
 
-- Name der Umfrage
+- Survey-Name
 - Transekt-ID
-- Name des Beobachters
+- Name der beobachtenden Person
 - GPS, manuelle Koordinaten oder kein Startort
 
-In diesem Schritt werden bei Bedarf auch die Kartenauswahl und die Hintergrund-GPS-Berechtigungserinnerung angezeigt.
+In diesem Schritt erscheinen außerdem die Kartenauswahl, eine Aktualisierung des
+GPS-Signals nach der Rückkehr von den System-Berechtigungsdialogen sowie bei
+Bedarf der Hinweis auf die Hintergrund-GPS-Berechtigung. Im selben Standortbereich
+steht eine Wetterkarte zur Verfügung. Ist der Wetterzugriff deaktiviert, wird die
+Zustimmung **Wetterabfrage erlauben** angefragt; nach der Aktivierung zeigt die
+Karte eine Vorschau des Standorts mit Wettersymbol, Temperatur und Wind. Beim
+Speichern des Surveys wird dieselbe zwischengespeicherte Open-Meteo-Momentaufnahme
+wiederverwendet.
 
 ### 2. Parameter
 
-Dieser Schritt enthält umfragespezifische Parameter wie:
+Dieser Schritt enthält Survey-spezifische Parameter wie:
 
 - Mikrofonauswahl
 - Inferenzrate
-- Vertrauensschwelle
+- Konfidenzschwelle
 - GPS-Intervall
 - maximale Dauer
 - Aufnahmemodus
-- Clip-Kontext für reine Detektionsaufzeichnung
+- Clip-Kontext für die reine Detektionsaufzeichnung
 - Detektions-Sampling-Modus
-- Top-N-Grenze pro Art, wenn die Probenahme begrenzt ist
+- Top-N-Grenze pro Art bei begrenztem Sampling
 
-#### Detektionsprobenahme
+#### Detektions-Sampling
 
-Eine lange Umfrage kann zu Tausenden von Detektionen führen, und das Speichern eines Audioclips für jede einzelne davon füllt schnell den Speicherplatz. Die Detektionsstichprobe steuert, **welche Clips auf der Festplatte gespeichert werden** – *die Detektionsaufzeichnungen selbst werden immer gespeichert*, sodass Ihr vollständiges Sitzungsprotokoll unabhängig vom Modus intakt bleibt. Datensätze, deren Audio gelöscht wurde, haben in Session Review einfach keinen abspielbaren Clip.
+Ein langer Survey kann Tausende von Detektionen erzeugen, und einen Audioclip für
+jede einzelne zu speichern füllt den Speicher schnell. Das Detektions-Sampling
+steuert, **welche Clips auf dem Gerät behalten werden** – *die Detektionseinträge
+selbst bleiben immer erhalten*, sodass Ihr vollständiges Session-Protokoll
+unabhängig vom Modus intakt bleibt. Einträge, deren Audio verworfen wurde, haben
+in der Session-Übersicht einfach keinen abspielbaren Clip.
 
 Es stehen drei Modi zur Verfügung:
 
-| Modus | Was es tut |
+| Modus | Funktion |
 |---|---|
-| **Alle** | Behalten Sie jeden Clip. Die meiste Festplattennutzung. Empfohlen für kurze Umfragen oder wenn Sie den Ton jeder Detektion für eine spätere Analyse benötigen. |
-| **Top N** | Behalten Sie nur die **N Clips mit der höchsten Zuverlässigkeit pro Art**. Andere Clips werden während der Durchführung der Umfrage gelöscht. Der Standardwert für N ist 10, konfigurierbar von 1 bis 50. |
-| **Smart** | Gleiche N-Grenze pro Art wie Top N, **plus** räumliche Verteilung: Wenn eine neue Detektion an derselben „Stelle“ wie ein bereits gespeicherter Clip landet (innerhalb von ~500 m und ~2 Minuten voneinander entfernt), behält nur der Clip mit der höheren Zuverlässigkeit seinen Clip. Dadurch wird verhindert, dass ein stationärer Sänger alle N Slots monopolisiert, und die beibehaltenen Clips tendieren dazu, den gesamten Transekt abzudecken. |
+| **Alle** | Behält jeden Clip. Höchster Speicherbedarf. Empfohlen für kurze Surveys oder wenn Sie das Audio jeder Detektion für die spätere Analyse benötigen. |
+| **Top N** | Behält nur die **N Clips mit der höchsten Konfidenz pro Art**. Weitere Clips werden während des Surveys gelöscht. Der Standardwert für N ist 10, einstellbar von 1 bis 50. |
+| **Smart** | Gleiche Obergrenze von N pro Art wie bei Top N, **zusätzlich** mit räumlicher Verteilung: Landet eine neue Detektion an derselben „Stelle“ wie ein bereits behaltener Clip (innerhalb von ~500 m und ~2 Minuten), behält nur die Detektion mit der höheren Konfidenz ihren Clip. So verhindert der Modus, dass ein einzelner ortstreuer Sänger alle N Plätze belegt, und sorgt dafür, dass die behaltenen Clips das gesamte Transekt abdecken. |
 
-Der N-Grenzwert gilt **pro Art, nicht global** – wenn Sie 10 Rotkehlchen und 10 Buchfinken erfassen, behalten Sie 20 Clips. Es gibt keine allgemeine Obergrenze für die Anzahl der Clips, die eine Umfrage produzieren kann.
+Die Grenze N gilt **pro Art, nicht global** – wenn Sie 10 Rotkehlchen und
+10 Buchfinken erfassen, behalten Sie 20 Clips. Es gibt keine Gesamtobergrenze für
+die Anzahl der Clips, die ein Survey erzeugen kann.
 
-Wenn im Smart-Modus GPS bei einer Detektion fehlt, fällt die Same-Spot-Überprüfung auf ein reines Zeitfenster (~2 Minuten) zurück. Wenn GPS verfügbar ist, müssen sich Entfernung und Zeit überschneiden, damit zwei Detektionen als derselbe Punkt gelten.
+Fehlt im Smart-Modus das GPS-Signal einer Detektion, greift die Same-Spot-Prüfung
+auf ein reines Zeitfenster (~2 Minuten) zurück. Mit verfügbarem GPS müssen sich
+sowohl Entfernung als auch Zeit überschneiden, damit zwei Detektionen als dieselbe
+Stelle gelten.
 
-### 3. Artenwarnungen
+### 3. Artenmeldungen
 
-Push-Benachrichtigungen, die mitten in der Umfrage ausgelöst werden, wenn etwas Bemerkenswertes erkannt wird. Wählen Sie eines von:
+Push-Benachrichtigungen, die während eines Surveys ausgelöst werden, sobald etwas
+Bemerkenswertes erkannt wird. Wählen Sie eine der folgenden Optionen:
 
-- **Aus** – keine Warnungen (Standard).
-- **Zuerst in der Sitzung** – eine Warnung, wenn jede Art während dieser Untersuchung zum ersten Mal gehört wird.
-- **Erstmals** – Warnung nur, wenn die App in all Ihren Sitzungen zum allerersten Mal auf eine Art trifft (eine „Lifer“-Warnung). Unterstützt durch eine lebenslange Artenhistorie, die beim ersten Start automatisch aus Ihren vorhandenen Sitzungen übernommen wird.
-- **Selten für diesen Standort** – Warnung, wenn die Geomodell-Wahrscheinlichkeit für den aktuellen Standort unter einem konfigurierbaren Schwellenwert liegt. Eine Live-Anzeige unter dem Schieberegler erklärt genau, was der aktuelle Wert auslöst (z. B. *„Warnungen zu Arten mit einer Wahrscheinlichkeit von unter 5 % an diesem Standort.“*).
-- **Beobachtungsliste** – Warnung nur für Arten, die Sie zu einer gespeicherten benutzerdefinierten Liste hinzugefügt haben. Mit dem Assistentenschritt selbst können Sie neue Beobachtungslisten erstellen, bestehende in einem speziellen Vollbild-Editor mit durchsuchbarer Taxonomie und *Import aus Datei* (beliebige einfache „.txt“-/„.csv“-Dateien mit wissenschaftlichen Namen bearbeiten) und Listen löschen, die Sie nicht mehr benötigen.
+- **Aus** – keine Meldungen (Standard).
+- **Erste in Session** – eine Meldung, wenn eine Art während dieses Surveys zum
+  ersten Mal gehört wird.
+- **Erste überhaupt** – eine Meldung nur dann, wenn die App eine Art über alle Ihre
+  Sessions hinweg zum allerersten Mal antrifft (eine „Lifer“-Meldung). Grundlage ist
+  eine lebenslange Artenhistorie, die beim ersten Start automatisch aus Ihren
+  vorhandenen Sessions befüllt wird.
+- **Selten an diesem Ort** – eine Meldung, wenn die Wahrscheinlichkeit des
+  Geo-Modells für den aktuellen Standort unter einem einstellbaren Schwellenwert
+  liegt. Eine Live-Anzeige unter dem Schieberegler erklärt genau, worauf der aktuelle
+  Wert reagiert (z. B. *„Meldungen bei Arten mit unter 5 % Wahrscheinlichkeit an
+  diesem Standort.“*).
+- **Beobachtungsliste** – eine Meldung nur bei Arten, die Sie einer gespeicherten
+  eigenen Liste hinzugefügt haben. Im Assistentenschritt selbst können Sie neue
+  Beobachtungslisten anlegen, bestehende Listen in einem eigenen Vollbild-Editor mit
+  durchsuchbarer Taxonomie und *Aus Datei importieren* (eine beliebige einfache
+  `.txt`-/`.csv`-Datei mit wissenschaftlichen Namen) bearbeiten und nicht mehr
+  benötigte Listen löschen.
 
-Unter der Modusauswahl befindet sich ein Schieberegler *Mindestkonfidenz*, der automatisch auf den Konfidenzschwellenwert Ihrer Sitzung eingestellt wird (Warnungen sind niemals empfindlicher als die Detektionen selbst). Ein Abschnitt **Erweitert** stellt Drosselungskontrollen bereit – ein Zeitfenster für den Start, ein festes Mindestintervall zwischen zwei beliebigen Warnungen und eine gleitende Obergrenze pro Minute mit optionaler Zusammenführung von Überschreitungswarnungen in einer einzigen zusammenfassenden Benachrichtigung – alles mit One-Tap-Chip-Selektoren. Wenn Sie zum ersten Mal in einen Nicht-Aus-Modus wechseln, fordert der Assistent für Sie die Berechtigung zur Android-Benachrichtigung an.
+Unter der Modusauswahl liegt ein Schieberegler *Mindestkonfidenz*, dessen Untergrenze
+automatisch auf die Konfidenzschwelle Ihrer Session gesetzt wird (Meldungen sind nie
+empfindlicher als die Detektionen selbst). Ein Abschnitt **Erweitert** stellt
+Drosselungsoptionen bereit – ein Kulanzfenster nach dem Start, ein festes
+Mindestintervall zwischen zwei Meldungen sowie eine gleitende Obergrenze pro Minute
+mit optionaler Zusammenfassung darüber hinausgehender Meldungen zu einer einzigen
+Sammelbenachrichtigung – alle mit Chip-Auswahl per Fingertipp. Wenn Sie zum ersten
+Mal in einen anderen Modus als *Aus* wechseln, fordert der Assistent für Sie die
+Android-Benachrichtigungsberechtigung an.
 
 ### 4. Feldtipps
 
-Eine kurze Checkliste vor dem Start im Einrichtungsablauf.
+Eine kurze Checkliste vor dem Start, direkt im Einrichtungsablauf.
 
 ### 5. Fertig
 
-Der Bereitschaftsbildschirm fasst die aktive Umfragekonfiguration zusammen, bevor Sie mit :material-play: beginnen.
+Der Bereitschaftsbildschirm fasst die aktive Survey-Konfiguration zusammen, bevor Sie
+mit :material-play: starten.
 
-## Live-Umfrage-Dashboard
+## Live-Dashboard des Surveys
 
-Der Live-Umfragebildschirm verfügt über drei Hauptregisterkarten sowie eine Liste der letzten Detektionen.
+Der Live-Bildschirm des Surveys hat drei Haupt-Tabs sowie eine Liste der letzten
+Detektionen.
 
 ### Obere Leiste
 
-- :material-stop: — Umfrage beenden
+- :material-stop: — Survey beenden
 - :material-timer: — verstrichene Zeit
-- :material-help-circle-outline: – Öffnen Sie das Hilfeblatt zur Umfrage
-- :material-tune: – Öffnen Sie die Umfrageeinstellungen
+- :material-help-circle-outline: — Hilfeblatt zum Survey öffnen
+- :material-tune: — Survey-Einstellungen öffnen
 
 ### Tabs
 
-- :material-map-outline: – Routenkarte und zugeordnete Detektionen
+- :material-map-outline: — Routenkarte und verortete Detektionen
 - :material-equalizer: — Spektrogramm
-- Diagrammsymbol – zusammenfassende Statistiken und Artenaufschlüsselung
+- Diagrammsymbol — zusammenfassende Statistiken und Artenaufschlüsselung
 
 ### Statistiken und Detektionen
 
-Unterhalb des Tab-Inhalts zeigt das Umfrage-Dashboard eine Statistikleiste und eine Liste der letzten Detektionen an. Wenn Sie auf eine Detektion tippen, wird die Überlagerung mit den Artendetails geöffnet.
+Unter dem Tab-Inhalt zeigt das Survey-Dashboard eine Statistikleiste und eine Liste
+der letzten Detektionen. Ein Tippen auf eine Detektion öffnet die Detailansicht der
+Art.
+
+Jede Detektionszeile bietet außerdem dieselben Aktionen pro Detektion wie die
+[Session-Übersicht](session-review.md): ein :material-check: **Bestätigen** mit
+einem Tipp sowie ein :material-dots-vertical: **Mehr**-Menü mit **Erkennung teilen**
+und **Detektion löschen** (mit Rückgängig-Option in der SnackBar) – so können Sie
+einen verrauschten Treffer schon während der Aufnahme prüfen, teilen oder entfernen,
+statt auf die spätere Durchsicht zu warten.
+
+Dieselben Aktionen stehen auf der **Live-Routenkarte** zur Verfügung: Tippen Sie auf
+einen Detektionsmarker, um den Clip-Player mit Bestätigen, Teilen und Löschen zu
+öffnen. Das Teilen während eines Surveys funktioniert auch dann, wenn Sie statt
+einzelner Clips eine durchgehende WAV-Aufnahme gewählt haben – das passende
+Audiofenster wird dabei direkt aus der laufenden Aufnahme herausgeschnitten. Weitere
+Details finden Sie unter
+[Session-Übersicht → Eine einzelne Detektion teilen](session-review.md#sharing-a-single-detection).
 
 ## Hintergrundbetrieb
 
-Im Umfragemodus bleibt während der Aufnahme eine permanente Vordergrundbenachrichtigung sichtbar, sodass Android die Audiopipeline nicht anhält. Die Benachrichtigung wird erweitert und zeigt Folgendes an:
+Im Survey-Modus bleibt während der Aufnahme eine dauerhafte
+Vordergrundbenachrichtigung sichtbar, damit Android die Audio-Pipeline nicht anhält.
+Aufgeklappt zeigt die Benachrichtigung:
 
-- die verstrichene Zeit, die Detektionszahl, die Artenzahl und die zurückgelegte Strecke und
-- die **drei jüngsten einzigartigen Arten** mit ihrer Konfidenz und einem relativen Zeitstempel („gerade jetzt“, „vor 42 Sekunden“, „vor 5 Minuten“, „vor 2 Stunden“).
+- die verstrichene Zeit, die Anzahl der Detektionen, die Artenzahl und die
+  zurückgelegte Strecke sowie
+- die **drei zuletzt erkannten Arten** mit ihrer Konfidenz und einem relativen
+  Zeitstempel (`gerade eben`, `vor 42 s`, `vor 5 min`, `vor 2 h`).
 
-Die Benachrichtigung – Titel, aktuelle Detektionen und Statistikfußzeile – wird vollständig in die ausgewählte Sprache der App übersetzt und verwendet dieselben Artengebietseinstellungen und *Wissenschaftliche Namen anzeigen*-Einstellungen wie die In-App-Karten.
+Die Benachrichtigung – Titel, aktuelle Detektionen und Statistikzeile – ist
+vollständig in die ausgewählte Sprache der App übersetzt und nutzt dieselben
+Einstellungen für die Artensprache und *Wissenschaftliche Namen anzeigen* wie die
+Karten in der App.
 
-Artenwarnungen (sofern aktiviert) werden auf einem separaten Android-Benachrichtigungskanal angezeigt, sodass Sie Warnungen unabhängig von der stillen laufenden Aufzeichnungsbenachrichtigung stummschalten können. Das Warnsymbol entspricht dem Benachrichtigungssymbol im Vordergrund (ein einfarbiger Vogel) und in den Warnmeldungskörpern wird nur der *Grund* angezeigt – *„Erste Detektion dieser Umfrage“*, *„Auf Ihrer Beobachtungsliste“*, *„An diesem Ort mit weniger als 4 % Wahrscheinlichkeit detektiert“* – wobei der Name der Art im fett gedruckten Benachrichtigungstitel verbleibt, wo Android ihn am größten darstellt.
+Artenmeldungen (sofern aktiviert) erscheinen auf einem eigenen
+Android-Benachrichtigungskanal, sodass Sie Meldungen unabhängig von der stillen,
+laufenden Aufnahmebenachrichtigung stummschalten können. Das Meldungssymbol entspricht
+dem Symbol der Vordergrundbenachrichtigung (ein einfarbiger Vogel), und der
+Meldungstext zeigt nur den *Grund* – *„Erste Detektion dieses Surveys“*, *„Auf Ihrer
+Beobachtungsliste“*, *„An diesem Ort mit unter 4 % Wahrscheinlichkeit erkannt“* –
+während der Artname im fett dargestellten Benachrichtigungstitel steht, wo Android ihn
+am größten anzeigt.
 
-## Nach dem Stoppen
+Wenn Sie einen unbeendeten Survey aus der Session-Bibliothek **fortsetzen**, wird die
+Meldungslogik aus Ihren *aktuellen* Benachrichtigungseinstellungen neu aufgesetzt –
+nicht aus der Konfiguration vom Tag des Starts. Schalten Sie Meldungen vor dem Tippen
+auf *Fortsetzen* aus (oder ändern Sie Modus, Beobachtungsliste oder Drosselung), und
+der fortgesetzte Survey übernimmt die neuen Einstellungen sofort.
 
-BirdNET Live speichert die fertige Umfrage und öffnet [Session Review](session-review.md).
+## Auf der Karte überprüfen
+
+Die Vollbild-Kartenansicht des Surveys (die Schaltfläche :material-fullscreen: in der
+Session-Übersicht) öffnet beim Tippen auf einen Marker einen Clip-Player. Die
+Steuerleiste hat neben der Wiedergabetaste Schaltflächen für „Vorherige“ und
+„Nächste“ – sie blättern in chronologischer Reihenfolge durch die Detektionen, jedoch
+**nur durch die aktuell auf der Karte sichtbaren**. Jeder aktive Filter nach Art,
+Konfidenz oder Modus-Chip schränkt die Wiedergabeliste entsprechend ein. Bei der
+ersten bzw. letzten Detektion der gefilterten Liste werden die Schaltflächen
+ausgegraut.
+
+## Nach dem Beenden
+
+BirdNET Live speichert den abgeschlossenen Survey und öffnet die
+[Session-Übersicht](session-review.md).

@@ -1,26 +1,26 @@
-# Icônes et commandes
+# Icônes et contrôles
 
-Cette page explique les contrôles et symboles récurrents utilisés dans BirdNET Live. Les étiquettes ci-dessous correspondent aux contrôles déjà présents dans l'application.
+Cette page explique les contrôles et symboles récurrents utilisés dans BirdNET Live. Les étiquettes ci-dessous correspondent exactement aux contrôles tels qu'ils apparaissent dans l'application.
 
-## Contrôles de navigation partagés
+## Contrôles de navigation partagés
 
-| Contrôle | Où le voyez-vous | Ce qu'il fait |
+| Contrôle | Où le voir | Ce qu'il fait |
 |---|---|---|
-| :material-tune : **Paramètres** | Pied de page d'accueil, Live, Point Count, Enquête, Analyse de fichiers, Examen de session | Ouvre les paramètres. Dans les écrans de mode, il ouvre les paramètres les plus pertinents pour ce flux de travail. |
-| :material-magnify: **Explorer** | Pied de page d'accueil | Ouvre Explorer. |
-| :material-music-box-multiple-outline : **Bibliothèque** | Pied de page d'accueil | Ouvre la bibliothèque de sessions. |
-| :material-help-circle-outline : **Aide** | Pied de page d'accueil, en-tête Explorer, tableau de bord d'enquête, barre d'outils de révision de session | Ouvre l'aide ou une feuille d'aide spécifique à l'écran. |
-| :material-information-outline : **Info / À propos** | Pied de page d'accueil, barres d'informations, fiches d'aide | Affiche des informations générales ou un contexte récapitulatif. |
-| :material-arrow-left: **Retour** | Mode direct | Revient à l'écran précédent. |
-| :material-open-in-new : **Ouvrir externe** | Écran À propos, liens vers la documentation | Ouvre une page externe telle que le Guide d'utilisation en ligne. |
+| :material-tune: **Paramètres** | Bas de l'accueil, En direct, Point d'écoute, Relevé, Analyse de fichiers, Résumé de la session | Ouvre les Paramètres. Dans les écrans de mode, il ouvre les paramètres les plus pertinents pour ce type de travail. |
+| :material-magnify: **Explorer** | Bas de l'accueil | Ouvre Explorer. |
+| :material-music-box-multiple-outline: **Bibliothèque** | Bas de l'accueil | Ouvre la Bibliothèque de sessions. |
+| :material-help-circle-outline: **Aide** | Bas de l'accueil, en-tête Explorer, tableau de bord du relevé, barre d'outils du Résumé de la session | Ouvre l'Aide ou une fiche d'aide propre à l'écran. |
+| :material-information-outline: **Info / À propos** | Bas de l'accueil, barres d'informations, fiches d'aide | Affiche des informations générales ou un contexte récapitulatif. |
+| :material-arrow-left: **Retour** | Mode En direct | Revient à l'écran précédent. |
+| :material-open-in-new: **Ouvrir en externe** | Écran À propos, liens de documentation | Ouvre une page externe, comme le Guide de l'utilisateur en ligne. |
 | :material-volunteer-activism: **Faire un don** | Écran À propos | Ouvre la page de don de BirdNET. |
 
 ## Symboles météo
 
-| Symbole | Signification |
+| Contrôle | Signification |
 |---|---|
 | :material-wb-sunny: **Dégagé** | Ciel dégagé. |
-| :material-partly-cloudy-day: **Partiellement nuageux** | Soleil et nuage pour un temps plutôt dégagé ou partiellement nuageux. |
+| :material-partly-cloudy-day: **Partiellement nuageux** | Soleil et nuages pour un temps plutôt dégagé ou partiellement nuageux. |
 | :material-cloudy: **Couvert** | Couverture nuageuse complète. |
 | :material-foggy: **Brouillard** | Brouillard ou brouillard givrant. |
 | :material-rainy-light: **Bruine** | Précipitations légères. |
@@ -32,72 +32,85 @@ Cette page explique les contrôles et symboles récurrents utilisés dans BirdNE
 
 | Contrôle | Signification |
 |---|---|
-| :matériel-microphone : **Micro** | Commencez l'écoute en direct. |
-| :matériau-arrêt : **Arrêter** | Arrêtez un enregistrement, un comptage de points ou une enquête actif. |
-| :material-play : **Jouer** | Démarrez un flux de configuration configuré ou reprenez à partir d’un état prêt en pause. |
-| :material-close: **Fermer / Annuler** | Annulez une analyse de fichier active. |
-| :material-timer: **Minuterie** | Durée ou temps restant. |
-| :material-alert-circle-outline : **Erreur** | Erreur de modèle ou de traitement. |
+| :material-microphone: **Micro** | Démarrer l'écoute en direct. |
+| :material-stop: **Arrêter** | Arrêter un enregistrement, un point d'écoute ou un relevé en cours. |
+| :material-play: **Lecture** | Démarrer un flux de configuration prêt ou reprendre depuis un état en pause. |
+| :material-close: **Fermer / Annuler** | Annuler une analyse de fichiers en cours. |
+| :material-timer: **Minuteur** | Durée ou temps restant. |
+| :material-alert-circle-outline: **Erreur** | Erreur du modèle ou du traitement. |
 
-## Contrôles de localisation et de temps
+## Contrôles de localisation et de date
 
 | Contrôle | Signification |
 |---|---|
-| :material-crosshairs-gps : **Emplacement actuel** | Utilisez la position GPS actuelle de l'appareil. |
-| :material-map-marker-plus : **Coordonnées manuelles** | Entrez les coordonnées manuellement. |
-| :material-map-marker-off : **Aucun emplacement** | Ignorer l'emplacement ou afficher cet emplacement n'est pas disponible. |
-| :material-map-marker : **A un emplacement** | Confirmez un emplacement, affichez les coordonnées ou étiquetez une session cartographiée. |
-| :material-refresh: **Actualiser** | Relisez l'emplacement actuel ou actualisez une liste de prédictions. |
-| :material-map: **Sélecteur de carte** | Choisissez les coordonnées dans le sélecteur de carte. |
-| :matériel-calendrier : **Date** | Définir ou afficher une date. |
+| :material-crosshairs-gps: **Position actuelle** | Utiliser la position GPS actuelle de l'appareil. |
+| :material-map-marker-plus: **Coordonnées manuelles** | Saisir les coordonnées manuellement. |
+| :material-map-marker-off: **Aucune localisation** | Ignorer la localisation ou indiquer qu'elle n'est pas disponible. |
+| :material-map-marker: **Localisation présente** | Confirmer une localisation, afficher les coordonnées ou étiqueter une session cartographiée. |
+| :material-refresh: **Actualiser** | Relire la position actuelle ou actualiser une liste de prédictions. |
+| :material-map: **Sélecteur de carte** | Choisir les coordonnées dans le sélecteur de carte. |
+| :material-calendar: **Date** | Définir ou afficher une date. |
 | :material-close: **Effacer** | Supprimer une date sélectionnée. |
 
-## Symboles d'exploration et d'espèces
+## Symboles d'Explorer et des espèces
 
 | Contrôle | Signification |
 |---|---|
-| Vignette de l'espèce | Image groupée pour l’espèce lorsqu’elle est disponible. |
-| Badge de pourcentage de confiance ou de géomodèle | Un résumé numérique rapide de la sortie du modèle. Des nombres plus élevés indiquent un soutien plus fort dans le contexte de cet écran. |
-| Étiquettes mensuelles (`Jan`, `Apr`, `Jul`, `Oct`, `Dec`) | Points de référence sur le graphique hebdomadaire des fréquences attendues dans la superposition des espèces. |
+| Vignette de l'espèce | Image fournie pour l'espèce lorsqu'elle est disponible. |
+| Badge de pourcentage de confiance ou du géo-modèle | Un résumé numérique rapide de la sortie du modèle. Des valeurs plus élevées indiquent un appui plus fort dans le contexte de cet écran. |
+| Étiquettes mensuelles (`Jan`, `Apr`, `Jul`, `Oct`, `Dec`) | Points de repère sur le graphique hebdomadaire des fréquences attendues dans le panneau des espèces. |
 
-## Barre d'outils de révision de session
+## Actions par détection
 
-Ces contrôles sont utilisés sur l’écran Examen de session.
+Ces contrôles apparaissent sur chaque ligne de détection dans l'application — liste des espèces du Résumé de la session, lecteur de clips, liste des détections du relevé en direct et marqueurs de la carte du relevé. Voir [Résumé de la session → Actions par détection](session-review.md#actions-par-détection) pour le comportement complet.
 
 | Contrôle | Signification |
 |---|---|
-| :material-plus-circle-outline : **Ajouter** | Ajoutez du contenu, tel qu'une espèce ou une annotation. |
-| :material-undo-variant: **Annuler** / :material-redo-variant: **Rétablir** | Reculez ou avancez dans les modifications de révision. |
-| :material-content-cut: **Découper** | Entrez en mode trim ou indiquez que le mode trim est actif. |
-| :material-content-save : **Enregistrer** | Enregistrez les modifications apportées à l'avis. |
-| :material-share-variant : **Partager** | Exportez ou partagez la session. |
-| :material-delete-outline : **Supprimer** | Abandonnez la session. |
-| :material-play : **Continuer** | Continuez une enquête inachevée à partir de la révision de session lorsque cette action est disponible. |
+| :material-check: **Confirmer** | Coche en un toucher qui marque une détection comme vérifiée visuellement ou acoustiquement. Les détections confirmées affichent une petite coche verte sur les lignes groupées et les marqueurs de carte. |
+| :material-dots-vertical: **Plus** | Ouvre le menu par détection avec **Partager la détection**, **Remplacer l'espèce**, **Supprimer la détection** et **Supprimer l'espèce**. |
+| :material-share-variant: **Partager la détection** | Partage une détection via la feuille de partage du système, en joignant le clip audio lorsqu'il est disponible — y compris un extrait de l'enregistrement en cours pendant un relevé en direct. |
+| :material-swap-horizontal: **Remplacer l'espèce** | Choisir une autre espèce pour cette détection. S'ouvre aussi en faisant glisser une ligne vers la gauche. |
+| :material-delete-outline: **Supprimer la détection** | Supprime immédiatement la ligne. Une notification d'annulation apparaît quelques secondes. Se déclenche aussi en faisant glisser une ligne vers la droite. |
+| :material-delete-sweep-outline: **Supprimer l'espèce** | Supprime en une seule fois toutes les détections de cette espèce dans la session, avec la même possibilité d'annulation. |
+
+## Barre d'outils du Résumé de la session
+
+Ces contrôles sont utilisés sur l'écran Résumé de la session.
+
+| Contrôle | Signification |
+|---|---|
+| :material-plus-circle-outline: **Ajouter** | Ajouter du contenu, comme une espèce ou une annotation. |
+| :material-undo-variant: **Annuler** / :material-redo-variant: **Rétablir** | Reculer ou avancer dans les modifications de révision. |
+| :material-content-cut: **Rogner** | Entrer en mode rognage ou indiquer que le mode rognage est actif. |
+| :material-content-save: **Enregistrer** | Enregistrer les modifications de la révision. |
+| :material-share-variant: **Partager** | Exporter ou partager la session. |
+| :material-delete-outline: **Supprimer** | Supprimer la session. |
+| :material-play: **Reprendre** | Reprendre un relevé inachevé depuis le Résumé de la session lorsque cette action est disponible. |
 
 ## Barres d'état spécifiques à l'écran
 
-### Mode direct
+### Mode En direct
 
-La barre d'informations en direct utilise :material-information-outline: suivi d'étiquettes compactes telles que :
+La barre d'informations du mode En direct utilise :material-information-outline: suivi d'étiquettes compactes telles que :
 
 - `now` — détections actuellement visibles dans la liste en direct
 - `spp` — nombre d'espèces uniques
 - `det` — nombre total de détections
-- durée et taille d'enregistrement estimée lorsque l'enregistrement est actif
+- durée et taille estimée de l'enregistrement lorsque l'enregistrement est actif
 
-### Nombre de points
+### Point d'écoute
 
-La barre du minuteur de comptage de points combine :material-stop: **Stop**, :material-timer: **Timer** et une barre de progression pour afficher la session chronométrée restante.
+La barre de minuteur du point d'écoute combine :material-stop: **Arrêter**, :material-timer: **Minuteur** et une barre de progression pour afficher le temps restant de la session minutée.
 
-### Enquête
+### Relevé
 
-Le tableau de bord de l'enquête utilise :
+Le tableau de bord du relevé utilise :
 
-- :material-map-outline : **Map** — onglet de carte en direct
-- :material-equalizer : **Spectrogramme** — onglet spectrogramme
-- :material-chart-bar : **Résumé** — onglet Résumé
-- :material-chart-bar : étiquettes de statistiques dans la vue récapitulative de l'enquête
+- :material-map-outline: **Carte** — onglet de la carte en direct
+- :material-equalizer: **Spectrogramme** — onglet spectrogramme
+- :material-chart-bar: **Résumé** — onglet Résumé
+- :material-chart-bar: étiquettes de statistiques dans la vue récapitulative du relevé
 
 ## En cas de doute
 
-Si vous n'êtes pas sûr de la fonction d'un contrôle, ouvrez la feuille d'aide la plus proche dans l'application ou consultez la page de flux de travail correspondant à cet écran dans ce guide de l'utilisateur.
+Si vous n'êtes pas sûr de la fonction d'un contrôle, ouvrez la fiche d'aide la plus proche dans l'application, ou consultez la page de ce guide consacrée à cet écran.

@@ -1,108 +1,125 @@
-# Modalità sondaggio
+# Modalità Survey
 
-La modalità Rilievo è il flusso di lavoro basato sul percorso per rilievi in ​​movimento di lunga durata.
+La modalità Survey è il flusso di lavoro basato sul percorso per Survey in movimento di lunga durata.
 
-## Come aprirlo
+## Come aprirla
 
-Da Home, tocca la scheda **Modalità sondaggio** con l'icona :material-routes:.
+Dalla Home, tocca la scheda **Modalità Survey** con l'icona :material-routes:.
 
 ## Flusso di configurazione
 
-La configurazione del sondaggio è una procedura guidata in cinque passaggi.
+La configurazione del Survey è una procedura guidata in cinque passaggi.
 
 ### 1. Dettagli
 
 Puoi inserire:
 
-- nome del sondaggio
+- nome del Survey
 - ID del transetto
 - nome dell'osservatore
 - GPS, coordinate manuali o nessuna posizione di partenza
 
-Questo passaggio espone anche il selettore della mappa e il promemoria dell'autorizzazione GPS in background quando necessario.
+Questo passaggio mostra anche il selettore sulla mappa, aggiorna il GPS quando
+torni dalle schermate di autorizzazione di sistema e mostra il promemoria
+dell'autorizzazione al GPS in background quando necessario. Nella stessa area
+della posizione è disponibile una scheda meteo. Se l'accesso al meteo è
+disattivato, chiede il consenso **Consenti ricerca meteo**; una volta abilitato,
+mostra un'anteprima del sito con un'icona meteo, solo temperatura e vento. Lo
+stesso snapshot di Open-Meteo memorizzato nella cache viene riutilizzato quando
+il Survey viene salvato.
 
 ### 2. Parametri
 
-Questo passaggio contiene parametri specifici del sondaggio come:
+Questo passaggio contiene parametri specifici del Survey, come:
 
 - selezione del microfono
-- tasso di inferenza
+- frequenza di inferenza
 - soglia di confidenza
-- Intervallo GPS
+- intervallo GPS
 - durata massima
 - modalità di registrazione
-- contesto della clip per la registrazione di solo rilevamento
-- modalità di campionamento del rilevamento
-- limite massimo N per specie quando il campionamento è limitato
+- contesto del clip per la registrazione di solo rilevazioni
+- modalità di campionamento delle rilevazioni
+- limite Top N per specie quando il campionamento è limitato
 
-#### Campionamento di rilevamento
+#### Campionamento delle rilevazioni
 
-Un lungo sondaggio può produrre migliaia di rilevamenti e il salvataggio di una clip audio per ognuno di essi riempie rapidamente lo spazio di archiviazione. Il campionamento del rilevamento controlla **quali clip vengono conservati sul disco** — *i record di rilevamento vengono sempre conservati*, quindi il registro completo della sessione rimane intatto indipendentemente dalla modalità. I record il cui audio è stato eliminato semplicemente non hanno clip riproducibili in Session Review.
+Un Survey lungo può produrre migliaia di rilevazioni, e salvare un clip audio per ognuna riempie rapidamente lo spazio di archiviazione. Il campionamento delle rilevazioni controlla **quali clip vengono conservati su disco** — *i record delle rilevazioni vengono sempre conservati*, quindi il registro completo della Session resta intatto a prescindere dalla modalità. I record il cui audio è stato scartato semplicemente non hanno un clip riproducibile nel Riepilogo sessione.
 
 Sono disponibili tre modalità:
 
 | Modalità | Cosa fa |
 |---|---|
-| **Tutti** | Conserva ogni clip. Maggior utilizzo del disco. Consigliato per sondaggi brevi o quando si desidera l'audio di ogni rilevamento per un'analisi successiva. |
-| **Top N** | Conserva solo le **N clip con la massima affidabilità per specie**. Gli altri clip vengono eliminati durante l'esecuzione del sondaggio. N predefinito è 10, configurabile da 1 a 50. |
-| **Intelligente** | Stesso limite per specie di N come Top N, **più** distribuzione spaziale: se un nuovo rilevamento arriva nello stesso "punto" di una clip già conservata (entro ~ 500 me ~ 2 minuti l'una dall'altra), solo quella con maggiore sicurezza mantiene la clip. Ciò impedisce a un cantante stazionario di monopolizzare tutti gli N slot e di orientare le clip mantenute verso la copertura dell'intero transetto. |
+| **Tutte** | Conserva ogni clip. Massimo uso del disco. Consigliata per Survey brevi o quando vuoi l'audio di ogni rilevazione per un'analisi successiva. |
+| **Top N** | Conserva solo le **N clip con confidenza più alta per specie**. Gli altri clip vengono eliminati man mano che il Survey procede. N predefinito è 10, configurabile da 1 a 50. |
+| **Smart** | Stesso limite per specie di N come Top N, **più** distribuzione spaziale: se una nuova rilevazione cade nello stesso "punto" di un clip già conservato (entro ~500 m e ~2 min l'uno dall'altro), solo quella con confidenza più alta mantiene il clip. Questo evita che un singolo cantore stazionario monopolizzi tutti gli N slot e orienta i clip conservati verso la copertura dell'intero transetto. |
 
-Il limite N è **per specie, non globale**: se registri 10 pettirossi e 10 fringuelli, conservi 20 clip. Non esiste un limite complessivo al numero di clip che un sondaggio può produrre.
+Il limite N è **per specie, non globale**: se registri 10 pettirossi e 10 fringuelli, conservi 20 clip. Non esiste un limite complessivo al numero di clip che un Survey può produrre.
 
-In modalità Smart, se il GPS manca durante un rilevamento, il controllo sullo stesso punto ritorna a una finestra di solo tempo (~2 minuti). Con il GPS disponibile, sia la distanza che il tempo devono sovrapporsi affinché due rilevamenti vengano conteggiati come lo stesso punto.
+In modalità Smart, se il GPS manca su una rilevazione, il controllo dello stesso punto ripiega su una finestra basata solo sul tempo (~2 min). Con il GPS disponibile, sia la distanza sia il tempo devono sovrapporsi affinché due rilevazioni siano considerate lo stesso punto.
 
-### 3. Avvisi sulle specie
+### 3. Avvisi specie
 
-Notifiche in stile push che si attivano a metà sondaggio quando viene rilevato qualcosa di degno di nota. Scegli uno tra:
+Notifiche in stile push che si attivano a metà Survey quando viene rilevato qualcosa di notevole. Scegli una tra:
 
-- **Off**: nessun avviso (impostazione predefinita).
-- **Prima sessione**: un avviso la prima volta che ogni specie viene ascoltata durante questo sondaggio.
-- **Prima in assoluto**: avvisa solo quando l'app incontra una specie per la prima volta in tutte le tue sessioni (un avviso "ergastolo"). Supportato da una cronologia delle specie che dura tutta la vita, popolata automaticamente dalle sessioni esistenti al primo avvio.
-- **Raro per questa posizione**: avvisa quando la probabilità del modello geografico per la posizione corrente è inferiore a una soglia configurabile. Una lettura in tempo reale sotto il cursore spiega esattamente su cosa si attiverà il valore corrente (ad esempio *"Avvisi su specie con meno del 5% di probabilità in questa posizione."*).
-- **Lista di controllo**: avvisa solo sulle specie che hai aggiunto a un elenco personalizzato salvato. La procedura guidata stessa ti consente di creare nuove liste di controllo, modificare quelle esistenti in un editor a schermo intero dedicato con tassonomia ricercabile e *Importa da file* (qualsiasi semplice `.txt`/`.csv` di nomi scientifici) ed eliminare le liste che non ti servono più.
+- **Disattivato** — nessun avviso (predefinito).
+- **Prima nella Session** — un avviso la prima volta che ogni specie viene sentita durante questo Survey.
+- **Prima volta in assoluto** — avvisa solo quando l'app incontra una specie per la primissima volta in tutte le tue Sessions (un avviso "lifer"). Si basa su una cronologia delle specie a vita, popolata automaticamente dalle tue Sessions esistenti al primo avvio.
+- **Rara per questa zona** — avvisa quando la probabilità del geo-modello per la posizione attuale è sotto una soglia configurabile. Una lettura in tempo reale sotto il cursore spiega esattamente cosa attiverà il valore corrente (ad esempio *"Avvisa su specie con meno del 5% di probabilità in questa zona."*).
+- **Lista di osservazione** — avvisa solo sulle specie che hai aggiunto a una lista personalizzata salvata. Lo stesso passaggio della procedura guidata consente di creare nuove liste di osservazione, modificare quelle esistenti in un editor a schermo intero dedicato con tassonomia ricercabile e *Importa da file* (un semplice `.txt`/`.csv` di nomi scientifici) ed eliminare le liste che non servono più.
 
-Un dispositivo di scorrimento *Confidenza minima* si trova sotto il selettore della modalità e viene automaticamente impostato sulla soglia di confidenza della sessione (gli avvisi non sono mai più sensibili dei rilevamenti stessi). Una sezione **Avanzate** espone i controlli di limitazione: una finestra di tolleranza all'avvio, un intervallo minimo rigido tra due avvisi qualsiasi e un limite mobile al minuto con fusione opzionale degli avvisi di superamento del limite in un'unica notifica di riepilogo, il tutto con selettori di chip con un solo tocco. La prima volta che passi a una modalità non disattivata, la procedura guidata richiede l'autorizzazione per le notifiche Android.
+Un cursore *Confidenza minima* si trova sotto il selettore della modalità e viene automaticamente limitato alla soglia di confidenza della Session (gli avvisi non sono mai più sensibili delle rilevazioni stesse). Una sezione **Avanzato** espone i controlli di frequenza — un margine iniziale all'avvio, un intervallo minimo rigido tra due avvisi qualsiasi e un limite mobile al minuto con il raggruppamento opzionale degli avvisi oltre il limite in un'unica notifica di riepilogo — tutti con selettori a chip da un tocco. La prima volta che passi a una modalità diversa da Disattivato, la procedura guidata richiede al posto tuo l'autorizzazione alle notifiche di Android.
 
-### 4. Suggerimenti sul campo
+### 4. Consigli sul campo
 
 Una breve lista di controllo pre-avvio all'interno del flusso di configurazione.
 
 ### 5. Pronto
 
-La schermata di pronto riassume la configurazione attiva del sondaggio prima di iniziare con :material-play:.
+La schermata di pronto riassume la configurazione attiva del Survey prima di iniziare con :material-play:.
 
-## Pannello di controllo del sondaggio in tempo reale
+## Dashboard del Survey in tempo reale
 
-La schermata Sondaggio in tempo reale presenta tre schede principali più un elenco dei rilevamenti recenti.
+La schermata del Survey in tempo reale ha tre schede principali più un elenco delle rilevazioni recenti.
 
 ### Barra superiore
 
-- :material-stop: — termina il sondaggio
+- :material-stop: — termina il Survey
 - :material-timer: — tempo trascorso
-- :material-help-circle-outline: - apre il foglio di aiuto del sondaggio
-- :material-tune: - apre le impostazioni del sondaggio
+- :material-help-circle-outline: — apre il pannello di aiuto del Survey
+- :material-tune: — apre le impostazioni del Survey
 
 ### Schede
 
-- :material-map-outline: — mappa del percorso e rilevamenti mappati
-- :equalizzatore materiale: — spettrogramma
-- icona del grafico: statistiche riassuntive e suddivisione delle specie
+- :material-map-outline: — mappa del percorso e rilevazioni mappate
+- :material-equalizer: — spettrogramma
+- icona del grafico — statistiche riassuntive e suddivisione per specie
 
-### Statistiche e rilevamenti
+### Statistiche e rilevazioni
 
-Sotto il contenuto della scheda, il dashboard del sondaggio mostra una barra delle statistiche e un elenco di rilevamenti recenti. Toccando un rilevamento si apre la sovrapposizione dei dettagli della specie.
+Sotto il contenuto della scheda, la dashboard del Survey mostra una barra delle statistiche e un elenco delle rilevazioni recenti. Toccando una rilevazione si apre il pannello dei dettagli della specie.
 
-## Operazione in background
+Ogni riga di rilevazione mostra anche le stesse azioni per rilevazione usate nel [Riepilogo sessione](session-review.md): un segno di spunta :material-check: **Conferma** da un tocco e un menu :material-dots-vertical: **Altro** con **Condividi rilevazione** ed **Elimina rilevazione** (con SnackBar per annullare) — così puoi convalidare, condividere o rimuovere un risultato rumoroso durante la cattura, senza attendere la revisione post-Session.
 
-La modalità Sondaggio mantiene visibile una notifica persistente in primo piano durante la registrazione in modo che Android non sospenda la pipeline audio. La notifica si espande per mostrare:
+Le stesse azioni sono disponibili dalla **mappa del percorso in tempo reale**: tocca un marcatore di rilevazione per aprire il pannello del lettore dei clip con conferma, condivisione ed eliminazione. La condivisione durante un Survey funziona anche quando hai scelto un'unica registrazione WAV continua invece dei clip per rilevazione — la finestra audio pertinente viene estratta al volo dal file in corso. Vedi [Riepilogo sessione → Condivisione di una singola rilevazione](session-review.md#condivisione-di-una-singola-rilevazione) per i dettagli.
 
-- il tempo trascorso, il conteggio dei rilevamenti, il conteggio delle specie e la distanza percorsa e
-- le **tre specie uniche più recenti** con la loro confidenza e un relativo timestamp ("proprio adesso", "42s fa", "5m fa", "2h fa").
+## Funzionamento in background
 
-La notifica (titolo, rilevamenti recenti e piè di pagina delle statistiche) è completamente tradotta nella lingua selezionata dall'app e utilizza le stesse preferenze specie-locali e *Mostra nomi scientifici* delle schede in-app.
+La modalità Survey mantiene visibile una notifica persistente in primo piano durante la registrazione, così Android non sospende la pipeline audio. La notifica si espande per mostrare:
 
-Gli avvisi sulle specie (se abilitati) vengono visualizzati su un canale di notifica Android separato in modo da poter disattivare gli avvisi indipendentemente dalla notifica silenziosa della registrazione in corso. L'icona di avviso corrisponde all'icona di notifica in primo piano (un uccello monocromatico) e gli organi di avviso mostrano solo il *motivo* — *"Primo rilevamento di questo sondaggio"*, *"Nella tua lista di controllo"*, *"Rilevato in questa posizione con meno del 4% di probabilità"* - lasciando il nome della specie nel titolo della notifica in grassetto dove Android lo rende più grande.
+- il tempo trascorso, il numero di rilevazioni, il numero di specie e la distanza percorsa, e
+- le **tre specie uniche più recenti** con la loro confidenza e una marca temporale relativa (`proprio ora`, `42 s fa`, `5 min fa`, `2 h fa`).
+
+La notifica — titolo, rilevazioni recenti e piè di pagina delle statistiche — è completamente tradotta nella lingua selezionata nell'app e usa le stesse preferenze di lingua delle specie e *Mostra nomi scientifici* delle schede in-app.
+
+Gli avvisi specie (quando abilitati) compaiono su un canale di notifica Android separato, così puoi silenziarli indipendentemente dalla notifica silenziosa della registrazione in corso. L'icona dell'avviso corrisponde a quella della notifica in primo piano (un uccello monocromatico) e il corpo degli avvisi mostra solo il *motivo* — *"Primo rilevamento in questo Survey"*, *"Nella tua lista di osservazione"*, *"Rilevata in questa posizione con meno del 4% di probabilità"* — lasciando il nome della specie nel titolo in grassetto della notifica, dove Android lo mostra più grande.
+
+Quando **riprendi** un Survey non completato dalla Libreria Sessions, la pipeline degli avvisi viene riarmata dalle tue preferenze di notifica *attuali* — non da quelle configurate il giorno in cui hai avviato il Survey. Disattiva gli avvisi (o cambia modalità, lista di osservazione o controllo della frequenza) prima di toccare Riprendi e il Survey ripreso rispetterà subito le nuove impostazioni.
+
+## Revisione sulla mappa
+
+La vista della mappa del Survey a schermo intero (il pulsante :material-fullscreen: nel Riepilogo sessione) apre un lettore di clip quando tocchi un marcatore. La riga dei comandi ha i pulsanti per la rilevazione precedente e successiva ai lati del comando di riproduzione — scorrono le rilevazioni in ordine cronologico, ma **solo quelle attualmente visibili sulla mappa**, quindi qualsiasi filtro attivo per specie, confidenza o chip di modalità restringe di conseguenza la playlist. I pulsanti si disattivano alla prima/ultima rilevazione dell'elenco filtrato.
 
 ## Dopo l'interruzione
 
-BirdNET Live salva il sondaggio finito e apre [Revisione sessione](session-review.md).
+BirdNET Live salva il Survey completato e apre il [Riepilogo sessione](session-review.md).

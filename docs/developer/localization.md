@@ -20,7 +20,7 @@ BirdNET Live uses Flutter's built-in localization system with ARB (Application R
 
 ## Translation Conventions
 
-- **Technical terms kept in English**: Point Count, Survey, Session, Live Mode — these are established field terminology and stay in English in every locale.
+- **Technical terms kept in English**: Point Count, Survey, Session, Live Mode — these are established field terms and stay in English in every locale.
 - **Format identifiers kept as-is**: WAV, FLAC, CSV, JSON, GPX, Raven Selection Table.
 - **Language names untranslated**: "English", "Deutsch", "System" appear as-is in the language picker.
 - **Gain**: Kept as "Gain" in both languages (universal audio term).

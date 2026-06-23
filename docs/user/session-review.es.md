@@ -1,136 +1,134 @@
-<!-- TRANSLATION TODO (es) -->
+# Resumen de la Session
 
-# Session Review
+El Resumen de la Session es donde BirdNET Live convierte las detecciones en un registro editable.
 
-Session Review is where BirdNET Live turns detections into an editable record.
+## Cómo llegar aquí
 
-## How You Reach It
+BirdNET Live abre el Resumen de la Session automáticamente al terminar:
 
-BirdNET Live opens Session Review automatically after completing:
+- una Live Session
+- un Point Count
+- un Survey
+- un análisis de Análisis de archivos
 
-- a Live session
-- a Point Count
-- a Survey
-- a File Analysis run
+También puedes reabrir cualquier Session guardada desde la [Biblioteca de sesiones](session-library.md).
 
-You can also reopen any saved session from [Session Library](session-library.md).
+## Áreas principales
 
-## Main Areas
+### Resumen y reproducción
 
-### Summary and playback
+El Resumen de la Session combina la reproducción, la navegación por el espectrograma y una lista de especies. En las Sessions de Survey también puede mostrar el contexto cartográfico.
 
-Session Review combines playback, spectrogram navigation, and a species list. For survey sessions it can also show mapped context.
+El encabezado de resumen en la parte superior de la pantalla incluye la fecha, el chip de ubicación (lat/lon más un nombre de lugar opcional cuando **Ajustes → Privacidad → Permitir búsqueda de nombre del lugar** está activado) y —cuando **Ajustes → Privacidad → Permitir consulta del clima** estaba activado en el momento de la grabación— una **fila de clima** debajo de la ubicación que muestra las condiciones registradas al final de la Session: una línea como *"20,1 °C · Llovizna · 3,2 m/s SO"* precedida por un icono del tiempo. Toca la fila para desplegar una pequeña hoja con la temperatura, el viento, la precipitación y la nubosidad, junto con la atribución a Open-Meteo. La misma instantánea se refleja en la exportación JSON, en el bloque de metadatos por Session y en el informe HTML.
 
-The summary header at the top of the screen carries the date, location chip (lat/lon plus an optional resolved place name when **Settings → Privacy → Allow place name lookup** is on), and — when **Settings → Privacy → Allow weather lookup** was on at the time of recording — a **weather row** below the location showing the conditions captured at the end of the session: a one-liner like *"20.1 °C · Light rain · 3.2 m/s SW"* prefaced by a weather icon. Tap the row to expand a small sheet listing temperature, wind, precipitation, and cloud cover with the Open-Meteo attribution. The same snapshot is mirrored into the JSON export, the per-session metadata block, and the HTML report.
+La franja del espectrograma sobre el reproductor es interactiva: toca para saltar a un punto, arrastra con un dedo para recorrer la línea de tiempo y **pellizca con dos dedos para ampliar** una ventana de tiempo estrecha, útil cuando quieres examinar el momento de cantos superpuestos o separar un trino rápido. Separa los dedos de nuevo para volver a la vista general predeterminada de 10 segundos. El botón de reproducción en el encabezado de una especie elige siempre el primer grupo que realmente tiene un clip grabado, de modo que el botón está disponible siempre que alguna de las detecciones de esa especie se pueda reproducir.
 
-The spectrogram strip above the player is interactive: tap to seek, drag with one finger to scrub the timeline, and **pinch with two fingers to zoom in** on a narrow time window — useful when you want to inspect the timing of overlapping calls or pick apart a fast trill. Spread back out to return to the default 10-second overview. The play button on a species header always picks the first cluster that actually has a recorded clip, so the button is available whenever any of that species' detections are playable.
+### Lista de especies
 
-### Species list
+Las especies se agrupan en filas expandibles. Puedes examinar las detecciones por especie y recorrer la grabación mientras las revisas. Las filas de grupo bajo una especie expandida aparecen sangradas para que la tarjeta de la especie principal se distinga visualmente de sus elementos.
 
-Species are grouped into expandable rows. You can inspect detections by species and move through the recording while reviewing them. Cluster rows under an expanded species are indented so the parent species card stays visually distinct from its children.
+Un campo de búsqueda sobre la lista filtra las especies por nombre común o científico, de modo que encontrar un ave concreta en una Session de 100 especies son unas pocas pulsaciones en lugar de un largo desplazamiento. El botón :material-sort: que hay al lado cambia el orden de las especies:
 
-A search field above the list filters species by common or scientific name, so finding one specific bird in a 100-species session is a few keystrokes instead of a long scroll. The :material-sort: button next to it changes the species order:
+- **Mayor confianza** (predeterminado) — primero las especies con la confianza más alta en una sola detección. Útil para priorizar las identificaciones más seguras. Al expandir una especie en este modo, las detecciones con clips de audio reproducibles aparecen antes que las que no tienen clip, y luego por confianza.
+- **Más detecciones** — primero las especies con mayor número de detecciones. Útil para identificar a las que más cantan.
+- **A → Z** — orden alfabético por nombre común. Predecible, sensible al idioma y fácil de revisar cuando una Session tiene muchas especies.
+- **Detectadas primero** — orden cronológico por hora de la primera detección. El predeterminado histórico; útil al revisar junto a la línea de tiempo del espectrograma.
 
-- **Highest confidence** (default) — species with the highest single-detection confidence first. Good for triaging the most certain identifications. When you expand a species in this mode, detections with playable audio clips appear before clipless detections, then by confidence.
-- **Most detections** — species with the highest detection count first. Good for spotting the dominant choristers.
-- **A → Z** — alphabetical by common name. Predictable, locale-aware, and easy to scan once a session has lots of species.
-- **First detected** — chronological by first-detection time. The historical default; useful when reviewing alongside the spectrogram timeline.
+El orden elegido se mantiene entre Sessions.
 
-The chosen sort persists across sessions.
+### Acciones por detección
 
-### Per-detection actions
+En todos los lugares donde aparece una detección —la lista de especies, la hoja del reproductor de clips, la lista del Survey en vivo y los marcadores del mapa del Survey— se usa el mismo conjunto de acciones:
 
-Every place a detection appears — the species list, the clip player sheet, the live survey list, and the survey map markers — uses the same set of actions:
+- :material-check: **Confirmar** — una marca de verificación de un toque que señala una detección como verificada visual o acústicamente. Los grupos confirmados y los marcadores del mapa muestran una pequeña marca verde para que destaquen de un vistazo, y la marca se conserva en todos los formatos de exportación.
+- :material-dots-vertical: **Más** — abre un menú adicional con:
+    - :material-share-variant: **Compartir detección** — consulta *Compartir* más abajo.
+    - :material-swap-horizontal: **Reemplazar especie** — elige otra especie para esta detección.
+    - :material-delete-outline: **Eliminar detección** — quita la fila de inmediato. Aparece un SnackBar para deshacer durante unos segundos, de modo que los errores son reversibles. Sin cuadro de confirmación.
+    - :material-delete-sweep-outline: **Eliminar especie** — quita de la Session todas las detecciones de esa especie de una sola vez, con el mismo SnackBar para deshacer. Útil para barrer una fuente de ruido mal identificada sin tener que expandir la especie y eliminar los grupos uno a uno.
 
-- :material-check: **Confirm** — a one-tap inline checkmark that flags a detection as visually or acoustically verified. Confirmed clusters and map markers gain a small green check so they stand out at a glance, and the flag travels with every export format.
-- :material-dots-vertical: **More** — opens an overflow menu with:
-    - :material-share-variant: **Share detection** — see *Sharing* below.
-    - :material-swap-horizontal: **Replace species** — pick a different species for this detection.
-    - :material-delete-outline: **Delete detection** — removes the row immediately. An undo SnackBar appears for a few seconds so misfires are reversible. No confirmation dialog.
-    - :material-delete-sweep-outline: **Delete species** — removes every detection of that species from the session in one shot, with the same SnackBar undo. Useful for sweeping out a misidentified noise source without expanding the species and deleting clusters one by one.
+#### Atajos de deslizamiento en las filas de revisión
 
-#### Swipe shortcuts on review rows
+En la lista de especies también puedes actuar sobre una detección deslizando la fila en horizontal:
 
-In the species list you can also act on a detection by swiping the row horizontally:
+- desliza a la **derecha** → eliminar (con opción de deshacer)
+- desliza a la **izquierda** → abrir el panel de reemplazo de especie
 
-- swipe **right** → delete (with undo)
-- swipe **left** → open the replace-species overlay
+Los dos fondos están codificados por color (rojo de error frente a azul principal) para que el efecto del gesto sea evidente antes de confirmarlo.
 
-The two backgrounds are color-coded (error red vs primary blue) so the gesture's effect is obvious before you commit.
+Al deslizar una fila de **encabezado de especie** (a izquierda o derecha) se eliminan de una vez todas las detecciones de esa especie, con el mismo SnackBar para deshacer. Útil al depurar una Session llena de ruido mal identificado.
 
-Swiping a **species header** row (left or right) deletes every detection of that species at once, with the same undo SnackBar. Useful when triaging a session full of misidentified noise.
+### Compartir una sola detección
 
-### Sharing a single detection
+La opción :material-share-variant: **Compartir detección** abre la hoja de compartir del sistema con un contenido escueto y pensado para el trabajo de campo —nombre común y científico, confianza, marca de tiempo UTC en ISO 8601 y una URI `geo:` cuando la detección tiene GPS— y adjunta el clip de audio siempre que haya uno disponible. El archivo compartido se nombra `BirdNET_Live_<timestamp>_<species>.<ext>` para coincidir con el esquema de la exportación ZIP.
 
-The :material-share-variant: **Share detection** entry opens the platform share sheet with a terse, field-tool-friendly payload — common + scientific name, confidence, ISO 8601 UTC timestamp, and a `geo:` URI when the detection has GPS — and attaches the audio clip whenever one is available. The shared file is named `BirdNET_Live_<timestamp>_<species>.<ext>` to match the ZIP export scheme.
+El audio adjunto se resuelve en este orden:
 
-The audio attachment is resolved in this order:
-
-1. The detection's own per-detection clip on disk.
-2. **For sessions recording one continuous file**: the relevant audio window is sliced out of the recording on the fly. Both WAV and FLAC continuous recordings are supported, and the slice ships in the same container as the source (WAV in → WAV out, FLAC in → FLAC out).
-3. If neither is available, the share is text-only — location and timestamp still land in the payload.
+1. El clip propio de la detección guardado en disco.
+2. **En Sessions que graban un único archivo continuo**: la ventana de audio correspondiente se extrae de la grabación al vuelo. Se admiten grabaciones continuas tanto en WAV como en FLAC, y el fragmento se entrega en el mismo contenedor que el original (WAV de entrada → WAV de salida, FLAC de entrada → FLAC de salida).
+3. Si no hay ninguno disponible, se comparte solo el texto: la ubicación y la marca de tiempo siguen incluyéndose en el contenido.
 
 ### Notas de voz
 
-Puede adjuntar comentarios de voz hablados cortos a registros de detección individuales:
+Puedes adjuntar breves comentarios de voz a registros de detección individuales:
 
-- **Grabar**: Toque el botón :material-dots-vertical: en un grupo de detección y seleccione **Grabar nota de voz** para abrir el diálogo de nota de voz. Toque el botón grande del micrófono para comenzar a grabar. Una forma de onda en vivo refleja su voz en tiempo real. Toque el botón de parada cuando termine.
-- **Revisar**: Una vez grabada, puede escuchar la nota utilizando el reproductor integrado. Para reemplazar la nota, toque el botón **Volver a grabar**. Para guardarla, toque el botón **Guardar**.
-- **Eliminar**: Si una detección ya tiene una nota de voz adjunta, puede eliminarla desde el menú de opciones o desde el diálogo de nota de voz.
-- **Formatos específicos de la plataforma**: En Android y otras plataformas, las notas de voz se graban en formato AAC (`.m4a`) altamente comprimido a 16 kHz. En iOS, utilizan automáticamente el formato WAV/PCM16 (`.wav`) para evitar problemas de compatibilidad de CoreAudio con las sesiones de audio activas de la aplicación. Ambos formatos son totalmente compatibles con el paquete ZIP de exportación.
-- **Exportar**: Al exportar la sesión como un archivo ZIP, las notas de voz se agrupan dentro del directorio `memos/` y sus rutas relativas se registran en los metadatos JSON y CSV.
+- **Grabar**: toca el botón :material-dots-vertical: en un grupo de detección y selecciona **Grabar nota de voz** para abrir el diálogo de nota de voz. Toca el botón grande del micrófono para empezar a grabar. Una forma de onda en vivo refleja tu voz en tiempo real. Toca el botón de detener cuando termines.
+- **Revisar**: una vez grabada, puedes escuchar la nota con el reproductor integrado. Para reemplazar la nota, toca el botón **Volver a grabar**. Para guardarla, toca el botón **Guardar**.
+- **Eliminar**: si una detección ya tiene una nota de voz adjunta, puedes eliminarla desde el menú adicional o desde el diálogo de nota de voz.
+- **Formatos según la plataforma**: en Android y otras plataformas, las notas de voz se graban en formato AAC (`.m4a`) muy comprimido a 16 kHz. En iOS usan automáticamente el formato WAV/PCM16 (`.wav`) para evitar problemas de compatibilidad de CoreAudio con las sesiones de audio activas de la app. Ambos formatos son totalmente compatibles con el empaquetado ZIP de la exportación.
+- **Exportar**: al exportar la Session como ZIP, las notas de voz se incluyen en el directorio `memos/` y sus rutas relativas se registran en los metadatos JSON y CSV.
 
-### Survey track map
+### Mapa del recorrido del Survey
 
-Survey sessions show a small inline map of the GPS track and detection markers. Tap a marker on the inline map to focus a detection — the inline map centers on it. Tap the :material-fullscreen: **expand** button (top-right of the inline map) to open the **fullscreen map**; if a detection was focused, the fullscreen map opens centered and zoomed in on that detection so you keep your place.
+Las Sessions de Survey muestran un pequeño mapa integrado del recorrido GPS y los marcadores de detección. Toca un marcador del mapa integrado para enfocar una detección: el mapa integrado se centra en ella. Toca el botón :material-fullscreen: **expandir** (arriba a la derecha del mapa integrado) para abrir el **mapa a pantalla completa**; si había una detección enfocada, el mapa a pantalla completa se abre centrado y ampliado sobre esa detección para que no pierdas tu posición.
 
-#### Marker encoding
+#### Codificación de los marcadores
 
-- **Confidence is color-coded** with a CVD-safe ramp: low → high confidence runs from purple-blue through teal/yellow to red. The ramp's lightness changes monotonically so it stays readable in monochrome and for users with red-green color vision deficiency.
-- **Audio-bearing detections** show a colored ring around the species photo plus a corner play badge — tap them to open the same clip player sheet used elsewhere, with confirm, share, replace, and delete all available.
-- **Silent detections** (no clip on disk) render smaller, faded, and with a neutral-grey ring so audio detections always read as the primary content.
-- **Overlapping markers at the same spot** are z-ordered by importance: highlighted > audio > higher confidence, so a low-confidence silent marker can never obscure a strong audio detection.
-- **Below zoom 14.5** silhouettes degrade to colored dots sized by confidence, and dense clusters collapse to a count bubble (clustering disables at zoom 15).
+- **La confianza está codificada por color** con una rampa segura para daltonismo: de menor a mayor confianza va del azul violáceo, pasando por el turquesa/amarillo, hasta el rojo. La luminosidad de la rampa cambia de forma monótona, de modo que sigue siendo legible en monocromo y para personas con deficiencia de visión del color rojo-verde.
+- **Las detecciones con audio** muestran un anillo de color alrededor de la foto de la especie más una insignia de reproducción en la esquina; tócalas para abrir la misma hoja del reproductor de clips que se usa en otros lugares, con confirmar, compartir, reemplazar y eliminar disponibles.
+- **Las detecciones silenciosas** (sin clip en disco) se representan más pequeñas, atenuadas y con un anillo gris neutro, de modo que las detecciones con audio se leen siempre como el contenido principal.
+- **Los marcadores superpuestos en el mismo punto** se ordenan por importancia: resaltado > con audio > mayor confianza, de modo que un marcador silencioso de baja confianza nunca puede tapar una detección de audio sólida.
+- **Por debajo del zoom 14,5** las siluetas se reducen a puntos de color dimensionados según la confianza, y los grupos densos se contraen en una burbuja con un número (la agrupación se desactiva con el zoom 15).
 
-#### Filtering
+#### Filtrado
 
-The fullscreen map has a persistent **filter chip** anchored top-right of the map. Tap it to open the filter sheet; the chip's label always shows what's currently in effect (*"All species"*, *"With audio"*, *"≥ 80%"*, or a single species name). Available filters:
+El mapa a pantalla completa tiene un **chip de filtro** fijo anclado arriba a la derecha del mapa. Tócalo para abrir la hoja de filtros; la etiqueta del chip muestra siempre lo que está en efecto (*"Todas las especies"*, *"Con audio"*, *"≥ 80 %"* o el nombre de una sola especie). Filtros disponibles:
 
-- **All detections** (default).
-- **With audio clip** — only detections whose clip is still on disk and playable.
-- **Manual additions** — only detections you added in Session Review (excludes auto-detected ones).
+- **Todas las detecciones** (predeterminado).
+- **Con clip de audio** — solo las detecciones cuyo clip sigue en disco y se puede reproducir.
+- **Añadidas manualmente** — solo las detecciones que añadiste en el Resumen de la Session (excluye las detectadas automáticamente).
 
-You can also restrict the detections by confidence level. The slider configures the confidence floor (starts at 10%).
+También puedes restringir las detecciones por nivel de confianza. El control deslizante fija el mínimo de confianza (empieza en el 10 %).
 
-Below the confidence slider is a **Limit to species** picker that lets you collapse the map to a single species — useful for asking "where exactly along the route did I hear the wood thrush?". An *All species* entry clears the species restriction. The filters combine: e.g. *With audio clip* + *Wood Thrush* + *> 80%* shows only the playable Wood Thrush markers that scored above 80%.
+Debajo del control de confianza hay un selector **Limitar a una especie** que permite reducir el mapa a una sola especie, útil para preguntarse "¿en qué punto exacto del recorrido oí el zorzal?". Una entrada *Todas las especies* elimina la restricción de especie. Los filtros se combinan: p. ej., *Con clip de audio* + *Zorzal* + *> 80 %* muestra solo los marcadores reproducibles de zorzal que superaron el 80 %.
 
-When a filter is active, the app-bar title gains a match-count subtitle (e.g. *"7 detections"*). *Reset* in the sheet returns to the default.
+Cuando hay un filtro activo, el título de la barra superior añade un subtítulo con el número de coincidencias (p. ej., *"7 detecciones"*). *Restablecer* en la hoja vuelve al valor predeterminado.
 
-## Toolbar Icons
+## Iconos de la barra de herramientas
 
-The toolbar uses the same icon meanings described in [Icons & Controls](icons-and-controls.md):
+La barra de herramientas usa los mismos significados de iconos descritos en [Iconos y controles](icons-and-controls.md):
 
-- :material-plus-circle-outline: — add content
-- :material-undo-variant: / :material-redo-variant: — step through edits
-- :material-content-cut: — trim mode
-- :material-content-save: — save edits
-- :material-share-variant: — export or share
-- :material-delete-outline: — discard session
-- :material-play: — continue a survey when that action is available
-- :material-help-circle-outline: — open the Session Review help sheet
-- :material-tune: — open Settings
+- :material-plus-circle-outline: — añadir contenido
+- :material-undo-variant: / :material-redo-variant: — avanzar o retroceder por las ediciones
+- :material-content-cut: — modo de recorte
+- :material-content-save: — guardar las ediciones
+- :material-share-variant: — exportar o compartir
+- :material-delete-outline: — descartar la Session
+- :material-play: — continuar un Survey cuando esa acción está disponible
+- :material-help-circle-outline: — abrir la hoja de ayuda del Resumen de la Session
+- :material-tune: — abrir los Ajustes
 
-## Typical Review Tasks
+## Tareas habituales de revisión
 
-- check detections against playback and spectrogram context
-- add a species or annotation
-- trim the recording to the useful interval
-- export the reviewed result set
+- contrastar las detecciones con la reproducción y el contexto del espectrograma
+- añadir una especie o una anotación
+- recortar la grabación al intervalo útil
+- exportar el conjunto de resultados revisado
 
-## Export
+## Exportación
 
-Export behavior depends on the options selected in [Settings](settings.md). The app can package detections and, optionally, audio into the chosen export format. Every export ships with provenance metadata — the app version, model name and version, species locale, export timestamp, settings retained with the session, plus relevant export options — written to a `<prefix>.metadata.json` side-file (ZIP) or a top-level `meta` block (JSON) so that exports are self-describing and reproducible.
+El comportamiento de la exportación depende de las opciones seleccionadas en [Ajustes](settings.md). La app puede empaquetar las detecciones y, opcionalmente, el audio en el formato de exportación elegido. Cada exportación incluye metadatos de procedencia —la versión de la app, el nombre y la versión del modelo, el idioma de las especies, la marca de tiempo de exportación, los ajustes conservados con la Session y las opciones de exportación pertinentes— escritos en un archivo adjunto `<prefix>.metadata.json` (ZIP) o en un bloque `meta` de nivel superior (JSON), de modo que las exportaciones se describen a sí mismas y son reproducibles.
 
-The JSON export's `settings` block records the values that were *actually applied to this session* — sensitivity, score-pooling mode and window count, microphone gain, and the high-pass cutoff — not whatever happens to be set in Settings now. This means you can reproduce a result months later, or compare two surveys, without remembering which sliders were where when you ran them.
+El bloque `settings` de la exportación JSON registra los valores que se *aplicaron realmente a esta Session* —sensibilidad, modo de Score Pooling y número de ventanas, ganancia del micrófono y el corte del filtro de paso alto—, no los que estén configurados ahora en Ajustes. Esto significa que puedes reproducir un resultado meses después, o comparar dos Surveys, sin tener que recordar dónde estaba cada control cuando los ejecutaste.
 
-All timestamps in exported filenames (`BirdNET_Live_<date>_<time>_…`) and inside CSV / JSON payloads are formatted in your phone's *current* local time. Underlying records are stored in UTC and converted on the way out.
+Todas las marcas de tiempo en los nombres de archivo exportados (`BirdNET_Live_<date>_<time>_…`) y dentro de los datos CSV / JSON se formatean en la hora local *actual* de tu teléfono. Los registros subyacentes se almacenan en UTC y se convierten al exportar.

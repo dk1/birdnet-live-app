@@ -1,6 +1,6 @@
 # Live Mode
 
-Live Mode is the fastest way to listen through the phone microphone and review detections as they appear.
+Live Mode is the fastest way to listen through the phone microphone and review detections as they appear in real time.
 
 ## How to Open It
 
@@ -26,7 +26,7 @@ The large circular button at the bottom center changes state:
 
 ### Spectrogram
 
-The spectrogram scrolls continuously while capture is active. It shows frequency content over time and uses the color map, FFT size, frequency range, and duration from Settings.
+The spectrogram scrolls continuously while capture is active. It shows frequency content over time, using the color map, FFT size, frequency range, and duration configured in Settings.
 
 ### Detection list
 

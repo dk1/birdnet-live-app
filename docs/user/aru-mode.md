@@ -40,7 +40,7 @@ On Android, active deployments display a foreground notification with Stop and O
 
 Stopping a deployment opens Session Review. If cycles were grouped into a single session, it opens that combined session; if saved as separate sessions, it opens the latest completed cycle session.
 
-On iOS, this early implementation should be treated as a foreground workflow until scheduled audio/background behavior has been validated on iOS.
+On iOS, treat this early implementation as a foreground workflow until scheduled audio and background behavior have been validated on the platform.
 
 ## Still Planned
 

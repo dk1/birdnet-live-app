@@ -1,60 +1,60 @@
-# Živý režim
+# Režim Live
 
-Živý režim je nejrychlejší způsob, jak poslouchat prostřednictvím mikrofonu telefonu a kontrolovat detekce, jakmile se objeví.
+Režim Live je nejrychlejší způsob, jak poslouchat přes mikrofon telefonu a sledovat detekce v reálném čase, jak se objevují.
 
-## Jak to otevřít
+## Jak jej otevřít
 
-Na domovské obrazovce klepněte na kartu **Živý režim** s ikonou :material-microphone:.
+Na domovské obrazovce klepněte na kartu **Live** s ikonou :material-microphone:.
 
 ## Horní lišta
 
 Horní lišta obsahuje tři prvky:
 
-- :material-arrow-left: — opustit živý režim
+- :material-arrow-left: — opuštění režimu Live
 - středový text stavu — `Inicializace`, `Načítání modelu`, `Připraveno`, `Identifikace druhů`, `Pozastaveno` nebo `Chyba`
-- :material-tune: — otevření zobrazení Nastavení specifické pro živé vysílání
+- :material-tune: — otevření zobrazení Nastavení specifického pro Live
 
-## Tlačítko hlavní akce
+## Hlavní akční tlačítko
 
-Velké kruhové tlačítko uprostřed dole změní stav:
+Velké kruhové tlačítko dole uprostřed mění stav:
 
-- :material-mikrofon: — začít poslouchat
-- :material-stop: — zastavení aktivní relace
-- :material-play: — obnovení ze stavu pozastaveno-připraven
+- :material-microphone: — spustit poslech
+- :material-stop: — zastavit aktivní session
+- :material-play: — pokračovat ze stavu pozastaveno-připraveno
 
 ## Co vidíte při poslechu
 
 ### Spektrogram
 
-Spektrogram se nepřetržitě posouvá, když je aktivní snímání. Zobrazuje frekvenční obsah v průběhu času a používá barevnou mapu, velikost FFT, frekvenční rozsah a dobu trvání z Nastavení.
+Spektrogram se nepřetržitě posouvá, dokud je snímání aktivní. Zobrazuje frekvenční obsah v čase a používá barevnou paletu, velikost FFT, frekvenční rozsah a dobu trvání nastavené v Nastavení.
 
 ### Seznam detekcí
 
 Nedávné detekce se objevují pod spektrogramem. Každý řádek může zobrazovat:
 
-- druhový obraz
-- běžné jméno
-- nepovinný vědecký název
-- hodnota spolehlivosti
+- obrázek druhu
+- běžný název
+- volitelný vědecký název
+- hodnotu spolehlivosti
 
-Klepnutím na řádek druhu otevřete překrytí podrobností o druhu.
+Klepnutím na řádek druhu otevřete překryvný panel s podrobnostmi o druhu.
 
-### Informační lišta relace
+### Informační lišta session
 
-Kompaktní informační čára pod spektrogramem shrnuje aktuální relaci, například:
+Kompaktní informační řádek pod spektrogramem shrnuje aktuální session, například:
 
-- aktuální detekce zobrazené nyní
-- počet unikátních druhů (`spp`)
+- aktuálně zobrazené detekce
+- počet jedinečných druhů (`spp`)
 - celkový počet detekcí (`det`)
-- uplynulá doba trvání
-- odhadovaná velikost záznamu, když je záznam povolen
+- uplynulou dobu
+- odhadovanou velikost nahrávky, je-li nahrávání zapnuté
 
-## Chování při nahrávání
+## Chování nahrávání
 
-Nahrávání se ovládá v [Settings] (settings.md).
+Nahrávání se ovládá v [Nastavení](settings.md).
 
-- **Full** zaznamená celou relaci.
-- **Pouze detekce** zaznamenává klipy kolem detekcí.
-- **Vypnuto** zakáže nahrávání.
+- **Úplný** zaznamená celou session.
+- **Jen detekce** zaznamenává klipy kolem detekcí.
+- **Vypnuto** nahrávání zakáže.
 
-Když zastavíte Živý režim, BirdNET Live relaci uloží a otevře [Přehled relace] (session-review.md).
+Když režim Live zastavíte, BirdNET Live session uloží a otevře [Přehled Session](session-review.md).
