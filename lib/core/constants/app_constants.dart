@@ -238,7 +238,8 @@ abstract final class PrefKeys {
   static const String sessionReviewSpeciesSort = 'session_review_species_sort';
 
   /// Whether to show the playback overlay (clip player sheet) in session review.
-  static const String sessionReviewPlaybackOverlay = 'session_review_playback_overlay';
+  static const String sessionReviewPlaybackOverlay =
+      'session_review_playback_overlay';
 
   // --- Announcements (spoken detections, post-v1.0) ---------------------
   // See [dev/announcements.md] for the full design. The user-facing
@@ -257,10 +258,8 @@ abstract final class PrefKeys {
   static const String announcementsWizardCompleted =
       'announcements_wizard_completed';
 
-  /// `true` once we have applied the screen-reader accessibility
-  /// default for `announcementsEnabled` (see decision §10.7). Prevents
-  /// the default from being re-applied — and therefore overriding the
-  /// user's later opt-out — every time TalkBack/VoiceOver is toggled.
+  /// Legacy marker for the removed screen-reader accessibility default.
+  /// Kept so older exported settings containing this key remain readable.
   static const String announcementsAccessibilityDefaultApplied =
       'announcements_accessibility_default_applied';
 
