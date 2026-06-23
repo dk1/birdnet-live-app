@@ -91,6 +91,7 @@ IMAGE_CACHE_DIR = TOOLS_DIR / ".cache" / "species_images"
 IMAGE_OUTPUT_DIR = ROOT / "assets" / "species_images"
 DATA_OUTPUT_DIR = ROOT / "assets" / "species_data"
 TAXONOMY_CSV_PATH = ROOT / "assets" / "models" / "taxonomy.csv"
+PRESERVED_OUTPUT_FILES = ("dummy.webp",)
 
 # All common-name locale columns (top-20 + extras), deduplicated, stable order
 ALL_NAME_LOCALES = list(dict.fromkeys(NAME_LOCALES + EXTRA_NAME_LOCALES))
@@ -564,6 +565,19 @@ def restore_backups(backups: dict[Path, Path]) -> None:
             backup.replace(target)
 
 
+def restore_preserved_output_files(backups: dict[Path, Path]) -> None:
+    """Keep tracked placeholder assets across a successful rebuild."""
+    for output_dir in (IMAGE_OUTPUT_DIR, DATA_OUTPUT_DIR):
+        backup = backups.get(output_dir)
+        if backup is None or not backup.is_dir():
+            continue
+        output_dir.mkdir(parents=True, exist_ok=True)
+        for filename in PRESERVED_OUTPUT_FILES:
+            src = backup / filename
+            if src.exists():
+                shutil.copy2(src, output_dir / filename)
+
+
 def discard_backups(backups: dict[Path, Path]) -> None:
     """Delete backups after a successful rebuild."""
     for backup in backups.values():
@@ -648,6 +662,7 @@ def main():
         print("Build failed; restored previous species bundle outputs.", file=sys.stderr)
         raise
     else:
+        restore_preserved_output_files(backups)
         discard_backups(backups)
 
 
