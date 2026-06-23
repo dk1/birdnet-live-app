@@ -8,7 +8,7 @@ Der ARU-Modus (Autonomous Recording Unit) ist der feste Standort-Workflow für g
 ## Aktueller Setup-Ablauf
 
 - **Aufstellung und Audio**: 
-    - **Metadaten**: Geben Sie einen Aufstellungsnamen, eine ARU-/Stations-ID und einen Beobachternamen ein.
+    - **Metadaten**: Geben Sie einen Aufstellungsnamen, eine ARU-/Stations-ID und den Namen der beobachtenden Person ein.
     - **Standort**: Geben Sie die Standortkoordinaten über eine automatische GPS-Erfassung, eine manuelle Eingabe von Breitengrad/Längengrad ein oder überspringen Sie die Standorteinrichtung. Breitengrad und Längengrad sind erforderlich, wenn Sie eine sonnenbezogene Zeitplanung verwenden.
     - **Aufnahmeformat**: Wählen Sie zwischen den Formaten FLAC (komprimiert verlustfrei) und WAV (unkomprimiert).
     - **Aufnahmemodus**:
@@ -38,11 +38,11 @@ Der aktive ARU-Bildschirm zeigt, ob die Aufstellung wartet, aufnimmt oder abgesc
 
 Unter Android zeigen aktive Aufstellungen eine Vordergrundbenachrichtigung mit Stopp- und Öffnen-Aktionen.
 
-Beim Stoppen einer Aufstellung wird Session Review geöffnet. Wenn Zyklen in einer Session gruppiert sind, wird diese kombinierte Session geöffnet. Wenn jeder Zyklus als eigene Session gespeichert wird, öffnet das Stoppen die neueste Zyklus-Session.
+Beim Stoppen einer Aufstellung wird die Session-Übersicht geöffnet. Wenn Zyklen in einer Session gruppiert sind, wird diese kombinierte Session geöffnet. Wenn jeder Zyklus als eigene Session gespeichert wird, öffnet das Stoppen die neueste Zyklus-Session.
 
 Unter iOS sollte diese frühe Implementierung als Vordergrund-Workflow behandelt werden, bis geplantes Audio- und Hintergrundverhalten auf iOS validiert wurde.
 
 ## Noch geplant
 
 - Validierung des iOS-Hintergrundverhaltens.
-- Vollständige Session Review-Wiedergabe und Spektrogramm-Unterstützung für segmentierte ARU-Aufnahmen.
+- Vollständige Wiedergabe und Spektrogramm-Unterstützung in der Session-Übersicht für segmentierte ARU-Aufnahmen aus mehreren Dateien.

@@ -9,68 +9,68 @@ BirdNET Live je k dispozici pro Android, iOS a Windows.
 - **Android**: 8.0 (API 26) nebo novější
 - **iOS**: 15.0 nebo novější
 - **Windows**: 10 nebo novější (experimentální)
-- ~300 MB úložiště pro aplikace + modely
+- ~300 MB úložiště pro aplikaci a modely
 
-### Stáhnout
+### Stažení
 
-*Distribuční odkazy budou přidány, jakmile budou k dispozici.*
+*Odkazy ke stažení budou doplněny, jakmile budou k dispozici.*
 
-## První tok aplikací
+## První spuštění aplikace
 
-Když BirdNET Live otevřete poprvé, aplikace projde krátkým procesem registrace a nastavením oprávnění.
+Když BirdNET Live otevřete poprvé, aplikace vás provede krátkým úvodem a nastavením oprávnění.
 
 1. Přečtěte si úvodní obrazovky.
-2. Přijměte podmínky použití a zásady ochrany osobních údajů.
+2. Přijměte Podmínky použití a Zásady ochrany osobních údajů.
 3. Udělte oprávnění k mikrofonu, aby BirdNET Live mohl zpracovávat zvuk.
-4. Volitelně povolte oprávnění k umístění pro geotagging, Explore, Point Count a Survey.
-5. Volitelně povolte upozornění na dlouhotrvající průzkumy.
+4. Volitelně povolte oprávnění k poloze pro geotagging, Prozkoumat, Point Count a Survey.
+5. Volitelně povolte oznámení pro dlouhotrvající surveye.
 
 ## První spuštění
 
-1. **Přihlášení** — Rychlý úvod do funkcí a oprávnění
-2. **Podmínky a ochrana osobních údajů** — Přijměte podmínky použití a zásady ochrany osobních údajů
-3. **Oprávnění** – Udělte přístup k mikrofonu (vyžadováno pro všechny režimy)
-4. **Připraveno** — Začněte určovat ptáky!
+1. **Úvod** — rychlé seznámení s funkcemi a oprávněními
+2. **Podmínky a soukromí** — přijetí Podmínek použití a Zásad ochrany osobních údajů
+3. **Oprávnění** — udělení přístupu k mikrofonu (vyžadováno pro všechny režimy)
+4. **Připraveno** — začněte určovat ptáky!
 
 ## Přehled domovské obrazovky
 
-Domovská obrazovka je hlavním centrem.
+Domovská obrazovka je hlavní rozcestník.
 
-### Karty hlavního režimu
+### Karty hlavních režimů
 
-- :material-mikrofon: **Živý režim**
-- :material-map-marker: **Režim počítání bodů**
-- :material-routes: **Režim průzkumu**
+- :material-microphone: **Režim Live**
+- :material-map-marker: **Režim Point Count**
+- :material-routes: **Režim Survey**
 - :material-file-music: **Analýza souborů**
 
-### Tlačítka zápatí
+### Tlačítka v zápatí
 
 - :material-tune: **Nastavení**
 - :material-magnify: **Prozkoumat**
-- :material-music-box-multiple-outline: **Knihovna relací**
+- :material-music-box-multiple-outline: **Knihovna Sessions**
 - :material-help-circle-outline: **Nápověda**
-- :material-information-outline: **O**
+- :material-information-outline: **O aplikaci**
 
-## Co se zachrání
+## Co se ukládá
 
-BirdNET Live automaticky ukládá dokončené relace a po zastavení zpracování je otevře v relace Session Review.
+BirdNET Live automaticky uloží každou dokončenou session a po zastavení zpracování ji otevře v Přehledu Session.
 
-- Živé relace ukládají detekce a v závislosti na vašem nastavení nahrávky nebo klipy.
-- Relace počtu bodů se ukládají jako časované relace počtu bodů.
-- Průzkumné relace ukládají trasu, detekce a související metadata.
-- Výsledky analýzy souborů jsou převedeny do relace, kterou lze zkontrolovat.
+- Live sessions ukládají detekce a podle vašeho nastavení také nahrávky nebo klipy.
+- Sessions Point Count se ukládají jako časované sčítací sessions.
+- Sessions Survey ukládají trasu, detekce a související metadata.
+- Výsledky Analýzy souborů se převedou na session, kterou lze zkontrolovat.
 
 ## Doporučené další stránky
 
-- Přečtěte si [Ikony a ovládací prvky] (icons-and-controls.md), pokud chcete rychlé vysvětlení opakujících se symbolů rozhraní aplikace.
-- Před změnou prahových hodnot, filtrů, chování při nahrávání nebo zobrazení spektrogramu si přečtěte [Settings](settings.md).
-- Otevřete průvodce pro pracovní postup, který používáte nejčastěji: [Živý režim] (live-mode.md), [Režim počítání bodů] (režim počítání bodů.md), [Režim průzkumu] (survey-mode.md) nebo [Analýza souborů] (file-analysis.md).
+- Přečtěte si [Ikony a ovládací prvky](icons-and-controls.md), pokud chcete rychlé vysvětlení opakujících se symbolů rozhraní.
+- Před změnou prahů, filtrů, chování nahrávání nebo zobrazení spektrogramu si přečtěte [Nastavení](settings.md).
+- Otevřete průvodce pro pracovní postup, který používáte nejčastěji: [Režim Live](live-mode.md), [Režim Point Count](point-count-mode.md), [Režim Survey](survey-mode.md) nebo [Analýza souborů](file-analysis.md).
 
 ## Oprávnění
 
-| Povolení | Požadováno pro | Volitelný? |
+| Oprávnění | Vyžadováno pro | Volitelné? |
 |------------|-------------|-----------|
 | Mikrofon | Všechny režimy nahrávání | Povinné |
-| Umístění | GPS značení, průzkum/počet bodů | Volitelné pro Live |
-| Skladování | Ukládání nahrávek, exporty | Požadováno pro záznam |
-| Oznámení | Upozornění na průzkum na pozadí | Volitelné |
+| Poloha | GPS značení, Survey/Point Count | Volitelné pro Live |
+| Úložiště | Ukládání nahrávek, exporty | Vyžadováno pro nahrávání |
+| Oznámení | Upozornění Survey na pozadí | Volitelné |

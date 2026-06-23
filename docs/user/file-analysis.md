@@ -1,6 +1,6 @@
 # File Analysis
 
-File Analysis processes an existing recording through the same BirdNET pipeline used by the live workflows.
+File Analysis processes an existing recording through the same BirdNET pipeline that powers the live workflows.
 
 ## How to Open It
 

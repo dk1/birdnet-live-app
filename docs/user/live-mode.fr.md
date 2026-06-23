@@ -1,60 +1,60 @@
-# Mode en direct
+# Mode En direct
 
-Le mode Live est le moyen le plus rapide d'écouter via le microphone du téléphone et d'examiner les détections au fur et à mesure qu'elles apparaissent.
+Le mode En direct est le moyen le plus rapide d'écouter via le microphone du téléphone et d'examiner les détections au fur et à mesure qu'elles apparaissent en temps réel.
 
 ## Comment l'ouvrir
 
-Depuis l'écran d'accueil, appuyez sur la carte **Mode direct** avec l'icône :material-microphone:.
+Depuis l'écran d'accueil, appuyez sur la carte **Mode En direct** avec l'icône :material-microphone:.
 
 ## Barre supérieure
 
-La barre supérieure contient trois éléments :
+La barre supérieure contient trois éléments :
 
-- :material-arrow-left: — quitter le mode Live
-- Texte d'état central : « Initialisation », « Chargement du modèle », « Prêt », « Identification des espèces », « Pause » ou « Erreur »
-- :material-tune: — ouvre la vue Paramètres spécifiques à Live
+- :material-arrow-left: — quitter le mode En direct
+- texte d'état central — « Initialisation », « Chargement du modèle », « Prêt », « Identification des espèces », « En pause » ou « Erreur »
+- :material-tune: — ouvrir la vue Paramètres propre au mode En direct
 
 ## Bouton d'action principal
 
-Le gros bouton circulaire en bas au centre change d'état :
+Le grand bouton circulaire en bas au centre change d'état :
 
-- :matériel-microphone : — commencer à écouter
-- :material-stop: — arrête la session active
-- :material-play : - reprise à partir d'un état prêt en pause
+- :material-microphone: — démarrer l'écoute
+- :material-stop: — arrêter la session active
+- :material-play: — reprendre depuis un état en pause
 
-## Ce que vous voyez en écoutant
+## Ce que vous voyez pendant l'écoute
 
 ### Spectrogramme
 
-Le spectrogramme défile en continu pendant que la capture est active. Il affiche le contenu des fréquences au fil du temps et utilise la carte des couleurs, la taille FFT, la plage de fréquences et la durée des paramètres.
+Le spectrogramme défile en continu pendant que la capture est active. Il affiche le contenu fréquentiel au fil du temps, en utilisant la palette de couleurs, la taille FFT, la plage de fréquences et la durée configurées dans les Paramètres.
 
-### Liste de détection
+### Liste des détections
 
-Les détections récentes apparaissent sous le spectrogramme. Chaque ligne peut afficher :
+Les détections récentes apparaissent sous le spectrogramme. Chaque ligne peut afficher :
 
-- image de l'espèce
-- nom commun
-- nom scientifique facultatif
-- valeur de confiance
+- l'image de l'espèce
+- le nom commun
+- le nom scientifique (facultatif)
+- la valeur de confiance
 
-Appuyez sur une ligne d'espèce pour ouvrir la superposition des détails de l'espèce.
+Appuyez sur une ligne d'espèce pour ouvrir le panneau de détails de l'espèce.
 
-### Barre d'informations sur la session
+### Barre d'informations de la session
 
-La ligne d'information compacte sous le spectrogramme résume la session en cours, par exemple :
+La ligne d'information compacte sous le spectrogramme résume la session en cours, par exemple :
 
-- détections actuelles affichées maintenant
+- détections actuellement affichées
 - nombre d'espèces uniques (`spp`)
 - nombre total de détections (`det`)
 - durée écoulée
-- taille d'enregistrement estimée lorsque l'enregistrement est activé
+- taille estimée de l'enregistrement lorsque l'enregistrement est activé
 
 ## Comportement d'enregistrement
 
-L'enregistrement est contrôlé dans [Paramètres] (settings.md).
+L'enregistrement est contrôlé dans les [Paramètres](settings.md).
 
-- **Full** enregistre toute la session.
-- **Détections uniquement** enregistre les clips autour des détections.
-- **Off** désactive l'enregistrement.
+- **Complet** enregistre toute la session.
+- **Détections uniquement** enregistre des clips autour des détections.
+- **Désactivé** désactive l'enregistrement.
 
-Lorsque vous arrêtez le mode Live, BirdNET Live enregistre la session et ouvre [Session Review] (session-review.md).
+Lorsque vous arrêtez le mode En direct, BirdNET Live enregistre la session et ouvre le [Résumé de la session](session-review.md).

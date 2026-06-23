@@ -2,10 +2,10 @@
 
 **Professional bioacoustics in your pocket.**
 
-BirdNET Live is a Flutter app built for field researchers, conservationists, and birders who need dependable acoustic evidence in the field. It runs the BirdNET+ audio classifier and geo-model directly on your device, so species identification works offline after installation.
+BirdNET Live is a Flutter app built for field researchers, conservationists, and birders who need dependable acoustic evidence in the field. It runs the BirdNET+ audio classifier and geo-model directly on your device, so species identification works fully offline once installed.
 
 <p align="center">
-  <img src="https://img.shields.io/badge/latest-v0.17.9-orange.svg" alt="Latest release: v0.17.9">
+  <img src="https://img.shields.io/badge/latest-v0.17.15-orange.svg" alt="Latest release: v0.17.15">
   <img src="https://img.shields.io/badge/species-5%2C250-brightgreen.svg" alt="Species: 5,250">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
@@ -48,7 +48,7 @@ See the [User Guide](user/index.md) for an overview, then open [Getting Started]
 
 ## Install on Android
 
-BirdNET Live is available as a signed APK for sideloading. Download the latest release from the [GitHub Releases page](https://github.com/birdnet-team/birdnet-live-app/releases/latest), transfer the `.apk` file to your phone, and open it to install. You may need to allow installation from unknown sources in your device settings.
+BirdNET Live is available as a signed APK for sideloading. Download the latest release from the [GitHub Releases page](https://github.com/birdnet-team/birdnet-live-app/releases/latest), transfer the `.apk` file to your phone, and open it to install. You may need to allow installation from unknown sources in your device settings first.
 
 > **Note:** The APK is ~253 MB because it includes the BirdNET+ model assets for offline inference.
 

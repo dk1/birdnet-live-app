@@ -15,6 +15,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -1653,7 +1654,11 @@ class _CreateWatchlistScreenState
       );
       if (result == null || result.files.isEmpty) return;
       final file = result.files.single;
-      final bytes = await file.readAsBytes();
+      final filePath = file.path;
+      if (filePath == null || filePath.isEmpty) {
+        throw const FileSystemException('Selected file has no readable path');
+      }
+      final bytes = await file.xFile.readAsBytes();
       final content = utf8.decode(bytes, allowMalformed: true);
       final names = CustomSpeciesList.parse(content);
       if (names.isEmpty) {

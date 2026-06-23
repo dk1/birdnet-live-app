@@ -83,6 +83,7 @@ This file is for coding agents working in this repository.
 - flutter analyze
 - flutter test
 - Version source of truth is pubspec.yaml.
+- Never bump the version without explicit user consent in the current turn. Do not change pubspec.yaml version/build, version badges, or add a new CHANGELOG version header unless the user explicitly asks. Fold user-facing changes into the current unreleased version section instead.
 - For release bumps, increment patch and build together, then run dart dev/sync_version.dart.
 
 ## Version Bumping Checklist

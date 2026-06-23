@@ -60,7 +60,7 @@ Umožňuje vybrat konkrétní vstupní zařízení nebo zachovat **Výchozí nas
 
 ### Doba trvání okna
 
-Řídí délku okna analýzy.
+Řídí délku okna analýzy. Dostupné kroky jsou **1**, **3**, **5**, **7**, **10** a **15** sekund.
 
 ### Práh spolehlivosti
 
@@ -72,11 +72,7 @@ Vyšší hodnoty činí detektor tolerantnějším, což může obnovit slabší
 
 ### Míra inference
 
-Řídí, jak často BirdNET spouští odvození.
-
-### Sdružování skóre
-
-Řídí, jak jsou kombinována překrývající se okna analýzy.
+Řídí, jak často BirdNET spouští odvození. Posuvník používá stejné kroky **0,10–1,00 Hz** jako nastavení Survey a ARU.
 
 ## Spektrogram
 
@@ -86,7 +82,7 @@ Vyšší hodnoty činí detektor tolerantnějším, což může obnovit slabší
 
 ### Barevná mapa
 
-Vyberte **Viridis**, **Magma** nebo **Stupně šedi**.
+Vyberte **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Stupně šedi** nebo **BirdNET**. **Turbo** je moderní duhová možnost podobná Jet.
 
 ### Délka (rychlost posouvání)
 

@@ -1,18 +1,18 @@
 # Ícones e controles
 
-Esta página explica os controles e símbolos recorrentes usados ​​no BirdNET Live. Os rótulos abaixo correspondem aos controles que já estão presentes no aplicativo.
+Esta página explica os controles e símbolos recorrentes usados em todo o BirdNET Live. Os rótulos abaixo correspondem exatamente aos controles tal como aparecem no aplicativo.
 
 ## Controles de navegação compartilhados
 
-| Controle | Onde você vê | O que faz |
+| Controle | Onde aparece | O que faz |
 |---|---|---|
-| :material-tune: **Configurações** | Rodapé inicial, Ao vivo, Contagem de pontos, Pesquisa, Análise de arquivos, Revisão de sessão | Abre Configurações. Nas telas de modo, abre as configurações mais relevantes para aquele fluxo de trabalho. |
-| :material-magnify: **Explorar** | Rodapé inicial | Abre Explorar. |
-| :material-music-box-multiple-outline: **Biblioteca** | Rodapé inicial | Abre a Biblioteca de Sessões. |
-| :material-help-circle-outline: **Ajuda** | Rodapé inicial, cabeçalho Explorar, painel de pesquisa, barra de ferramentas de revisão da sessão | Abre a Ajuda ou uma planilha de ajuda específica da tela. |
-| :material-information-outline: **Informações / Sobre** | Rodapé inicial, barras de informações, folhas de ajuda | Mostra informações gerais ou contexto resumido. |
-| :material-seta-esquerda: **Voltar** | Modo ao vivo | Retorna à tela anterior. |
-| :material-aberto-em-novo: **Aberto externo** | Sobre a tela, links de documentação | Abre uma página externa, como o Guia de uso on-line. |
+| :material-tune: **Configurações** | Rodapé do Início, Live, Point Count, Survey, Análise de arquivos, Resumo da Session | Abre as Configurações. Nas telas de modo, abre as configurações mais relevantes para aquele fluxo de trabalho. |
+| :material-magnify: **Explorar** | Rodapé do Início | Abre o Explorar. |
+| :material-music-box-multiple-outline: **Sessões** | Rodapé do Início | Abre as Sessões. |
+| :material-help-circle-outline: **Ajuda** | Rodapé do Início, cabeçalho do Explorar, painel do Survey, barra de ferramentas do Resumo da Session | Abre a Ajuda ou um painel de ajuda específico da tela. |
+| :material-information-outline: **Informações / Sobre** | Rodapé do Início, barras de informações, painéis de ajuda | Mostra informações gerais ou contexto resumido. |
+| :material-arrow-left: **Voltar** | Modo Live | Volta à tela anterior. |
+| :material-open-in-new: **Abrir externo** | Tela Sobre, links de documentação | Abre uma página externa, como o Guia do Usuário online. |
 | :material-volunteer-activism: **Doar** | Tela Sobre | Abre a página de doações do BirdNET. |
 
 ## Símbolos de clima
@@ -20,7 +20,7 @@ Esta página explica os controles e símbolos recorrentes usados ​​no BirdNE
 | Símbolo | Significado |
 |---|---|
 | :material-wb-sunny: **Limpo** | Céu limpo. |
-| :material-partly-cloudy-day: **Parcialmente nublado** | Sol e nuvem para clima majoritariamente limpo ou parcialmente nublado. |
+| :material-partly-cloudy-day: **Parcialmente nublado** | Sol e nuvem para tempo predominantemente limpo ou parcialmente nublado. |
 | :material-cloudy: **Encoberto** | Cobertura total de nuvens. |
 | :material-foggy: **Nevoeiro** | Nevoeiro ou nevoeiro congelante. |
 | :material-rainy-light: **Garoa** | Precipitação leve. |
@@ -28,76 +28,89 @@ Esta página explica os controles e símbolos recorrentes usados ​​no BirdNE
 | :material-weather-snowy: **Neve** | Neve ou pancadas de neve. |
 | :material-thunderstorm: **Trovoada** | Condições de trovoada. |
 
-## Iniciar, parar e controles de sessão
+## Controles de início, parada e Session
 
 | Controle | Significado |
 |---|---|
-| :material-microfone: **Mic** | Comece a ouvir ao vivo. |
-| :parada de material: **Parar** | Interrompa uma gravação ativa, contagem de pontos ou pesquisa. |
-| :material-play: **Play** | Inicie um fluxo de configuração configurado ou retome de um estado pronto para pausa. |
-| :material-close: **Fechar / Cancelar** | Cancele uma análise de arquivo ativa. |
-| :temporizador de material: **Temporizador** | Duração ou tempo restante. |
-| :material-alert-circle-outline: **Erro** | Erro de modelo ou processamento. |
+| :material-microphone: **Microfone** | Inicia a escuta ao vivo. |
+| :material-stop: **Parar** | Para uma gravação, Point Count ou Survey ativo. |
+| :material-play: **Play** | Inicia um fluxo de configuração ou retoma a partir de um estado pausado e pronto. |
+| :material-close: **Fechar / Cancelar** | Cancela uma Análise de arquivos ativa. |
+| :material-timer: **Cronômetro** | Duração ou tempo restante. |
+| :material-alert-circle-outline: **Erro** | Erro de modelo ou de processamento. |
 
-## Controles de localização e horário
-
-| Controle | Significado |
-|---|---|
-| :material-crosshairs-gps: **Localização atual** | Use a posição GPS atual do dispositivo. |
-| :material-map-marker-plus: **Coordenadas manuais** | Insira as coordenadas manualmente. |
-| :material-map-marker-off: **Sem localização** | Ignore a localização ou mostre que a localização não está disponível. |
-| :material-map-marker: **Tem localização** | Confirme um local, mostre coordenadas ou rotule uma sessão mapeada. |
-| :atualização de material: **Atualizar** | Releia a localização atual ou atualize uma lista de previsões. |
-| :material-map: **Seletor de mapa** | Escolha as coordenadas no seletor de mapa. |
-| :calendário de material: **Data** | Defina ou exiba uma data. |
-| :material-close: **Limpar** | Remova uma data selecionada. |
-
-## Explorar e símbolos de espécies
+## Controles de localização e tempo
 
 | Controle | Significado |
 |---|---|
-| Miniatura da espécie | Imagem agrupada para a espécie, quando disponível. |
-| Selo de porcentagem de confiança ou geomodelo | Um rápido resumo numérico da saída do modelo. Números mais altos indicam um suporte mais forte no contexto dessa tela. |
-| Etiquetas mensais (`Jan`, `Abr`, `Jul`, `Out`, `Dec`) | Pontos de referência no gráfico semanal de frequência esperada na sobreposição de espécies. |
+| :material-crosshairs-gps: **Localização atual** | Usa a posição GPS atual do dispositivo. |
+| :material-map-marker-plus: **Coordenadas manuais** | Insere as coordenadas manualmente. |
+| :material-map-marker-off: **Sem localização** | Ignora a localização ou indica que ela não está disponível. |
+| :material-map-marker: **Tem localização** | Confirma um local, mostra coordenadas ou rotula uma Session mapeada. |
+| :material-refresh: **Atualizar** | Relê a localização atual ou atualiza uma lista de previsões. |
+| :material-map: **Seletor de mapa** | Escolhe coordenadas no seletor de mapa. |
+| :material-calendar: **Data** | Define ou exibe uma data. |
+| :material-close: **Limpar** | Remove uma data selecionada. |
 
-## Barra de ferramentas de revisão da sessão
-
-Esses controles são usados ​​na tela Revisão da Sessão.
+## Símbolos do Explorar e de espécies
 
 | Controle | Significado |
 |---|---|
-| :material-mais-círculo-contorno: **Adicionar** | Adicione conteúdo, como espécie ou anotação. |
-| :material-undo-variant: **Desfazer** / :material-redo-variant: **Refazer** | Retroceda ou avance nas edições de revisão. |
-| :material-content-cut: **Cortar** | Entre no modo de corte ou mostre que o modo de corte está ativo. |
-| :material-content-save: **Salvar** | Salve as alterações da revisão. |
-| :material-share-variant: **Compartilhar** | Exporte ou compartilhe a sessão. |
-| :material-delete-outline: **Excluir** | Descarte a sessão. |
-| :material-play: **Continuar** | Continue uma pesquisa inacabada da Revisão da Sessão quando essa ação estiver disponível. |
+| Miniatura da espécie | Imagem incluída no app para a espécie, quando disponível. |
+| Selo de porcentagem de confiança ou do geomodelo | Um resumo numérico rápido da saída do modelo. Números mais altos indicam um suporte mais forte no contexto daquela tela. |
+| Rótulos mensais (`Jan`, `Abr`, `Jul`, `Out`, `Dez`) | Pontos de referência no gráfico semanal de frequência esperada na sobreposição de espécies. |
 
-## Barras de status específicas da tela
+## Ações por detecção
 
-### Modo ao vivo
+Estes controles aparecem em todas as linhas de detecção do app — a lista de espécies do Resumo da Session, o painel do reprodutor de clipe, a lista de detecções do Survey ao vivo e os marcadores no mapa do Survey. Consulte [Resumo da Session → Ações por detecção](session-review.md#acoes-por-deteccao) para o comportamento completo.
 
-A barra de informações ao vivo usa :material-information-outline: seguido por rótulos compactos como:
+| Controle | Significado |
+|---|---|
+| :material-check: **Confirmar** | Marca de verificação com um toque que sinaliza uma detecção como verificada visual ou acusticamente. As detecções confirmadas recebem uma pequena marca verde nas linhas de agrupamento e nos marcadores do mapa. |
+| :material-dots-vertical: **Mais** | Abre o menu adicional por detecção com **Compartilhar detecção**, **Substituir espécie**, **Excluir detecção** e **Excluir espécie**. |
+| :material-share-variant: **Compartilhar detecção** | Compartilha uma detecção pelo menu de compartilhamento da plataforma, anexando o clipe de áudio sempre que houver um disponível — incluindo um trecho da gravação em andamento durante um Survey ao vivo. |
+| :material-swap-horizontal: **Substituir espécie** | Escolhe outra espécie para esta detecção. Também abre ao deslizar uma linha de revisão para a esquerda. |
+| :material-delete-outline: **Excluir detecção** | Remove a linha imediatamente. Uma SnackBar de desfazer aparece por alguns segundos. Também acionada ao deslizar uma linha de revisão para a direita. |
+| :material-delete-sweep-outline: **Excluir espécie** | Remove de uma só vez todas as detecções dessa espécie da Session, com a mesma SnackBar de desfazer. |
 
-- `now` — detecções atualmente visíveis na lista ativa
+## Barra de ferramentas do Resumo da Session
+
+Estes controles são usados na tela de Resumo da Session.
+
+| Controle | Significado |
+|---|---|
+| :material-plus-circle-outline: **Adicionar** | Adiciona conteúdo, como uma espécie ou anotação. |
+| :material-undo-variant: **Desfazer** / :material-redo-variant: **Refazer** | Retrocede ou avança nas edições da revisão. |
+| :material-content-cut: **Recortar** | Entra no modo de recorte ou indica que ele está ativo. |
+| :material-content-save: **Salvar** | Salva as alterações da revisão. |
+| :material-share-variant: **Compartilhar** | Exporta ou compartilha a Session. |
+| :material-delete-outline: **Excluir** | Descarta a Session. |
+| :material-play: **Continuar** | Continua um Survey inacabado a partir do Resumo da Session, quando essa ação está disponível. |
+
+## Barras de estado específicas da tela
+
+### Modo Live
+
+A barra de informações do Live usa :material-information-outline: seguido de rótulos compactos como:
+
+- `now` — detecções visíveis no momento na lista ao vivo
 - `spp` — contagem de espécies únicas
 - `det` — total de detecções
 - duração e tamanho estimado da gravação quando a gravação está ativa
 
-### Contagem de pontos
+### Point Count
 
-A barra do cronômetro de contagem de pontos combina :material-stop: **Stop**, :material-timer: **Timer** e uma barra de progresso para mostrar a sessão cronometrada restante.
+A barra do cronômetro do Point Count combina :material-stop: **Parar**, :material-timer: **Cronômetro** e uma barra de progresso para mostrar quanto resta da Session cronometrada.
 
-### Enquete
+### Survey
 
-O painel de pesquisa usa:
+O painel do Survey usa:
 
-- :material-map-outline: **Mapa** — guia de mapa ao vivo
-- :material-equalizer: **Espectrograma** — guia espectrograma
-- :material-chart-bar: **Resumo** — guia de resumo
-- :material-chart-bar: rótulos de estatísticas na visualização do resumo da pesquisa
+- :material-map-outline: **Mapa** — aba do mapa ao vivo
+- :material-equalizer: **Espectrograma** — aba do espectrograma
+- :material-chart-bar: **Resumo** — aba de resumo
+- :material-chart-bar: rótulos de estatísticas na visualização de resumo do Survey
 
 ## Em caso de dúvida
 
-Se você não tiver certeza do que um controle faz, abra a planilha de Ajuda mais próxima no aplicativo ou verifique a página de fluxo de trabalho dessa tela neste guia do usuário.
+Se não tiver certeza do que um controle faz, abra o painel de Ajuda mais próximo no aplicativo ou consulte a página de fluxo de trabalho dessa tela neste guia do usuário.

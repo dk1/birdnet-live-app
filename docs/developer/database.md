@@ -28,7 +28,7 @@ Audio recordings are stored as WAV or FLAC files depending on the user's setting
 
 ## Model Cache
 
-ONNX model files are extracted from Flutter assets to the documents directory on first launch. To handle model updates, the extracted files are suffixed with `_v<version>` (configured in the code):
+ONNX model files are extracted from Flutter assets to the documents directory on first launch. To support model updates, the extracted files are suffixed with `_v<version>` (configured in the code):
 
 ```
 <documents>/BirdNET+_V3.0-preview3_Global_5K-pruned_FP16.onnx_v<version>

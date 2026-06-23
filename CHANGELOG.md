@@ -5,6 +5,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.17.15] - 2026-06-23
+
+### Changed
+
+- Refined user and developer documentation across guides, localized pages, and navigation labels.
+- Spoken announcements now remain off by default for all users until manually enabled in Settings.
+
+### Fixed
+
+- Fixed imported Survey species lists to use the supported file picker read API.
+
+## [0.17.14] - 2026-06-20
+
+### Changed
+
+- Added a per-format help icon to each export format (Raven, CSV, JSON, GPX) explaining what that file contains, and reworded the Export Format help to describe the new bundle-and-audio-only behavior.
+- Replaced the manual Latitude/Longitude sliders in Settings with editable text fields so you can type or paste exact coordinates when GPS is off. Pasting a combined "latitude, longitude" string into either field fills both at once, and out-of-range or invalid entries are flagged inline.
+
+## [0.17.13] - 2026-06-20
+
+### Added
+
+- Added an "Include app metadata" checkbox to Settings > Export, on by default. Turning it off drops the `*.metadata.json` side-file from the export bundle.
+- Added an audio-only share path: untick every export format, the HTML report, and the new app metadata box (leaving only "Include audio files") and Share will hand the platform sheet the raw recording instead of a ZIP — useful for sending a session straight into iNaturalist or eBird.
+
+### Changed
+
+- Converted the "Include audio files" and "Include HTML report" settings from toggles to checkboxes so the entire Export section is now a single consistent checklist.
+
+## [0.17.12] - 2026-06-20
+
+### Fixed
+
+- Fixed Survey session durations in the Session Library continuing to grow after the session ended, caused by a stale open recording segment left behind by the final persist.
+
+## [0.17.11] - 2026-06-19
+
+### Changed
+
+- Changed the main menu in landscape to show all six mode tiles in a 3x2 grid with a full-width footer and a smaller side-by-side logo/title header.
+
+### Fixed
+
+- Fixed the Session Library "new session" picker overflowing in landscape by making it scroll when there is not enough vertical space.
+- Fixed a crash when leaving the Live screen while a session was still starting, caused by reading providers after the screen was closed.
+
+## [0.17.10] - 2026-06-19
+
+### Added
+
+- Added Plasma, Cividis, Jet, Turbo, and BirdNET choices to the spectrogram color map setting.
+
+### Changed
+
+- Changed Window duration and Inference rate settings from dropdowns to sliders, moved Announcements below Recording, changed Recording mode to a dropdown, and hid advanced score pooling controls from Settings.
+- Expanded Window duration to 1, 3, 5, 7, 10, and 15 seconds, and aligned the global Inference rate slider with the Survey and ARU 0.10–1.00 Hz tick grid.
+- Removed the duplicate Inferno color map and migrated saved Inferno preferences to Magma.
+- Moved ARU onto the main live recording modes page and grouped File Analysis with the file workflows page in the home mode carousel.
+
+### Fixed
+
+- Made Session Review and clip playback spectrograms use the configured color map instead of always rendering Viridis.
+- Made Session Review playback overlay previous/next buttons follow the active species sort order while playing all clips for the current species before advancing to the next species.
+
 ## [0.17.9] - 2026-06-18
 
 ### Changed

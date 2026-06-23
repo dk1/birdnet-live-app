@@ -1,6 +1,6 @@
 # Icons & Controls
 
-This page explains the recurring controls and symbols used across BirdNET Live. The labels below match controls that are already present in the app.
+This page explains the recurring controls and symbols used throughout BirdNET Live. The labels below match the controls exactly as they appear in the app.
 
 ## Shared Navigation Controls
 
@@ -113,4 +113,4 @@ The survey dashboard uses:
 
 ## When in Doubt
 
-If you are unsure what a control does, open the nearest Help sheet in the app or check the workflow page for that screen in this user guide.
+If you are unsure what a control does, open the nearest Help sheet in the app, or check the workflow page for that screen in this user guide.

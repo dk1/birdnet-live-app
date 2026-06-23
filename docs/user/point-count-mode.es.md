@@ -1,50 +1,56 @@
-# Modo de recuento de puntos
+# Modo Point Count
 
-El modo de conteo de puntos es el flujo de trabajo estacionario cronometrado en BirdNET Live.
+El Modo Point Count es el flujo de trabajo estacionario y cronometrado de BirdNET Live.
 
 ## Cómo abrirlo
 
-Desde Inicio, toque la tarjeta **Modo de recuento de puntos** con el ícono :material-map-marker:.
+Desde Inicio, toca la tarjeta **Modo Point Count** con el icono :material-map-marker:.
 
 ## Flujo de configuración
 
-La configuración del recuento de puntos utiliza tres pasos.
+La configuración del Point Count consta de cuatro pasos.
 
 ### 1. Duración y ubicación
 
-Elegir:
+Elige:
 
 - uno de los chips de duración disponibles
 - GPS actual con :material-crosshairs-gps:
 - coordenadas manuales con :material-map-marker-plus:
 - sin ubicación con :material-map-marker-off:
-- selector de mapas con :material-map:
+- selector de mapa con :material-map:
 
-### 2. Consejos de campo
+La pantalla de configuración actualiza el GPS cuando vuelves del diálogo de permisos del sistema o de los ajustes de la app, de modo que un permiso de ubicación recién concedido debería actualizar las coordenadas sin reiniciar el asistente. Esta misma sección incluye también una tarjeta de clima. Si el acceso al clima está desactivado, la tarjeta solicita el consentimiento de **Permitir consulta del clima**; una vez activado, muestra una vista previa del sitio solo con un icono del tiempo, la temperatura y el viento. La misma instantánea en caché de Open-Meteo se reutiliza al guardar el Point Count.
 
-Esta pantalla proporciona una breve lista de verificación en la aplicación antes de comenzar.
+### 2. Parámetros de inferencia
 
-### 3. Listo
+Elige los ajustes de análisis para esta Session, como la duración de ventana, la tasa de inferencia, el umbral de confianza y el modo del filtro de especies. Parten de tus ajustes globales, pero puedes adaptarlos a este conteo sin cambiar tus valores predeterminados.
 
-La pantalla de listo resume la duración seleccionada y le permite comenzar con :material-play:.
+### 3. Consejos de campo
 
-## Pantalla de recuento de puntos en vivo
+Esta pantalla presenta una breve lista de comprobación dentro de la app para repasar antes de empezar.
 
-La pantalla de conteo de puntos en vivo se centra en un tablero cronometrado.
+### 4. Listo
+
+La pantalla de listo resume la duración seleccionada y permite empezar con :material-play:.
+
+## Pantalla del Point Count en vivo
+
+La pantalla del Point Count en vivo se centra en un panel cronometrado.
 
 ### Barra superior
 
-- :material-stop: — finaliza el conteo de puntos antes de tiempo
+- :material-stop: — finaliza el Point Count anticipadamente
 - :material-timer: — muestra el tiempo restante
-- :material-tune: — abre la configuración de recuento de puntos
+- :material-tune: — abre los ajustes de Point Count
 
-### Principales indicadores
+### Indicadores principales
 
-- barra de progreso de cuenta regresiva
-- barra de información compacta con detecciones actuales, recuento de especies únicas y detecciones totales
-- vista de espectrograma
-- lista de detección
+- barra de progreso de cuenta atrás
+- barra de información compacta con las detecciones actuales, el número de especies únicas y las detecciones totales
+- vista del espectrograma
+- lista de detecciones
 
 ## Después del conteo
 
-Cuando finaliza el recuento de puntos, BirdNET Live guarda la sesión y abre [Revisión de sesión] (session-review.md).
+Cuando finaliza el Point Count, BirdNET Live guarda la Session y abre el [Resumen de la Session](session-review.md).

@@ -13,64 +13,64 @@ BirdNET Live ist für Android, iOS und Windows verfügbar.
 
 ### Herunterladen
 
-*Vertriebslinks werden hinzugefügt, sobald verfügbar.*
+*Download-Links werden ergänzt, sobald sie verfügbar sind.*
 
-## Erstmaliger App-Flow
+## Ablauf beim ersten Öffnen
 
-Wenn Sie BirdNET Live zum ersten Mal öffnen, durchläuft die App einen kurzen Onboarding-Ablauf und die Einrichtung von Berechtigungen.
+Wenn Sie BirdNET Live zum ersten Mal öffnen, führt die App Sie durch einen kurzen Onboarding-Ablauf und die Einrichtung der Berechtigungen.
 
 1. Lesen Sie die Onboarding-Bildschirme.
-2. Akzeptieren Sie die Nutzungsbedingungen und Datenschutzbestimmungen.
+2. Akzeptieren Sie die Nutzungsbedingungen und die Datenschutzerklärung.
 3. Erteilen Sie die Mikrofonberechtigung, damit BirdNET Live Audio verarbeiten kann.
-4. Erlauben Sie optional die Standortberechtigung für Geotagging, Erkunden, Punktzählung und Vermessung.
-5. Erlauben Sie optional Benachrichtigungen für Umfragen mit langer Laufzeit.
+4. Erlauben Sie optional die Standortberechtigung für Geotagging, Erkunden, Point Count und Survey.
+5. Erlauben Sie optional Benachrichtigungen für langlaufende Surveys.
 
 ## Erster Start
 
-1. **Onboarding** – Schnelle Einführung in Funktionen und Berechtigungen
-2. **Nutzungsbedingungen und Datenschutz** – Akzeptieren Sie die Nutzungsbedingungen und Datenschutzbestimmungen
-3. **Berechtigungen** – Mikrofonzugriff gewähren (erforderlich für alle Modi)
-4. **Fertig** – Beginnen Sie mit der Identifizierung von Vögeln!
+1. **Onboarding** – Kurze Einführung in Funktionen und Berechtigungen
+2. **Nutzungsbedingungen und Datenschutz** – Nutzungsbedingungen und Datenschutzerklärung akzeptieren
+3. **Berechtigungen** – Mikrofonzugriff gewähren (für alle Modi erforderlich)
+4. **Fertig** – Los geht's mit der Vogelbestimmung!
 
-## Übersicht über den Startbildschirm
+## Überblick über den Startbildschirm
 
-Der Startbildschirm ist der Hauptknotenpunkt.
+Der Startbildschirm ist die zentrale Anlaufstelle.
 
-### Hauptmoduskarten
+### Karten der Hauptmodi
 
 - :material-microphone: **Live-Modus**
-- :material-map-marker: **Punktzählmodus**
-- :material-routes: **Umfragemodus**
+- :material-map-marker: **Point-Count-Modus**
+- :material-routes: **Survey-Modus**
 - :material-file-music: **Dateianalyse**
 
-### Fußzeilenschaltflächen
+### Schaltflächen in der Fußzeile
 
 - :material-tune: **Einstellungen**
 - :material-magnify: **Erkunden**
-- :material-music-box-multiple-outline: **Sitzungsbibliothek**
+- :material-music-box-multiple-outline: **Session-Bibliothek**
 - :material-help-circle-outline: **Hilfe**
 - :material-information-outline: **Über**
 
 ## Was gespeichert wird
 
-BirdNET Live speichert abgeschlossene Sitzungen automatisch und öffnet sie in der Sitzungsüberprüfung, nachdem die Verarbeitung gestoppt wurde.
+BirdNET Live speichert jede abgeschlossene Session automatisch und öffnet sie in der Session-Übersicht, sobald die Verarbeitung stoppt.
 
-- Live-Sitzungen speichern Detektionen und je nach Ihren Einstellungen Aufnahmen oder Clips.
-- Punktezählsitzungen werden als zeitgesteuerte Punktezählsitzungen gespeichert.
-- Umfragesitzungen speichern die Route, Detektionen und zugehörige Metadaten.
-- Die Ergebnisse der Dateianalyse werden in eine überprüfbare Sitzung umgewandelt.
+- Live-Sessions speichern Detektionen und – je nach Ihren Einstellungen – Aufnahmen oder Clips.
+- Point-Count-Sessions werden als zeitgesteuerte Point-Count-Sessions gespeichert.
+- Survey-Sessions speichern die Route, die Detektionen und zugehörige Metadaten.
+- Die Ergebnisse der Dateianalyse werden in eine prüfbare Session umgewandelt.
 
 ## Empfohlene nächste Seiten
 
-- Lesen Sie [Icons & Controls](icons-and-controls.md), wenn Sie eine kurze Erklärung der wiederkehrenden UI-Symbole wünschen.
-- Lesen Sie [Einstellungen] (settings.md), bevor Sie Schwellenwerte, Filter, Aufzeichnungsverhalten oder Spektrogrammanzeige ändern.
-- Öffnen Sie die Anleitung für den Workflow, den Sie am häufigsten verwenden: [Live-Modus](live-mode.md), [Punktzählmodus](point-count-mode.md), [Umfragemodus](survey-mode.md) oder [Dateianalyse](file-analysis.md).
+- Lesen Sie [Symbole und Steuerelemente](icons-and-controls.md), wenn Sie eine kurze Erklärung der wiederkehrenden UI-Symbole möchten.
+- Lesen Sie [Einstellungen](settings.md), bevor Sie Schwellenwerte, Filter, Aufnahmeverhalten oder die Spektrogrammanzeige ändern.
+- Öffnen Sie die Anleitung für den Arbeitsablauf, den Sie am häufigsten verwenden: [Live-Modus](live-mode.md), [Point-Count-Modus](point-count-mode.md), [Survey-Modus](survey-mode.md) oder [Dateianalyse](file-analysis.md).
 
 ## Berechtigungen
 
-| Erlaubnis | Erforderlich für | Optional? |
+| Berechtigung | Erforderlich für | Optional? |
 |------------|-------------|-----------|
 | Mikrofon | Alle Aufnahmemodi | Erforderlich |
-| Standort | GPS-Tagging, Vermessung/Punktzählung | Optional für Live |
-| Lagerung | Aufnahmen speichern, exportieren | Für die Aufnahme erforderlich |
-| Benachrichtigungen | Hintergrundumfragewarnungen | Optional |
+| Standort | GPS-Tagging, Survey/Point Count | Optional für Live |
+| Speicher | Aufnahmen speichern, Exporte | Für die Aufnahme erforderlich |
+| Benachrichtigungen | Warnungen bei Surveys im Hintergrund | Optional |

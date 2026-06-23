@@ -13,7 +13,10 @@ void main() {
       test('contains expected color map names', () {
         expect(SpectrogramColorMap.names, contains('viridis'));
         expect(SpectrogramColorMap.names, contains('magma'));
-        expect(SpectrogramColorMap.names, contains('inferno'));
+        expect(SpectrogramColorMap.names, contains('plasma'));
+        expect(SpectrogramColorMap.names, contains('cividis'));
+        expect(SpectrogramColorMap.names, contains('jet'));
+        expect(SpectrogramColorMap.names, contains('turbo'));
         expect(SpectrogramColorMap.names, contains('grayscale'));
         expect(SpectrogramColorMap.names, contains('birdnet'));
       });
@@ -128,6 +131,16 @@ void main() {
         expect(r, closeTo(13, 30));
         expect(g, closeTo(110, 30));
         expect(b, closeTo(253, 30));
+      });
+
+      test('turbo has a green/yellow high-energy middle', () {
+        final table = SpectrogramColorMap.lut('turbo');
+        final index = 153; // 0.60 stop.
+        final r = (table[index] >> 16) & 0xFF;
+        final g = (table[index] >> 8) & 0xFF;
+        final b = table[index] & 0xFF;
+        expect(g, greaterThan(r));
+        expect(g, greaterThan(b));
       });
     });
   });

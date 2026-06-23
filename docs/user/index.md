@@ -1,8 +1,8 @@
 # User Guide
 
-This guide explains BirdNET Live as a field workflow tool: what each screen does, what the recurring icons mean, and how the settings change the app's behavior.
+This guide explains BirdNET Live as a field workflow tool: what each screen does, what the recurring icons mean, and how the settings shape the app's behavior.
 
-It is written for ecologists and bird survey practitioners who already know the field methods and want a clear map of the app itself.
+It is written for ecologists and bird survey practitioners who already know the field methods and simply want a clear map of the app itself.
 
 ## Start Here
 
@@ -71,7 +71,7 @@ Quick answers about offline use, recording behavior, point counts, and performan
 
 ## Mobile Tip
 
-On mobile, the navigation sidebar is hidden behind the menu button in the top-left corner. This page is meant to be the mobile entry point for the whole user guide.
+On mobile, the navigation sidebar is hidden behind the menu button in the top-left corner. This page is designed to be the mobile entry point for the whole user guide.
 
 ## More Documentation
 

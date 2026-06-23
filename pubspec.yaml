@@ -1,7 +1,7 @@
 name: birdnet_live
 description: "Real-time bird species identification using on-device ONNX inference"
 publish_to: 'none'
-version: 0.17.9+189
+version: 0.17.15+195
 
 environment:
   sdk: ^3.7.0
@@ -50,7 +50,7 @@ dependencies:
   battery_plus: ^7.0.0
 
   # Notifications (heads-up species alerts during surveys)
-  flutter_local_notifications: ^21.0.0
+  flutter_local_notifications: ^22.0.1
 
   # Location
   geolocator: ^14.0.2

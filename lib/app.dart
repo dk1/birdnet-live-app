@@ -11,7 +11,6 @@ import 'core/theme/app_theme.dart';
 import 'features/aru/aru_notification.dart';
 import 'features/aru/aru_notification_route.dart';
 import 'shared/providers/app_providers.dart';
-import 'features/announcements/accessibility_default_applier.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/home/home_screen.dart';
 
@@ -111,9 +110,7 @@ class App extends ConsumerWidget {
           },
 
           // Initial screen based on app state
-          home: const AnnouncementsAccessibilityDefaultApplier(
-            child: _AruNotificationActionListener(child: _AppGate()),
-          ),
+          home: const _AruNotificationActionListener(child: _AppGate()),
         );
       },
     );

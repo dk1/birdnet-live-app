@@ -483,6 +483,66 @@ void main() {
       expect(session.duration, const Duration(minutes: 30));
     });
 
+    test('ended recorded session duration ignores stale open segment', () {
+      final start = DateTime(2026, 2, 28, 14, 0);
+      final session = LiveSession(
+        id: 'test',
+        startTime: start,
+        endTime: start.add(const Duration(minutes: 10)),
+        type: SessionType.survey,
+        settings: testSettings,
+        recordedDurationSeconds: 600,
+        segments: [
+          SessionSegment(
+            startTime: start,
+            endTime: start.add(const Duration(minutes: 10)),
+          ),
+          SessionSegment(startTime: start.add(const Duration(minutes: 10))),
+        ],
+      );
+
+      expect(session.duration, const Duration(minutes: 10));
+    });
+
+    test('startSegment does not reopen ended session', () {
+      final start = DateTime(2026, 2, 28, 14, 0);
+      final session = LiveSession(
+        id: 'test',
+        startTime: start,
+        endTime: start.add(const Duration(minutes: 10)),
+        settings: testSettings,
+        segments: [
+          SessionSegment(
+            startTime: start,
+            endTime: start.add(const Duration(minutes: 10)),
+          ),
+        ],
+      );
+
+      session.startSegment();
+
+      expect(session.segments, hasLength(1));
+      expect(session.segments.single.endTime, isNotNull);
+    });
+
+    test('toJson closes stale open segment for ended session', () {
+      final start = DateTime(2026, 2, 28, 14, 0);
+      final end = start.add(const Duration(minutes: 10));
+      final session = LiveSession(
+        id: 'test',
+        startTime: start,
+        endTime: end,
+        settings: testSettings,
+        segments: [SessionSegment(startTime: start)],
+      );
+
+      final json = session.toJson();
+      final segments = json['segments'] as List<dynamic>;
+      final segment = segments.single as Map<String, dynamic>;
+
+      expect(segment['endTime'], end.toUtc().toIso8601String());
+    });
+
     test('toJson / fromJson round-trip', () {
       final session = LiveSession(
         id: 'session-2026',

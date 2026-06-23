@@ -1,8 +1,8 @@
 # Uživatelská příručka
 
-Tato příručka vysvětluje BirdNET Live jako nástroj pracovního postupu v terénu: co dělá každá obrazovka, co znamenají opakující se ikony a jak nastavení mění chování aplikace.
+Tato příručka vysvětluje BirdNET Live jako nástroj pro terénní pracovní postupy: co dělá každá obrazovka, co znamenají opakující se ikony a jak nastavení utváří chování aplikace.
 
-Je napsána pro ekology a odborníky na průzkum ptactva, kteří již znají metody v terénu a chtějí jasnou mapu samotné aplikace.
+Je psána pro ekology a praktiky ptačích surveyů, kteří už znají terénní metody a chtějí jen přehlednou mapu samotné aplikace.
 
 ## Začněte zde
 
@@ -12,69 +12,69 @@ Instalace, oprávnění, první spuštění a hlavní navigace na domovské obra
 
 ### [Ikony a ovládací prvky](icons-and-controls.md)
 
-Sdílené ikony, tlačítka, symboly a indikátory stavu, které se objevují na BirdNET Live.
+Sdílené ikony, tlačítka, symboly a indikátory stavu, které se v BirdNET Live opakují.
 
 ### [Nastavení](settings.md)
 
-Každé nastavení aktuálně zobrazené v aplikaci je seskupeno stejným způsobem jako obrazovka Nastavení v aplikaci.
+Každé nastavení aktuálně dostupné v aplikaci, seskupené stejně jako na obrazovce Nastavení v aplikaci.
 
 ## Průvodci režimy
 
-### [Živý režim](live-mode.md)
+### [Režim Live](live-mode.md)
 
-Nepřetržitý poslech s mikrofonem, živé detekce, spektrogram a informační lišta relace.
+Nepřetržitý poslech mikrofonem, živé detekce, spektrogram a informační lišta session.
 
 ### [Prozkoumat](explore.md)
 
-Druhy předpovězené pro aktuální polohu a roční období plus překryvné podrobnosti o druhu.
+Druhy předpovězené pro aktuální polohu a roční období a překryvný panel s podrobnostmi o druhu.
 
-### [Knihovna relací](session-library.md)
+### [Knihovna Sessions](session-library.md)
 
-Uložené relace, vyhledávání, řazení, režimy zobrazení a procházení seskupených podle druhů.
+Uložené sessions, vyhledávání, řazení, režimy zobrazení a procházení seskupené podle druhů.
 
-### [Recenze relace](session-review.md)
+### [Přehled Session](session-review.md)
 
-Přehrávání, úpravy, ořezávání, anotace, export a panel nástrojů recenze.
+Přehrávání, úpravy, ořezávání, poznámky, export a panel nástrojů přehledu.
 
-### [Point Count Mode](point-count-mode.md)
+### [Režim Point Count](point-count-mode.md)
 
-Pracovní postup nastavení počtu bodů, možnosti umístění a obrazovka živého časovače.
+Postup nastavení Point Count, možnosti polohy a obrazovka živého časovače.
 
-### [Režim průzkumu](survey-mode.md)
+### [Režim Survey](survey-mode.md)
 
-Nastavení průzkumu, ovládací panel živého průzkumu a karty mapy, spektrogramu a souhrnu.
+Nastavení Survey, živý panel survey a karty Mapa, Spektrogram a Souhrn.
 
 ### [Analýza souborů](file-analysis.md)
 
-Průvodce analýzou souborů ve čtyřech krocích, volby parametrů a způsob přesunutí výsledků do relace.
+Čtyřkrokový průvodce analýzou souborů, volby parametrů a jak výsledky přejdou do Přehledu Session.
 
 ### [Dávková analýza](batch-analysis.md)
 
-Zpracovat a analyzovat více zvukových souborů hromadně. (Již brzy)
+Zpracování a analýza více zvukových souborů hromadně. (Již brzy)
 
 ### [Režim ARU](aru-mode.md)
 
-Vytvořte naplánovanou relaci nasazení ARU, nahrávejte plný zvuk cyklů nebo ponechané detekční klipy, spouštějte živou inferenci během aktivních cyklů a sledujte plánované nahrávací cykly.
+Vytvoření naplánované session nasazení ARU, nahrávání plného zvuku cyklů nebo uchovaných detekčních klipů, spouštění živé inference během aktivních cyklů a sledování plánovaných nahrávacích cyklů.
 
 ## Reference
 
 ### [FAQ](faq.md)
 
-Rychlé odpovědi o používání offline, chování při nahrávání, počtu bodů a výkonu.
+Rychlé odpovědi k offline použití, chování nahrávání, point counts a výkonu.
 
 ## Pořadí čtení
 
-1. Přečtěte si [Getting Started] (getting-started.md).
-2. Projděte [Ikony a ovládací prvky] (ikony a ovládací prvky.md), aby opakující se symboly dávaly smysl.
+1. Přečtěte si [Začínáme](getting-started.md).
+2. Projděte [Ikony a ovládací prvky](icons-and-controls.md), aby opakující se symboly dávaly smysl.
 3. Otevřete průvodce pro režim, který používáte nejčastěji.
-4. Pokud potřebujete vyladit aplikaci pro jiný pracovní postup, použijte [Nastavení](settings.md).
+4. [Nastavení](settings.md) použijte, když potřebujete vyladit aplikaci pro jiný pracovní postup.
 
 ## Tip pro mobil
 
-Na mobilních zařízeních je postranní navigační panel skrytý za tlačítkem nabídky v levém horním rohu. Tato stránka má být mobilním vstupním bodem pro celou uživatelskou příručku.
+Na mobilních zařízeních je postranní navigační panel skrytý za tlačítkem nabídky v levém horním rohu. Tato stránka je navržena jako mobilní vstupní bod do celé uživatelské příručky.
 
 ## Další dokumentace
 
-- [Domovská stránka](../index.md) poskytuje verzi a přehled funkcí.
+- [Domovská stránka](../index.md) poskytuje přehled vydání a funkcí.
 - [Příručka pro vývojáře](../developer/index.md) pokrývá architekturu, nástroje a pracovní postupy sestavování.
-- [Zásady ochrany osobních údajů](../privacy.md) a [Podmínky použití](../terms.md) fungují na stejném webu.
+- [Zásady ochrany osobních údajů](../privacy.md) a [Podmínky použití](../terms.md) jsou na témže webu.

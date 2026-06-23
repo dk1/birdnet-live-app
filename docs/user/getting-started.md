@@ -17,7 +17,7 @@ BirdNET Live is available for Android, iOS, and Windows.
 
 ## First-Time App Flow
 
-When you open BirdNET Live for the first time, the app walks through a short onboarding flow and permission setup.
+When you open BirdNET Live for the first time, the app walks you through a short onboarding flow and permission setup.
 
 1. Read the onboarding screens.
 2. Accept the Terms of Use and Privacy Policy.
@@ -53,7 +53,7 @@ The Home screen is the main hub.
 
 ## What Gets Saved
 
-BirdNET Live automatically saves completed sessions and opens them in Session Review after processing stops.
+BirdNET Live automatically saves each completed session and opens it in Session Review once processing stops.
 
 - Live sessions save detections and, depending on your settings, recordings or clips.
 - Point Count sessions save as timed point-count sessions.

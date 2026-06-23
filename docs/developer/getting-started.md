@@ -33,7 +33,7 @@ flutter gen-l10n
 flutter doctor
 ```
 
-Do not skip the LFS step on a fresh clone. The `.onnx` files in `assets/models/` are required at runtime; Git LFS pointer files can let a build start but model loading will fail when the app tries to initialize inference.
+Do not skip the LFS step on a fresh clone. The `.onnx` files in `assets/models/` are required at runtime. With only the Git LFS pointer files in place, a build can still start, but model loading fails when the app tries to initialize inference.
 
 ## Running
 
@@ -64,4 +64,4 @@ flutter build ios        # Build iOS (requires macOS)
 
 BirdNET Live ships two ONNX models in `assets/models/`: the BirdNET+ audio classifier (~152 MB) and the BirdNET geo-model (~6 MB). Both are tracked with Git LFS and are bundled with local builds after `git lfs pull`.
 
-You only need the Python model build pipeline in `dev/` when updating or rebuilding the models themselves. Normal app development uses the checked-in LFS model artifacts.
+You only need the Python model build pipeline in `dev/` when updating or rebuilding the models themselves. Day-to-day app development uses the checked-in LFS model artifacts.

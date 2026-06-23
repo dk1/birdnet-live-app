@@ -4,7 +4,7 @@ Use this workflow to reproduce the bundled species images and metadata that ship
 with the app.
 
 This tooling is intentionally separate from the ONNX model pipeline. Final
-model files are expected to come from GitHub LFS. The only model-side input
+model files are expected to come from GitHub LFS; the only model-side input
 used here is the bundled BirdNET labels CSV in `assets/models/`.
 
 ## What This Builds
@@ -17,7 +17,7 @@ Running the bundle rebuild does three things:
    taxonomy export.
 
 The image output keeps the taxonomy API's 320 px height and re-encodes the
-files at WebP quality 70 to keep bundle size under control.
+files at WebP quality 70 to keep the bundle size under control.
 
 ## Prerequisites
 
@@ -45,7 +45,7 @@ python tools/download_taxonomy_json.py
 That script saves the file into `tools/data/` using the filename returned by
 the API, for example `tools/data/birdnet_taxonomy_0.1-Mar2026.json`.
 
-If you prefer a manual download, this is equivalent:
+If you prefer to download it manually, this is equivalent:
 
 ```bash
 curl -L https://birdnet.cornell.edu/taxonomy/api/download/json -o tools/data/birdnet_taxonomy_0.1-Mar2026.json

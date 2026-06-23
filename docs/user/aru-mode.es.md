@@ -13,7 +13,7 @@ El modo ARU (Autonomous Recording Unit) es el flujo de trabajo para despliegues 
     - **Formato de grabación**: Elija entre los formatos FLAC (comprimido sin pérdidas) y WAV (sin comprimir).
     - **Modo de grabación**:
         - *Completo*: Graba la duración total de cada ciclo activo.
-        - *Solo detecciones*: Guarda clips de audio cortos alrededor de los cantos de aves detectados. Puede personalizar el contexto del clip (añadiendo entre 0 y 5 segundos de búfer de audio antes y después de la detección) y elegir el método de muestreo (*Todo*, *Top N* o muestreo *Inteligente* para limitar el uso del almacenamiento).
+        - *Solo detecciones*: Guarda clips de audio cortos alrededor de los cantos de aves detectados. Puede personalizar el contexto del clip (añadiendo entre 0 y 5 segundos de búfer de audio antes y después de la detección) y elegir el método de muestreo (*Todas*, *Top N* o muestreo *Smart* para limitar el uso del almacenamiento).
         - *Desactivado*: Ejecuta inferencia en tiempo real durante los ciclos y registra las detecciones, pero no guarda ningún archivo de audio.
 - **Horario (Plan)**:
     - **Duración y repetición**: Seleccione cuánto dura cada ciclo de grabación activo y con qué frecuencia se repite.
@@ -33,16 +33,16 @@ Las exportaciones JSON y ZIP incluyen metadatos del despliegue ARU. Las exportac
 La pantalla ARU activa muestra si el despliegue está esperando, grabando o completado. Su diseño usa cuatro pestañas:
 - **Estado**: Muestra el estado del despliegue, el temporizador del horario activo y una lista de detecciones en tiempo real.
 - **Audio**: Muestra un espectrograma en vivo para verificar la entrada de audio mientras mantiene las detecciones visibles abajo.
-- **Horario**: Enumera los próximos 10 horarios de ciclo programados, indicando las alineaciones de amanecer/atardecer si las restricciones diurnas/nocturnas están activas.
+- **Plan**: Enumera los próximos 10 horarios de ciclo programados, indicando las alineaciones de amanecer/atardecer si las restricciones diurnas/nocturnas están activas.
 - **Resumen**: Resume el tiempo transcurrido, la duración total del audio grabado y las estadísticas de detección.
 
 En Android, los despliegues activos muestran una notificación en primer plano con acciones Detener y Abrir.
 
-Al detener un despliegue se abre la Revisión de Session. Si los ciclos se agruparon en una sola Session, se abre esa Session combinada; si se guardaron como Sessions separadas, se abre la última Session de ciclo completada.
+Al detener un despliegue se abre el Resumen de la Session. Si los ciclos se agruparon en una sola Session, se abre esa Session combinada; si se guardaron como Sessions separadas, se abre la última Session de ciclo completada.
 
 En iOS, esta implementación temprana debe tratarse como un flujo de trabajo en primer plano hasta que el comportamiento de audio/segundo plano programado haya sido validado en iOS.
 
 ## Aún planeado
 
 - Validación del comportamiento en segundo plano en iOS.
-- Soporte completo de reproducción y espectrograma en Session Review para grabaciones ARU segmentadas.
+- Soporte completo de reproducción y espectrograma en el Resumen de la Session para grabaciones ARU segmentadas.

@@ -1,6 +1,6 @@
 # Developer Guide
 
-Guide for contributing to BirdNET Live development.
+A guide for contributing to BirdNET Live.
 
 ## Tech Stack
 

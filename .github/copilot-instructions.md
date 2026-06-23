@@ -63,6 +63,7 @@
   - `flutter build apk --release`
   - `flutter build appbundle`
 - `pubspec.yaml` is version source of truth. For user-facing release changes, bump patch + build number together and run `dart dev/sync_version.dart`.
+- Never bump the version (`pubspec.yaml` version/build, badges, or a new CHANGELOG version header) without explicit user consent in the current turn. When changes are user-facing, fold them into the current unreleased version section instead of starting a new one unless the user asks for a bump.
 - Release notes in `release/V<version>/release_notes.txt`: short, user-facing, non-implementation detail, per-locale <= 500 chars.
 - Integration fixture note: `assets/test_fixtures` are not bundled; push to device before integration tests when needed.
 
