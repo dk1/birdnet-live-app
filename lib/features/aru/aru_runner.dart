@@ -58,6 +58,11 @@ class AruFinishResult {
 class AruRunner {
   AruRunner(this._ref);
 
+  static const Duration _recordingTick = Duration(seconds: 1);
+  static const Duration _waitingMaxTick = Duration(minutes: 1);
+  static const Duration _boundaryLeadTime = Duration(seconds: 1);
+  static const Duration _minTick = Duration(milliseconds: 500);
+
   final Ref _ref;
   final Battery _battery = Battery();
   final AruNotificationService _notificationService = AruNotificationService();
@@ -87,12 +92,10 @@ class AruRunner {
 
   /// Latest localization context, refreshed by the screen so background
   /// notification text stays localized.
-  void refreshLocalization(
-    AppLocalizations l10n, {
-    required bool use24Hour,
-  }) {
+  void refreshLocalization(AppLocalizations l10n, {required bool use24Hour}) {
     _l10n = l10n;
     _use24Hour = use24Hour;
+    AruNotificationService.updateLocalizedStrings(l10n);
   }
 
   /// Start (or re-confirm) the drive loop. Idempotent: safe to call from every
@@ -100,13 +103,11 @@ class AruRunner {
   /// relaunch). The caller must have already started/restored the
   /// [AruController] and published its state to [aruStateProvider]/
   /// [aruSessionProvider].
-  void attach(
-    AppLocalizations l10n, {
-    required bool use24Hour,
-  }) {
+  void attach(AppLocalizations l10n, {required bool use24Hour}) {
     if (_disposed) return;
     _l10n = l10n;
     _use24Hour = use24Hour;
+    AruNotificationService.updateLocalizedStrings(l10n);
 
     final liveController = _ref.read(liveControllerProvider);
     liveController.onStateChanged = _onInferenceStateChanged;
@@ -121,14 +122,13 @@ class AruRunner {
     _batteryPaused = false;
     _lastBatteryCheck = null;
     _running = true;
-    _timer ??= Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+    _timer?.cancel();
+    _timer = null;
     unawaited(_kickoff());
   }
 
   Future<void> _kickoff() async {
     await _tick();
-    if (!_running) return;
-    await _syncNotification();
   }
 
   /// Request a manual stop of the active deployment.
@@ -146,8 +146,7 @@ class AruRunner {
     try {
       final controller = _ref.read(aruControllerProvider);
       final session = controller.session;
-      if (session == null ||
-          controller.state == AruControllerState.completed) {
+      if (session == null || controller.state == AruControllerState.completed) {
         return;
       }
       if (controller.state == AruControllerState.recording &&
@@ -155,9 +154,13 @@ class AruRunner {
         await _stopInference();
       }
       await _updateBatteryPause(controller);
-      await controller.evaluate(recordingSuppressed: _batteryPaused);
+      final scheduleChanged = await controller.evaluate(
+        recordingSuppressed: _batteryPaused,
+      );
       if (!_running) return;
-      _publishState(controller);
+      if (scheduleChanged) {
+        _publishState(controller);
+      }
       if (controller.state == AruControllerState.completed) {
         _stopping = true;
         final result = await _finishDeployment(
@@ -171,7 +174,52 @@ class AruRunner {
       await _syncNotification();
     } finally {
       _tickBusy = false;
+      _scheduleNextTick();
     }
+  }
+
+  void _scheduleNextTick() {
+    _timer?.cancel();
+    _timer = null;
+    if (!_running || _stopping || _finishing || _disposed) return;
+    _timer = Timer(_nextTickDelay(), () {
+      _timer = null;
+      unawaited(_tick());
+    });
+  }
+
+  Duration _nextTickDelay() {
+    final controller = _ref.read(aruControllerProvider);
+    final session = controller.session;
+    if (session == null) return _waitingMaxTick;
+    if (controller.state == AruControllerState.recording ||
+        controller.state == AruControllerState.preparing ||
+        controller.state == AruControllerState.recovering ||
+        controller.state == AruControllerState.finalizingCycle) {
+      return _recordingTick;
+    }
+
+    final snapshot = _scheduleSnapshot(session);
+    if (snapshot == null) return _waitingMaxTick;
+    if (snapshot.status == AruScheduleStatus.completed) return _recordingTick;
+
+    final now = DateTime.now();
+    final nextWake = switch (snapshot.status) {
+      AruScheduleStatus.notStarted => snapshot.nextWindow?.start,
+      AruScheduleStatus.waiting => snapshot.nextWindow?.start,
+      AruScheduleStatus.recording =>
+        controller.state == AruControllerState.recording
+            ? now
+            : snapshot.nextWindow?.start ?? snapshot.currentWindow?.end,
+      AruScheduleStatus.completed => now,
+    };
+    final target = nextWake;
+    if (target == null) return _waitingMaxTick;
+
+    final untilTarget = target.difference(now) - _boundaryLeadTime;
+    if (untilTarget <= _minTick) return _minTick;
+    if (untilTarget > _waitingMaxTick) return _waitingMaxTick;
+    return untilTarget;
   }
 
   void _publishState(AruController controller) {

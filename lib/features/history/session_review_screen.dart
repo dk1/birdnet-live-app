@@ -128,6 +128,105 @@ int compareSessionReviewConfidenceSortEntries({
   return aTimestamp.compareTo(bTimestamp);
 }
 
+List<DetectionRecord> buildSessionReviewPlaybackOrder({
+  required List<DetectionRecord> detections,
+  required int maxGapSec,
+  required SpeciesSortMode sortMode,
+  required String Function(String scientificName, String fallbackCommonName)
+  localizedCommonName,
+  required bool Function(DetectionRecord detection) hasPlayableClip,
+}) {
+  final groups = _SessionReviewScreenState._buildSpeciesGroups(
+    detections,
+    maxGapSec,
+  );
+  final orderedGroups = _orderSessionReviewSpeciesGroups(
+    groups: groups,
+    sortMode: sortMode,
+    localizedCommonName:
+        (group) => localizedCommonName(group.scientificName, group.commonName),
+    hasPlayableClip: hasPlayableClip,
+  );
+
+  return [
+    for (final group in orderedGroups)
+      for (final cluster in group.clusters)
+        for (final record in cluster.records)
+          if (hasPlayableClip(record)) record,
+  ];
+}
+
+List<_SpeciesGroup> _orderSessionReviewSpeciesGroups({
+  required Iterable<_SpeciesGroup> groups,
+  required SpeciesSortMode sortMode,
+  required String Function(_SpeciesGroup group) localizedCommonName,
+  required bool Function(DetectionRecord detection) hasPlayableClip,
+}) {
+  final sorted = List<_SpeciesGroup>.of(groups);
+  switch (sortMode) {
+    case SpeciesSortMode.alphabetical:
+      sorted.sort(
+        (a, b) => localizedCommonName(
+          a,
+        ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase()),
+      );
+      break;
+    case SpeciesSortMode.count:
+      sorted.sort((a, b) {
+        final c = b.totalCount.compareTo(a.totalCount);
+        if (c != 0) return c;
+        return localizedCommonName(
+          a,
+        ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase());
+      });
+      break;
+    case SpeciesSortMode.confidence:
+      sorted.sort((a, b) {
+        final c = b.bestConfidence.compareTo(a.bestConfidence);
+        if (c != 0) return c;
+        return localizedCommonName(
+          a,
+        ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase());
+      });
+      break;
+    case SpeciesSortMode.firstSeen:
+      sorted.sort((a, b) => a.firstTimestamp.compareTo(b.firstTimestamp));
+      break;
+  }
+
+  return [
+    for (final group in sorted)
+      _orderSessionReviewSpeciesGroupClusters(
+        group: group,
+        sortMode: sortMode,
+        hasPlayableClip: hasPlayableClip,
+      ),
+  ];
+}
+
+_SpeciesGroup _orderSessionReviewSpeciesGroupClusters({
+  required _SpeciesGroup group,
+  required SpeciesSortMode sortMode,
+  required bool Function(DetectionRecord detection) hasPlayableClip,
+}) {
+  if (sortMode != SpeciesSortMode.confidence) return group;
+  final clusters = List<_DetectionCluster>.of(group.clusters)..sort(
+    (a, b) => compareSessionReviewConfidenceSortEntries(
+      aHasAudioClip: a.records.any(hasPlayableClip),
+      aConfidence: a.bestConfidence,
+      aTimestamp: a.firstTimestamp,
+      bHasAudioClip: b.records.any(hasPlayableClip),
+      bConfidence: b.bestConfidence,
+      bTimestamp: b.firstTimestamp,
+    ),
+  );
+  return _SpeciesGroup(
+    scientificName: group.scientificName,
+    commonName: group.commonName,
+    clusters: clusters,
+  );
+}
+
 class _ReviewWarningCard extends StatelessWidget {
   const _ReviewWarningCard({
     required this.icon,
@@ -235,6 +334,7 @@ class _SpectrogramChunkRequest {
     required this.fftSize,
     required this.hop,
     required this.maxDisplayBins,
+    required this.colorMapName,
   });
 
   final String path;
@@ -255,6 +355,9 @@ class _SpectrogramChunkRequest {
   /// can actually show as a pixel is wasted work, so we keep this near
   /// the spectrogram strip's physical pixel height.
   final int maxDisplayBins;
+
+  /// Palette used to render spectrogram intensity.
+  final String colorMapName;
 }
 
 class _SpectrogramChunkPixels {
@@ -299,6 +402,7 @@ Future<_SpectrogramChunkPixels?> _decodeAndRenderSpectrogramChunk(
     fftSize: req.fftSize,
     hop: req.hop,
     maxDisplayBins: req.maxDisplayBins,
+    colorMapName: req.colorMapName,
   );
 }
 
@@ -340,6 +444,7 @@ _SpectrogramChunkPixels? _renderSpectrogramChunkPixels(
   required int fftSize,
   required int hop,
   required int maxDisplayBins,
+  required String colorMapName,
 }) {
   const maxFreqHz = 16000;
   const dbFloor = -80.0;
@@ -363,7 +468,7 @@ _SpectrogramChunkPixels? _renderSpectrogramChunkPixels(
   final binStride = math.max(1, (visibleBins / maxDisplayBins).ceil());
   final displayBins = (visibleBins / binStride).ceil();
 
-  final lut = SpectrogramColorMap.lut('viridis');
+  final lut = SpectrogramColorMap.lut(colorMapName);
   final pixels = Uint8List(numCols * displayBins * 4);
 
   final hann = Float64List(fftSize);
@@ -813,6 +918,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
   }
 
+  Future<void> _refreshSpectrogramForColorMap() async {
+    final path = widget.session.recordingPath;
+    if (path == null || !File(path).existsSync() || _decoding) return;
+
+    await _decodeAudioForSpectrogram(path);
+    await _restoreSavedTrim();
+  }
+
   Future<void> _inspectAudioIntegrity(String path) async {
     try {
       final canDart = await AudioDecoder.canDecodeDart(path);
@@ -1117,7 +1230,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     );
     final displayBins = (visibleBins / binStride).ceil();
 
-    final lut = SpectrogramColorMap.lut('viridis');
+    final lut = SpectrogramColorMap.lut(ref.read(colorMapProvider));
     final pixels = Uint8List(numCols * displayBins * 4);
 
     // Periodic Hann window (matches FftProcessor).
@@ -1451,6 +1564,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           fftSize: fftSize,
           hop: hop,
           maxDisplayBins: maxDisplayBins,
+          colorMapName: ref.read(colorMapProvider),
         ),
       );
       if (pixelData == null) return;
@@ -1736,6 +1850,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
     final includeHtmlReport = ref.read(exportHtmlReportProvider);
+    final includeAppMetadata = ref.read(includeAppMetadataProvider);
     final taxonomy = ref.read(taxonomyServiceProvider).value;
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     // Legacy sessions persisted before SessionSettings.clipContextSeconds
@@ -1766,6 +1881,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       useAbsoluteSurveyTime:
           ref.read(timestampDisplayModeProvider) == 'absolute',
       includeHtmlReport: includeHtmlReport,
+      includeAppMetadata: includeAppMetadata,
     );
 
     if (exportPath == null) return;
@@ -2279,37 +2395,41 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   }
 
   Future<void> _triggerPlaybackOverlay(_DetectionCluster cluster) async {
-    final clip = cluster.records
-        .where((r) => r.audioClipPath != null && File(r.audioClipPath!).existsSync())
-        .firstOrNull;
+    final clip = cluster.records.where(_hasPlayableDetectionClip).firstOrNull;
     if (clip == null) return;
 
-    final playable = _detections
-        .where((d) => d.audioClipPath != null && File(d.audioClipPath!).existsSync())
-        .toList()
-      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    final playable = buildSessionReviewPlaybackOrder(
+      detections: _visibleReviewDetectionsForPlayback(),
+      maxGapSec: widget.session.settings.windowDuration,
+      sortMode: _speciesSort,
+      localizedCommonName: _localizedCommonNameForPlayback,
+      hasPlayableClip: _hasPlayableDetectionClip,
+    );
 
     Future<void> showOverlayForRecord(DetectionRecord record) async {
       if (!mounted) return;
 
       final idx = playable.indexOf(record);
       final prev = idx > 0 ? playable[idx - 1] : null;
-      final next = idx >= 0 && idx < playable.length - 1 ? playable[idx + 1] : null;
+      final next =
+          idx >= 0 && idx < playable.length - 1 ? playable[idx + 1] : null;
 
       await showClipPlayerSheet(
         context,
         detection: record,
         session: widget.session,
-        onPrevious: prev == null
-            ? null
-            : () {
-                if (mounted) showOverlayForRecord(prev);
-              },
-        onNext: next == null
-            ? null
-            : () {
-                if (mounted) showOverlayForRecord(next);
-              },
+        onPrevious:
+            prev == null
+                ? null
+                : () {
+                  if (mounted) showOverlayForRecord(prev);
+                },
+        onNext:
+            next == null
+                ? null
+                : () {
+                  if (mounted) showOverlayForRecord(next);
+                },
         onConfirmChanged: () {
           if (mounted) setState(() {});
           _isDirty = true;
@@ -2329,6 +2449,41 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
 
     await showOverlayForRecord(clip);
+  }
+
+  bool _hasPlayableDetectionClip(DetectionRecord detection) {
+    final path = detection.audioClipPath;
+    return path != null && File(path).existsSync();
+  }
+
+  String _localizedCommonNameForPlayback(
+    String scientificName,
+    String fallbackCommonName,
+  ) {
+    final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
+    final taxonomy = ref.read(taxonomyServiceProvider).value;
+    return taxonomy
+            ?.lookup(scientificName)
+            ?.commonNameForLocale(speciesLocale) ??
+        fallbackCommonName;
+  }
+
+  List<DetectionRecord> _visibleReviewDetectionsForPlayback() {
+    final groups = _filteredSpeciesGroups;
+    final query = _speciesSearchQuery.trim().toLowerCase();
+    if (query.isEmpty) {
+      return groups.expand((group) => group.allRecords).toList();
+    }
+
+    return [
+      for (final group in groups)
+        if (_localizedCommonNameForPlayback(
+              group.scientificName,
+              group.commonName,
+            ).toLowerCase().contains(query) ||
+            group.scientificName.toLowerCase().contains(query))
+          ...group.allRecords,
+    ];
   }
 
   void _seekToCluster(_DetectionCluster cluster) {
@@ -2948,6 +3103,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    ref.listen<String>(colorMapProvider, (previous, next) {
+      if (previous != null && previous != next) {
+        unawaited(_refreshSpectrogramForColorMap());
+      }
+    });
 
     return PopScope(
       canPop: !_isDirty,
@@ -3432,57 +3592,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           }).toList();
     }
 
-    // Apply user-selected sort. New list to avoid mutating cached state.
-    final sorted = List<_SpeciesGroup>.of(groups);
-    switch (_speciesSort) {
-      case SpeciesSortMode.alphabetical:
-        sorted.sort(
-          (a, b) => localizedCommonName(
-            a,
-          ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase()),
-        );
-        break;
-      case SpeciesSortMode.count:
-        sorted.sort((a, b) {
-          final c = b.totalCount.compareTo(a.totalCount);
-          if (c != 0) return c;
-          return localizedCommonName(
-            a,
-          ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase());
-        });
-        break;
-      case SpeciesSortMode.confidence:
-        sorted.sort((a, b) {
-          final c = b.bestConfidence.compareTo(a.bestConfidence);
-          if (c != 0) return c;
-          return localizedCommonName(
-            a,
-          ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase());
-        });
-        break;
-      case SpeciesSortMode.firstSeen:
-        sorted.sort((a, b) => a.firstTimestamp.compareTo(b.firstTimestamp));
-        break;
-    }
-
-    _SpeciesGroup displayGroup(_SpeciesGroup group) {
-      if (_speciesSort != SpeciesSortMode.confidence) return group;
-      final clusters = List<_DetectionCluster>.of(group.clusters)..sort(
-        (a, b) => compareSessionReviewConfidenceSortEntries(
-          aHasAudioClip: a.hasAudioClip,
-          aConfidence: a.bestConfidence,
-          aTimestamp: a.firstTimestamp,
-          bHasAudioClip: b.hasAudioClip,
-          bConfidence: b.bestConfidence,
-          bTimestamp: b.firstTimestamp,
-        ),
-      );
-      return _SpeciesGroup(
-        scientificName: group.scientificName,
-        commonName: group.commonName,
-        clusters: clusters,
-      );
-    }
+    final sorted = _orderSessionReviewSpeciesGroups(
+      groups: groups,
+      sortMode: _speciesSort,
+      localizedCommonName: localizedCommonName,
+      hasPlayableClip: _hasPlayableDetectionClip,
+    );
 
     final header = _buildSpeciesListHeader(theme, l10n);
     final hasAnyGroups = _filteredSpeciesGroups.isNotEmpty;
@@ -3519,7 +3634,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         padding: const EdgeInsets.only(bottom: 80),
         itemCount: sorted.length,
         itemBuilder: (context, index) {
-          final group = displayGroup(sorted[index]);
+          final group = sorted[index];
           final isExpanded = _expandedSpecies.contains(group.scientificName);
           return _SpeciesTile(
             key: ValueKey('species-tile-${group.scientificName}'),

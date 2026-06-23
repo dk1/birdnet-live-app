@@ -60,7 +60,7 @@ Permite escolher um dispositivo de entrada específico ou manter o **Padrão do 
 
 ### Duração da janela
 
-Controla o comprimento da janela de análise.
+Controla o comprimento da janela de análise. Os passos disponíveis são **1**, **3**, **5**, **7**, **10** e **15** segundos.
 
 ### Limite de confiança
 
@@ -72,11 +72,7 @@ Valores mais altos tornam o detector mais permissivo, o que pode recuperar chama
 
 ### Taxa de inferência
 
-Controla a frequência com que o BirdNET executa inferência.
-
-### Agrupamento de pontuação
-
-Controla como as janelas de análise sobrepostas são combinadas.
+Controla a frequência com que o BirdNET executa inferência. O controlo usa os mesmos passos de **0,10–1,00 Hz** da configuração Survey e ARU.
 
 ## Espectrograma
 
@@ -86,7 +82,7 @@ Controla a resolução de frequência no espectrograma.
 
 ### Mapa de cores
 
-Escolha **Viridis**, **Magma** ou **Escala de cinza**.
+Escolha **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Escala de cinza** ou **BirdNET**. **Turbo** é a opção arco-íris moderna semelhante a Jet.
 
 ### Duração (velocidade de rolagem)
 

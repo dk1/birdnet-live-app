@@ -218,7 +218,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
       binCount,
     );
 
-    final lut = SpectrogramColorMap.lut('viridis');
+    final lut = SpectrogramColorMap.lut(ref.read(colorMapProvider));
     final pixels = Uint8List(numCols * displayBins * 4);
 
     final hann = Float64List(fftSize);

@@ -1,4 +1,4 @@
-# Guide de l'utilisateur
+# Guide d'utilisation
 
 Ce guide explique BirdNET Live en tant qu'outil de flux de travail sur le terrain : ce que fait chaque écran, ce que signifient les icônes récurrentes et comment les paramètres modifient le comportement de l'application.
 
@@ -71,7 +71,7 @@ Réponses rapides sur l'utilisation hors ligne, le comportement d'enregistrement
 
 ## Astuce mobile
 
-Sur mobile, la barre latérale de navigation est cachée derrière le bouton de menu dans le coin supérieur gauche. Cette page est censée être le point d’entrée mobile pour l’ensemble du guide de l’utilisateur.
+Sur mobile, la barre latérale de navigation est cachée derrière le bouton de menu dans le coin supérieur gauche. Cette page est censée être le point d’entrée mobile pour l’ensemble du guide d’utilisation.
 
 ## Plus de documentation
 

@@ -783,10 +783,12 @@ String _formatLabelForPath(String path) {
 /// requested, returns a `.zip` path. Otherwise returns the path to the
 /// raw document file for the single requested format.
 ///
-/// [formats] is a non-empty set of format tokens drawn from `raven`,
-/// `csv`, `json`, `gpx`. Each enabled format produces its own document
-/// inside the ZIP. Empty sets fall back to `{raven}` to guarantee at
-/// least one output.
+/// [formats] is a set of format tokens drawn from `raven`, `csv`, `json`,
+/// `gpx`. Each enabled format produces its own document inside the ZIP.
+/// When [formats] is empty and the user also disabled the HTML report
+/// and [includeAppMetadata], the function returns the raw audio file (no
+/// ZIP) for full-recording sessions, so it can be shared directly into
+/// other apps such as iNaturalist.
 Future<String?> buildSessionExport(
   LiveSession session, {
   required Set<String> formats,
@@ -797,14 +799,13 @@ Future<String?> buildSessionExport(
   Map<String, dynamic>? metadata,
   bool useAbsoluteSurveyTime = false,
   bool includeHtmlReport = false,
+  bool includeAppMetadata = true,
 }) async {
-  // Resolve the active format set; an empty / all-invalid input falls
-  // back to raven so the export always produces a document.
+  // Resolve the active format set; tokens outside the known list are
+  // ignored. An empty result is now allowed so users can share the raw
+  // audio file without any companion documents.
   const allFormats = {'raven', 'csv', 'json', 'gpx'};
-  final activeFormats =
-      formats.where(allFormats.contains).toSet()
-        ..removeWhere((_) => false); // no-op, keep order intent clear
-  final selected = activeFormats.isEmpty ? <String>{'raven'} : activeFormats;
+  final selected = formats.where(allFormats.contains).toSet();
 
   final prefix = _exportPrefix(session);
   final audioPath = session.recordingPath;
@@ -936,17 +937,46 @@ Future<String?> buildSessionExport(
   }
 
   // Decide whether to ZIP. We zip when any of:
-  //   • the user wants audio bundled and audio exists,
+  //   • the user wants audio bundled and we have more than one audio
+  //     file (clips) or any companion document/asset would join it,
   //   • more than one format is selected (multiple docs need a container),
   //   • the user enabled the HTML report,
-  //   • we have non-JSON metadata that would otherwise be lost. Forcing a
-  //     ZIP in that last case is what carries the weather snapshot or audio
-  //     integrity warning alongside an otherwise plain CSV/Raven selection.
+  //   • the user kept the app metadata side-file enabled and we have
+  //     metadata to write (carries weather snapshot, audio integrity
+  //     warning, model identity, …).
+  final hasCompanion =
+      docs.isNotEmpty ||
+      includeHtmlReport ||
+      (includeAppMetadata && exportMetadata != null) ||
+      session.annotations.isNotEmpty;
   final mustZip =
-      (includeAudio && (hasAnyAudio || hasAruCycleAudio)) ||
+      (includeAudio && hasAruCycleAudio) ||
+      (includeAudio && hasClips) ||
+      (includeAudio && hasFullRecording && hasCompanion) ||
       docs.length > 1 ||
       includeHtmlReport ||
-      (exportMetadata != null && !selected.contains('json'));
+      (docs.isNotEmpty && includeAppMetadata && exportMetadata != null);
+
+  // Audio-only mode: the user unchecked every companion (no formats,
+  // no HTML, no app metadata). For full-recording sessions we share the
+  // raw audio file as-is, renamed to the BirdNET_Live_… prefix so the
+  // receiving app shows a sensible filename.
+  if (!mustZip && includeAudio && hasFullRecording && !hasCompanion) {
+    final dest = p.join(p.dirname(audioPath), audioFileName);
+    if (dest != audioPath) {
+      final destFile = File(dest);
+      if (await destFile.exists()) {
+        try {
+          await destFile.delete();
+        } catch (_) {}
+      }
+      await File(audioPath).copy(dest);
+    }
+    return dest;
+  }
+
+  // Nothing selected at all — surface a null so the caller can no-op.
+  if (!mustZip && docs.isEmpty) return null;
 
   // ── Bundle into ZIP ───────────────────────────────────────────────
   if (mustZip) {
@@ -1021,10 +1051,11 @@ Future<String?> buildSessionExport(
       );
     }
 
-    // Always drop a metadata side-file when the caller provided one, so
-    // the provenance information travels with the bundle regardless of
-    // which document format the user picked.
-    if (exportMetadata != null) {
+    // Always drop a metadata side-file when the caller provided one and
+    // the user kept app metadata enabled, so the provenance information
+    // travels with the bundle regardless of which document format the
+    // user picked.
+    if (includeAppMetadata && exportMetadata != null) {
       final metaJson = const JsonEncoder.withIndent(
         '  ',
       ).convert(exportMetadata);
@@ -1047,8 +1078,12 @@ Future<String?> buildSessionExport(
     }
 
     // Auto-include GPX for surveys when GPX wasn't already a selected
-    // document — the track is intrinsic to the survey artifact.
-    if (session.type == SessionType.survey && !selected.contains('gpx')) {
+    // document — the track is intrinsic to the survey artifact. Skipped
+    // when the user opted into the audio-only mode (no documents at
+    // all) so we don't sneak files into an intentionally bare export.
+    if (session.type == SessionType.survey &&
+        !selected.contains('gpx') &&
+        docs.isNotEmpty) {
       final gpxContent = buildGpxExport(session);
       final gpxBytes = Uint8List.fromList(utf8.encode(gpxContent));
       archive.addFile(ArchiveFile('$prefix.gpx', gpxBytes.length, gpxBytes));
@@ -1249,6 +1284,7 @@ Future<String?> buildMultiSessionExport(
   Future<Map<String, dynamic>?> Function(LiveSession)? metadataProvider,
   bool useAbsoluteSurveyTime = false,
   bool includeHtmlReport = false,
+  bool includeAppMetadata = true,
 }) async {
   if (sessions.isEmpty) return null;
 
@@ -1271,6 +1307,7 @@ Future<String?> buildMultiSessionExport(
       metadata: metadata,
       useAbsoluteSurveyTime: useAbsoluteSurveyTime,
       includeHtmlReport: includeHtmlReport,
+      includeAppMetadata: includeAppMetadata,
     );
     if (path == null) continue;
 

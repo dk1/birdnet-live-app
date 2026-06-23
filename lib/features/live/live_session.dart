@@ -921,7 +921,7 @@ class LiveSession {
       // resumed sessions show a static elapsed time until the next pause/stop
       // persists another closed segment.
       Duration activeSegment = Duration.zero;
-      if (segments.isNotEmpty) {
+      if (endTime == null && segments.isNotEmpty) {
         final last = segments.last;
         if (last.endTime == null) {
           activeSegment = DateTime.now().difference(last.startTime);
@@ -1083,8 +1083,7 @@ class LiveSession {
     if (weather != null) 'weather': weather!.toJson(),
     if (_recordedDurationSeconds != null)
       'recordedDurationSeconds': _recordedDurationSeconds,
-    if (segments.isNotEmpty)
-      'segments': segments.map((s) => s.toJson()).toList(),
+    if (segments.isNotEmpty) 'segments': segments.map(_segmentToJson).toList(),
     if (aruMetadata != null) 'aru': aruMetadata!.toJson(),
   };
 
@@ -1095,6 +1094,7 @@ class LiveSession {
 
   /// Starts a new active recording segment.
   void startSegment() {
+    if (endTime != null) return;
     final now = DateTime.now();
     if (segments.isNotEmpty) {
       final last = segments.last;
@@ -1113,8 +1113,20 @@ class LiveSession {
   void closeSegment() {
     if (segments.isNotEmpty) {
       final last = segments.last;
-      last.endTime ??= DateTime.now();
+      last.endTime ??= endTime ?? DateTime.now();
     }
+  }
+
+  DateTime _effectiveSegmentEnd(SessionSegment segment) {
+    return segment.endTime ?? endTime ?? DateTime.now();
+  }
+
+  Map<String, dynamic> _segmentToJson(SessionSegment segment) {
+    final json = segment.toJson();
+    if (endTime != null && segment.endTime == null) {
+      json['endTime'] = endTime!.toUtc().toIso8601String();
+    }
+    return json;
   }
 
   /// Maps an absolute timestamp to a relative offset in seconds within the recorded audio.
@@ -1128,7 +1140,7 @@ class LiveSession {
     double offsetMicros = 0;
     for (final seg in segments) {
       final start = seg.startTime;
-      final end = seg.endTime ?? DateTime.now();
+      final end = _effectiveSegmentEnd(seg);
 
       if (timestamp.isBefore(start)) {
         break;
@@ -1155,7 +1167,7 @@ class LiveSession {
 
     for (final seg in segments) {
       final start = seg.startTime;
-      final end = seg.endTime ?? DateTime.now();
+      final end = _effectiveSegmentEnd(seg);
       final segDurationMicros = end.difference(start).inMicroseconds;
 
       if (accumulatedMicros + segDurationMicros >= targetMicros) {
@@ -1168,7 +1180,7 @@ class LiveSession {
 
     if (segments.isNotEmpty) {
       final last = segments.last;
-      final end = last.endTime ?? DateTime.now();
+      final end = _effectiveSegmentEnd(last);
       final remainingMicros = targetMicros - accumulatedMicros;
       return end.add(Duration(microseconds: remainingMicros.round()));
     }

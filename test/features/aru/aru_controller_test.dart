@@ -109,6 +109,53 @@ void main() {
       expect(cycle.actualStart, start);
     });
 
+    test('does not persist unchanged waiting evaluations', () async {
+      final saved = <LiveSession>[];
+      final controller = AruController(
+        saveSession: (session) async => saved.add(session),
+        now: () => start.subtract(const Duration(minutes: 5)),
+      );
+
+      await controller.startDeployment(
+        sessionId: 'aru-1',
+        settings: settings,
+        metadata: metadata(),
+      );
+
+      final changed = await controller.evaluate(
+        now: start.subtract(const Duration(minutes: 4)),
+      );
+
+      expect(changed, isFalse);
+      expect(controller.state, AruControllerState.waiting);
+      expect(saved.length, 2);
+    });
+
+    test('does not persist unchanged recording evaluations', () async {
+      final saved = <LiveSession>[];
+      final controller = AruController(
+        saveSession: (session) async => saved.add(session),
+        now: () => start.subtract(const Duration(minutes: 5)),
+      );
+
+      await controller.startDeployment(
+        sessionId: 'aru-1',
+        settings: settings,
+        metadata: metadata(),
+      );
+      await controller.evaluate(now: start.add(const Duration(minutes: 5)));
+      final savedAfterEnteringCycle = saved.length;
+
+      final changed = await controller.evaluate(
+        now: start.add(const Duration(minutes: 6)),
+      );
+
+      expect(changed, isFalse);
+      expect(controller.state, AruControllerState.recording);
+      expect(controller.session?.aruMetadata?.cycles.length, 1);
+      expect(saved.length, savedAfterEnteringCycle);
+    });
+
     test('restores an unfinished deployment and resumes scheduling', () async {
       final saved = <LiveSession>[];
       final session = LiveSession(

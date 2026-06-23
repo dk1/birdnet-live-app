@@ -72,7 +72,7 @@ Lets you choose a specific input device or keep the **System default**. Your sel
 
 ### Window duration
 
-Controls the length of the analysis window.
+Controls the length of the analysis window. Available steps are **1**, **3**, **5**, **7**, **10**, and **15** seconds.
 
 ### Confidence threshold
 
@@ -84,21 +84,7 @@ Sigmoid steepness applied to the raw classifier output before the confidence thr
 
 ### Inference rate
 
-Controls how frequently BirdNET runs inference.
-
-### Score pooling
-
-Combines scores across recent inference windows so a single noisy window doesn't dominate the result. **Off** uses each window's raw probability — most reactive, noisiest. **Average** arithmetic-means the recent windows for the smoothest output. **Max** keeps the loudest peak per species, which is the most reactive smoothing mode and good for brief, sharp calls. **LME** (log-mean-exp, the default) is BirdNET's reference soft-maximum: it behaves like *max* when one window dominates and like *average* when several windows agree. In LME mode, a new species also needs repeated raw-window support before it first appears, while supported detections keep most of their strongest recent raw score and already-visible species continue until their pooled score falls below the confidence threshold. Switching modes mid-session clears the rolling buffer so old scores don't leak into the new mode.
-
-### Pooling window count
-
-Controls how many consecutive inference windows participate in score pooling.
-A larger value smooths each species' score over a longer time horizon, which
-suppresses spurious one-off detections — useful for steady, distant calls
-where you'd rather wait for a few corroborating windows before raising a
-detection. A smaller value reacts faster to brief vocalizations but lets
-through more noise. The default of **5** matches the value historically
-hard-coded into the model and is a sensible starting point for live use.
+Controls how frequently BirdNET runs inference. The slider uses the same **0.10–1.00 Hz** steps as Survey and ARU setup.
 
 ## Spectrogram
 
@@ -108,7 +94,7 @@ Controls frequency resolution in the spectrogram.
 
 ### Color map
 
-Choose **Viridis**, **Magma**, or **Grayscale**.
+Choose **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Grayscale**, or **BirdNET**. **Turbo** is the modern Jet-like rainbow option.
 
 ### Duration (scroll speed)
 
@@ -184,9 +170,9 @@ When enabled, Live mode begins recording as soon as the screen opens and the mod
 
 Use device GPS instead of manual coordinates.
 
-### Latitude / Longitude
+### Manual coordinates
 
-Manual coordinates used when GPS is disabled.
+The coordinates used when **Use GPS** is off. Both Latitude and Longitude are editable text fields, so you can **type** an exact value or **paste** one copied from another app — far more precise than dragging a slider on a touch screen. Enter decimal degrees (e.g. `52.5200` and `13.4050`). You can also paste a combined `latitude, longitude` string (comma-, semicolon-, or space-separated) into *either* field and both fields fill at once, which matches what most maps and websites put on the clipboard. Out-of-range or non-numeric input is flagged inline and not saved; valid values persist as you type. The intuition: the most common reason to set a manual location is to ID a sound recorded somewhere other than where you are now, and that location usually comes as text from elsewhere — typing and pasting make that a single accurate step.
 
 ### Refresh GPS now
 
@@ -223,9 +209,17 @@ The intuition: many workflows need more than one format at the same time — a C
 
 Include saved audio alongside the exported tables or metadata when supported by the export workflow.
 
+### Include app metadata
+
+When on, the export ZIP carries a `*.metadata.json` side-file describing how the session was produced: BirdNET Live version, model identity, the weather snapshot captured at session start, and any audio integrity warnings detected during recording. The intuition: that provenance is what lets you (or a reviewer) reproduce or audit a session months later. Turn it off when you want a clean share of just the audio and your selected formats — for example, dropping a single WAV into iNaturalist or eBird without any app-specific files riding along.
+
 ### Include HTML report
 
 When on, every export ZIP also contains a `report.html` file alongside the table, audio clips, and GPX. Open it in any web browser and you get a print-ready summary of the session: header card with date, location, observer, and totals; an interactive map of the GPS track and detection markers; a card per detection with the Cornell taxonomy thumbnail, names, score pill, your confirmation, any note you typed, and the original audio clip inline as a player; and the analysis settings used. The intuition: a CSV is great for analysis pipelines but useless for sharing with a non-technical collaborator or printing a quick field summary — the HTML report fills that gap with one tap. Species thumbnails and map tiles need a connection the first time the file is opened (they're fetched live from the BirdNET taxonomy API and OpenStreetMap), but everything else — text, layout, audio playback, links — works fully offline. Turn this off if you only need the raw data and want to keep the ZIP a few KB smaller.
+
+### Audio-only sharing
+
+Untick every format **and** the HTML report **and** the app metadata box, leaving only **Include audio files**, and Share will hand the platform sheet the raw recording (e.g. `BirdNET_Live_…flac`) instead of a ZIP. That is the low-friction path for sending a session straight into iNaturalist, eBird, or any other app that wants an unwrapped audio file. Sessions made of detection clips (no full recording) still produce a ZIP because there is more than one file to share.
 
 ## Privacy
 

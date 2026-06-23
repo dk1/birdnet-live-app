@@ -60,7 +60,7 @@ Consente di scegliere un dispositivo di input specifico o di mantenere l'**impos
 
 ### Durata della finestra
 
-Controlla la lunghezza della finestra di analisi.
+Controlla la lunghezza della finestra di analisi. I passaggi disponibili sono **1**, **3**, **5**, **7**, **10** e **15** secondi.
 
 ### Soglia di confidenza
 
@@ -72,11 +72,7 @@ Valori più alti rendono il rilevatore più permissivo, che può recuperare le c
 
 ### Tasso di inferenza
 
-Controlla la frequenza con cui BirdNET esegue l'inferenza.
-
-### Raggruppamento dei punteggi
-
-Controlla il modo in cui vengono combinate le finestre di analisi sovrapposte.
+Controlla la frequenza con cui BirdNET esegue l'inferenza. Il cursore usa gli stessi passaggi **0,10–1,00 Hz** della configurazione Survey e ARU.
 
 ## Spettrogramma
 
@@ -86,7 +82,7 @@ Controlla la risoluzione della frequenza nello spettrogramma.
 
 ### Mappa dei colori
 
-Scegli **Viridis**, **Magma** o **Scala di grigi**.
+Scegli **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Scala di grigi** o **BirdNET**. **Turbo** è l'opzione arcobaleno moderna simile a Jet.
 
 ### Durata (velocità di scorrimento)
 

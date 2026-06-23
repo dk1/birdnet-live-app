@@ -3,7 +3,7 @@
 !!! note "Již brzy"
     Tato funkce je ve vývoji a bude k dispozici v budoucí verzi.
 
-Dávková analýza umožní uživatelům hromadně zpracovávat a analyzovat více zvukových souborů (např. z SD karty připojené přes USB čtečku) pomocí vlastních parametrů analýzy.
+Dávková analýza umožní hromadně zpracovávat a analyzovat více zvukových souborů (např. z SD karty připojené přes USB čtečku) pomocí vlastních parametrů analýzy.
 
 ## Plánované funkce
 

@@ -3,7 +3,7 @@
 !!! note "Demnächst"
     Diese Funktion befindet sich in der Entwicklung und wird in einer zukünftigen Version verfügbar sein.
 
-Die Batch-Analyse ermöglicht es Benutzern, mehrere Audiodateien im Batch-Modus (z. B. von einer über ein USB-Lesegerät angeschlossenen SD-Karte) mit benutzerdefinierten Analyseparametern zu verarbeiten und zu analysieren.
+Die Batch-Analyse ermöglicht es, mehrere Audiodateien im Batch-Modus (z. B. von einer über ein USB-Lesegerät angeschlossenen SD-Karte) mit eigenen Analyseparametern zu verarbeiten und zu analysieren.
 
 ## Geplante Funktionen
 

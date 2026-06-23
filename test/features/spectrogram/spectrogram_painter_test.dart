@@ -94,9 +94,12 @@ void main() {
       for (final name in [
         'viridis',
         'magma',
-        'inferno',
+        'plasma',
+        'cividis',
+        'jet',
+        'turbo',
         'grayscale',
-        'birdnet'
+        'birdnet',
       ]) {
         test('creates painter with $name color map', () {
           final p = SpectrogramPainter(

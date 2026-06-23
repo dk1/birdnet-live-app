@@ -632,9 +632,9 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                     final l10n = AppLocalizations.of(context)!;
                     final confirmed = await confirmDestructive(
                       context,
-                      title: l10n.sessionDiscardTitle,
+                      title: l10n.tooltipDeleteSession,
                       body: l10n.sessionDiscardMessage,
-                      confirmLabel: l10n.sessionDiscard,
+                      confirmLabel: l10n.tooltipDeleteSession,
                       cancelLabel: l10n.cancel,
                     );
                     if (!confirmed) return false;
@@ -738,42 +738,45 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       context: context,
       showDragHandle: true,
       useSafeArea: true,
+      isScrollControlled: true,
       builder: (sheetCtx) {
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-                child: Text(
-                  l10n.sessionLibraryNewSessionSheetTitle,
-                  style: theme.textTheme.titleMedium,
-                ),
-              ),
-              for (final m in modes)
-                ListTile(
-                  leading: Icon(
-                    sessionTypeIcon(m.type),
-                    color: sessionTypeAccentColor(theme, m.type),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                  child: Text(
+                    l10n.sessionLibraryNewSessionSheetTitle,
+                    style: theme.textTheme.titleMedium,
                   ),
-                  title: Text(m.label),
-                  subtitle: Text(
-                    m.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing:
-                      m.type == _newSessionMode
-                          ? Icon(
-                            AppIcons.checkRounded,
-                            color: theme.colorScheme.primary,
-                          )
-                          : null,
-                  onTap: () => Navigator.of(sheetCtx).pop(m.type),
                 ),
-              const SizedBox(height: 4),
-            ],
+                for (final m in modes)
+                  ListTile(
+                    leading: Icon(
+                      sessionTypeIcon(m.type),
+                      color: sessionTypeAccentColor(theme, m.type),
+                    ),
+                    title: Text(m.label),
+                    subtitle: Text(
+                      m.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing:
+                        m.type == _newSessionMode
+                            ? Icon(
+                              AppIcons.checkRounded,
+                              color: theme.colorScheme.primary,
+                            )
+                            : null,
+                    onTap: () => Navigator.of(sheetCtx).pop(m.type),
+                  ),
+                const SizedBox(height: 4),
+              ],
+            ),
           ),
         );
       },
@@ -789,9 +792,9 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await confirmDestructive(
       context,
-      title: l10n.sessionDiscardTitle,
+      title: l10n.tooltipDeleteSession,
       body: l10n.sessionDiscardMessage,
-      confirmLabel: l10n.sessionDiscard,
+      confirmLabel: l10n.tooltipDeleteSession,
       cancelLabel: l10n.cancel,
     );
     if (!confirmed) return;
@@ -807,6 +810,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
     final includeHtmlReport = ref.read(exportHtmlReportProvider);
+    final includeAppMetadata = ref.read(includeAppMetadataProvider);
     final taxonomy = ref.read(taxonomyServiceProvider).value;
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     final useAbsoluteSurveyTime =
@@ -824,6 +828,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       metadata: metadata,
       useAbsoluteSurveyTime: useAbsoluteSurveyTime,
       includeHtmlReport: includeHtmlReport,
+      includeAppMetadata: includeAppMetadata,
     );
     if (exportPath == null) return;
     await SharePlus.instance.share(ShareParams(files: [XFile(exportPath)]));
@@ -897,6 +902,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       final exportFormats = ref.read(exportSelectionProvider);
       final includeAudio = ref.read(includeAudioProvider);
       final includeHtmlReport = ref.read(exportHtmlReportProvider);
+      final includeAppMetadata = ref.read(includeAppMetadataProvider);
       final taxonomy = ref.read(taxonomyServiceProvider).value;
       final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
       final useAbsoluteSurveyTime =
@@ -910,6 +916,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         speciesLocale: speciesLocale,
         useAbsoluteSurveyTime: useAbsoluteSurveyTime,
         includeHtmlReport: includeHtmlReport,
+        includeAppMetadata: includeAppMetadata,
       );
 
       if (mounted) {

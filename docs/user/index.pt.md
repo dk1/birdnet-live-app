@@ -1,4 +1,4 @@
-# Guia do usuário
+# Guia de uso
 
 Este guia explica o BirdNET Live como uma ferramenta de fluxo de trabalho de campo: o que cada tela faz, o que significam os ícones recorrentes e como as configurações alteram o comportamento do aplicativo.
 

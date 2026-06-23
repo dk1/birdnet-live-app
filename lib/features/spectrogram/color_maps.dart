@@ -12,7 +12,6 @@ import 'dart:ui' show Color;
 //
 //   • **Viridis**    — perceptually uniform, color-blind friendly (default).
 //   • **Magma**      — dark-to-bright purple/orange heat map.
-//   • **Inferno**    — dark black → vivid yellow fire tones.
 //   • **Grayscale**  — simple luminance ramp.
 //   • **BirdNET**    — custom palette matching the BirdNET brand blue (#0D6EFD)
 //                      used as the mid-range color, from dark navy through
@@ -43,7 +42,10 @@ abstract final class SpectrogramColorMap {
   static const List<String> names = [
     'viridis',
     'magma',
-    'inferno',
+    'plasma',
+    'cividis',
+    'jet',
+    'turbo',
     'grayscale',
     'birdnet',
   ];
@@ -97,12 +99,40 @@ abstract final class SpectrogramColorMap {
       _GradientStop(0.75, const Color(0xFFFB8761)),
       _GradientStop(1.00, const Color(0xFFFCFDBF)),
     ],
-    'inferno': [
-      _GradientStop(0.00, const Color(0xFF000004)),
-      _GradientStop(0.25, const Color(0xFF420A68)),
-      _GradientStop(0.50, const Color(0xFFBC3754)),
-      _GradientStop(0.75, const Color(0xFFF98C0A)),
-      _GradientStop(1.00, const Color(0xFFFCFFA4)),
+    'plasma': [
+      _GradientStop(0.00, const Color(0xFF0D0887)),
+      _GradientStop(0.25, const Color(0xFF7E03A8)),
+      _GradientStop(0.50, const Color(0xFFCC4778)),
+      _GradientStop(0.75, const Color(0xFFF89441)),
+      _GradientStop(1.00, const Color(0xFFF0F921)),
+    ],
+    'cividis': [
+      _GradientStop(0.00, const Color(0xFF00204C)),
+      _GradientStop(0.25, const Color(0xFF414D6B)),
+      _GradientStop(0.50, const Color(0xFF7C7B78)),
+      _GradientStop(0.75, const Color(0xFFBCAA6B)),
+      _GradientStop(1.00, const Color(0xFFFFEA46)),
+    ],
+    'jet': [
+      _GradientStop(0.00, const Color(0xFF00007F)),
+      _GradientStop(0.125, const Color(0xFF0000FF)),
+      _GradientStop(0.375, const Color(0xFF00FFFF)),
+      _GradientStop(0.625, const Color(0xFFFFFF00)),
+      _GradientStop(0.875, const Color(0xFFFF0000)),
+      _GradientStop(1.00, const Color(0xFF7F0000)),
+    ],
+    'turbo': [
+      _GradientStop(0.00, const Color(0xFF30123B)),
+      _GradientStop(0.10, const Color(0xFF4145AB)),
+      _GradientStop(0.20, const Color(0xFF4675ED)),
+      _GradientStop(0.30, const Color(0xFF39A2FC)),
+      _GradientStop(0.40, const Color(0xFF1BCFD4)),
+      _GradientStop(0.50, const Color(0xFF24E36F)),
+      _GradientStop(0.60, const Color(0xFF61FC3C)),
+      _GradientStop(0.70, const Color(0xFFB7E225)),
+      _GradientStop(0.80, const Color(0xFFF9BE17)),
+      _GradientStop(0.90, const Color(0xFFF66E1B)),
+      _GradientStop(1.00, const Color(0xFF7A0403)),
     ],
     'grayscale': [
       // White = quiet, black = loud — matches Audacity, Raven, Sonic

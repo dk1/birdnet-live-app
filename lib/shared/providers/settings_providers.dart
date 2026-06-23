@@ -45,11 +45,11 @@ final confidenceThresholdProvider =
       return IntSettingNotifier(prefs, PrefKeys.confidenceThreshold, 35);
     });
 
-/// Inference rate in Hz (0.25, 0.5, 1.0, 2.0 — default 1.0).
+/// Inference rate in Hz (0.1–1.0 in 0.1 Hz steps — default 1.0).
 final inferenceRateProvider =
     StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return DoubleSettingNotifier(prefs, PrefKeys.inferenceRate, 1.0);
+      return InferenceRateSettingNotifier(prefs);
     });
 
 /// Sensitivity (0.5 – 1.5, default 1.0).
@@ -108,7 +108,7 @@ final colorMapProvider = StateNotifierProvider<StringSettingNotifier, String>((
   ref,
 ) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return StringSettingNotifier(prefs, PrefKeys.colorMap, 'viridis');
+  return ColorMapSettingNotifier(prefs);
 });
 
 /// dB floor (default -80).
@@ -224,9 +224,9 @@ final exportFormatProvider =
     });
 
 /// Set of formats included in every export ZIP, persisted as a
-/// comma-separated string under [PrefKeys.exportSelection]. Empty
-/// selections fall back to `{'raven'}` at read time so the pipeline
-/// always produces at least one document.
+/// comma-separated string under [PrefKeys.exportSelection]. Defaults to
+/// `{'raven'}` for new installs; users may deselect every format to
+/// share the raw audio file without a ZIP container.
 final exportSelectionProvider =
     StateNotifierProvider<ExportSelectionNotifier, Set<String>>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
@@ -236,6 +236,10 @@ final exportSelectionProvider =
 class ExportSelectionNotifier extends StateNotifier<Set<String>> {
   ExportSelectionNotifier(this._prefs) : super(_load(_prefs));
 
+  // Sentinel string used to persist an intentionally-empty selection,
+  // so SharedPreferences can distinguish "never set" from "explicitly
+  // none" (the latter must NOT trigger the new-install default).
+  static const String _emptySentinel = '__none__';
   static const Set<String> _allFormats = {'raven', 'csv', 'json', 'gpx'};
   static const Set<String> _defaultFormats = {'raven'};
 
@@ -243,7 +247,7 @@ class ExportSelectionNotifier extends StateNotifier<Set<String>> {
 
   static Set<String> _load(SharedPreferences prefs) {
     final raw = prefs.getString(PrefKeys.exportSelection);
-    if (raw == null || raw.isEmpty) {
+    if (raw == null) {
       // Migrate from the legacy single-choice key when present.
       final legacy = prefs.getString(PrefKeys.exportFormat);
       if (legacy != null && _allFormats.contains(legacy)) {
@@ -251,8 +255,8 @@ class ExportSelectionNotifier extends StateNotifier<Set<String>> {
       }
       return {..._defaultFormats};
     }
-    final parts = raw.split(',').where(_allFormats.contains).toSet();
-    return parts.isEmpty ? {..._defaultFormats} : parts;
+    if (raw.isEmpty || raw == _emptySentinel) return <String>{};
+    return raw.split(',').where(_allFormats.contains).toSet();
   }
 
   void toggle(String format, bool enabled) {
@@ -263,16 +267,19 @@ class ExportSelectionNotifier extends StateNotifier<Set<String>> {
     } else {
       next.remove(format);
     }
-    if (next.isEmpty) next.addAll(_defaultFormats);
-    state = next;
-    _prefs.setString(PrefKeys.exportSelection, next.join(','));
+    _persist(next);
   }
 
   void set(Set<String> formats) {
-    final filtered = formats.where(_allFormats.contains).toSet();
-    final next = filtered.isEmpty ? {..._defaultFormats} : filtered;
+    _persist(formats.where(_allFormats.contains).toSet());
+  }
+
+  void _persist(Set<String> next) {
     state = next;
-    _prefs.setString(PrefKeys.exportSelection, next.join(','));
+    _prefs.setString(
+      PrefKeys.exportSelection,
+      next.isEmpty ? _emptySentinel : next.join(','),
+    );
   }
 }
 
@@ -293,6 +300,17 @@ final exportHtmlReportProvider =
     StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
       return BoolSettingNotifier(prefs, PrefKeys.exportHtmlReport, true);
+    });
+
+/// Bundle the BirdNET Live app metadata side-file (`*.metadata.json`)
+/// inside the export ZIP (default true). The side-file carries
+/// provenance such as app version, model identity, weather snapshot,
+/// and audio integrity warnings. Disable to share audio + selected
+/// formats without app-specific metadata.
+final includeAppMetadataProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(prefs, PrefKeys.includeAppMetadata, true);
     });
 
 // ---------------------------------------------------------------------------
@@ -704,6 +722,28 @@ class DoubleSettingNotifier extends StateNotifier<double> {
   }
 }
 
+class InferenceRateSettingNotifier extends DoubleSettingNotifier {
+  InferenceRateSettingNotifier(this._inferenceRatePrefs)
+    : super(_inferenceRatePrefs, PrefKeys.inferenceRate, _defaultRate) {
+    final sanitized = _sanitize(state);
+    if (sanitized != state) {
+      state = sanitized;
+      _inferenceRatePrefs.setDouble(PrefKeys.inferenceRate, sanitized);
+    }
+  }
+
+  static const double _defaultRate = 1.0;
+  final SharedPreferences _inferenceRatePrefs;
+
+  static double _sanitize(double value) {
+    final tick = (value * 10).round().clamp(1, 10);
+    return tick / 10.0;
+  }
+
+  @override
+  Future<void> set(double value) => super.set(_sanitize(value));
+}
+
 /// [StateNotifier] for an `int` setting backed by [SharedPreferences].
 class IntSettingNotifier extends StateNotifier<int> {
   IntSettingNotifier(this._prefs, this._key, int defaultValue)
@@ -730,6 +770,39 @@ class StringSettingNotifier extends StateNotifier<String> {
     state = value;
     await _prefs.setString(_key, value);
   }
+}
+
+class ColorMapSettingNotifier extends StringSettingNotifier {
+  ColorMapSettingNotifier(this._colorMapPrefs)
+    : super(_colorMapPrefs, PrefKeys.colorMap, _defaultColorMap) {
+    final sanitized = _sanitize(state);
+    if (sanitized != state) {
+      state = sanitized;
+      _colorMapPrefs.setString(PrefKeys.colorMap, sanitized);
+    }
+  }
+
+  static const String _defaultColorMap = 'viridis';
+  static const Set<String> _allowedColorMaps = {
+    'viridis',
+    'magma',
+    'plasma',
+    'cividis',
+    'jet',
+    'turbo',
+    'grayscale',
+    'birdnet',
+  };
+
+  final SharedPreferences _colorMapPrefs;
+
+  static String _sanitize(String value) {
+    if (value == 'inferno') return 'magma';
+    return _allowedColorMaps.contains(value) ? value : _defaultColorMap;
+  }
+
+  @override
+  Future<void> set(String value) => super.set(_sanitize(value));
 }
 
 /// [StateNotifier] for a `bool` setting backed by [SharedPreferences].

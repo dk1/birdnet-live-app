@@ -7,8 +7,8 @@ Supported slide IDs: `menu`, `live`, `review`, `explore`, `species`, `files`.
 ## en
 
 ### menu
-Title: Four modes for every field workflow
-Subtitle: Move from real-time listening to timed counts, transect surveys, and file analysis without changing tools.
+Title: Field workflows in one app
+Subtitle: Move between live recording, structured field protocols, offline file analysis, and review without changing tools.
 
 ### live
 Title: Identify calls in real time
@@ -33,8 +33,8 @@ Subtitle: Import audio files, review detections over time, and process recording
 ## de
 
 ### menu
-Title: Vier Modi für jede Feldarbeit
-Subtitle: Wechseln Sie zwischen Live-Erkennung, Punktzählung, Transect Surveys und Dateianalyse, ohne das Werkzeug zu wechseln.
+Title: Feldarbeit in einer App
+Subtitle: Wechseln Sie zwischen Live-Aufnahme, strukturierten Feldprotokollen, Offline-Dateianalyse und Überprüfung, ohne das Werkzeug zu wechseln.
 
 ### live
 Title: Rufe in Echtzeit erkennen
@@ -59,8 +59,8 @@ Subtitle: Audio importieren, Erkennungen über die Zeit prüfen und alles lokal 
 ## cs
 
 ### menu
-Title: Čtyři režimy pro práci v terénu
-Subtitle: Přecházejte mezi živým poslechem, Point Count, Survey a File Analysis bez změny nástroje.
+Title: Terénní práce v jedné aplikaci
+Subtitle: Přecházejte mezi živým nahráváním, strukturovanými terénními protokoly, offline analýzou souborů a kontrolou výsledků bez změny nástroje.
 
 ### live
 Title: Rozpoznávejte hlasy živě
@@ -85,8 +85,8 @@ Subtitle: Importujte audio, kontrolujte detekce v čase a zpracujte vše lokáln
 ## es
 
 ### menu
-Title: Cuatro modos para cada trabajo de campo
-Subtitle: Pasa de escucha en directo a Point Count, Survey y File Analysis sin cambiar de herramienta.
+Title: Trabajo de campo en una sola app
+Subtitle: Pasa entre grabación en directo, protocolos de campo estructurados, análisis offline de archivos y revisión sin cambiar de herramienta.
 
 ### live
 Title: Identifica cantos en directo
@@ -111,8 +111,8 @@ Subtitle: Importa audio, revisa detecciones en el tiempo y procesa todo localmen
 ## fr
 
 ### menu
-Title: Quatre modes pour le terrain
-Subtitle: Passez de l'écoute en direct au Point Count, Survey et File Analysis sans changer d'outil.
+Title: Le terrain dans une seule app
+Subtitle: Passez de l'enregistrement en direct aux protocoles de terrain structurés, à l'analyse hors ligne et à la révision sans changer d'outil.
 
 ### live
 Title: Identifiez les chants en direct
@@ -137,8 +137,8 @@ Subtitle: Importez l'audio, révisez les détections dans le temps et traitez to
 ## it
 
 ### menu
-Title: Quattro modalità per il campo
-Subtitle: Passa dall'ascolto dal vivo a Point Count, Survey e File Analysis senza cambiare strumento.
+Title: Lavoro sul campo in un'unica app
+Subtitle: Passa tra registrazione live, protocolli di campo strutturati, analisi offline dei file e revisione senza cambiare strumento.
 
 ### live
 Title: Identifica i richiami dal vivo
@@ -163,8 +163,8 @@ Subtitle: Importa audio, rivedi le rilevazioni nel tempo ed elabora tutto in loc
 ## pt
 
 ### menu
-Title: Quatro modos para o trabalho de campo
-Subtitle: Passe da escuta em direto para Point Count, Survey e File Analysis sem mudar de ferramenta.
+Title: Trabalho de campo numa só app
+Subtitle: Alterne entre gravação em direto, protocolos de campo estruturados, análise offline de ficheiros e revisão sem mudar de ferramenta.
 
 ### live
 Title: Identifique sons em direto
