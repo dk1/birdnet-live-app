@@ -397,7 +397,7 @@ def extract_descriptions(
             f.write(json_bytes)
         raw_kb = len(json_bytes) / 1024
         gz_kb = gz_path.stat().st_size / 1024
-        print(f"  {locale}: {len(descs)} descriptions, {raw_kb:.0f} KB raw → {gz_kb:.0f} KB gzip")
+        print(f"  {locale}: {len(descs)} descriptions, {raw_kb:.0f} KB raw -> {gz_kb:.0f} KB gzip")
 
     return coverage
 
