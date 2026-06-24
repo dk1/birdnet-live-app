@@ -47,6 +47,7 @@ import 'dart:typed_data';
 
 import 'dart:ui' as ui;
 
+import 'package:audio_session/audio_session.dart';
 import 'package:fftea/fftea.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -552,6 +553,18 @@ class _SpectrogramImageResult {
   final int stride;
 }
 
+class _VoiceMemoPlaybackEvent {
+  const _VoiceMemoPlaybackEvent({
+    required this.key,
+    required this.path,
+    required this.triggerSec,
+  });
+
+  final String key;
+  final String path;
+  final double triggerSec;
+}
+
 /// Review screen displayed after a live session ends.
 class SessionReviewScreen extends ConsumerStatefulWidget {
   const SessionReviewScreen({super.key, required this.session});
@@ -565,6 +578,9 @@ class SessionReviewScreen extends ConsumerStatefulWidget {
 }
 
 class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
+  static const double _memoTriggerGraceSec = 0.75;
+  static const double _memoOverlayMainVolume = 0.25;
+
   // ── State ───────────────────────────────────────────────────────────
 
   late List<DetectionRecord> _detections;
@@ -585,9 +601,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   );
   final Set<String> _autoPlayedMemoKeys = {};
   double? _lastMemoCheckPositionSec;
+  double? _mainVolumeBeforeMemoOverlay;
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<PlayerState>? _clipPlayerStateSubscription;
+  StreamSubscription<PlayerState>? _memoAutoPlayerStateSubscription;
   final ValueNotifier<Duration> _positionNotifier = ValueNotifier(
     Duration.zero,
   );
@@ -767,6 +785,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       final endDur = Duration(microseconds: (end * 1e6).round());
       final clippedDur = await _player.setClip(start: startDur, end: endDur);
       await _player.seek(Duration.zero);
+      _resetMemoAutoPlayback();
       await _cropSpectrogramForClip(start, end);
       if (mounted) {
         setState(() {
@@ -780,6 +799,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       // Remove clip — restore full recording.
       await _player.setClip();
       await _player.seek(Duration.zero);
+      _resetMemoAutoPlayback();
       if (mounted) {
         setState(() {
           _clipOffsetSec = 0.0;
@@ -831,6 +851,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _resolveWeather();
     _loadSpeciesSort();
     _loadDismissedWarningState();
+    _memoAutoPlayerStateSubscription = _memoAutoPlayer.playerStateStream.listen(
+      (state) {
+        if (!state.playing ||
+            state.processingState == ProcessingState.completed) {
+          unawaited(_restoreMainVolumeAfterMemoOverlay());
+        }
+      },
+    );
   }
 
   Future<void> _loadDismissedWarningState() async {
@@ -883,6 +911,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
 
     try {
+      await _configureSessionReviewAudioSession();
       final playbackPath = await PlaybackNormalizer.resolveSource(path);
       if (!mounted) return;
       final dur = await _player.setFilePath(playbackPath);
@@ -917,7 +946,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           if (state.processingState == ProcessingState.completed) {
             _player.pause();
             _player.seek(Duration.zero);
-            _memoAutoPlayer.stop();
+            _resetMemoAutoPlayback();
           }
         }
       });
@@ -929,6 +958,35 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       // Audio not available — review still works without playback.
     } finally {
       if (mounted) setState(() => _initializing = false);
+    }
+  }
+
+  Future<void> _configureSessionReviewAudioSession() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(
+        AudioSessionConfiguration(
+          avAudioSessionCategory: AVAudioSessionCategory.playback,
+          avAudioSessionCategoryOptions:
+              AVAudioSessionCategoryOptions.mixWithOthers |
+              AVAudioSessionCategoryOptions.allowBluetoothA2dp |
+              AVAudioSessionCategoryOptions.allowAirPlay,
+          avAudioSessionMode: AVAudioSessionMode.defaultMode,
+          avAudioSessionRouteSharingPolicy:
+              AVAudioSessionRouteSharingPolicy.defaultPolicy,
+          avAudioSessionSetActiveOptions:
+              AVAudioSessionSetActiveOptions.notifyOthersOnDeactivation,
+          androidAudioAttributes: const AndroidAudioAttributes(
+            contentType: AndroidAudioContentType.music,
+            usage: AndroidAudioUsage.media,
+          ),
+          androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+          androidWillPauseWhenDucked: false,
+        ),
+      );
+    } catch (_) {
+      // Playback still works with the platform default; we just may not get
+      // reliable overlay mixing on every device.
     }
   }
 
@@ -1007,6 +1065,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final endDur = Duration(microseconds: (end * 1e6).round());
     final clippedDur = await _player.setClip(start: startDur, end: endDur);
     await _player.seek(Duration.zero);
+    _resetMemoAutoPlayback();
 
     await _cropSpectrogramForClip(start, end);
 
@@ -1691,6 +1750,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _positionSubscription?.cancel();
     _playerStateSubscription?.cancel();
     _clipPlayerStateSubscription?.cancel();
+    _memoAutoPlayerStateSubscription?.cancel();
     if (!identical(_spectrogramImage, _fullSpectrogramImage)) {
       _spectrogramImage?.dispose();
     }
@@ -2238,6 +2298,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final endDur = Duration(microseconds: (end * 1e6).round());
     final clippedDur = await _player.setClip(start: startDur, end: endDur);
     await _player.seek(Duration.zero);
+    _resetMemoAutoPlayback();
 
     // Crop the spectrogram to the trimmed portion.
     await _cropSpectrogramForClip(start, end);
@@ -2262,6 +2323,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // Remove the player clip and restore the full recording.
     await _player.setClip();
     await _player.seek(Duration.zero);
+    _resetMemoAutoPlayback();
 
     setState(() {
       _trimStartSec = null;
@@ -2569,8 +2631,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       // let playback continue until the user pauses or the recording
       // ends.
       _autoStopPosition = null;
-      _lastMemoCheckPositionSec = null;
-      _autoPlayedMemoKeys.clear();
+      _resetMemoAutoPlayback(stopMemo: false);
 
       _player.seek(seekPos);
       _positionNotifier.value = seekPos;
@@ -2620,32 +2681,65 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // Manual seek cancels any pending auto-stop — the user is taking
     // over the timeline.
     _autoStopPosition = null;
-    _lastMemoCheckPositionSec = null;
-    _autoPlayedMemoKeys.clear();
+    _resetMemoAutoPlayback();
     _player.seek(position);
     _positionNotifier.value = position;
   }
 
   void _checkAndPlayVoiceMemos(Duration pos) {
     if (!ref.read(playbackVoiceMemosProvider)) return;
-    // offsetInRecording is clip-relative (stored as the player position at
-    // recording time), so compare against the raw clip position, not the
-    // session-absolute value.
     final clipPosSec = pos.inMicroseconds / 1e6;
-    final prevSec = _lastMemoCheckPositionSec;
+    final prevSec =
+        _lastMemoCheckPositionSec ??
+        (clipPosSec - _memoTriggerGraceSec).clamp(0.0, clipPosSec);
     _lastMemoCheckPositionSec = clipPosSec;
-    if (prevSec == null) return;
+    if (clipPosSec < prevSec) {
+      _autoPlayedMemoKeys.clear();
+      return;
+    }
 
+    for (final event in _voiceMemoPlaybackEvents()) {
+      if (_autoPlayedMemoKeys.contains(event.key)) continue;
+      if (prevSec < event.triggerSec && event.triggerSec <= clipPosSec) {
+        _autoPlayedMemoKeys.add(event.key);
+        unawaited(_triggerMemoAutoPlay(event.path));
+      }
+    }
+  }
+
+  Iterable<_VoiceMemoPlaybackEvent> _voiceMemoPlaybackEvents() sync* {
+    final durationSec = _duration.inMicroseconds / 1e6;
+
+    // Timed annotations store the active player position when created, so
+    // keep them clip-relative for playback. Global memos intentionally do not
+    // auto-play.
     for (final annotation in _annotations) {
       final path = annotation.voiceMemoPath;
       final offsetSec = annotation.offsetInRecording;
       if (path == null || offsetSec == null) continue;
-      final key = '${offsetSec}_$path';
-      if (_autoPlayedMemoKeys.contains(key)) continue;
-      if (prevSec < offsetSec && offsetSec <= clipPosSec) {
-        _autoPlayedMemoKeys.add(key);
-        unawaited(_triggerMemoAutoPlay(path));
-      }
+      if (offsetSec < 0 || offsetSec > durationSec) continue;
+      yield _VoiceMemoPlaybackEvent(
+        key: 'annotation:${annotation.createdAt.toIso8601String()}:$path',
+        path: path,
+        triggerSec: offsetSec,
+      );
+    }
+
+    // Detection memos are tied to absolute session timestamps. Convert them
+    // to the current clip's player position so trimmed review starts them at
+    // the visible detection start.
+    for (final detection in _detections) {
+      final path = detection.voiceMemoPath;
+      if (path == null || path.trim().isEmpty) continue;
+      final triggerSec =
+          widget.session.absoluteToRelative(detection.timestamp) -
+          _clipOffsetSec;
+      if (triggerSec < 0 || triggerSec > durationSec) continue;
+      yield _VoiceMemoPlaybackEvent(
+        key: 'detection:${detection.timestamp.toIso8601String()}:$path',
+        path: path,
+        triggerSec: triggerSec,
+      );
     }
   }
 
@@ -2653,12 +2747,47 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     try {
       if (!mounted || !_isPlaying) return;
       await _memoAutoPlayer.stop();
+      await _restoreMainVolumeAfterMemoOverlay();
       final playbackPath = await PlaybackNormalizer.resolveSource(path);
       await _memoAutoPlayer.setFilePath(playbackPath);
       if (!mounted || !_isPlaying) return;
+      await _duckMainVolumeForMemoOverlay();
       await _memoAutoPlayer.play();
     } catch (_) {
+      await _restoreMainVolumeAfterMemoOverlay();
       // Best-effort: a failed memo auto-play must not interrupt the session.
+    }
+  }
+
+  Future<void> _duckMainVolumeForMemoOverlay() async {
+    try {
+      _mainVolumeBeforeMemoOverlay ??= _player.volume;
+      await _memoAutoPlayer.setVolume(1.0);
+      await _player.setVolume(_memoOverlayMainVolume);
+    } catch (_) {
+      // Volume ducking is best-effort; memo playback should still continue.
+    }
+  }
+
+  Future<void> _restoreMainVolumeAfterMemoOverlay() async {
+    final previous = _mainVolumeBeforeMemoOverlay;
+    if (previous == null) return;
+    _mainVolumeBeforeMemoOverlay = null;
+    try {
+      await _player.setVolume(previous);
+    } catch (_) {
+      // Best-effort; the player may already be disposing.
+    }
+  }
+
+  void _resetMemoAutoPlayback({bool stopMemo = true}) {
+    _lastMemoCheckPositionSec = null;
+    _autoPlayedMemoKeys.clear();
+    if (stopMemo && _memoAutoPlayer.playing) {
+      unawaited(_memoAutoPlayer.stop());
+    }
+    if (stopMemo) {
+      unawaited(_restoreMainVolumeAfterMemoOverlay());
     }
   }
 
@@ -2666,7 +2795,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _autoStopPosition = null;
     if (_isPlaying) _player.pause();
     if (_clipPlayer.playing) _clipPlayer.pause();
-    if (_memoAutoPlayer.playing) _memoAutoPlayer.stop();
+    if (_memoAutoPlayer.playing) {
+      _memoAutoPlayer.stop();
+      unawaited(_restoreMainVolumeAfterMemoOverlay());
+    }
     if (_activeClipCluster != null) {
       setState(() => _activeClipCluster = null);
     }
@@ -2729,6 +2861,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final l10n = AppLocalizations.of(context)!;
     final isEdit = editingIndex != null;
     final existing = isEdit ? _annotations[editingIndex] : null;
+    final positionSec = _position.inMicroseconds / 1000000.0;
 
     await _pausePlayersForVoiceMemo();
     if (!mounted) return;
@@ -2747,7 +2880,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     // Default scope mirrors text annotations: at-current-position when
     // playback has progressed past the start, otherwise session-global.
-    final positionSec = _position.inMicroseconds / 1000000.0;
     var atTimestamp =
         isEdit ? existing!.offsetInRecording != null : positionSec > 0.5;
     final titleController = TextEditingController(
@@ -3137,6 +3269,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       if (_memoAutoPlayer.playing) {
         await _memoAutoPlayer.stop();
       }
+      await _restoreMainVolumeAfterMemoOverlay();
     } catch (_) {
       // Best-effort.
     }
