@@ -13,20 +13,20 @@ Esta página explica los controles y símbolos recurrentes que se usan en todo B
 | :material-information-outline: **Información / Acerca de** | Pie de la pantalla de inicio, barras de información, hojas de ayuda | Muestra información general o contexto resumido. |
 | :material-arrow-left: **Atrás** | Modo Live | Vuelve a la pantalla anterior. |
 | :material-open-in-new: **Abrir externo** | Pantalla Acerca de, enlaces de documentación | Abre una página externa, como la Guía de Usuario en línea. |
-| :material-volunteer-activism: **Donar** | Pantalla Acerca de | Abre la página de donaciones de BirdNET. |
+| :material-hand-heart: **Donar** | Pantalla Acerca de | Abre la página de donaciones de BirdNET. |
 
 ## Símbolos meteorológicos
 
 | Símbolo | Significado |
 |---|---|
-| :material-wb-sunny: **Despejado** | Cielo despejado. |
-| :material-partly-cloudy-day: **Parcialmente nublado** | Sol y nube para tiempo mayormente despejado o parcialmente nublado. |
-| :material-cloudy: **Cubierto** | Cobertura nubosa total. |
-| :material-foggy: **Niebla** | Niebla o niebla con escarcha. |
-| :material-rainy-light: **Llovizna** | Precipitación ligera. |
-| :material-rainy: **Lluvia** | Lluvia o chubascos. |
+| :material-weather-sunny: **Despejado** | Cielo despejado. |
+| :material-weather-partly-cloudy: **Parcialmente nublado** | Sol y nube para tiempo mayormente despejado o parcialmente nublado. |
+| :material-weather-cloudy: **Cubierto** | Cobertura nubosa total. |
+| :material-weather-fog: **Niebla** | Niebla o niebla con escarcha. |
+| :material-weather-partly-rainy: **Llovizna** | Precipitación ligera. |
+| :material-weather-rainy: **Lluvia** | Lluvia o chubascos. |
 | :material-weather-snowy: **Nieve** | Nieve o chubascos de nieve. |
-| :material-thunderstorm: **Tormenta** | Condiciones de tormenta. |
+| :material-weather-lightning-rainy: **Tormenta** | Condiciones de tormenta. |
 
 ## Controles de inicio, parada y Session
 

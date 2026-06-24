@@ -5,7 +5,7 @@ BirdNET Live riutilizza una schermata Impostazioni su più flussi di lavoro. Il 
 ## Come funziona l'ambito delle impostazioni
 
 - L'apertura delle Impostazioni da Home mostra lo schermo intero.
-- L'apertura delle Impostazioni da Live, Sondaggio, Conteggio punti o Analisi file filtra la schermata nelle sezioni pertinenti.
+- L'apertura delle Impostazioni da Live, Survey, Point Count o Analisi file filtra la schermata nelle sezioni pertinenti.
 
 ## Generale
 
@@ -189,6 +189,6 @@ Usalo prima di consegnare un dispositivo a un'altra persona osservatrice, dismet
 
 Alcuni parametri vengono configurati all'interno delle rispettive schermate di configurazione anziché nella schermata Impostazioni condivisa.
 
-- La [Modalità conteggio punti](point-count-mode.md) ha la propria durata e impostazione della posizione.
-- [Modalità sondaggio](survey-mode.md) dispone di una propria schermata dei parametri di sondaggio.
+- La [Modalità Point Count](point-count-mode.md) ha la propria durata e impostazione della posizione.
+- La [Modalità Survey](survey-mode.md) dispone di una propria schermata dei parametri di Survey.
 - [Analisi file](file-analysis.md) ha il proprio passaggio dei parametri di analisi.

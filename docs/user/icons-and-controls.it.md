@@ -13,20 +13,20 @@ Questa pagina spiega i controlli e i simboli ricorrenti utilizzati in BirdNET Li
 | :material-information-outline: **Informazioni** | Piè di pagina della Home, barre informative, pannelli di aiuto | Mostra informazioni generali o contesto di riepilogo. |
 | :material-arrow-left: **Indietro** | Modalità Live | Torna alla schermata precedente. |
 | :material-open-in-new: **Apri esterno** | Schermata Informazioni, link alla documentazione | Apre una pagina esterna, come la Guida per l'utente online. |
-| :material-volunteer-activism: **Dona** | Schermata Informazioni | Apre la pagina per le donazioni a BirdNET. |
+| :material-hand-heart: **Dona** | Schermata Informazioni | Apre la pagina per le donazioni a BirdNET. |
 
 ## Simboli meteo
 
 | Simbolo | Significato |
 |---|---|
-| :material-wb-sunny: **Sereno** | Cielo sereno. |
-| :material-partly-cloudy-day: **Parzialmente nuvoloso** | Sole e nuvole per tempo prevalentemente sereno o parzialmente nuvoloso. |
-| :material-cloudy: **Coperto** | Copertura nuvolosa completa. |
-| :material-foggy: **Nebbia** | Nebbia o nebbia con brina. |
-| :material-rainy-light: **Pioviggine** | Precipitazione leggera. |
-| :material-rainy: **Pioggia** | Pioggia o rovesci. |
+| :material-weather-sunny: **Sereno** | Cielo sereno. |
+| :material-weather-partly-cloudy: **Parzialmente nuvoloso** | Sole e nuvole per tempo prevalentemente sereno o parzialmente nuvoloso. |
+| :material-weather-cloudy: **Coperto** | Copertura nuvolosa completa. |
+| :material-weather-fog: **Nebbia** | Nebbia o nebbia con brina. |
+| :material-weather-partly-rainy: **Pioviggine** | Precipitazione leggera. |
+| :material-weather-rainy: **Pioggia** | Pioggia o rovesci. |
 | :material-weather-snowy: **Neve** | Neve o rovesci di neve. |
-| :material-thunderstorm: **Temporale** | Condizioni temporalesche. |
+| :material-weather-lightning-rainy: **Temporale** | Condizioni temporalesche. |
 
 ## Controlli di avvio, arresto e Session
 

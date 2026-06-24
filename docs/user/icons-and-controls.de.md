@@ -13,20 +13,20 @@ Auf dieser Seite werden die wiederkehrenden Steuerelemente und Symbole erläuter
 | :material-information-outline: **Info / Über** | Start-Fußzeile, Infoleisten, Hilfeblätter | Zeigt allgemeine Informationen oder zusammenfassenden Kontext an. |
 | :material-arrow-left: **Zurück** | Live-Modus | Kehrt zum vorherigen Bildschirm zurück. |
 | :material-open-in-new: **Extern öffnen** | Über-Bildschirm, Dokumentationslinks | Öffnet eine externe Seite, etwa das Online-Benutzerhandbuch. |
-| :material-volunteer-activism: **Spenden** | Über-Bildschirm | Öffnet die BirdNET-Spendenseite. |
+| :material-hand-heart: **Spenden** | Über-Bildschirm | Öffnet die BirdNET-Spendenseite. |
 
 ## Wettersymbole
 
 | Symbol | Bedeutung |
 |---|---|
-| :material-wb-sunny: **Klar** | Klarer Himmel. |
-| :material-partly-cloudy-day: **Teilweise bewölkt** | Sonne und Wolke für überwiegend klares oder teilweise bewölktes Wetter. |
-| :material-cloudy: **Bedeckt** | Vollständige Bewölkung. |
-| :material-foggy: **Nebel** | Nebel oder gefrierender Nebel. |
-| :material-rainy-light: **Nieselregen** | Leichter Niederschlag. |
-| :material-rainy: **Regen** | Regen oder Regenschauer. |
+| :material-weather-sunny: **Klar** | Klarer Himmel. |
+| :material-weather-partly-cloudy: **Teilweise bewölkt** | Sonne und Wolke für überwiegend klares oder teilweise bewölktes Wetter. |
+| :material-weather-cloudy: **Bedeckt** | Vollständige Bewölkung. |
+| :material-weather-fog: **Nebel** | Nebel oder gefrierender Nebel. |
+| :material-weather-partly-rainy: **Nieselregen** | Leichter Niederschlag. |
+| :material-weather-rainy: **Regen** | Regen oder Regenschauer. |
 | :material-weather-snowy: **Schnee** | Schnee oder Schneeschauer. |
-| :material-thunderstorm: **Gewitter** | Gewitterbedingungen. |
+| :material-weather-lightning-rainy: **Gewitter** | Gewitterbedingungen. |
 
 ## Start-, Stopp- und Session-Steuerung
 

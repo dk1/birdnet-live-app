@@ -13,20 +13,20 @@ Tato stránka vysvětluje opakující se ovládací prvky a symboly používané
 | :material-information-outline: **Info / O aplikaci** | zápatí Domů, informační lišty, panely nápovědy | Zobrazí obecné informace nebo souhrnný kontext. |
 | :material-arrow-left: **Zpět** | Režim Live | Vrátí se na předchozí obrazovku. |
 | :material-open-in-new: **Otevřít externí** | obrazovka O aplikaci, odkazy na dokumentaci | Otevře externí stránku, například online Uživatelskou příručku. |
-| :material-volunteer-activism: **Přispět** | obrazovka O aplikaci | Otevře stránku pro příspěvky BirdNETu. |
+| :material-hand-heart: **Přispět** | obrazovka O aplikaci | Otevře stránku pro příspěvky BirdNETu. |
 
 ## Symboly počasí
 
 | Symbol | Význam |
 |---|---|
-| :material-wb-sunny: **Jasno** | Jasná obloha. |
-| :material-partly-cloudy-day: **Polojasno** | Slunce a mraky pro převážně jasné nebo polojasné počasí. |
-| :material-cloudy: **Zataženo** | Souvislá oblačnost. |
-| :material-foggy: **Mlha** | Mlha nebo námrazová mlha. |
-| :material-rainy-light: **Mrholení** | Slabé srážky. |
-| :material-rainy: **Déšť** | Déšť nebo dešťové přeháňky. |
+| :material-weather-sunny: **Jasno** | Jasná obloha. |
+| :material-weather-partly-cloudy: **Polojasno** | Slunce a mraky pro převážně jasné nebo polojasné počasí. |
+| :material-weather-cloudy: **Zataženo** | Souvislá oblačnost. |
+| :material-weather-fog: **Mlha** | Mlha nebo námrazová mlha. |
+| :material-weather-partly-rainy: **Mrholení** | Slabé srážky. |
+| :material-weather-rainy: **Déšť** | Déšť nebo dešťové přeháňky. |
 | :material-weather-snowy: **Sníh** | Sníh nebo sněhové přeháňky. |
-| :material-thunderstorm: **Bouřka** | Bouřkové podmínky. |
+| :material-weather-lightning-rainy: **Bouřka** | Bouřkové podmínky. |
 
 ## Ovládací prvky spuštění, zastavení a session
 
