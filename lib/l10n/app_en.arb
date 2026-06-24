@@ -353,6 +353,22 @@
       }
     }
   },
+  "taxonGroupAves": "Birds",
+  "@taxonGroupAves": {
+    "description": "Taxon group label for birds (Aves)"
+  },
+  "taxonGroupMammalia": "Mammals",
+  "@taxonGroupMammalia": {
+    "description": "Taxon group label for mammals (Mammalia)"
+  },
+  "taxonGroupInsecta": "Insects",
+  "@taxonGroupInsecta": {
+    "description": "Taxon group label for insects (Insecta)"
+  },
+  "taxonGroupAmphibia": "Amphibians",
+  "@taxonGroupAmphibia": {
+    "description": "Taxon group label for amphibians (Amphibia)"
+  },
   "aboutGeoModel": "Geo-Model",
   "@aboutGeoModel": {
     "description": "Geo-model section title"
@@ -2444,7 +2460,7 @@
   "@surveyLocationUnavailable": {
     "description": "Shown when GPS is not available"
   },
-  "surveyManualGpsWarning": "Manual mode captures GPS only when you open the app. Detection locations will be interpolated between captures.",
+  "surveyManualGpsWarning": "Location only updates when the app is open. Tap here to grant background location permission in Settings.",
   "@surveyManualGpsWarning": {
     "description": "Warning about manual GPS mode limitations"
   },
@@ -2915,7 +2931,7 @@
       "names": { "type": "String" }
     }
   },
-  "surveyManualGpsReadyWarning": "Manual GPS mode — open the app periodically to capture location fixes.",
+  "surveyManualGpsReadyWarning": "Background location not enabled — location will only update while the app is open.",
   "@surveyManualGpsReadyWarning": {
     "description": "Warning on ready screen about manual GPS"
   },
