@@ -688,6 +688,22 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
 
   void _onPositionChanged() {
     final actualSec = widget.positionNotifier.value.inMicroseconds / 1000000.0;
+    // When the player is paused and panned, only clear the pan state when the
+    // position jump is large (> 0.5s); that signals a real external seek
+    // (e.g., tapping a detection cluster). A tiny advance means the
+    // positionStream fired just as playback resumed (race condition), and we
+    // must leave _pannedCenterSec intact so didUpdateWidget can seek there.
+    if (!widget.isPlaying && _pannedCenterSec != null) {
+      final delta = (actualSec - _interpolatedPositionSec).abs();
+      if (delta > 0.5) {
+        setState(() {
+          _pannedCenterSec = null;
+          _interpolatedPositionSec = actualSec;
+        });
+        _requestVisibleSpectrogram();
+      }
+      return;
+    }
     // If we've drifted significantly (more than 100ms), snap it to fix desyncs.
     if ((_interpolatedPositionSec - actualSec).abs() > 0.1) {
       setState(() {
@@ -1060,18 +1076,27 @@ class _PlayPauseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.black54,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onToggle,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Icon(
-            isPlaying ? AppIcons.pause : AppIcons.playArrow,
-            color: Colors.white,
-            size: 24,
+    // Wrap with an opaque GestureDetector that absorbs scale/pan events so
+    // they never reach the spectrogram's GestureDetector underneath. Without
+    // this, CircleBorder's non-rectangular hit region lets touches at the
+    // button edges fall through and trigger _handleScaleStart, then onPause().
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onScaleStart: (_) {},
+      onScaleUpdate: (_) {},
+      child: Material(
+        color: Colors.black54,
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onToggle,
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Icon(
+              isPlaying ? AppIcons.pause : AppIcons.playArrow,
+              color: Colors.white,
+              size: 24,
+            ),
           ),
         ),
       ),
@@ -1503,6 +1528,26 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                                     ),
                                   ),
                                 ),
+                              if (widget.group.allRecords.any(
+                                (r) => r.hasVoiceMemo,
+                              ))
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: Icon(
+                                    AppIcons.mic,
+                                    size: 14,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                              if (widget.group.allRecords.any((r) => r.hasNote))
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: Icon(
+                                    AppIcons.stickyNote2,
+                                    size: 14,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
                               if (widget.group.totalCount > 1)
                                 Container(
                                   margin: const EdgeInsets.only(left: 6),
@@ -1814,18 +1859,25 @@ class _ClusterRow extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         child: Row(
           children: [
-            if (isManual)
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Tooltip(
-                  message: l10n.detectionSourceManual,
+            if (isManual && audioAvailable)
+              InkWell(
+                onTap: isActive && onPause != null ? onPause : onSeek,
+                borderRadius: BorderRadius.circular(24),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
                   child: Icon(
-                    AppIcons.editNote,
+                    isActive
+                        ? (onPause != null
+                            ? AppIcons.pauseRounded
+                            : AppIcons.graphicEq)
+                        : AppIcons.playArrowRounded,
                     size: 24,
                     color: theme.colorScheme.primary,
                   ),
                 ),
               )
+            else if (isManual)
+              const SizedBox(width: 48)
             else if (audioAvailable || cluster.hasAudioClip)
               InkWell(
                 onTap: isActive && onPause != null ? onPause : onSeek,
@@ -1858,6 +1910,18 @@ class _ClusterRow extends ConsumerWidget {
                 ),
               ),
             ),
+            if (isManual)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Tooltip(
+                  message: l10n.detectionSourceManual,
+                  child: Icon(
+                    AppIcons.editNote,
+                    size: 16,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
             if (cluster.count > 1)
               Padding(
                 padding: const EdgeInsets.only(right: 8),
@@ -1865,6 +1929,39 @@ class _ClusterRow extends ConsumerWidget {
                   '×${cluster.count}',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSurface.withAlpha(120),
+                  ),
+                ),
+              ),
+            if (cluster.records.first.hasVoiceMemo)
+              Tooltip(
+                message: l10n.detectionVoiceMemoTooltip,
+                child: InkWell(
+                  onTap: onEditVoiceMemo,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
+                      AppIcons.mic,
+                      size: 22,
+                      color: theme.colorScheme.primary.withAlpha(180),
+                    ),
+                  ),
+                ),
+              ),
+            if (cluster.records.first.hasNote)
+              Tooltip(
+                message:
+                    cluster.records.first.note ?? l10n.detectionNoteTooltip,
+                child: InkWell(
+                  onTap: onEditNote,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
+                      AppIcons.stickyNote2,
+                      size: 22,
+                      color: theme.colorScheme.primary.withAlpha(180),
+                    ),
                   ),
                 ),
               ),
@@ -1912,39 +2009,6 @@ class _ClusterRow extends ConsumerWidget {
                 ),
               ),
             ),
-            if (cluster.records.first.hasNote)
-              Tooltip(
-                message:
-                    cluster.records.first.note ?? l10n.detectionNoteTooltip,
-                child: InkWell(
-                  onTap: onEditNote,
-                  borderRadius: BorderRadius.circular(24),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Icon(
-                      AppIcons.stickyNote2,
-                      size: 22,
-                      color: theme.colorScheme.primary.withAlpha(180),
-                    ),
-                  ),
-                ),
-              ),
-            if (cluster.records.first.hasVoiceMemo)
-              Tooltip(
-                message: l10n.detectionVoiceMemoTooltip,
-                child: InkWell(
-                  onTap: onEditVoiceMemo,
-                  borderRadius: BorderRadius.circular(24),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Icon(
-                      AppIcons.mic,
-                      size: 22,
-                      color: theme.colorScheme.primary.withAlpha(180),
-                    ),
-                  ),
-                ),
-              ),
             DetectionActionsOverflow(
               actions: DetectionActions(
                 onShare: onShare,
@@ -2762,7 +2826,8 @@ class _AnnotationRowState extends State<_AnnotationRow> {
       player = AudioPlayer();
       _player = player;
       try {
-        await player.setFilePath(path);
+        final playbackPath = await PlaybackNormalizer.resolveSource(path);
+        await player.setFilePath(playbackPath);
       } catch (_) {
         return;
       }

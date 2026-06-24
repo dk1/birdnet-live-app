@@ -31,6 +31,14 @@ Shows scientific names below common names across the app.
 
 When enabled (which is the default), reviewing an audio clip in a clips-only Session Review (where no full audio recording/spectrogram is available) triggers a dedicated modal player overlay with transport controls and a spectrogram preview, rather than playing the clip in the background. If a session has full audio, this setting is bypassed and the playback overlay is never shown.
 
+### Auto-play voice memos
+
+Off by default. When enabled, a voice memo attached to a timed annotation plays automatically during Session Review the moment the playhead crosses its recorded position. The memo is mixed on top of the recording rather than pausing it, so you hear your spoken note in context alongside the original audio. Leave it off if you prefer to trigger memos manually by tapping their annotation chip.
+
+### Voice memo ducking
+
+Shown only when **Auto-play voice memos** is enabled. Controls how much the main recording is lowered while an automatic voice memo plays. Higher values make spoken memos easier to hear; lower values keep more of the original recording audible underneath the memo.
+
 ### Observer name
 
 Survey, Point Count, and ARU setup remember the latest non-empty observer name entered in any of those modes and prefill it the next time you set up a field session. This keeps repeat use quick on a personal field phone while still letting you edit or clear the observer before starting a session.

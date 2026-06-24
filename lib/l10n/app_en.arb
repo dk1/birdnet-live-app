@@ -1680,6 +1680,34 @@
   "@settingsShowSciNamesDescription": {
     "description": "Subtitle for the show scientific names toggle"
   },
+  "settingsPlayback": "Playback",
+  "@settingsPlayback": {
+    "description": "Settings section header for playback options"
+  },
+  "settingsPlaybackDescription": "Session review playback behavior",
+  "@settingsPlaybackDescription": {
+    "description": "Subtitle for the Playback settings section"
+  },
+  "settingsPlaybackVoiceMemos": "Auto-play voice memos",
+  "@settingsPlaybackVoiceMemos": {
+    "description": "Toggle to auto-play voice memos during session review playback"
+  },
+  "settingsPlaybackVoiceMemosDescription": "Play attached voice memos when the playhead reaches their timestamp",
+  "@settingsPlaybackVoiceMemosDescription": {
+    "description": "Subtitle for the auto-play voice memos toggle"
+  },
+  "settingsHelpPlaybackVoiceMemos": "When enabled, any voice memo linked to a timed annotation plays automatically during session review when the playhead crosses its recorded position. Off by default.",
+  "@settingsHelpPlaybackVoiceMemos": {
+    "description": "Help text for the auto-play voice memos setting"
+  },
+  "settingsPlaybackVoiceMemoDucking": "Voice memo ducking",
+  "@settingsPlaybackVoiceMemoDucking": {
+    "description": "Slider title for how strongly the main recording is reduced while automatic voice memos play"
+  },
+  "settingsHelpPlaybackVoiceMemoDucking": "Controls how much the main recording is lowered while an automatic voice memo plays. Higher values make memos easier to hear; lower values keep more of the original recording audible.",
+  "@settingsHelpPlaybackVoiceMemoDucking": {
+    "description": "Help text for the voice memo ducking setting"
+  },
   "settingsPlaybackOverlay": "Playback overlay in review",
   "@settingsPlaybackOverlay": {
     "description": "Toggle to show a modal player sheet with a spectrogram when reviewing clips"
@@ -2977,6 +3005,10 @@
   "detectionSourceManual": "Manual",
   "@detectionSourceManual": {
     "description": "Short label/badge shown on a detection that was entered manually by the user (not produced by the model)."
+  },
+  "detectionSeekToPosition": "Jump to position",
+  "@detectionSeekToPosition": {
+    "description": "Tooltip on the seek button for a manually-added detection — tapping scrolls the audio player to that entry's timestamp."
   },
   "sessionSpeciesSortMenu": "Sort species",
   "@sessionSpeciesSortMenu": {
