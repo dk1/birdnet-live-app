@@ -388,6 +388,17 @@ final playbackVoiceMemosProvider =
       return BoolSettingNotifier(prefs, PrefKeys.playbackVoiceMemos, false);
     });
 
+/// Main recording ducking while auto-playing voice memos (0.0-0.95, default 0.75).
+final playbackVoiceMemoDuckingProvider =
+    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return DoubleSettingNotifier(
+        prefs,
+        PrefKeys.playbackVoiceMemoDucking,
+        0.75,
+      );
+    });
+
 /// Timestamp display mode: `'relative'` (session-relative `MM:SS`) or
 /// `'absolute'` (local clock `HH:mm:ss`).  Default `'relative'`.
 ///

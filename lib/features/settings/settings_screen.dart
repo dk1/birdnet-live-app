@@ -514,9 +514,22 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: Text(l10n.settingsPlaybackVoiceMemosDescription),
                 value: ref.watch(playbackVoiceMemosProvider),
                 onChanged:
-                    (v) =>
-                        ref.read(playbackVoiceMemosProvider.notifier).set(v),
+                    (v) => ref.read(playbackVoiceMemosProvider.notifier).set(v),
               ),
+              if (ref.watch(playbackVoiceMemosProvider))
+                _SliderTile(
+                  title: l10n.settingsPlaybackVoiceMemoDucking,
+                  helpBody: l10n.settingsHelpPlaybackVoiceMemoDucking,
+                  value: ref.watch(playbackVoiceMemoDuckingProvider),
+                  min: 0.0,
+                  max: 0.95,
+                  divisions: 19,
+                  format: (v) => '${(v * 100).round()}%',
+                  onChanged:
+                      (v) => ref
+                          .read(playbackVoiceMemoDuckingProvider.notifier)
+                          .set(v),
+                ),
               const Divider(),
             ],
 

@@ -1700,6 +1700,14 @@
   "@settingsHelpPlaybackVoiceMemos": {
     "description": "Help text for the auto-play voice memos setting"
   },
+  "settingsPlaybackVoiceMemoDucking": "Voice memo ducking",
+  "@settingsPlaybackVoiceMemoDucking": {
+    "description": "Slider title for how strongly the main recording is reduced while automatic voice memos play"
+  },
+  "settingsHelpPlaybackVoiceMemoDucking": "Controls how much the main recording is lowered while an automatic voice memo plays. Higher values make memos easier to hear; lower values keep more of the original recording audible.",
+  "@settingsHelpPlaybackVoiceMemoDucking": {
+    "description": "Help text for the voice memo ducking setting"
+  },
   "settingsPlaybackOverlay": "Playback overlay in review",
   "@settingsPlaybackOverlay": {
     "description": "Toggle to show a modal player sheet with a spectrogram when reviewing clips"

@@ -385,6 +385,8 @@
   "settingsPlaybackVoiceMemos": "Lecture automatique des mémos vocaux",
   "settingsPlaybackVoiceMemosDescription": "Lire les mémos vocaux joints lorsque la tête de lecture atteint leur horodatage",
   "settingsHelpPlaybackVoiceMemos": "Lorsqu'il est activé, tout mémo vocal lié à une annotation horodatée est lu automatiquement lors de la révision de session lorsque la tête de lecture dépasse sa position enregistrée. Désactivé par défaut.",
+  "settingsPlaybackVoiceMemoDucking": "Attenuation des memos vocaux",
+  "settingsHelpPlaybackVoiceMemoDucking": "Controle a quel point l'enregistrement principal est baisse pendant la lecture automatique d'un memo vocal. Des valeurs plus elevees rendent les memos plus audibles; des valeurs plus faibles gardent davantage l'enregistrement original audible.",
   "settingsPlaybackOverlay": "Superposition de lecture en révision",
   "settingsPlaybackOverlayDescription": "Déclenche un lecteur modal superposé avec un aperçu du spectrogramme et des actions détaillées lors de la révision des clips audio",
   "settingsTimestampDisplayMode": "Affichage de l'horodatage",

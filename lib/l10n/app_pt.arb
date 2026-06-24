@@ -385,6 +385,8 @@
   "settingsPlaybackVoiceMemos": "Reproduzir memo de voz automaticamente",
   "settingsPlaybackVoiceMemosDescription": "Reproduzir memos de voz anexados quando o indicador de reprodução atingir a marca de tempo",
   "settingsHelpPlaybackVoiceMemos": "Quando ativado, qualquer memo de voz vinculado a uma anotação temporizada é reproduzido automaticamente durante a revisão da sessão quando o indicador de reprodução cruza sua posição registrada. Desativado por padrão.",
+  "settingsPlaybackVoiceMemoDucking": "Atenuacao de memos de voz",
+  "settingsHelpPlaybackVoiceMemoDucking": "Controla quanto a gravacao principal e reduzida enquanto um memo de voz automatico e reproduzido. Valores mais altos tornam os memos mais faceis de ouvir; valores mais baixos mantem mais da gravacao original audivel.",
   "settingsPlaybackOverlay": "Sobreposição de reprodução na revisão",
   "settingsPlaybackOverlayDescription": "Dispara um reprodutor modal sobreposto com uma visualização de espectrograma e ações detalhadas ao revisar clipes de áudio",
   "settingsTimestampDisplayMode": "Exibição de carimbo de data/hora",

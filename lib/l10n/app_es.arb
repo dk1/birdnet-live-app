@@ -385,6 +385,8 @@
   "settingsPlaybackVoiceMemos": "Reproducir notas de voz automáticamente",
   "settingsPlaybackVoiceMemosDescription": "Reproducir notas de voz adjuntas cuando el cabezal llegue a su marca de tiempo",
   "settingsHelpPlaybackVoiceMemos": "Cuando está activado, cualquier nota de voz vinculada a una anotación con marca de tiempo se reproduce automáticamente durante la revisión de la sesión cuando el cabezal de reproducción cruza su posición registrada. Desactivado por defecto.",
+  "settingsPlaybackVoiceMemoDucking": "Atenuacion de notas de voz",
+  "settingsHelpPlaybackVoiceMemoDucking": "Controla cuanto se baja la grabacion principal mientras se reproduce automaticamente una nota de voz. Los valores mas altos hacen que las notas se oigan mejor; los valores mas bajos mantienen mas audible la grabacion original.",
   "settingsPlaybackOverlay": "Superposición de reproducción en revisión",
   "settingsPlaybackOverlayDescription": "Activa un reproductor modal superpuesto con una vista previa de espectrograma y acciones detalladas al revisar clips de audio",
   "settingsTimestampDisplayMode": "Visualización de marca temporal",

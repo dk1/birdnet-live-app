@@ -579,7 +579,6 @@ class SessionReviewScreen extends ConsumerStatefulWidget {
 
 class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   static const double _memoTriggerGraceSec = 0.75;
-  static const double _memoOverlayMainVolume = 0.25;
 
   // ── State ───────────────────────────────────────────────────────────
 
@@ -698,6 +697,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   bool get _canUndo => _undoStack.isNotEmpty;
   bool get _canRedo => _redoStack.isNotEmpty;
+  double get _memoDucking =>
+      ref.read(playbackVoiceMemoDuckingProvider).clamp(0.0, 0.95).toDouble();
 
   /// Cached reverse-geocoded location name for display.
   String? _locationName;
@@ -2635,7 +2636,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
       _player.seek(seekPos);
       _positionNotifier.value = seekPos;
-      if (!_isPlaying) _player.play();
+      if (!_isPlaying) {
+        _player.play();
+      }
       return;
     }
     // No full recording — try to play the first detection clip.
@@ -2763,7 +2766,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     try {
       _mainVolumeBeforeMemoOverlay ??= _player.volume;
       await _memoAutoPlayer.setVolume(1.0);
-      await _player.setVolume(_memoOverlayMainVolume);
+      await _player.setVolume(1.0 - _memoDucking);
     } catch (_) {
       // Volume ducking is best-effort; memo playback should still continue.
     }

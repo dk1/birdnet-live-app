@@ -401,6 +401,8 @@
   "settingsPlaybackVoiceMemos": "Sprachmemos automatisch abspielen",
   "settingsPlaybackVoiceMemosDescription": "Sprachmemos abspielen, wenn der Abspielkopf ihre Zeitmarke erreicht",
   "settingsHelpPlaybackVoiceMemos": "Wenn aktiviert, wird jedes Sprachmemo einer zeitgestempelten Anmerkung automatisch während der Sitzungsübersicht abgespielt, sobald der Abspielkopf die aufgezeichnete Position überschreitet. Standardmäßig deaktiviert.",
+  "settingsPlaybackVoiceMemoDucking": "Sprachmemo-Ducking",
+  "settingsHelpPlaybackVoiceMemoDucking": "Legt fest, wie stark die Hauptaufnahme abgesenkt wird, während ein automatisches Sprachmemo abgespielt wird. Höhere Werte machen Memos leichter hörbar; niedrigere Werte lassen mehr von der Originalaufnahme hörbar.",
   "settingsPlaybackOverlay": "Wiedergabe-Overlay in Review",
   "settingsPlaybackOverlayDescription": "Löst ein modales Player-Overlay mit einer Spektrogramm-Vorschau und detaillierten Aktionen aus, wenn Audioclips überprüft werden",
   "settingsTimestampDisplayMode": "Zeitstempel-Anzeige",

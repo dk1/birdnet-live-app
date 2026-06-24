@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding a species at a timestamp now uses the spectrogram's visible center, so the new entry lands where you are looking even after panning.
 - Session review now surfaces note and voice-memo indicators directly in species and detection rows.
 - Timed voice memos in Session Review now play over the main recording during playback, including memos attached to detections at the detection start time.
+- Playback settings now include a voice memo ducking strength control.
 
 ### Fixed
 

@@ -245,6 +245,9 @@ abstract final class PrefKeys {
   /// Whether to auto-play voice memo annotations at their timestamp during review.
   static const String playbackVoiceMemos = 'playback_voice_memos';
 
+  /// Main recording volume reduction while auto-playing voice memos.
+  static const String playbackVoiceMemoDucking = 'playback_voice_memo_ducking';
+
   // --- Announcements (spoken detections, post-v1.0) ---------------------
   // See [dev/announcements.md] for the full design. The user-facing
   // surface is two preset enums (`announcementsVerbosity`,
