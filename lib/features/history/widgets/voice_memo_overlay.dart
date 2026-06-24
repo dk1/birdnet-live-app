@@ -60,6 +60,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../recording/playback_normalizer.dart';
 
 /// Result returned to the caller when the dialog is dismissed.
 ///
@@ -239,10 +240,12 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
         return;
       }
 
-      // Stop playback if it's running so the mic isn't competing.
-      if (_player.playing) {
+      // Always stop the player to release the audio session before the
+      // recorder claims it. Checking _player.playing is insufficient:
+      // the player can hold the session while paused or buffering.
+      try {
         await _player.stop();
-      }
+      } catch (_) {}
       _loadedPlayerPath = null;
 
       final path = await _newMemoPath();
@@ -388,23 +391,29 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
   }
 
   Future<bool> _ensurePlayerLoaded(String path) async {
-    try {
-      await _player.setFilePath(path);
-      _loadedPlayerPath = path;
-      return true;
-    } catch (_) {
-      // iOS can briefly report "Cannot open" right after recorder stop
-      // while the container headers are still being finalized.
-      await Future<void>.delayed(const Duration(milliseconds: 80));
+    // Progressive retry delays: iOS and Android can take a moment to
+    // flush the container headers after recorder stop. Normalization
+    // (full decode) runs on the first attempt; retries fall back to the
+    // raw path to avoid decoding an incomplete file again.
+    const delays = [0, 150, 400];
+    for (var i = 0; i < delays.length; i++) {
+      if (delays[i] > 0) {
+        await Future<void>.delayed(Duration(milliseconds: delays[i]));
+      }
+      if (!mounted) return false;
       try {
-        await _player.setFilePath(path);
+        // Skip normalization on retries; the file may not be fully
+        // written yet, and a failed decode would just return the
+        // original path anyway. First attempt normalizes as usual.
+        final playbackPath =
+            i == 0 ? await PlaybackNormalizer.resolveSource(path) : path;
+        await _player.setFilePath(playbackPath);
         _loadedPlayerPath = path;
         return true;
-      } catch (_) {
-        _loadedPlayerPath = null;
-        return false;
-      }
+      } catch (_) {}
     }
+    _loadedPlayerPath = null;
+    return false;
   }
 
   void _save() {
@@ -497,12 +506,13 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
           ),
         TextButton(
           onPressed: _isRecording ? null : () => Navigator.of(context).pop(),
-          child: Text(l10n.cancel),
+          child: Text(hasPending ? l10n.cancel : l10n.tooltipClose),
         ),
-        FilledButton(
-          onPressed: (_isRecording || !hasPending) ? null : _save,
-          child: Text(l10n.sessionSave),
-        ),
+        if (hasPending)
+          FilledButton(
+            onPressed: _isRecording ? null : _save,
+            child: Text(l10n.sessionSave),
+          ),
       ],
     );
   }

@@ -1912,7 +1912,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   Future<void> _addSpecies() async {
     // Use the spectrogram's visible center (accounts for user panning) rather
     // than the audio playhead, which may lag behind after a pan.
-    final centerSec = _lastViewportCenterSec ??
+    final centerSec =
+        _lastViewportCenterSec ??
         (_clipOffsetSec + _position.inMicroseconds / 1000000.0);
     final positionSec = centerSec;
     final result = await Navigator.of(context).push<AddSpeciesResult>(
@@ -2652,7 +2653,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     try {
       if (!mounted || !_isPlaying) return;
       await _memoAutoPlayer.stop();
-      await _memoAutoPlayer.setFilePath(path);
+      final playbackPath = await PlaybackNormalizer.resolveSource(path);
+      await _memoAutoPlayer.setFilePath(playbackPath);
       if (!mounted || !_isPlaying) return;
       await _memoAutoPlayer.play();
     } catch (_) {
@@ -2720,7 +2722,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// dialog, prefilled from the existing entry. The dialog also exposes
   /// a "Replace recording…" button that re-opens the memo recorder
   /// without losing the title or scope.
-  Future<void> _showVoiceMemoInput({int? editingIndex, String? overridePath}) async {
+  Future<void> _showVoiceMemoInput({
+    int? editingIndex,
+    String? overridePath,
+  }) async {
     final l10n = AppLocalizations.of(context)!;
     final isEdit = editingIndex != null;
     final existing = isEdit ? _annotations[editingIndex] : null;
@@ -2863,7 +2868,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       // that's anything in currentMemoPath. For an edit with overridePath (re-
       // record from playback), that's the overridePath file. Regular edits
       // where the path never changed must NOT be deleted.
-      final unchanged = isEdit && overridePath == null &&
+      final unchanged =
+          isEdit &&
+          overridePath == null &&
           currentMemoPath == existing?.voiceMemoPath;
       if (!unchanged && currentMemoPath != null) {
         Future<void>(() async {
@@ -3598,24 +3605,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                     if (_isPlaying) {
                       _player.pause();
                     } else {
-                      // If the spectrogram was panned while paused, the
-                      // viewport center differs from the player position.
-                      // Seek there first so playback starts from what the
-                      // user is looking at, not the old pre-pan position.
-                      if (_lastViewportCenterSec != null) {
-                        final viewInClip =
-                            _lastViewportCenterSec! - _clipOffsetSec;
-                        final playerPosSec =
-                            _position.inMicroseconds / 1000000.0;
-                        if ((viewInClip - playerPosSec).abs() > 0.2) {
-                          final seekPos = Duration(
-                            microseconds: (viewInClip * 1e6).round(),
-                          );
-                          if (!seekPos.isNegative && seekPos <= _duration) {
-                            _seekToPosition(seekPos);
-                          }
-                        }
-                      }
                       _player.play();
                     }
                   },
@@ -3704,9 +3693,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           _editAnnotation(i);
         }
       },
-      tooltip: a.hasVoiceMemo
-          ? l10n.sessionEditVoiceMemo
-          : (isTimed ? l10n.detectionSeekToPosition : l10n.sessionEditAnnotation),
+      tooltip:
+          a.hasVoiceMemo
+              ? l10n.sessionEditVoiceMemo
+              : (isTimed
+                  ? l10n.detectionSeekToPosition
+                  : l10n.sessionEditAnnotation),
       deleteIcon: const Icon(AppIcons.close, size: 16),
       onDeleted: () => _deleteAnnotation(i),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -4326,10 +4318,16 @@ class _FullscreenSurveyMapScreenState
               icon: const Icon(AppIcons.openInNew),
               tooltip: l10n.openInAppleMaps,
               onPressed: () {
-                final lat = widget.session.latitude ??
-                    (widget.gpsTrack.isNotEmpty ? widget.gpsTrack.first.latitude : null);
-                final lng = widget.session.longitude ??
-                    (widget.gpsTrack.isNotEmpty ? widget.gpsTrack.first.longitude : null);
+                final lat =
+                    widget.session.latitude ??
+                    (widget.gpsTrack.isNotEmpty
+                        ? widget.gpsTrack.first.latitude
+                        : null);
+                final lng =
+                    widget.session.longitude ??
+                    (widget.gpsTrack.isNotEmpty
+                        ? widget.gpsTrack.first.longitude
+                        : null);
                 if (lat != null && lng != null) {
                   openExternalUrl(
                     context,

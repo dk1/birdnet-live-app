@@ -20,11 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clarified the background location warning in Survey Setup (#132): the warning card now explicitly tells users to tap to open Settings and grant the background location permission.
 - In session review, tapping a voice memo annotation now plays it back, and tapping a timed text annotation jumps the playhead to its position (long-press to edit).
 - Adding a species at a timestamp now uses the spectrogram's visible center, so the new entry lands where you are looking even after panning.
+- Session review now surfaces note and voice-memo indicators directly in species and detection rows.
 
 ### Fixed
 
 - Resuming playback after panning the spectrogram while paused now starts from the position you are viewing instead of jumping back to the pre-pan spot.
 - Polished the voice-memo dialog layout and re-record flow for more consistent behavior when replacing an existing memo.
+- Voice memo playback now uses the same quiet-recording normalization path as detection clips, and starting a new memo reliably releases any paused playback session first.
 
 ## [0.17.15] - 2026-06-23
 
