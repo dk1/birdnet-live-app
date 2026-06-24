@@ -13,20 +13,20 @@ Cette page explique les contrôles et symboles récurrents utilisés dans BirdNE
 | :material-information-outline: **Info / À propos** | Bas de l'accueil, barres d'informations, fiches d'aide | Affiche des informations générales ou un contexte récapitulatif. |
 | :material-arrow-left: **Retour** | Mode En direct | Revient à l'écran précédent. |
 | :material-open-in-new: **Ouvrir en externe** | Écran À propos, liens de documentation | Ouvre une page externe, comme le Guide de l'utilisateur en ligne. |
-| :material-volunteer-activism: **Faire un don** | Écran À propos | Ouvre la page de don de BirdNET. |
+| :material-hand-heart: **Faire un don** | Écran À propos | Ouvre la page de don de BirdNET. |
 
 ## Symboles météo
 
 | Contrôle | Signification |
 |---|---|
-| :material-wb-sunny: **Dégagé** | Ciel dégagé. |
-| :material-partly-cloudy-day: **Partiellement nuageux** | Soleil et nuages pour un temps plutôt dégagé ou partiellement nuageux. |
-| :material-cloudy: **Couvert** | Couverture nuageuse complète. |
-| :material-foggy: **Brouillard** | Brouillard ou brouillard givrant. |
-| :material-rainy-light: **Bruine** | Précipitations légères. |
-| :material-rainy: **Pluie** | Pluie ou averses. |
+| :material-weather-sunny: **Dégagé** | Ciel dégagé. |
+| :material-weather-partly-cloudy: **Partiellement nuageux** | Soleil et nuages pour un temps plutôt dégagé ou partiellement nuageux. |
+| :material-weather-cloudy: **Couvert** | Couverture nuageuse complète. |
+| :material-weather-fog: **Brouillard** | Brouillard ou brouillard givrant. |
+| :material-weather-partly-rainy: **Bruine** | Précipitations légères. |
+| :material-weather-rainy: **Pluie** | Pluie ou averses. |
 | :material-weather-snowy: **Neige** | Neige ou averses de neige. |
-| :material-thunderstorm: **Orage** | Conditions orageuses. |
+| :material-weather-lightning-rainy: **Orage** | Conditions orageuses. |
 
 ## Contrôles de démarrage, d'arrêt et de session
 
