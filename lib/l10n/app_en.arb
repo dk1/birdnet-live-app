@@ -353,6 +353,22 @@
       }
     }
   },
+  "taxonGroupAves": "Birds",
+  "@taxonGroupAves": {
+    "description": "Taxon group label for birds (Aves)"
+  },
+  "taxonGroupMammalia": "Mammals",
+  "@taxonGroupMammalia": {
+    "description": "Taxon group label for mammals (Mammalia)"
+  },
+  "taxonGroupInsecta": "Insects",
+  "@taxonGroupInsecta": {
+    "description": "Taxon group label for insects (Insecta)"
+  },
+  "taxonGroupAmphibia": "Amphibians",
+  "@taxonGroupAmphibia": {
+    "description": "Taxon group label for amphibians (Amphibia)"
+  },
   "aboutGeoModel": "Geo-Model",
   "@aboutGeoModel": {
     "description": "Geo-model section title"

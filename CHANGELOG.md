@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The species count on the About screen now includes a per-group breakdown in parentheses, e.g. "5250 species (Birds: 4597, Mammals: 232, Amphibians: 253, Insects: 168)".
+
 ## [0.17.15] - 2026-06-23
 
 ### Changed
