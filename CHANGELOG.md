@@ -7,10 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.16] - 2026-06-24
+
+### Added
+
+- New **Playback** settings section with an **Auto-play voice memos** toggle (off by default). When enabled, a voice memo attached to a timed annotation plays automatically during session review as the playhead crosses its recorded position — mixed on top of the recording without interrupting it.
+- Manual detections in session review now have a dedicated play/seek control, so you can jump the playhead to a manually added entry just like a model detection.
+
 ### Changed
 
 - The species count on the About screen now includes a per-group breakdown in parentheses, e.g. "5250 species (Birds: 4597, Mammals: 232, Amphibians: 253, Insects: 168)".
 - Clarified the background location warning in Survey Setup (#132): the warning card now explicitly tells users to tap to open Settings and grant the background location permission.
+- In session review, tapping a voice memo annotation now plays it back, and tapping a timed text annotation jumps the playhead to its position (long-press to edit).
+- Adding a species at a timestamp now uses the spectrogram's visible center, so the new entry lands where you are looking even after panning.
+
+### Fixed
+
+- Resuming playback after panning the spectrogram while paused now starts from the position you are viewing instead of jumping back to the pre-pan spot.
+- Polished the voice-memo dialog layout and re-record flow for more consistent behavior when replacing an existing memo.
 
 ## [0.17.15] - 2026-06-23
 
