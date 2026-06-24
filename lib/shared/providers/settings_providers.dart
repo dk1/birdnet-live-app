@@ -381,6 +381,13 @@ final sessionReviewPlaybackOverlayProvider =
       );
     });
 
+/// Whether to auto-play voice memo annotations at their timestamp during session review (default false).
+final playbackVoiceMemosProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(prefs, PrefKeys.playbackVoiceMemos, false);
+    });
+
 /// Timestamp display mode: `'relative'` (session-relative `MM:SS`) or
 /// `'absolute'` (local clock `HH:mm:ss`).  Default `'relative'`.
 ///

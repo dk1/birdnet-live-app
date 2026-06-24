@@ -242,6 +242,9 @@ abstract final class PrefKeys {
   static const String sessionReviewPlaybackOverlay =
       'session_review_playback_overlay';
 
+  /// Whether to auto-play voice memo annotations at their timestamp during review.
+  static const String playbackVoiceMemos = 'playback_voice_memos';
+
   // --- Announcements (spoken detections, post-v1.0) ---------------------
   // See [dev/announcements.md] for the full design. The user-facing
   // surface is two preset enums (`announcementsVerbosity`,

@@ -82,8 +82,8 @@ class VoiceMemoResult {
 /// Opens the voice-memo recorder dialog for [sessionId].
 ///
 /// [existingMemoPath] is the current `voiceMemoPath` (if any). When
-/// supplied, the dialog opens in playback mode and shows a "Replace"
-/// option; otherwise it opens directly in record mode.
+/// supplied, the dialog opens in playback mode and shows a "Re-record"
+/// option; otherwise it opens directly in idle (tap-to-record) mode.
 Future<VoiceMemoResult?> showVoiceMemoDialog({
   required BuildContext context,
   required String sessionId,

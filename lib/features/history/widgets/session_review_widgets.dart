@@ -688,6 +688,17 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
 
   void _onPositionChanged() {
     final actualSec = widget.positionNotifier.value.inMicroseconds / 1000000.0;
+    // When the player is paused, any position update is an external seek
+    // (e.g., tapping a detection cluster). Clear the pan immediately so
+    // didUpdateWidget doesn't override the seek when play then resumes.
+    if (!widget.isPlaying && _pannedCenterSec != null) {
+      setState(() {
+        _pannedCenterSec = null;
+        _interpolatedPositionSec = actualSec;
+      });
+      _requestVisibleSpectrogram();
+      return;
+    }
     // If we've drifted significantly (more than 100ms), snap it to fix desyncs.
     if ((_interpolatedPositionSec - actualSec).abs() > 0.1) {
       setState(() {
@@ -1814,18 +1825,25 @@ class _ClusterRow extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         child: Row(
           children: [
-            if (isManual)
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Tooltip(
-                  message: l10n.detectionSourceManual,
+            if (isManual && audioAvailable)
+              InkWell(
+                onTap: isActive && onPause != null ? onPause : onSeek,
+                borderRadius: BorderRadius.circular(24),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
                   child: Icon(
-                    AppIcons.editNote,
+                    isActive
+                        ? (onPause != null
+                            ? AppIcons.pauseRounded
+                            : AppIcons.graphicEq)
+                        : AppIcons.playArrowRounded,
                     size: 24,
                     color: theme.colorScheme.primary,
                   ),
                 ),
               )
+            else if (isManual)
+              const SizedBox(width: 48)
             else if (audioAvailable || cluster.hasAudioClip)
               InkWell(
                 onTap: isActive && onPause != null ? onPause : onSeek,
@@ -1858,6 +1876,18 @@ class _ClusterRow extends ConsumerWidget {
                 ),
               ),
             ),
+            if (isManual)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Tooltip(
+                  message: l10n.detectionSourceManual,
+                  child: Icon(
+                    AppIcons.editNote,
+                    size: 16,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
             if (cluster.count > 1)
               Padding(
                 padding: const EdgeInsets.only(right: 8),

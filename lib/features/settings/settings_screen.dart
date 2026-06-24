@@ -96,6 +96,12 @@ class SettingsScreen extends ConsumerWidget {
       SettingsContext.survey,
       SettingsContext.pointCount,
     },
+    'playback': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
+      SettingsContext.fileAnalysis,
+    },
     'export': {
       SettingsContext.live,
       SettingsContext.survey,
@@ -491,6 +497,26 @@ class SettingsScreen extends ConsumerWidget {
                   onChanged:
                       (v) => ref.read(liveAutoStartProvider.notifier).set(v),
                 ),
+              const Divider(),
+            ],
+
+            // --- Playback ---
+            if (_showSection('playback')) ...[
+              _SectionHeader(
+                title: l10n.settingsPlayback,
+                subtitle: l10n.settingsPlaybackDescription,
+              ),
+              SwitchListTile(
+                title: _TitleWithHelp(
+                  title: l10n.settingsPlaybackVoiceMemos,
+                  helpBody: l10n.settingsHelpPlaybackVoiceMemos,
+                ),
+                subtitle: Text(l10n.settingsPlaybackVoiceMemosDescription),
+                value: ref.watch(playbackVoiceMemosProvider),
+                onChanged:
+                    (v) =>
+                        ref.read(playbackVoiceMemosProvider.notifier).set(v),
+              ),
               const Divider(),
             ],
 

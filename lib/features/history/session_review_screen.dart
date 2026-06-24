@@ -573,6 +573,18 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   final Set<String> _expandedSpecies = {};
   final AudioPlayer _player = AudioPlayer();
   final AudioPlayer _clipPlayer = AudioPlayer();
+
+  /// Secondary player for auto-playing voice memos *on top of* the main
+  /// recording. It must not touch the shared audio session: disabling
+  /// session activation and interruption handling keeps it from requesting
+  /// (or releasing) audio focus, so it mixes with [_player] instead of
+  /// pausing it. The main player owns the active session while playing.
+  final AudioPlayer _memoAutoPlayer = AudioPlayer(
+    handleInterruptions: false,
+    handleAudioSessionActivation: false,
+  );
+  final Set<String> _autoPlayedMemoKeys = {};
+  double? _lastMemoCheckPositionSec;
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<PlayerState>? _clipPlayerStateSubscription;
@@ -896,6 +908,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           return;
         }
 
+        _checkAndPlayVoiceMemos(pos);
         _positionNotifier.value = pos;
       });
       _playerStateSubscription = _player.playerStateStream.listen((state) {
@@ -904,6 +917,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           if (state.processingState == ProcessingState.completed) {
             _player.pause();
             _player.seek(Duration.zero);
+            _memoAutoPlayer.stop();
           }
         }
       });
@@ -1685,6 +1699,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _deleteSpectrogramTempPcm();
     _player.dispose();
     _clipPlayer.dispose();
+    _memoAutoPlayer.dispose();
     _speciesSearchController.dispose();
     super.dispose();
   }
@@ -1895,7 +1910,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   // ── Add Species ───────────────────────────────────────────────────
 
   Future<void> _addSpecies() async {
-    final positionSec = _position.inMicroseconds / 1000000.0;
+    // Use the spectrogram's visible center (accounts for user panning) rather
+    // than the audio playhead, which may lag behind after a pan.
+    final centerSec = _lastViewportCenterSec ??
+        (_clipOffsetSec + _position.inMicroseconds / 1000000.0);
+    final positionSec = centerSec;
     final result = await Navigator.of(context).push<AddSpeciesResult>(
       MaterialPageRoute(
         builder:
@@ -1929,14 +1948,18 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           break;
 
         case AddSpeciesInsertMode.atTimestamp:
-          // Insert at the current playhead position.
-          final ts = widget.session.startTime.add(_position);
+          final ts = widget.session.startTime.add(
+            Duration(microseconds: (centerSec * 1e6).round()),
+          );
           _detections.add(
             DetectionRecord(
               scientificName: result.scientificName,
               commonName: result.commonName,
               confidence: 1.0,
               timestamp: ts,
+              endTimestamp: ts.add(
+                Duration(seconds: widget.session.settings.windowDuration),
+              ),
               source:
                   result.userSpecified
                       ? DetectionSource.userSpecified
@@ -2009,9 +2032,38 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
   }
 
-  /// Reopen the appropriate editor for an existing annotation. Wired
-  /// to the chip's `onPressed` so users can rename, re-scope, or (for
-  /// memos) re-record after the fact.
+  /// Play back the voice memo attached to the annotation at [index].
+  ///
+  /// Opens the voice-memo dialog in playback mode. If the user re-records,
+  /// the annotation's memo path is updated in place. If the user deletes the
+  /// memo, the annotation is deleted (same as tapping ×).
+  Future<void> _playVoiceMemoAnnotation(int index) async {
+    final a = _annotations[index];
+    await _pausePlayersForVoiceMemo();
+    if (!mounted) return;
+    final result = await showVoiceMemoDialog(
+      context: context,
+      sessionId: widget.session.id,
+      existingMemoPath: a.voiceMemoPath,
+    );
+    if (!mounted || result == null) return;
+    if (result.deleted) {
+      _deleteAnnotation(index);
+      return;
+    }
+    if (result.savedPath != null && result.savedPath != a.voiceMemoPath) {
+      if (!mounted) return;
+      // Route through the metadata dialog so the user can update title and
+      // scope — consistent with the add-new-memo flow.
+      await _showVoiceMemoInput(
+        editingIndex: index,
+        overridePath: result.savedPath,
+      );
+    }
+  }
+
+  /// Reopen the appropriate editor for an existing annotation. Wired to the
+  /// chip's long-press (for voice memos) or tap (for text annotations).
   void _editAnnotation(int index) {
     final a = _annotations[index];
     if (a.hasVoiceMemo) {
@@ -2516,6 +2568,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       // let playback continue until the user pauses or the recording
       // ends.
       _autoStopPosition = null;
+      _lastMemoCheckPositionSec = null;
+      _autoPlayedMemoKeys.clear();
 
       _player.seek(seekPos);
       _positionNotifier.value = seekPos;
@@ -2565,15 +2619,52 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // Manual seek cancels any pending auto-stop — the user is taking
     // over the timeline.
     _autoStopPosition = null;
+    _lastMemoCheckPositionSec = null;
+    _autoPlayedMemoKeys.clear();
     _player.seek(position);
     _positionNotifier.value = position;
-    if (!_isPlaying) _player.play();
+  }
+
+  void _checkAndPlayVoiceMemos(Duration pos) {
+    if (!ref.read(playbackVoiceMemosProvider)) return;
+    // offsetInRecording is clip-relative (stored as the player position at
+    // recording time), so compare against the raw clip position, not the
+    // session-absolute value.
+    final clipPosSec = pos.inMicroseconds / 1e6;
+    final prevSec = _lastMemoCheckPositionSec;
+    _lastMemoCheckPositionSec = clipPosSec;
+    if (prevSec == null) return;
+
+    for (final annotation in _annotations) {
+      final path = annotation.voiceMemoPath;
+      final offsetSec = annotation.offsetInRecording;
+      if (path == null || offsetSec == null) continue;
+      final key = '${offsetSec}_$path';
+      if (_autoPlayedMemoKeys.contains(key)) continue;
+      if (prevSec < offsetSec && offsetSec <= clipPosSec) {
+        _autoPlayedMemoKeys.add(key);
+        unawaited(_triggerMemoAutoPlay(path));
+      }
+    }
+  }
+
+  Future<void> _triggerMemoAutoPlay(String path) async {
+    try {
+      if (!mounted || !_isPlaying) return;
+      await _memoAutoPlayer.stop();
+      await _memoAutoPlayer.setFilePath(path);
+      if (!mounted || !_isPlaying) return;
+      await _memoAutoPlayer.play();
+    } catch (_) {
+      // Best-effort: a failed memo auto-play must not interrupt the session.
+    }
   }
 
   void _pausePlayer() {
     _autoStopPosition = null;
     if (_isPlaying) _player.pause();
     if (_clipPlayer.playing) _clipPlayer.pause();
+    if (_memoAutoPlayer.playing) _memoAutoPlayer.stop();
     if (_activeClipCluster != null) {
       setState(() => _activeClipCluster = null);
     }
@@ -2629,7 +2720,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// dialog, prefilled from the existing entry. The dialog also exposes
   /// a "Replace recording…" button that re-opens the memo recorder
   /// without losing the title or scope.
-  Future<void> _showVoiceMemoInput({int? editingIndex}) async {
+  Future<void> _showVoiceMemoInput({int? editingIndex, String? overridePath}) async {
     final l10n = AppLocalizations.of(context)!;
     final isEdit = editingIndex != null;
     final existing = isEdit ? _annotations[editingIndex] : null;
@@ -2639,7 +2730,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     String? memoPath;
     if (isEdit) {
-      memoPath = existing!.voiceMemoPath;
+      memoPath = overridePath ?? existing!.voiceMemoPath;
     } else {
       final result = await showVoiceMemoDialog(
         context: context,
@@ -2669,6 +2760,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           (ctx) => StatefulBuilder(
             builder:
                 (ctx, setDialogState) => AlertDialog(
+                  insetPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 24,
+                  ),
                   title: Text(
                     isEdit
                         ? l10n.sessionEditVoiceMemo
@@ -2727,10 +2822,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                             onPressed: () async {
                               await _pausePlayersForVoiceMemo();
                               if (!ctx.mounted) return;
+                              // Open idle mode (no existing path) so the user
+                              // taps to record — same flow as the initial add.
                               final result = await showVoiceMemoDialog(
                                 context: ctx,
                                 sessionId: widget.session.id,
-                                existingMemoPath: currentMemoPath,
                               );
                               if (result?.savedPath != null) {
                                 setDialogState(
@@ -2740,27 +2836,36 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                             },
                           ),
                         ],
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.of(ctx).pop(false),
+                              child: Text(l10n.cancel),
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton(
+                              onPressed: () => Navigator.of(ctx).pop(true),
+                              child: Text(l10n.sessionSave),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(false),
-                      child: Text(l10n.cancel),
-                    ),
-                    FilledButton(
-                      onPressed: () => Navigator.of(ctx).pop(true),
-                      child: Text(l10n.sessionSave),
-                    ),
-                  ],
                 ),
           ),
     );
 
     if (!mounted || saved != true) {
-      // User cancelled. If this was a brand-new memo (not yet committed
-      // to an annotation), the recorded file would otherwise leak.
-      if (!isEdit && currentMemoPath != null) {
+      // Delete any newly-recorded file that wasn't committed. For a new memo,
+      // that's anything in currentMemoPath. For an edit with overridePath (re-
+      // record from playback), that's the overridePath file. Regular edits
+      // where the path never changed must NOT be deleted.
+      final unchanged = isEdit && overridePath == null &&
+          currentMemoPath == existing?.voiceMemoPath;
+      if (!unchanged && currentMemoPath != null) {
         Future<void>(() async {
           try {
             final f = File(currentMemoPath!);
@@ -3017,6 +3122,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     try {
       if (_clipPlayer.playing) {
         await _clipPlayer.pause();
+      }
+    } catch (_) {
+      // Best-effort.
+    }
+    try {
+      if (_memoAutoPlayer.playing) {
+        await _memoAutoPlayer.stop();
       }
     } catch (_) {
       // Best-effort.
@@ -3486,6 +3598,24 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                     if (_isPlaying) {
                       _player.pause();
                     } else {
+                      // If the spectrogram was panned while paused, the
+                      // viewport center differs from the player position.
+                      // Seek there first so playback starts from what the
+                      // user is looking at, not the old pre-pan position.
+                      if (_lastViewportCenterSec != null) {
+                        final viewInClip =
+                            _lastViewportCenterSec! - _clipOffsetSec;
+                        final playerPosSec =
+                            _position.inMicroseconds / 1000000.0;
+                        if ((viewInClip - playerPosSec).abs() > 0.2) {
+                          final seekPos = Duration(
+                            microseconds: (viewInClip * 1e6).round(),
+                          );
+                          if (!seekPos.isNegative && seekPos <= _duration) {
+                            _seekToPosition(seekPos);
+                          }
+                        }
+                      }
                       _player.play();
                     }
                   },
@@ -3545,26 +3675,53 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     } else {
       label = l10n.sessionAnnotationVoiceMemoLabel;
     }
-    return InputChip(
+
+    final isTimed = a.offsetInRecording != null && _audioAvailable;
+
+    void seekToOffset() => _seekToPosition(
+      Duration(microseconds: (a.offsetInRecording! * 1e6).round()),
+    );
+
+    // Timed entries always show the clock icon so global vs timed is
+    // immediately visible regardless of whether it's a voice memo or text.
+    // Global voice memos keep the mic icon; global text keeps the text icon.
+    final chip = InputChip(
       label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
       avatar: Icon(
-        a.hasVoiceMemo
-            ? AppIcons.mic
-            : (a.offsetInRecording != null
-                ? AppIcons.schedule
-                : AppIcons.shortText),
+        a.offsetInRecording != null
+            ? AppIcons.schedule
+            : (a.hasVoiceMemo ? AppIcons.mic : AppIcons.shortText),
         size: 16,
       ),
-      onPressed: () => _editAnnotation(i),
-      tooltip:
-          a.hasVoiceMemo
-              ? l10n.sessionEditVoiceMemo
-              : l10n.sessionEditAnnotation,
+      onPressed: () {
+        if (a.hasVoiceMemo) {
+          _playVoiceMemoAnnotation(i);
+        } else if (isTimed) {
+          // Timed text annotations: tap seeks the playhead to the marked
+          // position (the point of a timed note); long-press edits.
+          seekToOffset();
+        } else {
+          _editAnnotation(i);
+        }
+      },
+      tooltip: a.hasVoiceMemo
+          ? l10n.sessionEditVoiceMemo
+          : (isTimed ? l10n.detectionSeekToPosition : l10n.sessionEditAnnotation),
       deleteIcon: const Icon(AppIcons.close, size: 16),
       onDeleted: () => _deleteAnnotation(i),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       visualDensity: VisualDensity.compact,
     );
+
+    if (isTimed) {
+      // Voice memos: long-press seeks (tap already plays).
+      // Text annotations: long-press edits (tap already seeks).
+      return GestureDetector(
+        onLongPress: a.hasVoiceMemo ? seekToOffset : () => _editAnnotation(i),
+        child: chip,
+      );
+    }
+    return chip;
   }
 
   Widget _buildSpeciesList(ThemeData theme, AppLocalizations l10n) {
