@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Sort species chips in session card alphabetically and update top species logic
 
+### Fixes
+
+- Add foreground GPS tracking option and manage lifecycle states.
+
 ## [0.17.16] - 2026-06-24
 
 ### Added

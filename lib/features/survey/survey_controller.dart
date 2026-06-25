@@ -366,6 +366,7 @@ class SurveyController {
     double? startLatitude,
     double? startLongitude,
     bool backgroundGps = true,
+    bool foregroundGps = false,
     int autoStopBattery = 0,
     SessionSettings? settingsSnapshot,
     int? poolingWindows,
@@ -468,7 +469,7 @@ class SurveyController {
       // GPS tracking.
       _gpsTracker = SurveyGpsTracker(intervalSeconds: gpsIntervalSeconds);
       _gpsTracker!.onPoint = _onGpsPoint;
-      if (backgroundGps) {
+      if (backgroundGps || foregroundGps) {
         await _gpsTracker!.startTracking();
       } else {
         // Manual GPS mode: capture initial fix.
@@ -550,6 +551,7 @@ class SurveyController {
     required SamplingMode samplingMode,
     int topNPerSpecies = 10,
     bool backgroundGps = true,
+    bool foregroundGps = false,
     int autoStopBattery = 0,
     int? poolingWindows,
     String poolingMode = 'lme',
@@ -614,7 +616,7 @@ class SurveyController {
       _gpsTracker = SurveyGpsTracker(intervalSeconds: gpsIntervalSeconds);
       _gpsTracker!.onPoint = _onGpsPoint;
       _gpsTracker!.seedTrack(existingSession.gpsTrack);
-      if (backgroundGps) {
+      if (backgroundGps || foregroundGps) {
         await _gpsTracker!.startTracking();
       } else {
         await _gpsTracker!.captureOnce();
