@@ -3520,6 +3520,14 @@
   "@settingsIncludeAudioFiles": {
     "description": "Setting to include audio files in export"
   },
+  "settingsShareAudioAsWav": "Always share audio as WAV",
+  "@settingsShareAudioAsWav": {
+    "description": "Setting to convert FLAC audio to WAV before sharing"
+  },
+  "settingsHelpShareAudioAsWav": "When enabled, FLAC recordings are converted to WAV before sharing or exporting. WAV files are universally compatible but significantly larger than FLAC.",
+  "@settingsHelpShareAudioAsWav": {
+    "description": "Help text for the share audio as WAV setting"
+  },
   "settingsOfflineMapDownload": "Download offline maps",
   "@settingsOfflineMapDownload": {
     "description": "Settings tile that lets the user pre-cache OSM tiles for an area"

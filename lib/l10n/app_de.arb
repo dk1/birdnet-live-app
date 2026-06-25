@@ -807,6 +807,8 @@
   "settingsSpectrogramQualityMedium": "Mittel",
   "settingsSpectrogramQualityHigh": "Hoch",
   "settingsIncludeAudioFiles": "Audiodateien einschließen",
+  "settingsShareAudioAsWav": "Audio immer als WAV teilen",
+  "settingsHelpShareAudioAsWav": "Wenn aktiviert, werden FLAC-Aufnahmen vor dem Teilen oder Exportieren in WAV konvertiert. WAV-Dateien sind universell kompatibel, aber deutlich größer als FLAC.",
   "settingsExportHtmlReport": "HTML-Bericht einschließen",
   "settingsExportAppMetadata": "App-Metadaten einschließen",
   "settingsPrivacy": "Datenschutz",

@@ -791,6 +791,8 @@
   "settingsSpectrogramQualityMedium": "Média",
   "settingsSpectrogramQualityHigh": "Alta",
   "settingsIncludeAudioFiles": "Incluir arquivos de áudio",
+  "settingsShareAudioAsWav": "Sempre partilhar áudio como WAV",
+  "settingsHelpShareAudioAsWav": "Quando ativado, as gravações FLAC são convertidas para WAV antes de serem partilhadas ou exportadas. Os ficheiros WAV são universalmente compatíveis mas significativamente maiores do que o FLAC.",
   "sessionWeatherSection": "Clima",
   "sessionWeatherAttribution": "Dados de clima: Open-Meteo",
   "sessionWeatherCondition": "Condição",

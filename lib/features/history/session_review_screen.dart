@@ -1925,6 +1925,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
+    final shareAudioAsWav = ref.read(shareAudioAsWavProvider);
     final includeHtmlReport = ref.read(exportHtmlReportProvider);
     final includeAppMetadata = ref.read(includeAppMetadataProvider);
     final taxonomy = ref.read(taxonomyServiceProvider).value;
@@ -1947,6 +1948,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       widget.session,
       formats: exportFormats,
       includeAudio: includeAudio,
+      shareAudioAsWav: shareAudioAsWav,
       taxonomy: taxonomy,
       speciesLocale: speciesLocale,
       clipContextSecondsOverride: clipContextOverride,
@@ -3958,6 +3960,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 (cluster) => shareDetection(
                   cluster.records.first,
                   session: widget.session,
+                  shareAudioAsWav: ref.read(shareAudioAsWavProvider),
                 ),
             onEditNoteCluster: _editClusterNote,
             onEditVoiceMemoCluster: _editClusterVoiceMemo,

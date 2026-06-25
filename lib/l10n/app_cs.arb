@@ -926,6 +926,8 @@
   "settingsSpectrogramQualityMedium": "Střední",
   "settingsSpectrogramQualityHigh": "Vysoká",
   "settingsIncludeAudioFiles": "Zahrnout zvukové soubory",
+  "settingsShareAudioAsWav": "Vždy sdílet zvuk jako WAV",
+  "settingsHelpShareAudioAsWav": "Pokud je povoleno, budou nahrávky FLAC před sdílením nebo exportem převedeny na WAV. Soubory WAV jsou univerzálně kompatibilní, ale výrazně větší než FLAC.",
   "sessionWeatherSection": "Počasí",
   "sessionWeatherAttribution": "Data o počasí: Open-Meteo",
   "sessionWeatherCondition": "Stav",

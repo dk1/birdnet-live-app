@@ -573,6 +573,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                         () => shareDetection(
                           widget.detection,
                           session: widget.session,
+                          shareAudioAsWav: ref.read(shareAudioAsWavProvider),
                         ),
                     onDelete:
                         widget.onDelete == null

@@ -610,6 +610,19 @@ class SettingsScreen extends ConsumerWidget {
                     (v) =>
                         ref.read(includeAudioProvider.notifier).set(v ?? false),
               ),
+              if (ref.watch(includeAudioProvider))
+                CheckboxListTile(
+                  dense: true,
+                  title: _TitleWithHelp(
+                    title: l10n.settingsShareAudioAsWav,
+                    helpBody: l10n.settingsHelpShareAudioAsWav,
+                  ),
+                  value: ref.watch(shareAudioAsWavProvider),
+                  onChanged:
+                      (v) => ref
+                          .read(shareAudioAsWavProvider.notifier)
+                          .set(v ?? false),
+                ),
               CheckboxListTile(
                 dense: true,
                 title: _TitleWithHelp(

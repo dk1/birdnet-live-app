@@ -809,6 +809,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
   Future<void> _shareSession(LiveSession session) async {
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
+    final shareAudioAsWav = ref.read(shareAudioAsWavProvider);
     final includeHtmlReport = ref.read(exportHtmlReportProvider);
     final includeAppMetadata = ref.read(includeAppMetadataProvider);
     final taxonomy = ref.read(taxonomyServiceProvider).value;
@@ -823,6 +824,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       session,
       formats: exportFormats,
       includeAudio: includeAudio,
+      shareAudioAsWav: shareAudioAsWav,
       taxonomy: taxonomy,
       speciesLocale: speciesLocale,
       metadata: metadata,
@@ -901,6 +903,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     try {
       final exportFormats = ref.read(exportSelectionProvider);
       final includeAudio = ref.read(includeAudioProvider);
+      final shareAudioAsWav = ref.read(shareAudioAsWavProvider);
       final includeHtmlReport = ref.read(exportHtmlReportProvider);
       final includeAppMetadata = ref.read(includeAppMetadataProvider);
       final taxonomy = ref.read(taxonomyServiceProvider).value;
@@ -912,6 +915,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         selectedList,
         formats: exportFormats,
         includeAudio: includeAudio,
+        shareAudioAsWav: shareAudioAsWav,
         taxonomy: taxonomy,
         speciesLocale: speciesLocale,
         useAbsoluteSurveyTime: useAbsoluteSurveyTime,
