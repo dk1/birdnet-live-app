@@ -21,6 +21,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
@@ -91,6 +92,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   bool _started = false;
   bool _finalizing = false;
   bool _stopDialogShowing = false;
+  bool _foregroundGpsStream = false;
   StreamSubscription<bool>? _micContestedSub;
   late final TabController _tabController;
   late final SurveyController _surveyController;
@@ -566,6 +568,16 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       micContested: l10n.surveyNotificationMicContested,
     );
 
+    // With whileInUse permission, use the GPS stream while in the foreground.
+    // The screen's lifecycle handler will stop/restart it as the app is
+    // backgrounded and foregrounded.
+    if (!widget.backgroundGps) {
+      final permission = await Geolocator.checkPermission();
+      _foregroundGpsStream =
+          permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always;
+    }
+
     if (widget.resumeSession != null) {
       await controller.resumeSurvey(
         existingSession: widget.resumeSession!,
@@ -583,6 +595,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         samplingMode: samplingMode,
         topNPerSpecies: topN,
         backgroundGps: widget.backgroundGps,
+        foregroundGps: _foregroundGpsStream,
         autoStopBattery: autoStopBattery,
         poolingWindows: ref.read(scorePoolingWindowsProvider),
         poolingMode: ref.read(scorePoolingProvider),
@@ -610,6 +623,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         startLatitude: widget.startLatitude,
         startLongitude: widget.startLongitude,
         backgroundGps: widget.backgroundGps,
+        foregroundGps: _foregroundGpsStream,
         autoStopBattery: autoStopBattery,
         poolingWindows: ref.read(scorePoolingWindowsProvider),
         poolingMode: ref.read(scorePoolingProvider),
@@ -716,9 +730,19 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // In manual GPS mode, capture a fix when the user returns to the app.
-    if (state == AppLifecycleState.resumed && !widget.backgroundGps) {
-      ref.read(surveyControllerProvider).captureGpsFix();
+    final controller = ref.read(surveyControllerProvider);
+    if (_foregroundGpsStream && !widget.backgroundGps) {
+      // Foreground-only GPS: stop the stream when backgrounded so the OS
+      // doesn't revoke whileInUse location access, and restart it when the
+      // user brings the app back to the front.
+      if (state == AppLifecycleState.paused) {
+        controller.gpsTracker?.stopTracking();
+      } else if (state == AppLifecycleState.resumed) {
+        controller.gpsTracker?.startTracking();
+      }
+    } else if (state == AppLifecycleState.resumed && !widget.backgroundGps) {
+      // Manual GPS mode: capture a single fix when the user returns.
+      controller.captureGpsFix();
     }
   }
 
