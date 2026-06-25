@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- allow audio export as wav independent from the recording format for iNat interoperability
+- sort species chips in session card alphabetically and update top species logic
+
 ## [0.17.16] - 2026-06-24
 
 ### Added
