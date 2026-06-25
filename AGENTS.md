@@ -95,6 +95,14 @@ This file is for coding agents working in this repository.
 - Run flutter analyze (and flutter test when relevant) before committing.
 - Keep release commits focused and use a conventional commit message.
 
+## Search for All Affected Call Sites Before Implementing
+
+When a feature touches a shared function, setting, or data path, grep the full codebase for every place that function is called or that path is used — not just the location described in the request. Implement the change at **all** affected locations in the same pass.
+
+- Before writing code, grep for the function name, setting key, and provider name across `lib/`.
+- Check every call site and every parallel code path that handles the same data.
+- If multiple screens, services, or widgets do "the same thing" independently, update all of them.
+
 ## Git Workflow
 
 - Use conventional one-line commit messages, for example:

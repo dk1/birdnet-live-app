@@ -112,6 +112,7 @@ abstract final class PrefKeys {
   static const String exportSelection = 'export_selection';
 
   static const String includeAudio = 'include_audio';
+  static const String shareAudioAsWav = 'share_audio_as_wav';
   static const String exportHtmlReport = 'export_html_report';
   static const String includeAppMetadata = 'include_app_metadata';
 

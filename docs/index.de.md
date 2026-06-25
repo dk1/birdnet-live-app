@@ -5,7 +5,7 @@
 BirdNET Live ist eine Flutter-App für Feldforschende, im Naturschutz Tätige und Vogelbegeisterte, die im Feld auf verlässliche akustische Nachweise angewiesen sind. Der BirdNET+ Audio-Klassifikator und das Geo-Modell laufen direkt auf Ihrem Gerät, sodass die Artbestimmung nach der Installation vollständig offline funktioniert.
 
 <p align="center">
-  <img src="https://img.shields.io/badge/latest-v0.17.16-orange.svg" alt="Latest release: v0.17.16">
+  <img src="https://img.shields.io/badge/latest-v0.17.17-orange.svg" alt="Latest release: v0.17.17">
   <img src="https://img.shields.io/badge/species-5%2C250-brightgreen.svg" alt="Species: 5,250">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>

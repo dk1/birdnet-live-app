@@ -912,7 +912,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                         detection.isConfirmed ? null : DateTime.now().toUtc();
                   });
                 },
-                onShare: () => shareDetection(detection, session: session),
+                onShare: () => shareDetection(
+                  detection,
+                  session: session,
+                  shareAudioAsWav: ref.read(shareAudioAsWavProvider),
+                ),
                 onDelete: () => _deleteLiveDetectionWithUndo(detection),
               ),
         ),

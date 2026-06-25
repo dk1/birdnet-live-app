@@ -291,6 +291,14 @@ final includeAudioProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
   return BoolSettingNotifier(prefs, PrefKeys.includeAudio, true);
 });
 
+/// Convert FLAC recordings to WAV before sharing/exporting (default false).
+/// WAV is universally compatible but larger; FLAC is lossless compressed.
+final shareAudioAsWavProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(prefs, PrefKeys.shareAudioAsWav, false);
+    });
+
 /// Bundle a self-contained `report.html` next to the audio inside the
 /// export ZIP (default true). The HTML opens in any browser, embeds the
 /// session metadata + clip players, and pulls species images / data

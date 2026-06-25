@@ -39,10 +39,31 @@ import '../../shared/services/taxonomy_service.dart';
 import '../live/live_session.dart';
 import '../recording/audio_decoder.dart';
 import '../recording/native_audio_decoder.dart';
+import '../recording/wav_writer.dart';
 import 'html_report.dart';
 
 /// Upper frequency bound for Raven annotations (Nyquist of 32 kHz).
 const int _highFreqHz = 16000;
+
+/// Decodes a FLAC file and returns the bytes of an equivalent PCM WAV.
+/// Returns null if decoding fails (caller should fall back to original file).
+Future<Uint8List?> _flacToWavBytes(String flacPath) async {
+  try {
+    if (!await AudioDecoder.canDecodeDart(flacPath)) return null;
+    final decoded = await AudioDecoder.decodeFile(flacPath);
+    // DecodedAudio stores mono Int16; convert to Float32 for WavWriter.
+    final float = Float32List(decoded.samples.length);
+    for (var i = 0; i < decoded.samples.length; i++) {
+      float[i] = decoded.samples[i] / 32768.0;
+    }
+    return WavWriter.toBytes(
+      samples: float,
+      sampleRate: decoded.sampleRate,
+    );
+  } catch (_) {
+    return null;
+  }
+}
 
 /// Builds the `BirdNET_Live_…` export prefix from a session's start time,
 /// optional session number, and optional user-assigned name.
@@ -793,6 +814,7 @@ Future<String?> buildSessionExport(
   LiveSession session, {
   required Set<String> formats,
   required bool includeAudio,
+  bool shareAudioAsWav = false,
   TaxonomyService? taxonomy,
   String speciesLocale = 'en',
   int? clipContextSecondsOverride,
@@ -839,10 +861,15 @@ Future<String?> buildSessionExport(
   final hasAnyAudio = hasFullRecording || hasClips;
 
   // ── Build export clip names (sequential, 1-indexed, zero-padded) ────
-  final audioExt =
-      hasFullRecording
-          ? p.extension(audioPath)
-          : (hasClips ? p.extension(clipEntries.values.first.path) : '.flac');
+  String resolveExt(String originalExt) =>
+      (shareAudioAsWav && originalExt.toLowerCase() == '.flac')
+          ? '.wav'
+          : originalExt;
+  final audioExt = resolveExt(
+    hasFullRecording
+        ? p.extension(audioPath)
+        : (hasClips ? p.extension(clipEntries.values.first.path) : '.flac'),
+  );
   final audioFileName = '$prefix$audioExt';
 
   // Map detection index → export clip filename.
@@ -874,7 +901,7 @@ Future<String?> buildSessionExport(
     final file = File(path);
     if (!file.existsSync()) continue;
     final cycleName =
-        'aru_cycles/${prefix}_cycle_${cycle.index.toString().padLeft(3, '0')}${p.extension(path)}';
+        'aru_cycles/${prefix}_cycle_${cycle.index.toString().padLeft(3, '0')}${resolveExt(p.extension(path))}';
     aruCycleAudioEntries[cycle.index] = (file: file, name: cycleName);
   }
   final hasAruCycleAudio = aruCycleAudioEntries.isNotEmpty;
@@ -959,19 +986,25 @@ Future<String?> buildSessionExport(
 
   // Audio-only mode: the user unchecked every companion (no formats,
   // no HTML, no app metadata). For full-recording sessions we share the
-  // raw audio file as-is, renamed to the BirdNET_Live_… prefix so the
-  // receiving app shows a sensible filename.
+  // raw audio file (converted to WAV if requested), renamed to the
+  // BirdNET_Live_… prefix so the receiving app shows a sensible filename.
   if (!mustZip && includeAudio && hasFullRecording && !hasCompanion) {
     final dest = p.join(p.dirname(audioPath), audioFileName);
-    if (dest != audioPath) {
-      final destFile = File(dest);
-      if (await destFile.exists()) {
-        try {
-          await destFile.delete();
-        } catch (_) {}
-      }
-      await File(audioPath).copy(dest);
+    final destFile = File(dest);
+    if (await destFile.exists()) {
+      try {
+        await destFile.delete();
+      } catch (_) {}
     }
+    if (shareAudioAsWav &&
+        p.extension(audioPath).toLowerCase() == '.flac') {
+      final wavBytes = await _flacToWavBytes(audioPath);
+      if (wavBytes != null) {
+        await destFile.writeAsBytes(wavBytes);
+        return dest;
+      }
+    }
+    if (dest != audioPath) await File(audioPath).copy(dest);
     return dest;
   }
 
@@ -982,26 +1015,29 @@ Future<String?> buildSessionExport(
   if (mustZip) {
     final archive = Archive();
 
+    Future<Uint8List> audioBytes(String path) async {
+      if (shareAudioAsWav && p.extension(path).toLowerCase() == '.flac') {
+        return await _flacToWavBytes(path) ?? await File(path).readAsBytes();
+      }
+      return File(path).readAsBytes();
+    }
+
     if (includeAudio && hasAnyAudio) {
       if (hasFullRecording) {
-        final audioBytes = await File(audioPath).readAsBytes();
-        archive.addFile(
-          ArchiveFile(audioFileName, audioBytes.length, audioBytes),
-        );
+        final bytes = await audioBytes(audioPath);
+        archive.addFile(ArchiveFile(audioFileName, bytes.length, bytes));
       } else {
         for (final entry in clipExportNames.entries) {
-          final clipBytes = await clipEntries[entry.key]!.readAsBytes();
-          archive.addFile(
-            ArchiveFile(entry.value, clipBytes.length, clipBytes),
-          );
+          final bytes = await audioBytes(clipEntries[entry.key]!.path);
+          archive.addFile(ArchiveFile(entry.value, bytes.length, bytes));
         }
       }
     }
 
     if (includeAudio && hasAruCycleAudio) {
       for (final entry in aruCycleAudioEntries.values) {
-        final audioBytes = await entry.file.readAsBytes();
-        archive.addFile(ArchiveFile(entry.name, audioBytes.length, audioBytes));
+        final bytes = await audioBytes(entry.file.path);
+        archive.addFile(ArchiveFile(entry.name, bytes.length, bytes));
       }
     }
 
@@ -1278,6 +1314,7 @@ Future<String?> buildMultiSessionExport(
   List<LiveSession> sessions, {
   required Set<String> formats,
   required bool includeAudio,
+  bool shareAudioAsWav = false,
   TaxonomyService? taxonomy,
   String speciesLocale = 'en',
   int? clipContextSecondsOverride,
@@ -1301,6 +1338,7 @@ Future<String?> buildMultiSessionExport(
       session,
       formats: formats,
       includeAudio: includeAudio,
+      shareAudioAsWav: shareAudioAsWav,
       taxonomy: taxonomy,
       speciesLocale: speciesLocale,
       clipContextSecondsOverride: clipContextSecondsOverride,
