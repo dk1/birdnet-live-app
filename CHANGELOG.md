@@ -7,11 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep saved recording paths portable so iOS app updates do not orphan session audio.
+
 ## [0.17.17] - 2026-06-26
 
 ### Added
 
 - Allow audio export as WAV independent from the recording format for iNat interoperability
+- Add metadata support and enhance HTML report tests
 
 ### Changed
 

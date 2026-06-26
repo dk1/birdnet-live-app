@@ -43,6 +43,7 @@ import '../../core/services/memory_monitor.dart';
 import '../announcements/announcements_controller.dart'
     show AnnouncementDetection;
 import '../audio/ring_buffer.dart';
+import '../history/session_path_codec.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
 import '../inference/species_filter.dart';
@@ -1204,7 +1205,11 @@ class SurveyController {
         await sessionFile.rename(recoveryFile.path);
       }
 
-      final jsonStr = json.encode(_session!.toJson());
+      final sessionJson = sessionJsonForStorage(
+        _session!,
+        documentsPath: appDir.path,
+      );
+      final jsonStr = json.encode(sessionJson);
       await File(
         '${sessionsDir.path}/${_session!.id}.json',
       ).writeAsString(jsonStr, flush: true);
