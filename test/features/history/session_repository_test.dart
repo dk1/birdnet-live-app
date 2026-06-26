@@ -3,8 +3,10 @@
 // =============================================================================
 
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 
 import 'package:birdnet_live/features/history/session_repository.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
@@ -20,12 +22,14 @@ void main() {
     DateTime? startTime,
     DateTime? endTime,
     List<DetectionRecord>? detections,
+    String? recordingPath,
   }) {
     return LiveSession(
       id: id,
       startTime: startTime ?? DateTime(2025, 6, 15, 10, 0),
       endTime: endTime ?? DateTime(2025, 6, 15, 10, 30),
       detections: detections,
+      recordingPath: recordingPath,
       settings: const SessionSettings(
         windowDuration: 3,
         confidenceThreshold: 25,
@@ -40,12 +44,16 @@ void main() {
     String common = 'Eurasian Blackbird',
     double confidence = 0.85,
     DateTime? timestamp,
+    String? audioClipPath,
+    String? voiceMemoPath,
   }) {
     return DetectionRecord(
       scientificName: scientific,
       commonName: common,
       confidence: confidence,
       timestamp: timestamp ?? DateTime(2025, 6, 15, 10, 5),
+      audioClipPath: audioClipPath,
+      voiceMemoPath: voiceMemoPath,
     );
   }
 
@@ -143,6 +151,150 @@ void main() {
       await repo.save(activeSession);
       final loaded = await repo.load('active-session');
       expect(loaded!.endTime, isNull);
+    });
+
+    test('stores app-owned recording paths relative to Documents', () async {
+      final documentsDir = tempDir.parent.path;
+      final session = makeSession(
+        recordingPath: p.join(
+          documentsDir,
+          'recordings',
+          'test-session-1',
+          'full.flac',
+        ),
+        detections: [
+          makeDetection(
+            audioClipPath: p.join(
+              documentsDir,
+              'recordings',
+              'test-session-1',
+              'clip_1.flac',
+            ),
+            voiceMemoPath: p.join(
+              documentsDir,
+              'recordings',
+              'test-session-1',
+              'memos',
+              'memo_1.m4a',
+            ),
+          ),
+        ],
+      );
+      session.annotations.add(
+        SessionAnnotation(
+          text: '',
+          createdAt: DateTime(2025, 6, 15, 10, 10),
+          voiceMemoPath: p.join(
+            documentsDir,
+            'recordings',
+            'test-session-1',
+            'memos',
+            'annotation_1.m4a',
+          ),
+        ),
+      );
+      session.aruMetadata = AruDeploymentMetadata(
+        scheduleStart: DateTime(2025, 6, 15, 10),
+        cycleDurationSeconds: 60,
+        repeatIntervalSeconds: 120,
+        eachCycleIsSession: true,
+        cycles: [
+          AruCycleMetadata(
+            index: 0,
+            plannedStart: DateTime(2025, 6, 15, 10),
+            plannedEnd: DateTime(2025, 6, 15, 10, 1),
+            recordingPath: p.join(
+              documentsDir,
+              'recordings',
+              'test-session-1',
+              'cycle_000',
+              'full.flac',
+            ),
+          ),
+        ],
+      );
+
+      await repo.save(session);
+
+      final raw =
+          jsonDecode(
+                await File(
+                  '${tempDir.path}/test-session-1.json',
+                ).readAsString(),
+              )
+              as Map<String, dynamic>;
+      expect(raw['recordingPath'], 'recordings/test-session-1/full.flac');
+      final detections = raw['detections'] as List<dynamic>;
+      final detection = detections.single as Map<String, dynamic>;
+      expect(
+        detection['audioClipPath'],
+        'recordings/test-session-1/clip_1.flac',
+      );
+      expect(
+        detection['voiceMemoPath'],
+        'recordings/test-session-1/memos/memo_1.m4a',
+      );
+      final annotations = raw['annotations'] as List<dynamic>;
+      expect(
+        (annotations.single as Map<String, dynamic>)['voiceMemoPath'],
+        'recordings/test-session-1/memos/annotation_1.m4a',
+      );
+      final aru = raw['aru'] as Map<String, dynamic>;
+      final cycles = aru['cycles'] as List<dynamic>;
+      expect(
+        (cycles.single as Map<String, dynamic>)['recordingPath'],
+        'recordings/test-session-1/cycle_000/full.flac',
+      );
+
+      final loaded = await repo.load('test-session-1');
+      expect(
+        loaded!.recordingPath,
+        p.join(documentsDir, 'recordings', 'test-session-1', 'full.flac'),
+      );
+      expect(
+        loaded.detections.single.audioClipPath,
+        p.join(documentsDir, 'recordings', 'test-session-1', 'clip_1.flac'),
+      );
+      expect(
+        loaded.detections.single.voiceMemoPath,
+        p.join(
+          documentsDir,
+          'recordings',
+          'test-session-1',
+          'memos',
+          'memo_1.m4a',
+        ),
+      );
+    });
+
+    test('remaps stale iOS Documents paths when loading', () async {
+      final staleIosPath =
+          '/var/mobile/Containers/Data/Application/OLD-UUID/Documents/'
+          'recordings/legacy/full.flac';
+      final json =
+          makeSession(
+            id: 'legacy',
+            recordingPath: staleIosPath,
+            detections: [
+              makeDetection(
+                audioClipPath:
+                    '/var/mobile/Containers/Data/Application/OLD-UUID/Documents/'
+                    'recordings/legacy/clip_1.flac',
+              ),
+            ],
+          ).toJson();
+      await File('${tempDir.path}/legacy.json').writeAsString(jsonEncode(json));
+
+      final loaded = await repo.load('legacy');
+
+      expect(
+        loaded!.recordingPath,
+        p.join(tempDir.parent.path, 'recordings', 'legacy', 'full.flac'),
+      );
+      expect(
+        loaded.detections.single.audioClipPath,
+        p.join(tempDir.parent.path, 'recordings', 'legacy', 'clip_1.flac'),
+      );
     });
   });
 

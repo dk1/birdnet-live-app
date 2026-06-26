@@ -29,6 +29,7 @@ import 'dart:isolate';
 import 'package:path_provider/path_provider.dart';
 
 import '../live/live_session.dart';
+import 'session_path_codec.dart';
 
 /// Persists [LiveSession] objects as JSON files.
 class SessionRepository {
@@ -55,9 +56,9 @@ class SessionRepository {
   Future<void> save(LiveSession session) async {
     final basePath = await _getBasePath();
     final file = File('$basePath/${_sanitiseId(session.id)}.json');
-    final jsonString = const JsonEncoder.withIndent(
-      '  ',
-    ).convert(session.toJson());
+    final documentsPath = Directory(basePath).parent.path;
+    final json = sessionJsonForStorage(session, documentsPath: documentsPath);
+    final jsonString = const JsonEncoder.withIndent('  ').convert(json);
     await file.writeAsString(jsonString, flush: true);
   }
 
@@ -71,7 +72,10 @@ class SessionRepository {
 
     final jsonString = await file.readAsString();
     final json = jsonDecode(jsonString) as Map<String, dynamic>;
-    return LiveSession.fromJson(json);
+    return sessionFromStorageJson(
+      json,
+      documentsPath: Directory(basePath).parent.path,
+    );
   }
 
   /// List all saved sessions, sorted by start time (newest first).
@@ -91,13 +95,16 @@ class SessionRepository {
     }
     if (filePaths.isEmpty) return const [];
 
+    final documentsPath = Directory(basePath).parent.path;
     return Isolate.run(() async {
       final sessions = <LiveSession>[];
       for (final path in filePaths) {
         try {
           final jsonString = await File(path).readAsString();
           final json = jsonDecode(jsonString) as Map<String, dynamic>;
-          sessions.add(LiveSession.fromJson(json));
+          sessions.add(
+            sessionFromStorageJson(json, documentsPath: documentsPath),
+          );
         } catch (_) {
           // Skip corrupt files.
         }
