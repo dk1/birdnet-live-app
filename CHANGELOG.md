@@ -16,10 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Sort species chips in session card alphabetically and update top species logic
+- Update taxonomy JSON file paths and preserve fallback assets during rebuild
 
 ### Fixes
 
 - Add foreground GPS tracking option and manage lifecycle states.
+- Improve text fitting for offset display in species card in session review
 
 ## [0.17.16] - 2026-06-24
 
