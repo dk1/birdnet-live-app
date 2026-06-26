@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Allow audio export as WAV independent from the recording format for iNat interoperability
+- Add metadata support and enhance HTML report tests
 
 ### Changed
 

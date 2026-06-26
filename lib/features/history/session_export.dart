@@ -1148,6 +1148,7 @@ Future<String?> buildSessionExport(
         audioFileName: hasFullRecording ? audioFileName : null,
         taxonomy: taxonomy,
         speciesLocale: speciesLocale,
+        metadata: exportMetadata,
       );
       final reportBytes = Uint8List.fromList(utf8.encode(reportHtml));
       archive.addFile(
