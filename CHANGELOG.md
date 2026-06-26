@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.17.17] - 2026-06-25
+## [0.17.17] - 2026-06-26
 
 ### Added
 
@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sort species chips in session card alphabetically and update top species logic
 - Update taxonomy JSON file paths and preserve fallback assets during rebuild
 - Updated taxonomy and species bundle
+- Improve performance for large session detections and add loading indicator
 
 ### Fixes
 

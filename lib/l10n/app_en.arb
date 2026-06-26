@@ -1055,6 +1055,15 @@
       }
     }
   },
+  "sessionClusterShowMore": "Show {count} more",
+  "@sessionClusterShowMore": {
+    "description": "Button label to reveal more clusters without an audio clip in the expanded species row",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "sessionDiscard": "Discard",
   "@sessionDiscard": {
     "description": "Discard session button label"

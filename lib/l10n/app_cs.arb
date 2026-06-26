@@ -383,6 +383,7 @@
   "sessionNoDetections": "Žádné detekce v této Session.",
   "sessionSpeciesCount": "{count} druhů",
   "sessionDetectionCount": "{count} detekcí",
+  "sessionClusterShowMore": "Zobrazit dalších {count}",
   "sessionDiscard": "Zahodit",
   "sessionDiscardTitle": "Zahodit Session?",
   "sessionDiscardMessage": "Tato Session a její nahrávka budou trvale smazány.",
