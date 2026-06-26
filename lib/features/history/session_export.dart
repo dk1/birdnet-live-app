@@ -714,6 +714,9 @@ String buildJsonExport(LiveSession session, {Map<String, dynamic>? metadata}) {
             'confirmed': d.isConfirmed,
             if (d.confirmedAt != null)
               'confirmedAt': d.confirmedAt!.toUtc().toIso8601String(),
+            if (d.hasNote) 'note': d.note,
+            if (d.hasVoiceMemo)
+              'voiceMemo': 'memos/${p.basename(d.voiceMemoPath!)}',
           };
         }).toList(),
     if (session.annotations.isNotEmpty)
@@ -976,13 +979,20 @@ Future<String?> buildSessionExport(
       includeHtmlReport ||
       (includeAppMetadata && exportMetadata != null) ||
       session.annotations.isNotEmpty;
+  final hasMemos = session.detections.any((d) => d.hasVoiceMemo);
   final mustZip =
       (includeAudio && hasAruCycleAudio) ||
       (includeAudio && hasClips) ||
       (includeAudio && hasFullRecording && hasCompanion) ||
       docs.length > 1 ||
       includeHtmlReport ||
-      (docs.isNotEmpty && includeAppMetadata && exportMetadata != null);
+      (docs.isNotEmpty && includeAppMetadata && exportMetadata != null) ||
+      // Session annotations and detection voice memos each produce companion
+      // files (annotations.txt, memos/) that only exist inside a ZIP bundle.
+      // Force ZIP whenever either is present alongside at least one document
+      // so these files are never silently dropped from the export.
+      (docs.isNotEmpty && session.annotations.isNotEmpty) ||
+      (docs.isNotEmpty && hasMemos);
 
   // Audio-only mode: the user unchecked every companion (no formats,
   // no HTML, no app metadata). For full-recording sessions we share the
