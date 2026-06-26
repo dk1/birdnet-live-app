@@ -181,10 +181,9 @@ void main() {
     test('evicts weaker clip at the same spot', () async {
       final sampler = DetectionSampler(
         mode: SamplingMode.smart,
-        topN: 5,
+        topN: 1,
         distanceThresholdMeters: 500,
         timeThresholdSeconds: 120,
-        minKeepPerSpecies: 0,
       );
 
       final d1 = await _det('Parus major', 0.5,
@@ -222,10 +221,9 @@ void main() {
     test('drops new clip if weaker at the same spot', () async {
       final sampler = DetectionSampler(
         mode: SamplingMode.smart,
-        topN: 5,
+        topN: 1,
         distanceThresholdMeters: 500,
         timeThresholdSeconds: 120,
-        minKeepPerSpecies: 0,
       );
 
       final d1 = await _det('Parus major', 0.9,
@@ -269,10 +267,9 @@ void main() {
     test('missing GPS falls back to time-only same-spot check', () async {
       final sampler = DetectionSampler(
         mode: SamplingMode.smart,
-        topN: 5,
+        topN: 1,
         distanceThresholdMeters: 500,
         timeThresholdSeconds: 120,
-        minKeepPerSpecies: 0,
       );
 
       // No GPS on either record; within the time window â†’ same spot.
@@ -286,26 +283,25 @@ void main() {
       expect(d2.audioClipPath, isNotNull);
     });
 
-    test('keeps minKeepPerSpecies clips even at the same spot', () async {
+    test('admits same-spot clips freely until topN, then applies rivalry',
+        () async {
       final sampler = DetectionSampler(
         mode: SamplingMode.smart,
-        topN: 10,
+        topN: 3,
         distanceThresholdMeters: 250,
         timeThresholdSeconds: 120,
-        minKeepPerSpecies: 3,
       );
 
-      // Three same-spot detections of the same species. With the
-      // minKeepPerSpecies floor, all three should be retained even though
-      // they would otherwise lose a same-spot rivalry.
+      // Three same-spot detections all within the time window. All should be
+      // kept because rivalry doesn't fire until the topN slots are full.
       final d1 = await _det('Parus major', 0.5,
           offset: Duration.zero, latitude: 52.0, longitude: 13.0);
       final d2 = await _det('Parus major', 0.6,
           offset: const Duration(seconds: 10), latitude: 52.0, longitude: 13.0);
       final d3 = await _det('Parus major', 0.7,
           offset: const Duration(seconds: 20), latitude: 52.0, longitude: 13.0);
-      // Fourth same-spot detection should now lose to the weakest neighbor
-      // because the floor has been met.
+      // Fourth same-spot detection: topN is now full, so rivalry fires and
+      // this weaker clip loses to the weakest already-kept clip.
       final d4 = await _det('Parus major', 0.4,
           offset: const Duration(seconds: 30), latitude: 52.0, longitude: 13.0);
 
