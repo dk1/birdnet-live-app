@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add foreground GPS tracking option and manage lifecycle states.
 - Improve text fitting for offset display in species card in session review
+- Swap yelwar and yelwa1
 
 ## [0.17.16] - 2026-06-24
 
