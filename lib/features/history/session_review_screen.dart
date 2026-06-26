@@ -585,6 +585,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   late List<DetectionRecord> _detections;
   late List<SessionAnnotation> _annotations;
   late List<_SpeciesGroup> _speciesGroups;
+  bool _groupsBuilding = false;
   final Set<String> _expandedSpecies = {};
   final AudioPlayer _player = AudioPlayer();
   final AudioPlayer _clipPlayer = AudioPlayer();
@@ -843,10 +844,16 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _annotations = List.of(widget.session.annotations);
     _trimStartSec = widget.session.trimStartSec;
     _trimEndSec = widget.session.trimEndSec;
-    _speciesGroups = _buildSpeciesGroups(
-      _detections,
-      widget.session.settings.windowDuration,
-    );
+    _speciesGroups = const [];
+    _groupsBuilding = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final groups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
+      if (mounted) setState(() { _speciesGroups = groups; _groupsBuilding = false; });
+    });
     _initAudio();
     _resolveLocation();
     _resolveWeather();
@@ -3890,7 +3897,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final hasAnyGroups = _filteredSpeciesGroups.isNotEmpty;
 
     Widget body;
-    if (!hasAnyGroups) {
+    if (_groupsBuilding) {
+      body = const Center(child: CircularProgressIndicator());
+    } else if (!hasAnyGroups) {
       body = Center(
         child: Text(
           l10n.sessionNoDetections,

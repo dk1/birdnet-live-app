@@ -248,6 +248,7 @@
   "sessionNoDetections": "Sin detecciones en esta Session.",
   "sessionSpeciesCount": "{count} especies",
   "sessionDetectionCount": "{count} detecciones",
+  "sessionClusterShowMore": "Mostrar {count} más",
   "sessionDiscard": "Descartar",
   "sessionDiscardTitle": "¿Descartar Session?",
   "sessionDiscardMessage": "Esta Session y su grabación se eliminarán permanentemente.",

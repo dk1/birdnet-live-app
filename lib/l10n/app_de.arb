@@ -248,6 +248,7 @@
   "sessionNoDetections": "Keine Detektionen in dieser Session.",
   "sessionSpeciesCount": "{count} Arten",
   "sessionDetectionCount": "{count} Detektionen",
+  "sessionClusterShowMore": "Weitere {count} anzeigen",
   "sessionDiscard": "Verwerfen",
   "sessionDiscardTitle": "Session verwerfen?",
   "sessionDiscardMessage": "Diese Session und ihre Aufnahme werden dauerhaft gelöscht.",

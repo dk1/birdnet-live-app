@@ -24,6 +24,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:path_provider/path_provider.dart';
 
@@ -74,28 +75,36 @@ class SessionRepository {
   }
 
   /// List all saved sessions, sorted by start time (newest first).
+  ///
+  /// File reading and JSON parsing run in a background isolate so large
+  /// sessions (e.g. 1 000-detection ARU deployments) do not block the UI.
   Future<List<LiveSession>> listAll() async {
     final basePath = await _getBasePath();
     final dir = Directory(basePath);
     if (!await dir.exists()) return const [];
 
-    final sessions = <LiveSession>[];
-
+    final filePaths = <String>[];
     await for (final entity in dir.list()) {
       if (entity is File && entity.path.endsWith('.json')) {
+        filePaths.add(entity.path);
+      }
+    }
+    if (filePaths.isEmpty) return const [];
+
+    return Isolate.run(() async {
+      final sessions = <LiveSession>[];
+      for (final path in filePaths) {
         try {
-          final jsonString = await entity.readAsString();
+          final jsonString = await File(path).readAsString();
           final json = jsonDecode(jsonString) as Map<String, dynamic>;
           sessions.add(LiveSession.fromJson(json));
         } catch (_) {
           // Skip corrupt files.
         }
       }
-    }
-
-    // Sort newest first.
-    sessions.sort((a, b) => b.startTime.compareTo(a.startTime));
-    return sessions;
+      sessions.sort((a, b) => b.startTime.compareTo(a.startTime));
+      return sessions;
+    });
   }
 
   /// Delete a session by ID.

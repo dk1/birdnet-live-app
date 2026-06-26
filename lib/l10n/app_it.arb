@@ -248,6 +248,7 @@
   "sessionNoDetections": "Nessuna rilevazione in questa Session.",
   "sessionSpeciesCount": "{count} specie",
   "sessionDetectionCount": "{count} rilevazioni",
+  "sessionClusterShowMore": "Mostra altri {count}",
   "sessionDiscard": "Elimina",
   "sessionDiscardTitle": "Eliminare la Session?",
   "sessionDiscardMessage": "Questa Session e la sua registrazione verranno eliminate definitivamente.",
