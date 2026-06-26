@@ -1429,11 +1429,15 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                                 size: 24,
                                 color: theme.colorScheme.primary,
                               ),
-                              Text(
-                                offsetStr,
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.primary,
-                                  fontSize: 10,
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  offsetStr,
+                                  maxLines: 1,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: theme.colorScheme.primary,
+                                    fontSize: 10,
+                                  ),
                                 ),
                               ),
                             ],
@@ -1445,11 +1449,15 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                         width: 48,
                         height: 48,
                         alignment: Alignment.center,
-                        child: Text(
-                          offsetStr,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withAlpha(120),
-                            fontSize: 10,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            offsetStr,
+                            maxLines: 1,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withAlpha(120),
+                              fontSize: 10,
+                            ),
                           ),
                         ),
                       ),
