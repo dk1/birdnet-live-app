@@ -4480,7 +4480,7 @@ idx;id;sci_name;com_name;class;order
 4478;15581;Serpophaga nigricans;Sooty Tyrannulet;Aves;Passeriformes
 4479;15582;Serpophaga subcristata;White-crested Tyrannulet;Aves;Passeriformes
 4480;15587;Setopagis parvula;Little Nightjar;Aves;Caprimulgiformes
-4481;15589;Setophaga aestiva;American Yellow Warbler;Aves;Passeriformes
+4481;15612;Setophaga petechia;Mangrove Warbler;Aves;Passeriformes
 4482;15590;Setophaga americana;Northern Parula;Aves;Passeriformes
 4483;15593;Setophaga caerulescens;Black-throated Blue Warbler;Aves;Passeriformes
 4484;15594;Setophaga castanea;Bay-breasted Warbler;Aves;Passeriformes
@@ -4499,7 +4499,7 @@ idx;id;sci_name;com_name;class;order
 4497;15609;Setophaga occidentalis;Hermit Warbler;Aves;Passeriformes
 4498;15610;Setophaga palmarum;Palm Warbler;Aves;Passeriformes
 4499;15611;Setophaga pensylvanica;Chestnut-sided Warbler;Aves;Passeriformes
-4500;15612;Setophaga petechia;Mangrove Warbler;Aves;Passeriformes
+4500;15589;Setophaga aestiva;American Yellow Warbler;Aves;Passeriformes
 4501;15614;Setophaga pinus;Pine Warbler;Aves;Passeriformes
 4502;15615;Setophaga pitiayumi;Tropical Parula;Aves;Passeriformes
 4503;15616;Setophaga pityophila;Olive-capped Warbler;Aves;Passeriformes
