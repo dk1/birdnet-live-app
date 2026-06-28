@@ -68,6 +68,10 @@ void main() {
       expect(container.read(includeAudioProvider), true);
     });
 
+    test('playbackVoiceMemoDucking defaults to 0.75', () {
+      expect(container.read(playbackVoiceMemoDuckingProvider), 0.75);
+    });
+
     test('spectrogramDuration defaults to 20', () {
       expect(container.read(spectrogramDurationProvider), 20);
     });

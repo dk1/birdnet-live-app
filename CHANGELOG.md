@@ -17,6 +17,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added domestic Dog, Cat, and Cattle to the recognized species so common backyard and farm animals can appear in Explore and detections.
 ## [Unreleased]
 
+### Changed
+
+- Make hidden score pooling default to adaptive LME peak pooling: live-rate inference uses average pooling for stable detections, slower Survey/ARU cadences use LME, all modes keep a 10-second age gate, and accepted detections report the strongest recent supported model confidence.
+
+## [0.17.17] - 2026-06-26
+
+### Added
+
+- Allow audio export as WAV independent from the recording format for iNat interoperability
+- Add metadata support and enhance HTML report tests
+
+### Changed
+
+- Sort species chips in session card alphabetically and update top species logic
+- Update taxonomy JSON file paths and preserve fallback assets during rebuild
+- Updated taxonomy and species bundle
+- Improve performance for large session detections and add loading indicator
+
+### Fixed
+
+- Add foreground GPS tracking option and manage lifecycle states.
+- Improve text fitting for offset display in species card in session review
+- Swap yelwar and yelwa1
+- Include notes and voice memos in JSON export and enforce ZIP bundling for annotations and memos
+- Adjust smart mode rivalry logic to trigger only after topN slots are filled
+- Keep saved recording paths portable so iOS app updates do not orphan session audio.
+
+## [0.17.16] - 2026-06-24
+
+### Added
+
+- New **Playback** settings section with an **Auto-play voice memos** toggle (off by default). When enabled, a voice memo attached to a timed annotation plays automatically during session review as the playhead crosses its recorded position — mixed on top of the recording without interrupting it.
+- Manual detections in session review now have a dedicated play/seek control, so you can jump the playhead to a manually added entry just like a model detection.
+
+### Changed
+
+- The species count on the About screen now includes a per-group breakdown in parentheses, e.g. "5250 species (Birds: 4597, Mammals: 232, Amphibians: 253, Insects: 168)".
+- Clarified the background location warning in Survey Setup (#132): the warning card now explicitly tells users to tap to open Settings and grant the background location permission.
+- In session review, tapping a voice memo annotation now plays it back, and tapping a timed text annotation jumps the playhead to its position (long-press to edit).
+- Adding a species at a timestamp now uses the spectrogram's visible center, so the new entry lands where you are looking even after panning.
+- Session review now surfaces note and voice-memo indicators directly in species and detection rows.
+- Timed voice memos in Session Review now play over the main recording during playback, including memos attached to detections at the detection start time.
+- Playback settings now include a voice memo ducking strength control.
+
+### Fixed
+
+- Resuming playback after panning the spectrogram while paused now starts from the position you are viewing instead of jumping back to the pre-pan spot.
+- Polished the voice-memo dialog layout and re-record flow for more consistent behavior when replacing an existing memo.
+- Voice memo playback now uses the same quiet-recording normalization path as detection clips, and starting a new memo reliably releases any paused playback session first.
+- Session Review now configures audio focus for reliable in-app voice memo overlays instead of letting memo playback interrupt the recording.
+- Session-level timed voice memos added from the "+" menu now trigger when playback resumes from the memo timestamp.
+- Session Review now ducks the main recording while automatic voice memo overlays play so memo commentary remains audible.
+
 ## [0.17.15] - 2026-06-23
 
 ### Changed

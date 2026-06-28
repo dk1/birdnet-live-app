@@ -210,6 +210,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       geoModelSpeciesNames: geoSpeciesNames,
       poolingWindows: ref.read(scorePoolingWindowsProvider),
       poolingMode: ref.read(scorePoolingProvider),
+      poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
       sensitivity: sensitivity,
       targetDurationSeconds: widget.durationMinutes * 60,
       latitude: startLat,
@@ -401,6 +402,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     });
     ref.listen<int>(scorePoolingWindowsProvider, (_, next) {
       ref.read(liveControllerProvider).setPoolingWindows(next);
+    });
+    ref.listen<double>(scorePoolingMaxAgeSecondsProvider, (_, next) {
+      ref.read(liveControllerProvider).setPoolingMaxAgeSeconds(next);
     });
     ref.listen<String>(scorePoolingProvider, (_, next) {
       ref.read(liveControllerProvider).setPoolingMode(next);

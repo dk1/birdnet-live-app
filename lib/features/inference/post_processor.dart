@@ -252,6 +252,32 @@ abstract final class PostProcessor {
     return pooled;
   }
 
+  /// Per-class recent peak after sensitivity and optional score multipliers.
+  ///
+  /// Used for display confidence after a conservative pooled detection has
+  /// already passed thresholding and support checks.
+  static List<double> recentPeakScores(
+    List<List<double>> windowScores, {
+    double sensitivity = 1.0,
+    List<double>? multipliers,
+  }) {
+    if (windowScores.isEmpty) return [];
+    final numClasses = windowScores.first.length;
+    final peaks = List<double>.filled(numClasses, 0.0);
+
+    for (final window in windowScores) {
+      for (var c = 0; c < numClasses; c++) {
+        var score = applySensitivity(window[c], sensitivity);
+        if (multipliers != null && c < multipliers.length) {
+          score *= multipliers[c];
+        }
+        if (score > peaks[c]) peaks[c] = score;
+      }
+    }
+
+    return peaks;
+  }
+
   /// Whether class [index] has enough raw-window support to appear.
   ///
   /// This is separate from LME scoring: LME preserves high peaks, while this

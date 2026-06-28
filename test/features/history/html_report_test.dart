@@ -82,7 +82,116 @@ void main() {
 
       expect(html, contains('Full recording'));
       expect(html, contains('full%20session%20%231.wav'));
+      expect(html, contains('class="audio-player"'));
+      expect(html, contains('class="custom-player"'));
     });
+
+    test('renders compact inference metadata in footer when provided', () {
+      final html = buildHtmlReport(
+        _sessionWithDetections(),
+        metadata: const {
+          'app': {'version': '1.2.3', 'buildNumber': '45'},
+          'audioModel': {
+            'name': 'BirdNET Test Audio',
+            'version': '3.0',
+            'speciesCount': 5250,
+            'audio': {'sampleRate': 32000},
+          },
+          'geoModel': {
+            'name': 'BirdNET Test Geo',
+            'version': '3.0.1',
+            'speciesCount': 5250,
+          },
+          'settings': {
+            'analysis': {
+              'windowDurationSeconds': 3,
+              'confidenceThresholdPercent': 25,
+              'inferenceRateHz': 1.0,
+              'speciesFilterMode': 'geoMerge',
+              'sensitivity': 1.2,
+              'poolingMode': 'avg',
+              'poolingWindows': 3,
+            },
+            'audio': {
+              'gainLinear': 1.5,
+              'highPassHz': 200,
+              'clipContextSeconds': 2,
+            },
+          },
+        },
+      );
+
+      expect(html, contains('Analysis context'));
+      expect(html, contains('v1.2.3 build 45'));
+      expect(html, contains('BirdNET Test Audio | v3.0 | 5250 species'));
+      expect(html, contains('32000 Hz'));
+      expect(html, contains('BirdNET Test Geo | v3.0.1 | 5250 species'));
+      expect(html, contains('3s window | 25% min confidence | 1 Hz'));
+      expect(html, contains('species filter geoMerge'));
+      expect(html, contains('gain 1.5x | high-pass 200 Hz'));
+    });
+
+    test(
+      'defaults report cards to collapsed confidence order with audio first',
+      () {
+        final session = LiveSession(
+          id: 'sort-session',
+          startTime: DateTime.utc(2026, 5, 28, 10, 0, 0),
+          endTime: DateTime.utc(2026, 5, 28, 10, 10, 0),
+          settings: const SessionSettings(
+            windowDuration: 3,
+            confidenceThreshold: 25,
+            inferenceRate: 1.0,
+            speciesFilterMode: 'off',
+          ),
+          detections: [
+            DetectionRecord(
+              scientificName: 'Species alpha',
+              commonName: 'Alpha',
+              confidence: 0.95,
+              timestamp: DateTime.utc(2026, 5, 28, 10, 1, 0),
+            ),
+            DetectionRecord(
+              scientificName: 'Species beta',
+              commonName: 'Beta',
+              confidence: 0.60,
+              timestamp: DateTime.utc(2026, 5, 28, 10, 2, 0),
+            ),
+            DetectionRecord(
+              scientificName: 'Species beta',
+              commonName: 'Beta',
+              confidence: 0.70,
+              timestamp: DateTime.utc(2026, 5, 28, 10, 3, 0),
+            ),
+          ],
+        );
+
+        final html = buildHtmlReport(
+          session,
+          clipFileMap: const {1: 'beta.wav'},
+        );
+
+        expect(html, contains('Detection timeline'));
+        expect(html, contains('"timeline":{"bins":'));
+        expect(html, contains('<div class="detection collapsed"'));
+        expect(
+          html,
+          contains(
+            '<button class="sort-btn active" data-sort="conf">Confidence',
+          ),
+        );
+        expect(html, contains('sortDetections(\'conf\')'));
+        expect(html, contains('data-has-audio="1"'));
+        expect(html, contains('data-has-audio="0"'));
+        expect(html, contains('class="audio-player"'));
+
+        final betaIndex = html.indexOf('data-common="beta"');
+        final alphaIndex = html.indexOf('data-common="alpha"');
+        expect(betaIndex, isNonNegative);
+        expect(alphaIndex, isNonNegative);
+        expect(betaIndex, lessThan(alphaIndex));
+      },
+    );
 
     test('renders empty-state text for sessions without detections', () {
       final session = LiveSession(

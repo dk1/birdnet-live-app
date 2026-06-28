@@ -198,6 +198,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       final recordingFormat = ref.read(recordingFormatProvider);
       final geoThreshold = ref.read(geoThresholdProvider);
       final poolingWindows = ref.read(scorePoolingWindowsProvider);
+      final poolingMaxAgeSeconds = ref.read(scorePoolingMaxAgeSecondsProvider);
       final sensitivity = ref.read(sensitivityProvider);
 
       // Fetch geo-model scores (if available) for species filtering.
@@ -262,6 +263,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         geoModelSpeciesNames: geoSpeciesNames,
         poolingWindows: poolingWindows,
         poolingMode: ref.read(scorePoolingProvider),
+        poolingMaxAgeSeconds: poolingMaxAgeSeconds,
         sensitivity: sensitivity,
         gainLinear: ref.read(audioGainProvider),
         highPassHz: ref.read(highPassFilterProvider).toDouble(),
@@ -479,6 +481,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     });
     ref.listen<int>(scorePoolingWindowsProvider, (_, next) {
       ref.read(liveControllerProvider).setPoolingWindows(next);
+    });
+    ref.listen<double>(scorePoolingMaxAgeSecondsProvider, (_, next) {
+      ref.read(liveControllerProvider).setPoolingMaxAgeSeconds(next);
     });
     ref.listen<String>(scorePoolingProvider, (_, next) {
       ref.read(liveControllerProvider).setPoolingMode(next);

@@ -353,6 +353,22 @@
       }
     }
   },
+  "taxonGroupAves": "Birds",
+  "@taxonGroupAves": {
+    "description": "Taxon group label for birds (Aves)"
+  },
+  "taxonGroupMammalia": "Mammals",
+  "@taxonGroupMammalia": {
+    "description": "Taxon group label for mammals (Mammalia)"
+  },
+  "taxonGroupInsecta": "Insects",
+  "@taxonGroupInsecta": {
+    "description": "Taxon group label for insects (Insecta)"
+  },
+  "taxonGroupAmphibia": "Amphibians",
+  "@taxonGroupAmphibia": {
+    "description": "Taxon group label for amphibians (Amphibia)"
+  },
   "aboutGeoModel": "Geo-Model",
   "@aboutGeoModel": {
     "description": "Geo-model section title"
@@ -1039,6 +1055,15 @@
       }
     }
   },
+  "sessionClusterShowMore": "Show {count} more",
+  "@sessionClusterShowMore": {
+    "description": "Button label to reveal more clusters without an audio clip in the expanded species row",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "sessionDiscard": "Discard",
   "@sessionDiscard": {
     "description": "Discard session button label"
@@ -1663,6 +1688,34 @@
   "settingsShowSciNamesDescription": "Display scientific names below common names on all screens",
   "@settingsShowSciNamesDescription": {
     "description": "Subtitle for the show scientific names toggle"
+  },
+  "settingsPlayback": "Playback",
+  "@settingsPlayback": {
+    "description": "Settings section header for playback options"
+  },
+  "settingsPlaybackDescription": "Session review playback behavior",
+  "@settingsPlaybackDescription": {
+    "description": "Subtitle for the Playback settings section"
+  },
+  "settingsPlaybackVoiceMemos": "Auto-play voice memos",
+  "@settingsPlaybackVoiceMemos": {
+    "description": "Toggle to auto-play voice memos during session review playback"
+  },
+  "settingsPlaybackVoiceMemosDescription": "Play attached voice memos when the playhead reaches their timestamp",
+  "@settingsPlaybackVoiceMemosDescription": {
+    "description": "Subtitle for the auto-play voice memos toggle"
+  },
+  "settingsHelpPlaybackVoiceMemos": "When enabled, any voice memo linked to a timed annotation plays automatically during session review when the playhead crosses its recorded position. Off by default.",
+  "@settingsHelpPlaybackVoiceMemos": {
+    "description": "Help text for the auto-play voice memos setting"
+  },
+  "settingsPlaybackVoiceMemoDucking": "Voice memo ducking",
+  "@settingsPlaybackVoiceMemoDucking": {
+    "description": "Slider title for how strongly the main recording is reduced while automatic voice memos play"
+  },
+  "settingsHelpPlaybackVoiceMemoDucking": "Controls how much the main recording is lowered while an automatic voice memo plays. Higher values make memos easier to hear; lower values keep more of the original recording audible.",
+  "@settingsHelpPlaybackVoiceMemoDucking": {
+    "description": "Help text for the voice memo ducking setting"
   },
   "settingsPlaybackOverlay": "Playback overlay in review",
   "@settingsPlaybackOverlay": {
@@ -2444,7 +2497,7 @@
   "@surveyLocationUnavailable": {
     "description": "Shown when GPS is not available"
   },
-  "surveyManualGpsWarning": "Manual mode captures GPS only when you open the app. Detection locations will be interpolated between captures.",
+  "surveyManualGpsWarning": "Location only updates when the app is open. Tap here to grant background location permission in Settings.",
   "@surveyManualGpsWarning": {
     "description": "Warning about manual GPS mode limitations"
   },
@@ -2915,7 +2968,7 @@
       "names": { "type": "String" }
     }
   },
-  "surveyManualGpsReadyWarning": "Manual GPS mode — open the app periodically to capture location fixes.",
+  "surveyManualGpsReadyWarning": "Background location not enabled — location will only update while the app is open.",
   "@surveyManualGpsReadyWarning": {
     "description": "Warning on ready screen about manual GPS"
   },
@@ -2961,6 +3014,10 @@
   "detectionSourceManual": "Manual",
   "@detectionSourceManual": {
     "description": "Short label/badge shown on a detection that was entered manually by the user (not produced by the model)."
+  },
+  "detectionSeekToPosition": "Jump to position",
+  "@detectionSeekToPosition": {
+    "description": "Tooltip on the seek button for a manually-added detection — tapping scrolls the audio player to that entry's timestamp."
   },
   "sessionSpeciesSortMenu": "Sort species",
   "@sessionSpeciesSortMenu": {
@@ -3471,6 +3528,14 @@
   "settingsIncludeAudioFiles": "Include audio files",
   "@settingsIncludeAudioFiles": {
     "description": "Setting to include audio files in export"
+  },
+  "settingsShareAudioAsWav": "Always share audio as WAV",
+  "@settingsShareAudioAsWav": {
+    "description": "Setting to convert FLAC audio to WAV before sharing"
+  },
+  "settingsHelpShareAudioAsWav": "When enabled, FLAC recordings are converted to WAV before sharing or exporting. WAV files are universally compatible but significantly larger than FLAC.",
+  "@settingsHelpShareAudioAsWav": {
+    "description": "Help text for the share audio as WAV setting"
   },
   "settingsOfflineMapDownload": "Download offline maps",
   "@settingsOfflineMapDownload": {

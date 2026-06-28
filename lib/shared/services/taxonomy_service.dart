@@ -46,6 +46,16 @@ class TaxonomyService {
   /// Number of species in the CSV index.
   int get speciesCount => _csvIndex.length;
 
+  /// Count of species per taxon group (e.g. {"Aves": 4597, "Mammalia": 232}).
+  Map<String, int> get taxonGroupCounts {
+    final counts = <String, int>{};
+    for (final species in _csvIndex.values) {
+      final group = species.taxonGroup;
+      if (group.isNotEmpty) counts[group] = (counts[group] ?? 0) + 1;
+    }
+    return counts;
+  }
+
   // ---------------------------------------------------------------------------
   // CSV Loading
   // ---------------------------------------------------------------------------
