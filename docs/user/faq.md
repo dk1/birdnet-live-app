@@ -8,7 +8,7 @@ Frequently asked questions.
 A: No. All inference runs on-device using the ONNX model. The only network features are optional species image and description lookups from the taxonomy API.
 
 **Q: How many species can it identify?**
-A: The BirdNET+ V3.0 model identifies 10,208 species worldwide — birds, amphibians, mammals, and insects (the pruned intersection of the audio classifier and geo-model).
+A: The BirdNET+ V3.0 model identifies 9,789 species worldwide — birds, amphibians, mammals, and insects (the taxonomy-matched pruned intersection of the audio classifier and geo-model).
 
 **Q: What platforms are supported?**
 A: Android (8.0+), iOS (15.0+), and Windows (experimental).

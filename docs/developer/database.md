@@ -1,4 +1,4 @@
-# Database
+﻿# Database
 
 Persistence and data storage.
 
@@ -32,7 +32,7 @@ ONNX model files are extracted from Flutter assets to the documents directory on
 
 ```
 <documents>/BirdNET+_V3.0-preview3.1_Global_10K-pruned_FP16.onnx_v<version>
-<documents>/BirdNET+_Geomodel_V3.0.3_Global_10K-pruned_FP16.onnx_v<version>
+<documents>/BirdNET+_Geomodel_V3.0.4_Global_10K-pruned_FP16.onnx_v<version>
 ```
 
 Subsequent launches load the cached models directly from disk.

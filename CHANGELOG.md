@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.1] - 2026-06-28
+
 ### Changed
 
-- Refreshed the bundled taxonomy metadata from the BirdNET taxonomy API v0.2-Jun2026 and rebuilt the local 10,208-species taxonomy CSV.
+- Refreshed the bundled taxonomy metadata from the BirdNET taxonomy API v0.2-Jun2026 and rebuilt the local 9,789-species taxonomy CSV.
+- Updated the bundled geomodel to BirdNET+ Geomodel V3.0.4 and pruned the audio and geo models to their taxonomy-matched 9,789-species intersection after global 3% geo-cutoff screening.
+- Rebuilt the offline species image and description bundle for the updated 9,789-species model set.
 
 ## [0.18.0] - 2026-06-28
 

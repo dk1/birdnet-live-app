@@ -1,4 +1,4 @@
-# Terms of Use
+﻿# Terms of Use
 
 This document governs use of the BirdNET Live application and its bundled models (the "Software"). By using the Software, you agree to these terms.
 
@@ -7,7 +7,7 @@ This document governs use of the BirdNET Live application and its bundled models
 BirdNET Live is a mobile application for real-time bird species identification using on-device deep learning. It bundles the following models:
 
 - **BirdNET+ V3.0-preview3.1** — an audio classifier for detecting bird vocalizations.
-- **BirdNET+ Geomodel V3.0.3** — a spatiotemporal species occurrence prediction model.
+- **BirdNET+ Geomodel V3.0.4** — a spatiotemporal species occurrence prediction model.
 
 BirdNET builds on:
 
