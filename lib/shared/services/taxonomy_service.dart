@@ -4,7 +4,7 @@
 //
 // Provides species information from the bundled taxonomy CSV, parsed once at
 // startup.  Covers names, IDs, image metadata, and localized common names
-// for all ~10,208 model species.
+// for all ~9,789 model species.
 //
 // ### Usage
 //

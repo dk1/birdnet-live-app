@@ -73,7 +73,7 @@ class AboutScreen extends ConsumerWidget {
 
             // Combined model info — audio model + geo-model in one card.
             // Shows the model display name for each plus the shared species
-            // count once at the bottom (both ship with the same 10,208-species
+            // count once at the bottom (both ship with the same 9,789-species
             // intersection, so repeating it on two cards was redundant).
             Card(
               child: Padding(

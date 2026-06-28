@@ -92,7 +92,7 @@
   "taxonGroupInsecta": "Insectes",
   "taxonGroupAmphibia": "Amphibiens",
   "aboutGeoModel": "Géo-modèle",
-  "aboutGeoModelName": "BirdNET+ Geomodel V3.0.3 Global 10K-pruned (FP16)",
+  "aboutGeoModelName": "BirdNET+ Geomodel V3.0.4 Global 10K-pruned (FP16)",
   "aboutCredits": "Développé par",
   "aboutFunding": "Financement",
   "aboutFundingDescription": "Le développement de BirdNET Live est soutenu par la Deutsche Bundesstiftung Umwelt dans le cadre du projet RangerSound (projet 39263/01).",

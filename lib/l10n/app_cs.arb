@@ -92,7 +92,7 @@
   "taxonGroupInsecta": "Hmyz",
   "taxonGroupAmphibia": "Obojživelníci",
   "aboutGeoModel": "Geomodel",
-  "aboutGeoModelName": "BirdNET+ Geomodel V3.0.3 Global 10K-pruned (FP16)",
+  "aboutGeoModelName": "BirdNET+ Geomodel V3.0.4 Global 10K-pruned (FP16)",
   "aboutCredits": "Vývojáři",
   "aboutFunding": "Financování",
   "aboutFundingDescription": "Vývoj BirdNET Live je podporován nadací Deutsche Bundesstiftung Umwelt prostřednictvím projektu RangerSound (projekt č. 39263/01).",
