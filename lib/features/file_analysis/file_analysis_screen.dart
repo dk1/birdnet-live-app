@@ -319,6 +319,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
 
     final poolingMode = ref.read(scorePoolingProvider);
     final maxPoolWindows = ref.read(scorePoolingWindowsProvider);
+    final poolingMaxAgeSeconds = ref.read(scorePoolingMaxAgeSecondsProvider);
 
     final session = await controller.analyze(
       filePath: _filePath!,
@@ -329,6 +330,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       speciesFilterMode: _speciesFilterMode,
       poolingMode: poolingMode,
       maxPoolWindows: maxPoolWindows,
+      poolingMaxAgeSeconds: poolingMaxAgeSeconds,
       geoScores: geoScores,
       geoThreshold: ref.read(geoThresholdProvider),
       geoModelSpeciesNames: geoSpeciesNames,

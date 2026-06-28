@@ -119,7 +119,8 @@ void main() {
       expect(config.inference.defaultTopK, 10);
       expect(config.inference.temporalPooling.maxWindows, 5);
       expect(config.inference.temporalPooling.alpha, 5.0);
-      expect(config.inference.temporalPooling.peakRetention, 0.98);
+      expect(config.inference.temporalPooling.peakRetention, 0.0);
+      expect(config.inference.temporalPooling.maxAgeSeconds, 10.0);
       expect(config.inference.temporalPooling.minSupportWindows, 2);
       expect(config.inference.temporalPooling.supportThresholdFraction, 0.6);
       expect(config.inference.temporalPooling.supportThresholdFloor, 0.25);
@@ -240,7 +241,8 @@ void main() {
       expect(config.defaultTopK, 10);
       expect(config.temporalPooling.maxWindows, 5);
       expect(config.temporalPooling.alpha, 5.0);
-      expect(config.temporalPooling.peakRetention, 0.98);
+      expect(config.temporalPooling.peakRetention, 0.0);
+      expect(config.temporalPooling.maxAgeSeconds, 10.0);
       expect(config.temporalPooling.minSupportWindows, 2);
       expect(config.temporalPooling.supportThresholdFraction, 0.6);
       expect(config.temporalPooling.supportThresholdFloor, 0.25);
@@ -254,6 +256,7 @@ void main() {
         'maxWindows': 8,
         'alpha': 2.5,
         'peakRetention': 0.85,
+        'maxAgeSeconds': 12.5,
         'minSupportWindows': 4,
         'supportThresholdFraction': 0.4,
         'supportThresholdFloor': 0.35,
@@ -263,6 +266,7 @@ void main() {
       expect(config.maxWindows, 8);
       expect(config.alpha, 2.5);
       expect(config.peakRetention, 0.85);
+      expect(config.maxAgeSeconds, 12.5);
       expect(config.minSupportWindows, 4);
       expect(config.supportThresholdFraction, 0.4);
       expect(config.supportThresholdFloor, 0.35);
@@ -275,7 +279,8 @@ void main() {
 
       expect(config.maxWindows, 5);
       expect(config.alpha, 5.0);
-      expect(config.peakRetention, 0.98);
+      expect(config.peakRetention, 0.0);
+      expect(config.maxAgeSeconds, 10.0);
       expect(config.minSupportWindows, 2);
       expect(config.supportThresholdFraction, 0.6);
       expect(config.supportThresholdFloor, 0.25);
@@ -308,7 +313,8 @@ void main() {
       expect(config.inference.supportedWindowSeconds, contains(3));
       expect(config.inference.defaultConfidenceThreshold, 0.15);
       expect(config.inference.temporalPooling.minSupportWindows, 2);
-      expect(config.inference.temporalPooling.peakRetention, 0.98);
+      expect(config.inference.temporalPooling.peakRetention, 0.0);
+      expect(config.inference.temporalPooling.maxAgeSeconds, 10.0);
       expect(config.inference.temporalPooling.supportThresholdFraction, 0.6);
       expect(config.inference.temporalPooling.supportThresholdFloor, 0.25);
       expect(config.inference.temporalPooling.veryHighImmediateThreshold, 0.98);

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Make hidden score pooling default to adaptive LME peak pooling: live-rate inference uses average pooling for stable detections, slower Survey/ARU cadences use LME, all modes keep a 10-second age gate, and accepted detections report the strongest recent supported model confidence.
+
 ## [0.17.17] - 2026-06-26
 
 ### Added

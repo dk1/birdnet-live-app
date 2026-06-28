@@ -94,6 +94,15 @@ Sigmoid steepness applied to the raw classifier output before the confidence thr
 
 Controls how frequently BirdNET runs inference. The slider uses the same **0.10–1.00 Hz** steps as Survey and ARU setup.
 
+BirdNET Live internally smooths scores across recent inference windows to
+reduce one-off false positives. This pooling is not exposed as a user setting;
+the default uses an adaptive pooling mode with five recent windows and a
+10-second real-time age cap. At live-rate inference it uses average pooling for
+stable detection decisions. At slower Survey and ARU cadences it uses LME
+pooling to keep precision high over longer runs. Accepted detections display
+the strongest recent supported model confidence, so obvious vocalizations can
+still show high confidence instead of being flattened by smoothing.
+
 ## Spectrogram
 
 ### FFT size

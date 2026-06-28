@@ -44,7 +44,8 @@
       "temporalPooling": {
         "maxWindows": 5,
         "alpha": 5.0,
-        "peakRetention": 0.98,
+        "peakRetention": 0.0,
+        "maxAgeSeconds": 10.0,
         "minSupportWindows": 2,
         "supportThresholdFraction": 0.6,
         "supportThresholdFloor": 0.25,

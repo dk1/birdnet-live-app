@@ -76,6 +76,10 @@ abstract final class PrefKeys {
   static const String sensitivity = 'sensitivity';
   static const String scorePooling = 'score_pooling';
   static const String scorePoolingWindows = 'score_pooling_windows';
+  static const String scorePoolingMaxAgeSeconds =
+      'score_pooling_max_age_seconds';
+  static const String scorePoolingDefaultMigration =
+      'score_pooling_default_migration_v1';
 
   // Spectrogram settings
   static const String fftSize = 'fft_size';

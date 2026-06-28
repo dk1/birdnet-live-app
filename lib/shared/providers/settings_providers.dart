@@ -62,13 +62,17 @@ final sensitivityProvider =
       return DoubleSettingNotifier(prefs, PrefKeys.sensitivity, 1.0);
     });
 
-/// Score pooling mode ('off', 'average', 'max', 'lme' — default 'lme').
+/// Score pooling mode ('off', 'average', 'max', 'lme', 'adaptive_lme_peak').
 ///
 /// Controls how scores from consecutive inference windows are combined.
 final scorePoolingProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return StringSettingNotifier(prefs, PrefKeys.scorePooling, 'lme');
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.scorePooling,
+        'adaptive_lme_peak',
+      );
     });
 
 /// Number of consecutive inference windows that participate in score pooling.
@@ -80,6 +84,20 @@ final scorePoolingWindowsProvider =
     StateNotifierProvider<IntSettingNotifier, int>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
       return IntSettingNotifier(prefs, PrefKeys.scorePoolingWindows, 5);
+    });
+
+/// Maximum real-time age, in seconds, for windows used in score pooling.
+///
+/// Hidden advanced setting: not exposed in Settings, but persisted so we can
+/// tune it or expose it later without changing inference plumbing.
+final scorePoolingMaxAgeSecondsProvider =
+    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return DoubleSettingNotifier(
+        prefs,
+        PrefKeys.scorePoolingMaxAgeSeconds,
+        10.0,
+      );
     });
 
 /// Species filter mode ('off', 'geoExclude', 'geoMerge', 'customList').

@@ -145,7 +145,14 @@ class InferenceIsolate {
     _service?.setMaxPoolWindows(value);
   }
 
-  /// Override the pooling mode (`'off' | 'average' | 'max' | 'lme'`).
+  /// Override the temporal-pooling time gate in seconds. Pass `null` to
+  /// revert to the model-config default.
+  void setMaxPoolAgeSeconds(double? value) {
+    _service?.setMaxPoolAgeSeconds(value);
+  }
+
+  /// Override the pooling mode (`'off' | 'average' | 'max' | 'lme' |
+  /// 'adaptive_lme_peak'`).
   /// Safe to call before [start] — silently dropped if not ready.
   void setPoolingMode(String? mode) {
     _service?.setPoolingMode(mode);

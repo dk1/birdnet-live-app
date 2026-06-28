@@ -599,6 +599,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         autoStopBattery: autoStopBattery,
         poolingWindows: ref.read(scorePoolingWindowsProvider),
         poolingMode: ref.read(scorePoolingProvider),
+        poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
         sensitivity: ref.read(sensitivityProvider),
       );
     } else {
@@ -627,6 +628,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         autoStopBattery: autoStopBattery,
         poolingWindows: ref.read(scorePoolingWindowsProvider),
         poolingMode: ref.read(scorePoolingProvider),
+        poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
         sensitivity: ref.read(sensitivityProvider),
         gainLinear: ref.read(audioGainProvider),
         highPassHz: ref.read(highPassFilterProvider).toDouble(),
@@ -786,6 +788,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     ref.listen<int>(scorePoolingWindowsProvider, (_, next) {
       ref.read(surveyControllerProvider).setPoolingWindows(next);
     });
+    ref.listen<double>(scorePoolingMaxAgeSecondsProvider, (_, next) {
+      ref.read(surveyControllerProvider).setPoolingMaxAgeSeconds(next);
+    });
     ref.listen<String>(scorePoolingProvider, (_, next) {
       ref.read(surveyControllerProvider).setPoolingMode(next);
     });
@@ -936,11 +941,12 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                         detection.isConfirmed ? null : DateTime.now().toUtc();
                   });
                 },
-                onShare: () => shareDetection(
-                  detection,
-                  session: session,
-                  shareAudioAsWav: ref.read(shareAudioAsWavProvider),
-                ),
+                onShare:
+                    () => shareDetection(
+                      detection,
+                      session: session,
+                      shareAudioAsWav: ref.read(shareAudioAsWavProvider),
+                    ),
                 onDelete: () => _deleteLiveDetectionWithUndo(detection),
               ),
         ),

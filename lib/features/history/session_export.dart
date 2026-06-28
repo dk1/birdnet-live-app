@@ -56,10 +56,7 @@ Future<Uint8List?> _flacToWavBytes(String flacPath) async {
     for (var i = 0; i < decoded.samples.length; i++) {
       float[i] = decoded.samples[i] / 32768.0;
     }
-    return WavWriter.toBytes(
-      samples: float,
-      sampleRate: decoded.sampleRate,
-    );
+    return WavWriter.toBytes(samples: float, sampleRate: decoded.sampleRate);
   } catch (_) {
     return null;
   }
@@ -499,6 +496,8 @@ Map<String, dynamic> _settingsExportMetadata(
       if (s.sensitivity != null) 'sensitivity': s.sensitivity,
       if (s.poolingMode != null) 'poolingMode': s.poolingMode,
       if (s.poolingWindows != null) 'poolingWindows': s.poolingWindows,
+      if (s.poolingMaxAgeSeconds != null)
+        'poolingMaxAgeSeconds': s.poolingMaxAgeSeconds,
     };
 
     final audio = <String, dynamic>{
@@ -1006,8 +1005,7 @@ Future<String?> buildSessionExport(
         await destFile.delete();
       } catch (_) {}
     }
-    if (shareAudioAsWav &&
-        p.extension(audioPath).toLowerCase() == '.flac') {
+    if (shareAudioAsWav && p.extension(audioPath).toLowerCase() == '.flac') {
       final wavBytes = await _flacToWavBytes(audioPath);
       if (wavBytes != null) {
         await destFile.writeAsBytes(wavBytes);
