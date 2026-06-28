@@ -202,9 +202,9 @@ void main() {
 
     final output = await model.predict(chunk, windowSamples: windowSamples);
 
-    // BirdNET V3.0-preview3.1 pruned to the 10,208-species audio∩geo set.
+    // BirdNET V3.0-preview3.1 pruned to the 9,789-species audio∩geo set.
     expect(output.predictions.length, equals(labels.length));
-    expect(output.predictions.length, equals(10208));
+    expect(output.predictions.length, equals(9789));
 
     // Embeddings should be 1,280-dimensional.
     expect(output.embeddings, isNotNull);
