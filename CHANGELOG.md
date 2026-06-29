@@ -7,9 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.1] - 2026-06-28
+
+### Changed
+
+- Refreshed the bundled taxonomy metadata from the BirdNET taxonomy API v0.2-Jun2026 and rebuilt the local 9,789-species taxonomy CSV.
+- Updated the bundled geomodel to BirdNET+ Geomodel V3.0.4 and pruned the audio and geo models to their taxonomy-matched 9,789-species intersection after global 3% geo-cutoff screening.
+- Rebuilt the offline species image and description bundle for the updated 9,789-species model set.
+- Changed the File Analysis window-duration picker to the same discrete slider used in Settings.
+
 ### Fixed
 
-- Keep saved recording paths portable so iOS app updates do not orphan session audio.
+- Fixed session exports so saved full recordings are still included when a recovered or in-progress session points at its recording directory, and added regression coverage for ZIP bundles that combine GPX, audio, app metadata, and the HTML report.
+- Fixed single-detection audio shares so receivers such as Google Drive get the intended filename, extension, and audio MIME type.
+- Enlarged the Home footer navigation tap targets while keeping the compact footer layout.
+- Capped every user-facing live inference-rate control to the shared 0.10-1.00 Hz range, including Point Count setup, Survey, and ARU.
+
+## [0.18.0] - 2026-06-28
+
+### Changed
+
+- Updated to the latest BirdNET+ models (V3.0-preview3.1 audio and Geomodel V3.0.3), now covering 10,208 species across birds, amphibians, mammals, and insects.
+- Scientific names are now shown in their taxonomy-canonical form consistently across the app and in exports.
+
+### Added
+
+- Added domestic Dog, Cat, and Cattle to the recognized species so common backyard and farm animals can appear in Explore and detections.
+
+### Changed
+
+- Make hidden score pooling default to adaptive LME peak pooling: live-rate inference uses average pooling for stable detections, slower Survey/ARU cadences use LME, all modes keep a 10-second age gate, and accepted detections report the strongest recent supported model confidence.
 
 ## [0.17.17] - 2026-06-26
 
@@ -25,13 +52,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated taxonomy and species bundle
 - Improve performance for large session detections and add loading indicator
 
-### Fixes
+### Fixed
 
 - Add foreground GPS tracking option and manage lifecycle states.
 - Improve text fitting for offset display in species card in session review
 - Swap yelwar and yelwa1
 - Include notes and voice memos in JSON export and enforce ZIP bundling for annotations and memos
 - Adjust smart mode rivalry logic to trigger only after topN slots are filled
+- Keep saved recording paths portable so iOS app updates do not orphan session audio.
 
 ## [0.17.16] - 2026-06-24
 

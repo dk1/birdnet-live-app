@@ -1440,7 +1440,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
           title: Text(displayName, style: theme.textTheme.titleSmall),
           subtitle: Text(
             showSciNames
-                ? '${group.scientificName} · ${l10n.sessionSpeciesSessionCount(sessionCount)}'
+                ? '${taxon?.displayScientificName ?? group.scientificName} · ${l10n.sessionSpeciesSessionCount(sessionCount)}'
                 : l10n.sessionSpeciesSessionCount(sessionCount),
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,

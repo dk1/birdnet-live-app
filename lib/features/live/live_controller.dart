@@ -322,7 +322,8 @@ class LiveController {
     double geoThreshold = 0.03,
     Set<String>? geoModelSpeciesNames,
     int? poolingWindows,
-    String poolingMode = 'lme',
+    String poolingMode = 'adaptive_lme_peak',
+    double? poolingMaxAgeSeconds,
     double sensitivity = 1.0,
     double? gainLinear,
     double? highPassHz,
@@ -348,6 +349,7 @@ class LiveController {
         sensitivity: sensitivity,
         poolingMode: poolingMode,
         poolingWindows: poolingWindows,
+        poolingMaxAgeSeconds: poolingMaxAgeSeconds,
         gainLinear: gainLinear,
         highPassHz: highPassHz,
         recordingMode: recordingMode.name,
@@ -365,6 +367,7 @@ class LiveController {
     _confidenceThreshold = confidenceThreshold;
     _sensitivity = sensitivity;
     _isolate.setMaxPoolWindows(poolingWindows);
+    _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
     _isolate.setPoolingMode(poolingMode);
     _isolate.resetPooling();
     _inferenceCycleCount = 0;
@@ -589,6 +592,12 @@ class LiveController {
   /// isolate. Pass `null` to use the model-config default.
   void setPoolingWindows(int? value) {
     _isolate.setMaxPoolWindows(value);
+  }
+
+  /// Update the score-pooling real-time age gate and forward to the inference
+  /// isolate. Pass `null` to use the model-config default.
+  void setPoolingMaxAgeSeconds(double? value) {
+    _isolate.setMaxPoolAgeSeconds(value);
   }
 
   /// Update the score-pooling mode and forward to the inference isolate.

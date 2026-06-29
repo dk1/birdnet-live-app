@@ -4849,6 +4849,14 @@ class _SpeciesPickerTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final showSciNames = ref.watch(showSciNamesProvider);
+    final displaySci =
+        scientificName == null
+            ? null
+            : ref
+                    .watch(taxonomyServiceProvider)
+                    .value
+                    ?.displayScientificName(scientificName!) ??
+                scientificName;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -4879,10 +4887,10 @@ class _SpeciesPickerTile extends ConsumerWidget {
                     ),
                   ),
                   if (showSciNames &&
-                      scientificName != null &&
-                      scientificName != label)
+                      displaySci != null &&
+                      displaySci != label)
                     Text(
-                      scientificName!,
+                      displaySci,
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontStyle: FontStyle.italic,
                         color: theme.colorScheme.onSurfaceVariant,

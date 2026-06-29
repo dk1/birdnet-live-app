@@ -9,7 +9,6 @@
 assets/species_images/*
 !assets/species_images/dummy.webp
 assets/species_data/*
-!assets/species_data/dummy.webp
 tools/.cache/
 tools/data/
 tools/.venv/

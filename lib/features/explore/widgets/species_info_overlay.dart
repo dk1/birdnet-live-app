@@ -216,7 +216,8 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                 child:
                     ref.watch(showSciNamesProvider)
                         ? Text(
-                          widget.scientificName,
+                          _detail?.displayScientificName ??
+                              widget.scientificName,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             fontStyle: FontStyle.italic,
                             color: theme.colorScheme.onSurface.withAlpha(170),

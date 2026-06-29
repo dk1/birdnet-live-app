@@ -1657,7 +1657,10 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                               if (showSciNames)
                                 Expanded(
                                   child: Text(
-                                    widget.group.scientificName,
+                                    taxonomyAsync.value?.displayScientificName(
+                                          widget.group.scientificName,
+                                        ) ??
+                                        widget.group.scientificName,
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       fontStyle: FontStyle.italic,
                                       color: theme.colorScheme.onSurface
@@ -2586,7 +2589,7 @@ class _ReplaceTargetBanner extends ConsumerWidget {
                 ),
                 if (showSciNames)
                   Text(
-                    target.scientificName,
+                    species?.displayScientificName ?? target.scientificName,
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontStyle: FontStyle.italic,
                       color: theme.colorScheme.onSurfaceVariant,
@@ -2648,7 +2651,7 @@ class _SpeciesResultTile extends ConsumerWidget {
       subtitle:
           showSciNames
               ? Text(
-                species.scientificName,
+                species.displayScientificName,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,

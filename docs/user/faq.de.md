@@ -8,7 +8,7 @@ Häufig gestellte Fragen.
 A: Nein. Die gesamte Inferenz läuft auf dem Gerät mithilfe des ONNX-Modells. Die einzigen Netzwerkfunktionen sind die optionalen Abfragen von Artenbildern und -beschreibungen aus der Taxonomie-API.
 
 **F: Wie viele Arten können identifiziert werden?**
-A: Das Modell BirdNET+ V3.0 identifiziert weltweit 5.250 Vogelarten (die beschnittene Schnittmenge aus Audio-Klassifikator und Geo-Modell).
+A: Das BirdNET+ V3.0-Modell identifiziert 10.208 Arten weltweit – Vögel, Amphibien, Säugetiere und Insekten.
 
 **F: Welche Plattformen werden unterstützt?**
 A: Android (8.0+), iOS (15.0+) und Windows (experimentell).
