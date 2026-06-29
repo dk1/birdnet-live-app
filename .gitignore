@@ -33,7 +33,6 @@ Desktop.ini
 *.swp
 .buildlog/
 .history
-manifest/
 
 # Flutter repo-specific
 /bin/cache/
