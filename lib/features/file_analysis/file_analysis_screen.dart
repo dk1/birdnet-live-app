@@ -1022,6 +1022,10 @@ class _ParametersStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    const windowDurationValues = [1, 3, 5, 7, 10, 15];
+    final windowDurationIndex = windowDurationValues.indexOf(windowDuration);
+    final effectiveWindowDurationIndex =
+        windowDurationIndex >= 0 ? windowDurationIndex : 1;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -1045,18 +1049,15 @@ class _ParametersStep extends StatelessWidget {
           _ParamTile(
             title: l10n.settingsWindowDuration,
             value: '${windowDuration}s',
-            child: SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 3, label: Text('3s')),
-                ButtonSegment(value: 5, label: Text('5s')),
-                ButtonSegment(value: 10, label: Text('10s')),
-              ],
-              selected: {windowDuration},
-              onSelectionChanged: (s) {
-                HapticFeedback.selectionClick();
-                onWindowDurationChanged(s.first);
-              },
-              showSelectedIcon: false,
+            child: Slider(
+              value: effectiveWindowDurationIndex.toDouble(),
+              min: 0,
+              max: (windowDurationValues.length - 1).toDouble(),
+              divisions: windowDurationValues.length - 1,
+              label: '${windowDurationValues[effectiveWindowDurationIndex]}s',
+              onChanged:
+                  (v) =>
+                      onWindowDurationChanged(windowDurationValues[v.round()]),
             ),
           ),
 
