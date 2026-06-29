@@ -292,29 +292,11 @@ jobs:
 
       - name: Submit Winget PR automatically (optional)
         if: ${{ vars.WINGET_AUTO_SUBMIT == 'true' }}
-        shell: pwsh
+        shell: bash
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
           REPOSITORY: ${{ github.repository }}
+          APP_VERSION: ${{ env.APP_VERSION }}
           WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
-        run: |
-          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
-            Write-Host 'WINGET_CREATE_GITHUB_TOKEN is not set; skipping automatic Winget submission.'
-            exit 0
-          }
-
-          $installerUrl = "https://github.com/$env:REPOSITORY/releases/download/$env:RELEASE_TAG/BirdNET_Live_v$env:APP_VERSION_windows_x64_setup.exe"
-          $mode = $env:WINGET_SUBMIT_MODE
-          if ([string]::IsNullOrWhiteSpace($mode)) {
-            $mode = 'update'
-          }
-
-          if ($mode -eq 'new') {
-            wingetcreate new BirdNET-Team.BirdNETLive $installerUrl --out manifests --token $env:WINGET_CREATE_GITHUB_TOKEN
-          }
-          elseif ($mode -eq 'update') {
-            wingetcreate update BirdNET-Team.BirdNETLive $installerUrl --out manifests --token $env:WINGET_CREATE_GITHUB_TOKEN
-          }
-          else {
-            throw "Unsupported WINGET_SUBMIT_MODE '$mode'. Use 'new' or 'update'."
-          }
+          WINGET_SUBMIT_MODE: ${{ vars.WINGET_SUBMIT_MODE }}
+        run: python3 tools/submit_winget.py
