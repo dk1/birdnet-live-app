@@ -22,7 +22,7 @@ cmd = [
     "wingetcreate",
     mode,
     "BirdNET-Team.BirdNETLive",
-    installer_url,
+    "--urls", installer_url,
     "--out", "manifests",
     "--token", token
 ]
