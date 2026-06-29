@@ -43,6 +43,7 @@ import '../../core/services/memory_monitor.dart';
 import '../announcements/announcements_controller.dart'
     show AnnouncementDetection;
 import '../audio/ring_buffer.dart';
+import '../history/session_path_codec.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
 import '../inference/species_filter.dart';
@@ -366,10 +367,12 @@ class SurveyController {
     double? startLatitude,
     double? startLongitude,
     bool backgroundGps = true,
+    bool foregroundGps = false,
     int autoStopBattery = 0,
     SessionSettings? settingsSnapshot,
     int? poolingWindows,
-    String poolingMode = 'lme',
+    String poolingMode = 'adaptive_lme_peak',
+    double? poolingMaxAgeSeconds,
     double sensitivity = 1.0,
     double? gainLinear,
     double? highPassHz,
@@ -402,6 +405,7 @@ class SurveyController {
               sensitivity: sensitivity,
               poolingMode: poolingMode,
               poolingWindows: poolingWindows,
+              poolingMaxAgeSeconds: poolingMaxAgeSeconds,
               gainLinear: gainLinear,
               highPassHz: highPassHz,
               recordingMode: recordingMode.name,
@@ -430,6 +434,7 @@ class SurveyController {
       _confidenceThreshold = confidenceThreshold;
       _sensitivity = sensitivity;
       _isolate.setMaxPoolWindows(poolingWindows);
+      _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
       _isolate.setPoolingMode(poolingMode);
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
@@ -468,7 +473,7 @@ class SurveyController {
       // GPS tracking.
       _gpsTracker = SurveyGpsTracker(intervalSeconds: gpsIntervalSeconds);
       _gpsTracker!.onPoint = _onGpsPoint;
-      if (backgroundGps) {
+      if (backgroundGps || foregroundGps) {
         await _gpsTracker!.startTracking();
       } else {
         // Manual GPS mode: capture initial fix.
@@ -550,9 +555,11 @@ class SurveyController {
     required SamplingMode samplingMode,
     int topNPerSpecies = 10,
     bool backgroundGps = true,
+    bool foregroundGps = false,
     int autoStopBattery = 0,
     int? poolingWindows,
-    String poolingMode = 'lme',
+    String poolingMode = 'adaptive_lme_peak',
+    double? poolingMaxAgeSeconds,
     double sensitivity = 1.0,
   }) async {
     if (_state == SurveyState.active) return;
@@ -577,6 +584,7 @@ class SurveyController {
       _confidenceThreshold = confidenceThreshold;
       _sensitivity = sensitivity;
       _isolate.setMaxPoolWindows(poolingWindows);
+      _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
       _isolate.setPoolingMode(poolingMode);
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
@@ -614,7 +622,7 @@ class SurveyController {
       _gpsTracker = SurveyGpsTracker(intervalSeconds: gpsIntervalSeconds);
       _gpsTracker!.onPoint = _onGpsPoint;
       _gpsTracker!.seedTrack(existingSession.gpsTrack);
-      if (backgroundGps) {
+      if (backgroundGps || foregroundGps) {
         await _gpsTracker!.startTracking();
       } else {
         await _gpsTracker!.captureOnce();
@@ -912,6 +920,12 @@ class SurveyController {
     _isolate.setMaxPoolWindows(value);
   }
 
+  /// Update the score-pooling real-time age gate and forward to the inference
+  /// isolate. Pass `null` to use the model-config default.
+  void setPoolingMaxAgeSeconds(double? value) {
+    _isolate.setMaxPoolAgeSeconds(value);
+  }
+
   /// Update the score-pooling mode and forward to the inference isolate.
   /// Recognized values: `'off' | 'average' | 'max' | 'lme'`.
   void setPoolingMode(String value) {
@@ -1202,7 +1216,11 @@ class SurveyController {
         await sessionFile.rename(recoveryFile.path);
       }
 
-      final jsonStr = json.encode(_session!.toJson());
+      final sessionJson = sessionJsonForStorage(
+        _session!,
+        documentsPath: appDir.path,
+      );
+      final jsonStr = json.encode(sessionJson);
       await File(
         '${sessionsDir.path}/${_session!.id}.json',
       ).writeAsString(jsonStr, flush: true);

@@ -13,7 +13,7 @@ import '../survey/detection_sampler.dart';
 ///
 /// Selection mirrors the Survey [DetectionSampler] exactly — Top N
 /// highest-confidence clips per species, with a Smart mode that adds same-spot
-/// rivalry and a [minKeepPerSpecies] floor — with one deliberate difference:
+/// rivalry once all topN slots are filled — with one deliberate difference:
 /// ARU deployments are stationary, so the Survey "same spot" test reduces to a
 /// **time-only** proximity check (no haversine distance). Two detections of the
 /// same species within [timeThresholdSeconds] are treated as the same
@@ -31,7 +31,6 @@ class AruDetectionSampler {
     required this.mode,
     this.topN = 10,
     this.timeThresholdSeconds = 120,
-    this.minKeepPerSpecies = 3,
     String Function(DetectionRecord record)? scopeKeyFor,
   }) : _scopeKeyFor = scopeKeyFor;
 
@@ -46,12 +45,6 @@ class AruDetectionSampler {
   /// vocalization. Mirrors the Survey sampler's time threshold; distance is not
   /// used because ARU deployments are stationary.
   final int timeThresholdSeconds;
-
-  /// Smart mode only: minimum number of clips to retain per species before
-  /// same-spot rivalry kicks in. Until a species has this many kept clips, new
-  /// detections fall through to the standard Top N admission path even if a
-  /// same-spot neighbor exists.
-  final int minKeepPerSpecies;
 
   final String Function(DetectionRecord record)? _scopeKeyFor;
 
@@ -74,10 +67,9 @@ class AruDetectionSampler {
     final groupKey = _groupKey(record);
     final kept = _keptClips.putIfAbsent(groupKey, () => []);
 
-    // Smart mode: check for a same-spot rival first. If one exists, the contest
-    // is between just those two regardless of free slots — but only after the
-    // per-species minimum has been met, so the first few clips always survive.
-    if (mode == SamplingMode.smart && kept.length >= minKeepPerSpecies) {
+    // Smart mode: same-spot rivalry only kicks in once all topN slots are
+    // filled. Until then, clips are admitted freely via the Top N path below.
+    if (mode == SamplingMode.smart && kept.length >= topN) {
       final neighbor = _findSameSpot(record, kept);
       if (neighbor != null) {
         if (record.confidence > neighbor.confidence) {

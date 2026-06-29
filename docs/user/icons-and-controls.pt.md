@@ -13,20 +13,20 @@ Esta página explica os controles e símbolos recorrentes usados em todo o BirdN
 | :material-information-outline: **Informações / Sobre** | Rodapé do Início, barras de informações, painéis de ajuda | Mostra informações gerais ou contexto resumido. |
 | :material-arrow-left: **Voltar** | Modo Live | Volta à tela anterior. |
 | :material-open-in-new: **Abrir externo** | Tela Sobre, links de documentação | Abre uma página externa, como o Guia do Usuário online. |
-| :material-volunteer-activism: **Doar** | Tela Sobre | Abre a página de doações do BirdNET. |
+| :material-hand-heart: **Doar** | Tela Sobre | Abre a página de doações do BirdNET. |
 
 ## Símbolos de clima
 
 | Símbolo | Significado |
 |---|---|
-| :material-wb-sunny: **Limpo** | Céu limpo. |
-| :material-partly-cloudy-day: **Parcialmente nublado** | Sol e nuvem para tempo predominantemente limpo ou parcialmente nublado. |
-| :material-cloudy: **Encoberto** | Cobertura total de nuvens. |
-| :material-foggy: **Nevoeiro** | Nevoeiro ou nevoeiro congelante. |
-| :material-rainy-light: **Garoa** | Precipitação leve. |
-| :material-rainy: **Chuva** | Chuva ou pancadas de chuva. |
+| :material-weather-sunny: **Limpo** | Céu limpo. |
+| :material-weather-partly-cloudy: **Parcialmente nublado** | Sol e nuvem para tempo predominantemente limpo ou parcialmente nublado. |
+| :material-weather-cloudy: **Encoberto** | Cobertura total de nuvens. |
+| :material-weather-fog: **Nevoeiro** | Nevoeiro ou nevoeiro congelante. |
+| :material-weather-partly-rainy: **Garoa** | Precipitação leve. |
+| :material-weather-rainy: **Chuva** | Chuva ou pancadas de chuva. |
 | :material-weather-snowy: **Neve** | Neve ou pancadas de neve. |
-| :material-thunderstorm: **Trovoada** | Condições de trovoada. |
+| :material-weather-lightning-rainy: **Trovoada** | Condições de trovoada. |
 
 ## Controles de início, parada e Session
 

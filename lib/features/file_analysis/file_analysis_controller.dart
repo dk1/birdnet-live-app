@@ -320,8 +320,9 @@ class FileAnalysisController {
     double sensitivity = 1.0,
     required int confidenceThreshold,
     required String speciesFilterMode,
-    String poolingMode = 'lme',
+    String poolingMode = 'adaptive_lme_peak',
     int maxPoolWindows = 5,
+    double? poolingMaxAgeSeconds,
     Map<String, double>? geoScores,
     double geoThreshold = 0.03,
     Set<String>? geoModelSpeciesNames,
@@ -426,6 +427,7 @@ class FileAnalysisController {
           sensitivity: sensitivity,
           poolingMode: poolingMode,
           poolingWindows: maxPoolWindows,
+          poolingMaxAgeSeconds: poolingMaxAgeSeconds,
         ),
         latitude: latitude,
         longitude: longitude,
@@ -443,6 +445,7 @@ class FileAnalysisController {
       // Configure and reset temporal pooling for a fresh analysis.
       _isolate.setPoolingMode(poolingMode);
       _isolate.setMaxPoolWindows(maxPoolWindows);
+      _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
       _isolate.resetPooling();
 
       final allDetections = <DetectionRecord>[];

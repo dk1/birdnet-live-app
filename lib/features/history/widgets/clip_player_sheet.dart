@@ -513,7 +513,10 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                         ),
                         if (showSciNames)
                           Text(
-                            det.scientificName,
+                            taxonomyAsync.value?.displayScientificName(
+                                  det.scientificName,
+                                ) ??
+                                det.scientificName,
                             style: theme.textTheme.bodySmall?.copyWith(
                               fontStyle: FontStyle.italic,
                             ),
@@ -573,6 +576,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                         () => shareDetection(
                           widget.detection,
                           session: widget.session,
+                          shareAudioAsWav: ref.read(shareAudioAsWavProvider),
                         ),
                     onDelete:
                         widget.onDelete == null

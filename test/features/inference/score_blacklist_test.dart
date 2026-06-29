@@ -192,7 +192,7 @@ void main() {
       );
 
       const expectedEntries = {
-        'Eurasian Hoopoe': 0.5,
+        'Common Hoopoe': 0.5,
         'Eurasian Golden Oriole': 0.5,
         'Great Cormorant': 0.5,
         'Mute Swan': 0.5,

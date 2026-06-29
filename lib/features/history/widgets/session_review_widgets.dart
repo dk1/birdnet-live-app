@@ -688,6 +688,22 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
 
   void _onPositionChanged() {
     final actualSec = widget.positionNotifier.value.inMicroseconds / 1000000.0;
+    // When the player is paused and panned, only clear the pan state when the
+    // position jump is large (> 0.5s); that signals a real external seek
+    // (e.g., tapping a detection cluster). A tiny advance means the
+    // positionStream fired just as playback resumed (race condition), and we
+    // must leave _pannedCenterSec intact so didUpdateWidget can seek there.
+    if (!widget.isPlaying && _pannedCenterSec != null) {
+      final delta = (actualSec - _interpolatedPositionSec).abs();
+      if (delta > 0.5) {
+        setState(() {
+          _pannedCenterSec = null;
+          _interpolatedPositionSec = actualSec;
+        });
+        _requestVisibleSpectrogram();
+      }
+      return;
+    }
     // If we've drifted significantly (more than 100ms), snap it to fix desyncs.
     if ((_interpolatedPositionSec - actualSec).abs() > 0.1) {
       setState(() {
@@ -1060,18 +1076,27 @@ class _PlayPauseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.black54,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onToggle,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Icon(
-            isPlaying ? AppIcons.pause : AppIcons.playArrow,
-            color: Colors.white,
-            size: 24,
+    // Wrap with an opaque GestureDetector that absorbs scale/pan events so
+    // they never reach the spectrogram's GestureDetector underneath. Without
+    // this, CircleBorder's non-rectangular hit region lets touches at the
+    // button edges fall through and trigger _handleScaleStart, then onPause().
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onScaleStart: (_) {},
+      onScaleUpdate: (_) {},
+      child: Material(
+        color: Colors.black54,
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onToggle,
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Icon(
+              isPlaying ? AppIcons.pause : AppIcons.playArrow,
+              color: Colors.white,
+              size: 24,
+            ),
           ),
         ),
       ),
@@ -1194,9 +1219,106 @@ class _SpeciesActiveState {
 class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
   late _SpeciesActiveState _activeState;
 
+  // Cached taxonomy display name — avoids repeated lookup on every rebuild.
+  String? _cachedDisplayName;
+  TaxonomyService? _lastTaxonomyService;
+  String? _lastSpeciesLocale;
+
+  String _resolveDisplayName(TaxonomyService? taxonomy, String speciesLocale) {
+    if (!identical(taxonomy, _lastTaxonomyService) ||
+        speciesLocale != _lastSpeciesLocale) {
+      _lastTaxonomyService = taxonomy;
+      _lastSpeciesLocale = speciesLocale;
+      _cachedDisplayName =
+          taxonomy
+              ?.lookup(widget.group.scientificName)
+              ?.commonNameForLocale(speciesLocale) ??
+          widget.group.commonName;
+    }
+    return _cachedDisplayName ?? widget.group.commonName;
+  }
+
+  // ── Clip-status tracking for "show more without audio" feature ──────
+  // Pre-computed per-cluster: true if the cluster has a playable clip (or the
+  // session has full audio, in which case every cluster is considered playable).
+  List<bool> _clusterHasClip = const [];
+
+  // How many no-clip clusters are currently visible. Starts at 5; each tap
+  // on "Show more" reveals another 50.
+  int _noClipVisibleCount = 5;
+
+  void _recomputeClipStatus() {
+    if (widget.audioAvailable) {
+      _clusterHasClip = List.filled(widget.group.clusters.length, true);
+    } else {
+      _clusterHasClip = [
+        for (final c in widget.group.clusters) c.hasAudioClip,
+      ];
+    }
+  }
+
+  // ── Pre-computed detection windows so _checkActiveState never allocates on
+  // the hot path (every audio position tick × every species tile).
+  // Each entry is a (start, end) pair in Duration relative to the clip start.
+  List<(Duration, Duration)> _recordWindows = const [];
+  // Per-cluster span: (clusterIndex, start, end).
+  List<(int, Duration, Duration)> _clusterWindows = const [];
+
+  void _recomputeWindows() {
+    final clipOffset = Duration(
+      microseconds: (widget.clipOffsetSec * 1e6).round(),
+    );
+    final windowDur = Duration(seconds: widget.windowSec);
+    final session = widget.session;
+
+    final records = <(Duration, Duration)>[];
+    for (final cluster in widget.group.clusters) {
+      for (final r in cluster.records) {
+        final relSec = session.absoluteToRelative(r.timestamp);
+        final start = Duration(microseconds: (relSec * 1e6).round()) - clipOffset;
+        final end =
+            r.endTimestamp != null
+                ? Duration(
+                      microseconds:
+                          (session.absoluteToRelative(r.endTimestamp!) * 1e6)
+                              .round(),
+                    ) -
+                    clipOffset
+                : start + windowDur;
+        records.add((start, end));
+      }
+    }
+    _recordWindows = records;
+
+    final clusters = <(int, Duration, Duration)>[];
+    for (var i = 0; i < widget.group.clusters.length; i++) {
+      Duration? minStart;
+      Duration? maxEnd;
+      for (final r in widget.group.clusters[i].records) {
+        final startSec =
+            session.absoluteToRelative(r.timestamp) - widget.clipOffsetSec;
+        final endSec =
+            r.endTimestamp != null
+                ? session.absoluteToRelative(r.endTimestamp!) -
+                    widget.clipOffsetSec
+                : startSec + widget.windowSec;
+        final start = Duration(microseconds: (startSec * 1e6).round());
+        final end = Duration(microseconds: (endSec * 1e6).round());
+        if (minStart == null || start < minStart) minStart = start;
+        if (maxEnd == null || end > maxEnd) maxEnd = end;
+      }
+      if (minStart != null && maxEnd != null) {
+        clusters.add((i, minStart, maxEnd));
+      }
+    }
+    _clusterWindows = clusters;
+  }
+
   @override
   void initState() {
     super.initState();
+    _recomputeWindows();
+    _recomputeClipStatus();
     _activeState = _checkActiveState(widget.positionNotifier.value);
     widget.positionNotifier.addListener(_onPositionChanged);
   }
@@ -1210,8 +1332,21 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
   @override
   void didUpdateWidget(_SpeciesTile oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.positionNotifier != oldWidget.positionNotifier ||
+    final rangesStale =
         widget.group != oldWidget.group ||
+        widget.clipOffsetSec != oldWidget.clipOffsetSec ||
+        widget.windowSec != oldWidget.windowSec ||
+        widget.session != oldWidget.session;
+    if (rangesStale) _recomputeWindows();
+
+    if (widget.group != oldWidget.group ||
+        widget.audioAvailable != oldWidget.audioAvailable) {
+      _recomputeClipStatus();
+      if (widget.group != oldWidget.group) _noClipVisibleCount = 5;
+    }
+
+    if (rangesStale ||
+        widget.positionNotifier != oldWidget.positionNotifier ||
         widget.isPlaying != oldWidget.isPlaying ||
         widget.activeCluster != oldWidget.activeCluster) {
       oldWidget.positionNotifier.removeListener(_onPositionChanged);
@@ -1231,60 +1366,27 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
   }
 
   _SpeciesActiveState _checkActiveState(Duration position) {
-    // 1. Is species active?
     bool speciesActive = false;
+    int activeClusterIndex = -1;
+
     if (widget.isPlaying) {
-      final clipOffset = Duration(
-        microseconds: (widget.clipOffsetSec * 1e6).round(),
-      );
-      for (final r in widget.group.allRecords) {
-        final relSec = widget.session.absoluteToRelative(r.timestamp);
-        final rel = Duration(microseconds: (relSec * 1e6).round()) - clipOffset;
-        final detEnd =
-            r.endTimestamp != null
-                ? Duration(
-                      microseconds:
-                          (widget.session.absoluteToRelative(r.endTimestamp!) *
-                                  1e6)
-                              .round(),
-                    ) -
-                    clipOffset
-                : rel + Duration(seconds: widget.windowSec);
-        if (position >= rel && position <= detEnd) {
+      for (final (start, end) in _recordWindows) {
+        if (position >= start && position <= end) {
           speciesActive = true;
+          break;
+        }
+      }
+
+      for (final (idx, start, end) in _clusterWindows) {
+        if (position >= start && position <= end) {
+          activeClusterIndex = idx;
           break;
         }
       }
     }
 
-    // 2. Active cluster index
-    int activeClusterIndex = -1;
     if (widget.activeCluster != null) {
       activeClusterIndex = widget.group.clusters.indexOf(widget.activeCluster!);
-    } else if (widget.isPlaying) {
-      for (int i = 0; i < widget.group.clusters.length; i++) {
-        final cluster = widget.group.clusters[i];
-        bool clusterActive = false;
-        for (final r in cluster.records) {
-          final startSec =
-              widget.session.absoluteToRelative(r.timestamp) -
-              widget.clipOffsetSec;
-          final endSec =
-              r.endTimestamp != null
-                  ? widget.session.absoluteToRelative(r.endTimestamp!) -
-                      widget.clipOffsetSec
-                  : startSec + widget.windowSec;
-          final posSec = position.inMicroseconds / 1e6;
-          if (posSec >= startSec && posSec <= endSec) {
-            clusterActive = true;
-            break;
-          }
-        }
-        if (clusterActive) {
-          activeClusterIndex = i;
-          break;
-        }
-      }
     }
 
     return _SpeciesActiveState(
@@ -1305,11 +1407,7 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
     );
     final tsShowSeconds = ref.watch(timestampShowSecondsProvider);
 
-    final displayName =
-        taxonomyAsync.value
-            ?.lookup(widget.group.scientificName)
-            ?.commonNameForLocale(speciesLocale) ??
-        widget.group.commonName;
+    final displayName = _resolveDisplayName(taxonomyAsync.value, speciesLocale);
 
     // Render the per-cluster time using the user's selected mode.
     // Relative mode subtracts the current clip offset so that the
@@ -1404,11 +1502,15 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                                 size: 24,
                                 color: theme.colorScheme.primary,
                               ),
-                              Text(
-                                offsetStr,
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.primary,
-                                  fontSize: 10,
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  offsetStr,
+                                  maxLines: 1,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: theme.colorScheme.primary,
+                                    fontSize: 10,
+                                  ),
                                 ),
                               ),
                             ],
@@ -1420,11 +1522,15 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                         width: 48,
                         height: 48,
                         alignment: Alignment.center,
-                        child: Text(
-                          offsetStr,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withAlpha(120),
-                            fontSize: 10,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            offsetStr,
+                            maxLines: 1,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withAlpha(120),
+                              fontSize: 10,
+                            ),
                           ),
                         ),
                       ),
@@ -1503,6 +1609,26 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                                     ),
                                   ),
                                 ),
+                              if (widget.group.allRecords.any(
+                                (r) => r.hasVoiceMemo,
+                              ))
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: Icon(
+                                    AppIcons.mic,
+                                    size: 14,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                              if (widget.group.allRecords.any((r) => r.hasNote))
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: Icon(
+                                    AppIcons.stickyNote2,
+                                    size: 14,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
                               if (widget.group.totalCount > 1)
                                 Container(
                                   margin: const EdgeInsets.only(left: 6),
@@ -1531,7 +1657,10 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                               if (showSciNames)
                                 Expanded(
                                   child: Text(
-                                    widget.group.scientificName,
+                                    taxonomyAsync.value?.displayScientificName(
+                                          widget.group.scientificName,
+                                        ) ??
+                                        widget.group.scientificName,
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       fontStyle: FontStyle.italic,
                                       color: theme.colorScheme.onSurface
@@ -1594,68 +1723,15 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
           ),
 
           // ── Expanded cluster list ─────────────────────────
-          AnimatedCrossFade(
-            firstChild: const SizedBox.shrink(),
-            secondChild: Padding(
-              // Indent the detection rows so the hierarchical relationship
-              // to the species card above is visually emphasized. The
-              // inset roughly aligns the play column with the right edge
-              // of the species thumbnail in the parent card.
+          // _ExpandedSection builds its child only while expanded (or
+          // animating open/closed), so collapsed species tiles don't keep
+          // their cluster rows in the widget tree.
+          _ExpandedSection(
+            isExpanded: widget.isExpanded,
+            child: Padding(
               padding: const EdgeInsets.only(left: 16, bottom: 4),
-              child: Column(
-                children: [
-                  for (var i = 0; i < widget.group.clusters.length; i++)
-                    _ClusterRow(
-                      cluster: widget.group.clusters[i],
-                      session: widget.session,
-                      clipOffsetSec: widget.clipOffsetSec,
-                      windowSec: widget.windowSec,
-                      isActive: _activeState.activeClusterIndex == i,
-                      onSeek:
-                          () => widget.onSeekCluster(widget.group.clusters[i]),
-                      onPause: widget.onPause,
-                      onDelete:
-                          () =>
-                              widget.onDeleteCluster(widget.group.clusters[i]),
-                      onDeleteSpecies: widget.onDeleteSpecies,
-                      onReplace:
-                          () =>
-                              widget.onReplaceCluster(widget.group.clusters[i]),
-                      onToggleConfirm:
-                          () => widget.onToggleConfirmCluster(
-                            widget.group.clusters[i],
-                          ),
-                      onShare:
-                          () => widget.onShareCluster(widget.group.clusters[i]),
-                      onEditNote:
-                          () => widget.onEditNoteCluster(
-                            widget.group.clusters[i],
-                          ),
-                      onEditVoiceMemo:
-                          () => widget.onEditVoiceMemoCluster(
-                            widget.group.clusters[i],
-                          ),
-                      onDeleteVoiceMemo:
-                          () => widget.onDeleteVoiceMemoCluster(
-                            widget.group.clusters[i],
-                          ),
-                      isSurvey: widget.isSurvey,
-                      audioAvailable: widget.audioAvailable,
-                      onShowOnMap:
-                          widget.onShowOnMap != null
-                              ? () => widget.onShowOnMap!(
-                                widget.group.clusters[i].records.first,
-                              )
-                              : null,
-                    ),
-                ],
-              ),
+              child: _buildClusterRows(l10n),
             ),
-            crossFadeState:
-                widget.isExpanded
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-            duration: const Duration(milliseconds: 200),
           ),
 
           const Divider(height: 1, indent: 60),
@@ -1667,6 +1743,88 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
   Color _confidenceColor(double confidence, ThemeData theme) {
     final colors = theme.extension<ScoreColors>() ?? ScoreColors.light;
     return colors.forScore(confidence);
+  }
+
+  Widget _buildOneClusterRow(int i) {
+    final cluster = widget.group.clusters[i];
+    return _ClusterRow(
+      cluster: cluster,
+      session: widget.session,
+      clipOffsetSec: widget.clipOffsetSec,
+      windowSec: widget.windowSec,
+      isActive: _activeState.activeClusterIndex == i,
+      onSeek: () => widget.onSeekCluster(cluster),
+      onPause: widget.onPause,
+      onDelete: () => widget.onDeleteCluster(cluster),
+      onDeleteSpecies: widget.onDeleteSpecies,
+      onReplace: () => widget.onReplaceCluster(cluster),
+      onToggleConfirm: () => widget.onToggleConfirmCluster(cluster),
+      onShare: () => widget.onShareCluster(cluster),
+      onEditNote: () => widget.onEditNoteCluster(cluster),
+      onEditVoiceMemo: () => widget.onEditVoiceMemoCluster(cluster),
+      onDeleteVoiceMemo: () => widget.onDeleteVoiceMemoCluster(cluster),
+      isSurvey: widget.isSurvey,
+      audioAvailable: widget.audioAvailable,
+      onShowOnMap:
+          widget.onShowOnMap != null
+              ? () => widget.onShowOnMap!(cluster.records.first)
+              : null,
+    );
+  }
+
+  /// Builds the cluster list for the expanded species tile.
+  ///
+  /// When the session has full audio every cluster is playable so all are
+  /// shown unchanged.  When only per-detection clips exist (survey / ARU
+  /// clip-only mode), clusters are split: those with a clip always shown
+  /// first, then up to [_noClipVisibleCount] without a clip, followed by
+  /// a "Show N more" button that reveals another 50 per tap.
+  Widget _buildClusterRows(AppLocalizations l10n) {
+    final allHaveAudio = widget.audioAvailable ||
+        _clusterHasClip.every((b) => b);
+
+    if (allHaveAudio) {
+      return Column(
+        children: [
+          for (var i = 0; i < widget.group.clusters.length; i++)
+            _buildOneClusterRow(i),
+        ],
+      );
+    }
+
+    // Separate clip vs. no-clip, preserving original indexes for isActive.
+    final withClip = <int>[];
+    final withoutClip = <int>[];
+    for (var i = 0; i < widget.group.clusters.length; i++) {
+      (_clusterHasClip[i] ? withClip : withoutClip).add(i);
+    }
+
+    final visibleNoClip = withoutClip.take(_noClipVisibleCount).toList();
+    final hiddenCount = withoutClip.length - visibleNoClip.length;
+    // Show at most 50 on each "show more" tap.
+    final nextBatch = hiddenCount.clamp(0, 50);
+
+    return Column(
+      children: [
+        for (final i in withClip) _buildOneClusterRow(i),
+        for (final i in visibleNoClip) _buildOneClusterRow(i),
+        if (hiddenCount > 0)
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              foregroundColor:
+                  Theme.of(context).colorScheme.onSurface.withAlpha(150),
+            ),
+            icon: const Icon(AppIcons.expandMore, size: 18),
+            label: Text(
+              l10n.sessionClusterShowMore(nextBatch),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            onPressed: () =>
+                setState(() => _noClipVisibleCount += 50),
+          ),
+      ],
+    );
   }
 
   /// Background reveal for swipe-to-delete on the species header. Uses
@@ -1814,18 +1972,25 @@ class _ClusterRow extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         child: Row(
           children: [
-            if (isManual)
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Tooltip(
-                  message: l10n.detectionSourceManual,
+            if (isManual && audioAvailable)
+              InkWell(
+                onTap: isActive && onPause != null ? onPause : onSeek,
+                borderRadius: BorderRadius.circular(24),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
                   child: Icon(
-                    AppIcons.editNote,
+                    isActive
+                        ? (onPause != null
+                            ? AppIcons.pauseRounded
+                            : AppIcons.graphicEq)
+                        : AppIcons.playArrowRounded,
                     size: 24,
                     color: theme.colorScheme.primary,
                   ),
                 ),
               )
+            else if (isManual)
+              const SizedBox(width: 48)
             else if (audioAvailable || cluster.hasAudioClip)
               InkWell(
                 onTap: isActive && onPause != null ? onPause : onSeek,
@@ -1858,6 +2023,18 @@ class _ClusterRow extends ConsumerWidget {
                 ),
               ),
             ),
+            if (isManual)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Tooltip(
+                  message: l10n.detectionSourceManual,
+                  child: Icon(
+                    AppIcons.editNote,
+                    size: 16,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
             if (cluster.count > 1)
               Padding(
                 padding: const EdgeInsets.only(right: 8),
@@ -1865,6 +2042,39 @@ class _ClusterRow extends ConsumerWidget {
                   '×${cluster.count}',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSurface.withAlpha(120),
+                  ),
+                ),
+              ),
+            if (cluster.records.first.hasVoiceMemo)
+              Tooltip(
+                message: l10n.detectionVoiceMemoTooltip,
+                child: InkWell(
+                  onTap: onEditVoiceMemo,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
+                      AppIcons.mic,
+                      size: 22,
+                      color: theme.colorScheme.primary.withAlpha(180),
+                    ),
+                  ),
+                ),
+              ),
+            if (cluster.records.first.hasNote)
+              Tooltip(
+                message:
+                    cluster.records.first.note ?? l10n.detectionNoteTooltip,
+                child: InkWell(
+                  onTap: onEditNote,
+                  borderRadius: BorderRadius.circular(24),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
+                      AppIcons.stickyNote2,
+                      size: 22,
+                      color: theme.colorScheme.primary.withAlpha(180),
+                    ),
                   ),
                 ),
               ),
@@ -1912,39 +2122,6 @@ class _ClusterRow extends ConsumerWidget {
                 ),
               ),
             ),
-            if (cluster.records.first.hasNote)
-              Tooltip(
-                message:
-                    cluster.records.first.note ?? l10n.detectionNoteTooltip,
-                child: InkWell(
-                  onTap: onEditNote,
-                  borderRadius: BorderRadius.circular(24),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Icon(
-                      AppIcons.stickyNote2,
-                      size: 22,
-                      color: theme.colorScheme.primary.withAlpha(180),
-                    ),
-                  ),
-                ),
-              ),
-            if (cluster.records.first.hasVoiceMemo)
-              Tooltip(
-                message: l10n.detectionVoiceMemoTooltip,
-                child: InkWell(
-                  onTap: onEditVoiceMemo,
-                  borderRadius: BorderRadius.circular(24),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Icon(
-                      AppIcons.mic,
-                      size: 22,
-                      color: theme.colorScheme.primary.withAlpha(180),
-                    ),
-                  ),
-                ),
-              ),
             DetectionActionsOverflow(
               actions: DetectionActions(
                 onShare: onShare,
@@ -2412,7 +2589,7 @@ class _ReplaceTargetBanner extends ConsumerWidget {
                 ),
                 if (showSciNames)
                   Text(
-                    target.scientificName,
+                    species?.displayScientificName ?? target.scientificName,
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontStyle: FontStyle.italic,
                       color: theme.colorScheme.onSurfaceVariant,
@@ -2474,7 +2651,7 @@ class _SpeciesResultTile extends ConsumerWidget {
       subtitle:
           showSciNames
               ? Text(
-                species.scientificName,
+                species.displayScientificName,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,
@@ -2762,7 +2939,8 @@ class _AnnotationRowState extends State<_AnnotationRow> {
       player = AudioPlayer();
       _player = player;
       try {
-        await player.setFilePath(path);
+        final playbackPath = await PlaybackNormalizer.resolveSource(path);
+        await player.setFilePath(playbackPath);
       } catch (_) {
         return;
       }
@@ -3436,6 +3614,79 @@ class _SessionHelpSheet extends StatelessWidget {
             body: l10n.sessionHelpContinueSurvey,
           ),
       ],
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// _ExpandedSection — animated height expand/collapse with lazy child build
+// ═════════════════════════════════════════════════════════════════════════════
+//
+// Unlike AnimatedCrossFade (which always builds both children), this widget
+// only keeps its child in the tree while expanded or mid-animation.  For a
+// session with 50 collapsed species, this avoids building ~500 _ClusterRow
+// widgets that would otherwise sit unused in the widget tree.
+
+class _ExpandedSection extends StatefulWidget {
+  const _ExpandedSection({required this.isExpanded, required this.child});
+
+  final bool isExpanded;
+  final Widget child;
+
+  @override
+  _ExpandedSectionState createState() => _ExpandedSectionState();
+}
+
+class _ExpandedSectionState extends State<_ExpandedSection>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _heightFactor;
+  bool _showChild = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _heightFactor = _controller.drive(CurveTween(curve: Curves.easeInOut));
+    _showChild = widget.isExpanded;
+    if (widget.isExpanded) _controller.value = 1.0;
+  }
+
+  @override
+  void didUpdateWidget(_ExpandedSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isExpanded == oldWidget.isExpanded) return;
+    if (widget.isExpanded) {
+      _showChild = true;
+      _controller.forward();
+    } else {
+      _controller.reverse().then((_) {
+        if (mounted) setState(() => _showChild = false);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) => ClipRect(
+        child: Align(
+          alignment: Alignment.topCenter,
+          heightFactor: _heightFactor.value,
+          child: child,
+        ),
+      ),
+      child: _showChild ? widget.child : const SizedBox.shrink(),
     );
   }
 }

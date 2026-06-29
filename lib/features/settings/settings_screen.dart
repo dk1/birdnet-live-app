@@ -96,6 +96,12 @@ class SettingsScreen extends ConsumerWidget {
       SettingsContext.survey,
       SettingsContext.pointCount,
     },
+    'playback': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
+      SettingsContext.fileAnalysis,
+    },
     'export': {
       SettingsContext.live,
       SettingsContext.survey,
@@ -315,18 +321,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: l10n.settingsInferenceRate,
                 helpBody: l10n.settingsHelpInferenceRate,
                 value: ref.watch(inferenceRateProvider),
-                values: const [
-                  0.1,
-                  0.2,
-                  0.3,
-                  0.4,
-                  0.5,
-                  0.6,
-                  0.7,
-                  0.8,
-                  0.9,
-                  1.0,
-                ],
+                values: inferenceRateHzValues,
                 format: (v) => '${v.toStringAsFixed(2)} Hz',
                 onChanged:
                     (v) => ref.read(inferenceRateProvider.notifier).set(v),
@@ -494,6 +489,39 @@ class SettingsScreen extends ConsumerWidget {
               const Divider(),
             ],
 
+            // --- Playback ---
+            if (_showSection('playback')) ...[
+              _SectionHeader(
+                title: l10n.settingsPlayback,
+                subtitle: l10n.settingsPlaybackDescription,
+              ),
+              SwitchListTile(
+                title: _TitleWithHelp(
+                  title: l10n.settingsPlaybackVoiceMemos,
+                  helpBody: l10n.settingsHelpPlaybackVoiceMemos,
+                ),
+                subtitle: Text(l10n.settingsPlaybackVoiceMemosDescription),
+                value: ref.watch(playbackVoiceMemosProvider),
+                onChanged:
+                    (v) => ref.read(playbackVoiceMemosProvider.notifier).set(v),
+              ),
+              if (ref.watch(playbackVoiceMemosProvider))
+                _SliderTile(
+                  title: l10n.settingsPlaybackVoiceMemoDucking,
+                  helpBody: l10n.settingsHelpPlaybackVoiceMemoDucking,
+                  value: ref.watch(playbackVoiceMemoDuckingProvider),
+                  min: 0.0,
+                  max: 0.95,
+                  divisions: 19,
+                  format: (v) => '${(v * 100).round()}%',
+                  onChanged:
+                      (v) => ref
+                          .read(playbackVoiceMemoDuckingProvider.notifier)
+                          .set(v),
+                ),
+              const Divider(),
+            ],
+
             // --- Announcements ---
             if (_showSection('announcements'))
               AnnouncementsSettingsSection(
@@ -571,6 +599,19 @@ class SettingsScreen extends ConsumerWidget {
                     (v) =>
                         ref.read(includeAudioProvider.notifier).set(v ?? false),
               ),
+              if (ref.watch(includeAudioProvider))
+                CheckboxListTile(
+                  dense: true,
+                  title: _TitleWithHelp(
+                    title: l10n.settingsShareAudioAsWav,
+                    helpBody: l10n.settingsHelpShareAudioAsWav,
+                  ),
+                  value: ref.watch(shareAudioAsWavProvider),
+                  onChanged:
+                      (v) => ref
+                          .read(shareAudioAsWavProvider.notifier)
+                          .set(v ?? false),
+                ),
               CheckboxListTile(
                 dense: true,
                 title: _TitleWithHelp(

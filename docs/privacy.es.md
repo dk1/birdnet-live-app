@@ -30,7 +30,7 @@ Las solicitudes de mosaicos son HTTPS GET estándar a `tile.openstreetmap.org`; 
 **Revocación:** puede desactivar cualquiera de los tres servicios en cualquier momento bajo **Ajustes → Privacidad**. Para borrar nombres de lugar e instantáneas meteorológicas históricos, elimine esas sesiones en Session Library o use **Ajustes → Zona de peligro → Borrar todos los datos**.
 
 ## GPS y Exportación de Datos
-El GPS se usa para filtros y encuestas de especies. Bajo **Ajustes → Exportar → Formatos** puede marcar cualquier combinación de formatos (Raven Selection Table, CSV, JSON, GPX) y los exportados se agruparán en un único ZIP junto con los clips de audio y el informe HTML opcional. Los datos no se suben a la nube.
+El GPS se usa para el filtrado de especies y el modo Survey. Bajo **Ajustes → Exportar → Formatos** puede marcar cualquier combinación de formatos (Raven Selection Table, CSV, JSON, GPX) y los exportados se agruparán en un único ZIP junto con los clips de audio y el informe HTML opcional. Los datos no se suben a la nube.
 Puede eliminar sesiones individuales desde Session Library. Para borrar dentro de la app sesiones locales, grabaciones, notas de voz, listas de especies personalizadas, preferencias y cachés de BirdNET Live, use **Ajustes → Zona de peligro → Borrar todos los datos**. También puede borrar el almacenamiento de BirdNET Live en los ajustes del sistema o desinstalar la app.
 
 ## Contacto

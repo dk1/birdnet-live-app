@@ -27,6 +27,8 @@ jobs:
           channel: stable
 
       - run: flutter --version
+      - name: Prepare generated asset directories
+        run: mkdir -p assets/species_data
       - run: flutter pub get
       - run: flutter gen-l10n
       - run: flutter analyze --no-fatal-infos

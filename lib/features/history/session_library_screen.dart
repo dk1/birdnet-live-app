@@ -809,6 +809,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
   Future<void> _shareSession(LiveSession session) async {
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
+    final shareAudioAsWav = ref.read(shareAudioAsWavProvider);
     final includeHtmlReport = ref.read(exportHtmlReportProvider);
     final includeAppMetadata = ref.read(includeAppMetadataProvider);
     final taxonomy = ref.read(taxonomyServiceProvider).value;
@@ -823,6 +824,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       session,
       formats: exportFormats,
       includeAudio: includeAudio,
+      shareAudioAsWav: shareAudioAsWav,
       taxonomy: taxonomy,
       speciesLocale: speciesLocale,
       metadata: metadata,
@@ -901,6 +903,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     try {
       final exportFormats = ref.read(exportSelectionProvider);
       final includeAudio = ref.read(includeAudioProvider);
+      final shareAudioAsWav = ref.read(shareAudioAsWavProvider);
       final includeHtmlReport = ref.read(exportHtmlReportProvider);
       final includeAppMetadata = ref.read(includeAppMetadataProvider);
       final taxonomy = ref.read(taxonomyServiceProvider).value;
@@ -912,6 +915,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         selectedList,
         formats: exportFormats,
         includeAudio: includeAudio,
+        shareAudioAsWav: shareAudioAsWav,
         taxonomy: taxonomy,
         speciesLocale: speciesLocale,
         useAbsoluteSurveyTime: useAbsoluteSurveyTime,
@@ -1112,29 +1116,37 @@ class _SessionTile extends ConsumerWidget {
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
-                  children:
-                      _topSpeciesSci(session).map((entry) {
+                  children: () {
                         final speciesLocale = ref.watch(
                           effectiveSpeciesLocaleProvider,
                         );
                         final taxonomy =
                             ref.watch(taxonomyServiceProvider).value;
-                        final displayName =
-                            taxonomy
-                                ?.lookup(entry.key)
-                                ?.commonNameForLocale(speciesLocale) ??
-                            entry.value;
-                        return Chip(
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          visualDensity: VisualDensity.compact,
-                          label: Text(
-                            displayName,
-                            style: theme.textTheme.labelSmall,
-                          ),
-                          padding: EdgeInsets.zero,
-                        );
-                      }).toList(),
+                        final entries =
+                            _topSpeciesSci(session).map((entry) {
+                              final displayName =
+                                  taxonomy
+                                      ?.lookup(entry.key)
+                                      ?.commonNameForLocale(speciesLocale) ??
+                                  entry.value;
+                              return displayName;
+                            }).toList()
+                              ..sort((a, b) => a.compareTo(b));
+                        return entries
+                            .map(
+                              (name) => Chip(
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                visualDensity: VisualDensity.compact,
+                                label: Text(
+                                  name,
+                                  style: theme.textTheme.labelSmall,
+                                ),
+                                padding: EdgeInsets.zero,
+                              ),
+                            )
+                            .toList();
+                      }(),
                 ),
               ],
               const SizedBox(height: 12),
@@ -1428,7 +1440,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
           title: Text(displayName, style: theme.textTheme.titleSmall),
           subtitle: Text(
             showSciNames
-                ? '${group.scientificName} · ${l10n.sessionSpeciesSessionCount(sessionCount)}'
+                ? '${taxon?.displayScientificName ?? group.scientificName} · ${l10n.sessionSpeciesSessionCount(sessionCount)}'
                 : l10n.sessionSpeciesSessionCount(sessionCount),
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
@@ -1724,18 +1736,20 @@ String _sessionTypeLabel(AppLocalizations l10n, SessionType type) {
   }
 }
 
-/// Returns the top 5 most-detected species as (scientificName, commonName)
-/// pairs, ordered by detection count.  The common name is the raw English
+/// Returns the top 5 species by best confidence score as
+/// (scientificName, commonName) pairs. The common name is the raw English
 /// fallback — callers should translate via [TaxonomyService] if available.
+/// Order is unspecified; callers should sort for display.
 List<MapEntry<String, String>> _topSpeciesSci(LiveSession session) {
-  final counts = <String, int>{};
+  final bestScore = <String, double>{};
   final names = <String, String>{};
   for (final d in session.detections) {
-    counts[d.scientificName] = (counts[d.scientificName] ?? 0) + 1;
+    final prev = bestScore[d.scientificName] ?? 0.0;
+    if (d.confidence > prev) bestScore[d.scientificName] = d.confidence;
     names.putIfAbsent(d.scientificName, () => d.commonName);
   }
   final sorted =
-      counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+      bestScore.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
   return sorted.take(5).map((e) => MapEntry(e.key, names[e.key]!)).toList();
 }
 

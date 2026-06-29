@@ -8,7 +8,7 @@ Preguntas frecuentes.
 R: No. Toda la inferencia se ejecuta en el dispositivo utilizando el modelo ONNX. Las únicas características de la red son las búsquedas de imágenes/descripciones de especies desde la API de taxonomía, que son opcionales.
 
 **P: ¿Cuántas especies puede identificar?**
-R: El modelo BirdNET+ V3.0 identifica 5250 especies de aves en todo el mundo (la intersección podada del clasificador de audio y el modelo geográfico).
+R: El modelo BirdNET+ V3.0 identifica 10 208 especies en todo el mundo: aves, anfibios, mamíferos e insectos (la intersección podada del clasificador de audio y el modelo geográfico).
 
 **P: ¿Qué plataformas son compatibles?**
 R: Android (8.0+), iOS (15.0+) y Windows (experimental).
@@ -35,7 +35,7 @@ R: Sí. Abra Análisis de archivos desde la pantalla de inicio, elija un archivo
 ## Recuento de puntos
 
 **P: ¿Qué es el modo de conteo de puntos?**
-R: Un modo de encuesta cronometrada para observaciones formales de conteo de puntos de aves. Usted establece una duración fija (de 3 a 20 minutos) y una ubicación, luego la aplicación se ejecuta continuamente y se detiene automáticamente cuando el temporizador llega a cero.
+R: Un modo cronometrado para observaciones formales de conteo de puntos de aves. Usted establece una duración fija (de 3 a 20 minutos) y una ubicación, luego la aplicación se ejecuta continuamente y se detiene automáticamente cuando el temporizador llega a cero.
 
 **P: ¿Puedo pausar un conteo de puntos?**
 R: No. El cumplimiento del protocolo requiere una grabación ininterrumpida. Puede finalizar temprano mediante el botón de parada.

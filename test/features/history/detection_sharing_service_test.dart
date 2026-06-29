@@ -24,6 +24,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 // ignore: depend_on_referenced_packages
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+// ignore: depend_on_referenced_packages
+import 'package:share_plus_platform_interface/share_plus_platform_interface.dart';
 
 class _FakePathProvider extends PathProviderPlatform
     with MockPlatformInterfaceMixin {
@@ -38,6 +40,16 @@ class _FakePathProvider extends PathProviderPlatform
 
   @override
   Future<String?> getApplicationSupportPath() async => tmp;
+}
+
+class _FakeSharePlatform extends SharePlatform with MockPlatformInterfaceMixin {
+  ShareParams? lastParams;
+
+  @override
+  Future<ShareResult> share(ShareParams params) async {
+    lastParams = params;
+    return const ShareResult('ok', ShareResultStatus.success);
+  }
 }
 
 LiveSession _session({
@@ -97,16 +109,42 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late Directory tmp;
+  late SharePlatform originalSharePlatform;
+  late _FakeSharePlatform fakeSharePlatform;
 
   setUp(() async {
     tmp = await Directory.systemTemp.createTemp('share_extract_');
     PathProviderPlatform.instance = _FakePathProvider(tmp.path);
+    originalSharePlatform = SharePlatform.instance;
+    fakeSharePlatform = _FakeSharePlatform();
+    SharePlatform.instance = fakeSharePlatform;
   });
 
   tearDown(() async {
+    SharePlatform.instance = originalSharePlatform;
     if (tmp.existsSync()) {
       await tmp.delete(recursive: true);
     }
+  });
+
+  group('shareDetection', () {
+    test('shares staged audio with filename override and MIME type', () async {
+      final clip = File(p.join(tmp.path, 'kept_clip.flac'));
+      await clip.writeAsBytes([0x66, 0x4c, 0x61, 0x43]);
+      final detection = _det(DateTime.utc(2026, 5, 11, 10, 0, 0))
+        ..audioClipPath = clip.path;
+
+      await shareDetection(detection);
+
+      final params = fakeSharePlatform.lastParams;
+      expect(params, isNotNull);
+      expect(params!.files, hasLength(1));
+      expect(params.files!.single.mimeType, 'audio/flac');
+      expect(params.fileNameOverrides, hasLength(1));
+      expect(params.fileNameOverrides!.single, endsWith('.flac'));
+      expect(params.fileNameOverrides!.single, params.files!.single.name);
+      expect(params.title, params.fileNameOverrides!.single);
+    });
   });
 
   group('extractClipFromFullAudio', () {

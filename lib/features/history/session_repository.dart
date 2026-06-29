@@ -24,10 +24,12 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:path_provider/path_provider.dart';
 
 import '../live/live_session.dart';
+import 'session_path_codec.dart';
 
 /// Persists [LiveSession] objects as JSON files.
 class SessionRepository {
@@ -54,9 +56,9 @@ class SessionRepository {
   Future<void> save(LiveSession session) async {
     final basePath = await _getBasePath();
     final file = File('$basePath/${_sanitiseId(session.id)}.json');
-    final jsonString = const JsonEncoder.withIndent(
-      '  ',
-    ).convert(session.toJson());
+    final documentsPath = Directory(basePath).parent.path;
+    final json = sessionJsonForStorage(session, documentsPath: documentsPath);
+    final jsonString = const JsonEncoder.withIndent('  ').convert(json);
     await file.writeAsString(jsonString, flush: true);
   }
 
@@ -70,32 +72,46 @@ class SessionRepository {
 
     final jsonString = await file.readAsString();
     final json = jsonDecode(jsonString) as Map<String, dynamic>;
-    return LiveSession.fromJson(json);
+    return sessionFromStorageJson(
+      json,
+      documentsPath: Directory(basePath).parent.path,
+    );
   }
 
   /// List all saved sessions, sorted by start time (newest first).
+  ///
+  /// File reading and JSON parsing run in a background isolate so large
+  /// sessions (e.g. 1 000-detection ARU deployments) do not block the UI.
   Future<List<LiveSession>> listAll() async {
     final basePath = await _getBasePath();
     final dir = Directory(basePath);
     if (!await dir.exists()) return const [];
 
-    final sessions = <LiveSession>[];
-
+    final filePaths = <String>[];
     await for (final entity in dir.list()) {
       if (entity is File && entity.path.endsWith('.json')) {
+        filePaths.add(entity.path);
+      }
+    }
+    if (filePaths.isEmpty) return const [];
+
+    final documentsPath = Directory(basePath).parent.path;
+    return Isolate.run(() async {
+      final sessions = <LiveSession>[];
+      for (final path in filePaths) {
         try {
-          final jsonString = await entity.readAsString();
+          final jsonString = await File(path).readAsString();
           final json = jsonDecode(jsonString) as Map<String, dynamic>;
-          sessions.add(LiveSession.fromJson(json));
+          sessions.add(
+            sessionFromStorageJson(json, documentsPath: documentsPath),
+          );
         } catch (_) {
           // Skip corrupt files.
         }
       }
-    }
-
-    // Sort newest first.
-    sessions.sort((a, b) => b.startTime.compareTo(a.startTime));
-    return sessions;
+      sessions.sort((a, b) => b.startTime.compareTo(a.startTime));
+      return sessions;
+    });
   }
 
   /// Delete a session by ID.

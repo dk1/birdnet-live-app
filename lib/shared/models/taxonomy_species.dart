@@ -30,6 +30,7 @@ class TaxonomySpecies {
   const TaxonomySpecies({
     required this.scientificName,
     required this.commonName,
+    this.canonicalScientificName,
     this.commonNameAlt,
     this.taxonGroup = '',
     this.birdnetId,
@@ -47,7 +48,18 @@ class TaxonomySpecies {
   });
 
   /// Binomial scientific name (primary key for matching).
+  ///
+  /// This is the model label name; it is the join key used by detections and
+  /// sessions, and may be an older synonym for some species.
   final String scientificName;
+
+  /// Canonical (taxonomy) scientific name for display.
+  ///
+  /// Equals [scientificName] for the vast majority of species; differs only
+  /// where the model label uses an older synonym (e.g. `Hypsiboas faber` ->
+  /// `Boana faber`).  Prefer [displayScientificName] when showing a name to
+  /// the user.
+  final String? canonicalScientificName;
 
   /// English common name.
   final String commonName;
@@ -97,6 +109,15 @@ class TaxonomySpecies {
   // ---------------------------------------------------------------------------
   // Convenience getters
   // ---------------------------------------------------------------------------
+
+  /// Canonical scientific name to show in the UI.
+  ///
+  /// Falls back to the model label [scientificName] when no canonical name is
+  /// available.
+  String get displayScientificName =>
+      (canonicalScientificName != null && canonicalScientificName!.isNotEmpty)
+          ? canonicalScientificName!
+          : scientificName;
 
   /// Bundled asset image path (480x320 WebP).
   ///
@@ -168,6 +189,7 @@ class TaxonomySpecies {
     return TaxonomySpecies(
       scientificName: row['scientific_name'] ?? '',
       commonName: row['common_name'] ?? '',
+      canonicalScientificName: _nonEmpty(row['canonical_scientific_name']),
       commonNameAlt: _nonEmpty(row['common_name_alt']),
       taxonGroup: row['taxon_group'] ?? '',
       birdnetId: _nonEmpty(row['birdnet_id']),

@@ -232,7 +232,10 @@ class DetectionTile extends ConsumerWidget {
                       if (showSciNames)
                         Expanded(
                           child: Text(
-                            detection.scientificName,
+                            taxonomyAsync.value?.displayScientificName(
+                                  detection.scientificName,
+                                ) ??
+                                detection.scientificName,
                             style: theme.textTheme.bodySmall?.copyWith(
                               fontStyle: FontStyle.italic,
                               color: theme.colorScheme.onSurface.withAlpha(153),

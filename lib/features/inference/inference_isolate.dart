@@ -10,7 +10,7 @@
 // session via platform channels and runs inference on a native background
 // thread queue, so the heavy work already happens off the UI thread.  The
 // remaining Dart-side post-processing (sigmoid, sort, top-K) takes
-// sub-millisecond on the 5,250-class label space and is safe to run on the
+// sub-millisecond on the 9,789-class label space and is safe to run on the
 // root isolate.
 //
 // To minimize churn at the call sites this class now keeps the same public
@@ -145,7 +145,14 @@ class InferenceIsolate {
     _service?.setMaxPoolWindows(value);
   }
 
-  /// Override the pooling mode (`'off' | 'average' | 'max' | 'lme'`).
+  /// Override the temporal-pooling time gate in seconds. Pass `null` to
+  /// revert to the model-config default.
+  void setMaxPoolAgeSeconds(double? value) {
+    _service?.setMaxPoolAgeSeconds(value);
+  }
+
+  /// Override the pooling mode (`'off' | 'average' | 'max' | 'lme' |
+  /// 'adaptive_lme_peak'`).
   /// Safe to call before [start] — silently dropped if not ready.
   void setPoolingMode(String? mode) {
     _service?.setPoolingMode(mode);

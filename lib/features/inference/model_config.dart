@@ -336,7 +336,8 @@ class TemporalPoolingConfig {
   const TemporalPoolingConfig({
     this.maxWindows = 5,
     this.alpha = 5.0,
-    this.peakRetention = 0.98,
+    this.peakRetention = 0.0,
+    this.maxAgeSeconds = 10.0,
     this.minSupportWindows = 2,
     this.supportThresholdFraction = 0.6,
     this.supportThresholdFloor = 0.25,
@@ -351,6 +352,9 @@ class TemporalPoolingConfig {
 
   /// Fraction of the strongest recent raw score retained in LME mode.
   final double peakRetention;
+
+  /// Maximum real-time age for windows included in temporal pooling.
+  final double maxAgeSeconds;
 
   /// Number of raw recent windows required before a new LME detection appears.
   final int minSupportWindows;
@@ -376,7 +380,8 @@ class TemporalPoolingConfig {
     return TemporalPoolingConfig(
       maxWindows: (json['maxWindows'] as num?)?.toInt() ?? 5,
       alpha: (json['alpha'] as num?)?.toDouble() ?? 5.0,
-      peakRetention: (json['peakRetention'] as num?)?.toDouble() ?? 0.98,
+      peakRetention: (json['peakRetention'] as num?)?.toDouble() ?? 0.0,
+      maxAgeSeconds: (json['maxAgeSeconds'] as num?)?.toDouble() ?? 10.0,
       minSupportWindows: (json['minSupportWindows'] as num?)?.toInt() ?? 2,
       supportThresholdFraction:
           (json['supportThresholdFraction'] as num?)?.toDouble() ?? 0.6,
@@ -391,6 +396,7 @@ class TemporalPoolingConfig {
     'maxWindows': maxWindows,
     'alpha': alpha,
     'peakRetention': peakRetention,
+    'maxAgeSeconds': maxAgeSeconds,
     'minSupportWindows': minSupportWindows,
     'supportThresholdFraction': supportThresholdFraction,
     'supportThresholdFloor': supportThresholdFloor,

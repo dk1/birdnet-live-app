@@ -4,6 +4,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../features/explore/explore_providers.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/utils/app_icons.dart';
 import '../../shared/widgets/content_width_constraint.dart';
@@ -22,6 +23,7 @@ class AboutScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final packageInfo = ref.watch(packageInfoProvider);
+    final taxonomyAsync = ref.watch(taxonomyServiceProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.about)),
@@ -71,7 +73,7 @@ class AboutScreen extends ConsumerWidget {
 
             // Combined model info — audio model + geo-model in one card.
             // Shows the model display name for each plus the shared species
-            // count once at the bottom (both ship with the same 5,250-species
+            // count once at the bottom (both ship with the same 9,789-species
             // intersection, so repeating it on two cards was redundant).
             Card(
               child: Padding(
@@ -100,7 +102,30 @@ class AboutScreen extends ConsumerWidget {
                     Text(l10n.aboutGeoModelName),
                     const SizedBox(height: 12),
                     Text(
-                      l10n.aboutSpeciesCount(AppConstants.speciesCount),
+                      () {
+                        final base = l10n.aboutSpeciesCount(
+                          AppConstants.speciesCount,
+                        );
+                        final taxonomy = taxonomyAsync.maybeWhen(
+                          data: (v) => v,
+                          orElse: () => null,
+                        );
+                        if (taxonomy == null) return base;
+                        final counts = taxonomy.taxonGroupCounts;
+                        final groupLabels = <String, String>{
+                          'Aves': l10n.taxonGroupAves,
+                          'Mammalia': l10n.taxonGroupMammalia,
+                          'Insecta': l10n.taxonGroupInsecta,
+                          'Amphibia': l10n.taxonGroupAmphibia,
+                        };
+                        final parts = <String>[];
+                        for (final entry in groupLabels.entries) {
+                          final count = counts[entry.key];
+                          if (count != null) parts.add('${entry.value}: $count');
+                        }
+                        if (parts.isEmpty) return base;
+                        return '$base (${parts.join(', ')})';
+                      }(),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withAlpha(153),
                       ),
