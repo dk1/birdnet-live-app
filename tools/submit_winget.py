@@ -21,9 +21,11 @@ installer_url = (
 cmd = [
     "wingetcreate",
     mode,
+    "--submit",
     "BirdNET-Team.BirdNETLive",
-    installer_url,
-    "--out", "manifests",
+    "--urls", installer_url,
+    "--version", version,
+    #"--out", "manifests",
     "--token", token
 ]
 
