@@ -209,10 +209,7 @@ class _LogoHeader extends ConsumerWidget {
           ?.copyWith(
             fontWeight: FontWeight.w700,
             letterSpacing: -0.5,
-            fontSize:
-                compact
-                    ? (isTablet ? 22 : 20)
-                    : (isTablet ? 32 : null),
+            fontSize: compact ? (isTablet ? 22 : 20) : (isTablet ? 32 : null),
           ),
       textAlign: compact ? TextAlign.left : TextAlign.center,
     );
@@ -237,11 +234,7 @@ class _LogoHeader extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                title,
-                const SizedBox(height: 4),
-                subtitle,
-              ],
+              children: [title, const SizedBox(height: 4), subtitle],
             ),
           ),
         ],
@@ -817,8 +810,8 @@ class _Footer extends StatelessWidget {
     final fontSize = isTablet ? 16.0 : 14.0;
     return Wrap(
       alignment: WrapAlignment.center,
-      spacing: isTablet ? 24 : 14,
-      runSpacing: fontSize * 1.3,
+      spacing: isTablet ? 12 : 6,
+      runSpacing: isTablet ? 6 : 4,
       children: [
         // Sessions first — it's the more frequently used destination
         // (every recording produces one) so it deserves the leftmost
@@ -911,12 +904,12 @@ class _FooterButton extends StatelessWidget {
       label: Text(label, style: TextStyle(color: color, fontSize: fontSize)),
       style: TextButton.styleFrom(
         padding: EdgeInsets.symmetric(
-          horizontal: isTablet ? 12 : 6,
-          vertical: isTablet ? 9 : 7,
+          horizontal: isTablet ? 12 : 8,
+          vertical: isTablet ? 10 : 8,
         ),
-        minimumSize: Size.zero,
+        minimumSize: Size(isTablet ? 76 : 64, isTablet ? 48 : 44),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        visualDensity: VisualDensity.compact,
+        visualDensity: VisualDensity.standard,
       ),
     );
   }
