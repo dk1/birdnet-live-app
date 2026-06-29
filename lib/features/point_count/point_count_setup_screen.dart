@@ -754,9 +754,10 @@ class _ParametersStep extends StatelessWidget {
             value: '${inferenceRate.toStringAsFixed(2)} Hz',
             child: Slider(
               value: inferenceRate,
-              min: 0.25,
-              max: 4.0,
-              divisions: 15,
+              min: inferenceRateHzValues.first,
+              max: inferenceRateHzValues.last,
+              divisions: inferenceRateHzValues.length - 1,
+              label: '${inferenceRate.toStringAsFixed(2)} Hz',
               onChanged: onInferenceRateChanged,
             ),
           ),

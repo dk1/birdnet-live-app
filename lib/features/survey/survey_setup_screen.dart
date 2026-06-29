@@ -794,9 +794,9 @@ class _ParametersStep extends ConsumerWidget {
         ),
         Slider(
           value: inferenceRate,
-          min: 0.1,
-          max: 1.0,
-          divisions: 9,
+          min: inferenceRateHzValues.first,
+          max: inferenceRateHzValues.last,
+          divisions: inferenceRateHzValues.length - 1,
           label: '${inferenceRate.toStringAsFixed(2)} Hz',
           onChanged:
               (v) => ref.read(surveyInferenceRateProvider.notifier).set(v),

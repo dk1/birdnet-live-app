@@ -30,6 +30,19 @@ final highPassFilterProvider =
 // Inference Settings
 // ---------------------------------------------------------------------------
 
+const List<double> inferenceRateHzValues = <double>[
+  0.1,
+  0.2,
+  0.3,
+  0.4,
+  0.5,
+  0.6,
+  0.7,
+  0.8,
+  0.9,
+  1.0,
+];
+
 /// Window duration in seconds (3, 5, or 10).
 final windowDurationProvider = StateNotifierProvider<IntSettingNotifier, int>((
   ref,
@@ -557,11 +570,15 @@ String _legacyLastObserver(SharedPreferences prefs) {
 // Survey Mode
 // ---------------------------------------------------------------------------
 
-/// Survey inference rate in Hz (default 0.25).
+/// Survey inference rate in Hz (default 0.3).
 final surveyInferenceRateProvider =
     StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return DoubleSettingNotifier(prefs, PrefKeys.surveyInferenceRate, 0.3);
+      return InferenceRateSettingNotifier(
+        prefs,
+        key: PrefKeys.surveyInferenceRate,
+        defaultValue: 0.3,
+      );
     });
 
 /// GPS logging interval in seconds (default 10).
@@ -767,20 +784,26 @@ class DoubleSettingNotifier extends StateNotifier<double> {
 }
 
 class InferenceRateSettingNotifier extends DoubleSettingNotifier {
-  InferenceRateSettingNotifier(this._inferenceRatePrefs)
-    : super(_inferenceRatePrefs, PrefKeys.inferenceRate, _defaultRate) {
+  InferenceRateSettingNotifier(
+    this._inferenceRatePrefs, {
+    this.key = PrefKeys.inferenceRate,
+    double defaultValue = _defaultRate,
+  }) : super(_inferenceRatePrefs, key, defaultValue) {
     final sanitized = _sanitize(state);
     if (sanitized != state) {
       state = sanitized;
-      _inferenceRatePrefs.setDouble(PrefKeys.inferenceRate, sanitized);
+      _inferenceRatePrefs.setDouble(key, sanitized);
     }
   }
 
   static const double _defaultRate = 1.0;
   final SharedPreferences _inferenceRatePrefs;
+  final String key;
 
   static double _sanitize(double value) {
-    final tick = (value * 10).round().clamp(1, 10);
+    final minTick = (inferenceRateHzValues.first * 10).round();
+    final maxTick = (inferenceRateHzValues.last * 10).round();
+    final tick = (value * 10).round().clamp(minTick, maxTick);
     return tick / 10.0;
   }
 

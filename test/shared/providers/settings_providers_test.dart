@@ -157,6 +157,24 @@ void main() {
       expect(prefs.getDouble('inference_rate'), 1.0);
     });
 
+    test('surveyInferenceRate snaps to the shared 0.10-1.00 Hz grid', () async {
+      SharedPreferences.setMockInitialValues({
+        PrefKeys.surveyInferenceRate: 1.7,
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(surveyInferenceRateProvider), 1.0);
+      expect(prefs.getDouble(PrefKeys.surveyInferenceRate), 1.0);
+
+      await container.read(surveyInferenceRateProvider.notifier).set(0.04);
+      expect(container.read(surveyInferenceRateProvider), 0.1);
+      expect(prefs.getDouble(PrefKeys.surveyInferenceRate), 0.1);
+    });
+
     test('colorMap migrates removed inferno value to magma', () async {
       SharedPreferences.setMockInitialValues({'color_map': 'inferno'});
       final prefs = await SharedPreferences.getInstance();
