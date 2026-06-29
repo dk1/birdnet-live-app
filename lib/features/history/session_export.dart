@@ -841,10 +841,11 @@ Future<String?> buildSessionExport(
   final selected = formats.where(allFormats.contains).toSet();
 
   final prefix = _exportPrefix(session);
-  final audioPath = session.recordingPath;
+  final fullRecordingPath = _resolveFullRecordingPath(session.recordingPath);
 
-  // Full recording: single file at recordingPath.
-  final hasFullRecording = audioPath != null && File(audioPath).existsSync();
+  // Full recording: single finalized file, or a session directory containing
+  // the finalized `full.wav` / `full.flac` recording.
+  final hasFullRecording = fullRecordingPath != null;
   final baseMetadata =
       metadata ??
       (session.aruMetadata != null
@@ -853,7 +854,7 @@ Future<String?> buildSessionExport(
   var exportMetadata = await _withAudioIntegrityMetadata(
     session,
     baseMetadata,
-    hasFullRecording ? audioPath : null,
+    fullRecordingPath,
   );
 
   // Detection clips: collect per-detection audio files that exist on disk,
@@ -878,7 +879,7 @@ Future<String?> buildSessionExport(
           : originalExt;
   final audioExt = resolveExt(
     hasFullRecording
-        ? p.extension(audioPath)
+        ? p.extension(fullRecordingPath)
         : (hasClips ? p.extension(clipEntries.values.first.path) : '.flac'),
   );
   final audioFileName = '$prefix$audioExt';
@@ -1014,21 +1015,22 @@ Future<String?> buildSessionExport(
   // raw audio file (converted to WAV if requested), renamed to the
   // BirdNET_Live_… prefix so the receiving app shows a sensible filename.
   if (!mustZip && includeAudio && hasFullRecording && !hasCompanion) {
-    final dest = p.join(p.dirname(audioPath), audioFileName);
+    final dest = p.join(p.dirname(fullRecordingPath), audioFileName);
     final destFile = File(dest);
     if (await destFile.exists()) {
       try {
         await destFile.delete();
       } catch (_) {}
     }
-    if (shareAudioAsWav && p.extension(audioPath).toLowerCase() == '.flac') {
-      final wavBytes = await _flacToWavBytes(audioPath);
+    if (shareAudioAsWav &&
+        p.extension(fullRecordingPath).toLowerCase() == '.flac') {
+      final wavBytes = await _flacToWavBytes(fullRecordingPath);
       if (wavBytes != null) {
         await destFile.writeAsBytes(wavBytes);
         return dest;
       }
     }
-    if (dest != audioPath) await File(audioPath).copy(dest);
+    if (dest != fullRecordingPath) await File(fullRecordingPath).copy(dest);
     return dest;
   }
 
@@ -1048,7 +1050,7 @@ Future<String?> buildSessionExport(
 
     if (includeAudio && hasAnyAudio) {
       if (hasFullRecording) {
-        final bytes = await audioBytes(audioPath);
+        final bytes = await audioBytes(fullRecordingPath);
         archive.addFile(ArchiveFile(audioFileName, bytes.length, bytes));
       } else {
         for (final entry in clipExportNames.entries) {
@@ -1173,7 +1175,7 @@ Future<String?> buildSessionExport(
     final zipBytes = ZipEncoder().encode(archive);
     final zipDir =
         hasFullRecording
-            ? p.dirname(audioPath)
+            ? p.dirname(fullRecordingPath)
             : (hasClips
                 ? p.dirname(clipEntries.values.first.path)
                 : (hasAruCycleAudio
@@ -1188,7 +1190,7 @@ Future<String?> buildSessionExport(
     final entry = docs.values.first;
     final dir =
         hasFullRecording
-            ? p.dirname(audioPath)
+            ? p.dirname(fullRecordingPath)
             : (hasClips
                 ? p.dirname(clipEntries.values.first.path)
                 : Directory.systemTemp.path);
@@ -1198,6 +1200,29 @@ Future<String?> buildSessionExport(
     ).writeAsBytes(Uint8List.fromList(utf8.encode(entry.content)));
     return filePath;
   }
+}
+
+/// Resolves [recordingPath] to a continuous session audio file on disk.
+///
+/// Most completed sessions store the finalized file path directly. Active or
+/// crash-recovered sessions may still point at the session recording directory;
+/// support that shape as well so export does not silently drop available audio.
+String? _resolveFullRecordingPath(String? recordingPath) {
+  if (recordingPath == null || recordingPath.isEmpty) return null;
+
+  if (FileSystemEntity.isFileSync(recordingPath)) {
+    final ext = p.extension(recordingPath).toLowerCase();
+    return (ext == '.wav' || ext == '.flac') ? recordingPath : null;
+  }
+
+  if (FileSystemEntity.isDirectorySync(recordingPath)) {
+    final flac = File(p.join(recordingPath, 'full.flac'));
+    if (flac.existsSync()) return flac.path;
+    final wav = File(p.join(recordingPath, 'full.wav'));
+    if (wav.existsSync()) return wav.path;
+  }
+
+  return null;
 }
 
 /// Builds a human-readable text file of session annotations.

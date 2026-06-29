@@ -597,6 +597,51 @@ void main() {
       expect(names, contains('${_prefix}_Morning_walk.selections.txt'));
     });
 
+    test(
+      'honors selected GPX and audio when metadata and HTML are enabled',
+      () async {
+        final wavPath = '${tempDir.path}/full.wav';
+        File(wavPath).writeAsBytesSync([0x52, 0x49, 0x46, 0x46]);
+
+        final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+        final session = _makeSession(
+          recordingPath: wavPath,
+          type: SessionType.survey,
+          detections: [
+            DetectionRecord(
+              scientificName: 'Turdus merula',
+              commonName: 'Eurasian Blackbird',
+              confidence: 0.90,
+              timestamp: start.add(const Duration(seconds: 10)),
+              latitude: 52.520008,
+              longitude: 13.404954,
+            ),
+          ],
+        );
+
+        final zipPath = await buildSessionExport(
+          session,
+          formats: const {'raven', 'gpx'},
+          includeAudio: true,
+          includeHtmlReport: true,
+          includeAppMetadata: true,
+          metadata: const {'app': 'birdnet-live'},
+        );
+        expect(zipPath, isNotNull);
+
+        final archive = ZipDecoder().decodeBytes(
+          File(zipPath!).readAsBytesSync(),
+        );
+        final names = archive.map((f) => f.name).toList();
+
+        expect(names, contains('$_prefix.wav'));
+        expect(names, contains('$_prefix.selections.txt'));
+        expect(names, contains('$_prefix.gpx'));
+        expect(names, contains('$_prefix.metadata.json'));
+        expect(names, contains('report.html'));
+      },
+    );
+
     test('auto-includes GPX in survey ZIP bundles', () async {
       final wavPath = '${tempDir.path}/full.wav';
       File(wavPath).writeAsBytesSync([0x52, 0x49, 0x46, 0x46]);
@@ -639,39 +684,79 @@ void main() {
     });
 
     test(
-      'audio-only export returns raw audio file (no ZIP) when every '
-      'companion is disabled',
+      'includes full recording when recordingPath points at session directory',
       () async {
-        final wavPath = '${tempDir.path}/full.wav';
-        File(wavPath).writeAsBytesSync([0x52, 0x49, 0x46, 0x46]);
+        final sessionDir = Directory('${tempDir.path}/recording');
+        sessionDir.createSync();
+        final flacPath = p.join(sessionDir.path, 'full.flac');
+        File(flacPath).writeAsBytesSync([0x66, 0x4C, 0x61, 0x43]);
 
+        final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
         final session = _makeSession(
-          recordingPath: wavPath,
+          recordingPath: sessionDir.path,
+          type: SessionType.survey,
           detections: [
-            _det(
-              'Turdus merula',
-              'Eurasian Blackbird',
-              0.91,
-              const Duration(seconds: 5),
-              DateTime.utc(2025, 6, 15, 8, 0, 0),
+            DetectionRecord(
+              scientificName: 'Turdus merula',
+              commonName: 'Eurasian Blackbird',
+              confidence: 0.90,
+              timestamp: start.add(const Duration(seconds: 10)),
+              latitude: 52.520008,
+              longitude: 13.404954,
             ),
           ],
         );
 
-        final result = await buildSessionExport(
+        final zipPath = await buildSessionExport(
           session,
-          formats: const <String>{},
+          formats: const {'gpx'},
           includeAudio: true,
           includeHtmlReport: false,
           includeAppMetadata: false,
         );
+        expect(zipPath, isNotNull);
 
-        expect(result, isNotNull);
-        expect(result!.endsWith('.wav'), isTrue);
-        expect(p.basename(result), '$_prefix.wav');
-        expect(File(result).existsSync(), isTrue);
+        final archive = ZipDecoder().decodeBytes(
+          File(zipPath!).readAsBytesSync(),
+        );
+        final names = archive.map((f) => f.name).toList();
+
+        expect(names, contains('$_prefix.flac'));
+        expect(names, contains('$_prefix.gpx'));
       },
     );
+
+    test('audio-only export returns raw audio file (no ZIP) when every '
+        'companion is disabled', () async {
+      final wavPath = '${tempDir.path}/full.wav';
+      File(wavPath).writeAsBytesSync([0x52, 0x49, 0x46, 0x46]);
+
+      final session = _makeSession(
+        recordingPath: wavPath,
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.91,
+            const Duration(seconds: 5),
+            DateTime.utc(2025, 6, 15, 8, 0, 0),
+          ),
+        ],
+      );
+
+      final result = await buildSessionExport(
+        session,
+        formats: const <String>{},
+        includeAudio: true,
+        includeHtmlReport: false,
+        includeAppMetadata: false,
+      );
+
+      expect(result, isNotNull);
+      expect(result!.endsWith('.wav'), isTrue);
+      expect(p.basename(result), '$_prefix.wav');
+      expect(File(result).existsSync(), isTrue);
+    });
 
     test(
       'disabling app metadata drops the .metadata.json side-file from the ZIP',

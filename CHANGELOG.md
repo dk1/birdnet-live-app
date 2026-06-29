@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the bundled geomodel to BirdNET+ Geomodel V3.0.4 and pruned the audio and geo models to their taxonomy-matched 9,789-species intersection after global 3% geo-cutoff screening.
 - Rebuilt the offline species image and description bundle for the updated 9,789-species model set.
 
+### Fixed
+
+- Fixed session exports so saved full recordings are still included when a recovered or in-progress session points at its recording directory, and added regression coverage for ZIP bundles that combine GPX, audio, app metadata, and the HTML report.
+
 ## [0.18.0] - 2026-06-28
 
 ### Changed
