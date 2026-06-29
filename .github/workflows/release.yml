@@ -310,11 +310,17 @@ jobs:
           }
 
           if ($mode -eq 'new') {
-            wingetcreate new BirdNET-Team.BirdNETLive --version "${{ env.APP_VERSION }}" --urls $installerUrl --token $env:WINGET_CREATE_GITHUB_TOKEN --submit
-          }
-          elseif ($mode -eq 'update') {
-            wingetcreate update BirdNET-Team.BirdNETLive --version "${{ env.APP_VERSION }}" --urls $installerUrl --token $env:WINGET_CREATE_GITHUB_TOKEN --submit
-          }
+              wingetcreate new `
+                  BirdNET-Team.BirdNETLive `
+                  $installerUrl `
+                  --out manifests `
+                  --token $env:WINGET_CREATE_GITHUB_TOKEN
+          } elseif ($mode -eq 'update') {
+            wingetcreate update `
+                BirdNET-Team.BirdNETLive `
+                $installerUrl `
+                --out manifests `
+                --token $env:WINGET_CREATE_GITHUB_TOKEN
           else {
             throw "Unsupported WINGET_SUBMIT_MODE '$mode'. Use 'new' or 'update'."
           }
