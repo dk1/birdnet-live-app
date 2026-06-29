@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed session exports so saved full recordings are still included when a recovered or in-progress session points at its recording directory, and added regression coverage for ZIP bundles that combine GPX, audio, app metadata, and the HTML report.
+- Fixed single-detection audio shares so receivers such as Google Drive get the intended filename, extension, and audio MIME type.
+- Enlarged the Home footer navigation tap targets while keeping the compact footer layout.
+- Capped every user-facing live inference-rate control to the shared 0.10-1.00 Hz range, including Point Count setup, Survey, and ARU.
 
 ## [0.18.0] - 2026-06-28
 
