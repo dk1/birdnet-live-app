@@ -12,7 +12,7 @@ Qualquer versão ou derivação do BirdNET Live é terminantemente nula se utili
 2. **FINS MILITARES**.
 3. Republicar, redistribuir ou publicar o Software — ou qualquer derivado — com o mesmo nome do aplicativo ("BirdNET Live"), nome do pacote (`de.tu_chemnitz.mi.kahst.birdnet_live` / `com.birdnet.birdnetLive`) ou branding sem permissão escrita explícita dos mantenedores.
 
-Todas as publicações precisam de atribuição formal ("Powered by BirdNET"). Responsabilidade por má interpretação da lei regente à fauna é somente do usuário.
+Todas as publicações precisam de atribuição formal ("Powered by BirdNET"). A responsabilidade pela interpretação correta dos resultados e pelo cumprimento da legislação aplicável à fauna é exclusivamente do usuário.
 
 ## Contato
 [stefan.kahl@cornell.edu](mailto:stefan.kahl@cornell.edu)

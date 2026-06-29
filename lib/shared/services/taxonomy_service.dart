@@ -4,7 +4,7 @@
 //
 // Provides species information from the bundled taxonomy CSV, parsed once at
 // startup.  Covers names, IDs, image metadata, and localized common names
-// for all ~5,250 model species.
+// for all ~9,789 model species.
 //
 // ### Usage
 //
@@ -45,6 +45,16 @@ class TaxonomyService {
 
   /// Number of species in the CSV index.
   int get speciesCount => _csvIndex.length;
+
+  /// Count of species per taxon group (e.g. {"Aves": 4597, "Mammalia": 232}).
+  Map<String, int> get taxonGroupCounts {
+    final counts = <String, int>{};
+    for (final species in _csvIndex.values) {
+      final group = species.taxonGroup;
+      if (group.isNotEmpty) counts[group] = (counts[group] ?? 0) + 1;
+    }
+    return counts;
+  }
 
   // ---------------------------------------------------------------------------
   // CSV Loading
@@ -113,6 +123,14 @@ class TaxonomyService {
   TaxonomySpecies? lookup(String scientificName) {
     return _csvIndex[scientificName];
   }
+
+  /// Canonical scientific name to display for a model-label [scientificName].
+  ///
+  /// Returns the taxonomy-canonical name when the species resolves, otherwise
+  /// the input is returned unchanged.  Use this wherever a scientific name is
+  /// shown to the user so that older model-label synonyms are normalized.
+  String displayScientificName(String scientificName) =>
+      lookup(scientificName)?.displayScientificName ?? scientificName;
 
   /// Look up multiple species by scientific name.
   List<TaxonomySpecies> lookupAll(Iterable<String> scientificNames) {

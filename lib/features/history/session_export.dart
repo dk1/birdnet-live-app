@@ -39,10 +39,28 @@ import '../../shared/services/taxonomy_service.dart';
 import '../live/live_session.dart';
 import '../recording/audio_decoder.dart';
 import '../recording/native_audio_decoder.dart';
+import '../recording/wav_writer.dart';
 import 'html_report.dart';
 
 /// Upper frequency bound for Raven annotations (Nyquist of 32 kHz).
 const int _highFreqHz = 16000;
+
+/// Decodes a FLAC file and returns the bytes of an equivalent PCM WAV.
+/// Returns null if decoding fails (caller should fall back to original file).
+Future<Uint8List?> _flacToWavBytes(String flacPath) async {
+  try {
+    if (!await AudioDecoder.canDecodeDart(flacPath)) return null;
+    final decoded = await AudioDecoder.decodeFile(flacPath);
+    // DecodedAudio stores mono Int16; convert to Float32 for WavWriter.
+    final float = Float32List(decoded.samples.length);
+    for (var i = 0; i < decoded.samples.length; i++) {
+      float[i] = decoded.samples[i] / 32768.0;
+    }
+    return WavWriter.toBytes(samples: float, sampleRate: decoded.sampleRate);
+  } catch (_) {
+    return null;
+  }
+}
 
 /// Builds the `BirdNET_Live_…` export prefix from a session's start time,
 /// optional session number, and optional user-assigned name.
@@ -101,6 +119,13 @@ String _localizedCommon(
   final localized = sp.commonNameForLocale(speciesLocale);
   return localized.isNotEmpty ? localized : d.commonName;
 }
+
+/// Resolves the canonical (taxonomy-current) scientific name for a detection.
+///
+/// Falls back to the detection's stored model-label scientific name when no
+/// taxonomy is supplied or the species does not resolve.
+String _displaySci(DetectionRecord d, {TaxonomyService? taxonomy}) =>
+    taxonomy?.displayScientificName(d.scientificName) ?? d.scientificName;
 
 /// Generates a Raven Pro-compatible selection table from session detections.
 ///
@@ -249,7 +274,7 @@ String buildRavenSelectionTable(
       '0\t'
       '$_highFreqHz\t'
       '$commonName\t'
-      '${d.scientificName}\t'
+      '${_displaySci(d, taxonomy: taxonomy)}\t'
       '${d.confidence.toStringAsFixed(4)}'
       '$surveyTimeSuffix'
       '$confirmedSuffix'
@@ -353,10 +378,8 @@ String buildCsvExport(
     );
     final commonName =
         localizedCommon.contains(',') ? '"$localizedCommon"' : localizedCommon;
-    final sciName =
-        d.scientificName.contains(',')
-            ? '"${d.scientificName}"'
-            : d.scientificName;
+    final displaySci = _displaySci(d, taxonomy: taxonomy);
+    final sciName = displaySci.contains(',') ? '"$displaySci"' : displaySci;
 
     final fileRef = hasFileRefs ? ',${clipName ?? audioFileName ?? ''}' : '';
     final surveyTimeValue =
@@ -478,6 +501,8 @@ Map<String, dynamic> _settingsExportMetadata(
       if (s.sensitivity != null) 'sensitivity': s.sensitivity,
       if (s.poolingMode != null) 'poolingMode': s.poolingMode,
       if (s.poolingWindows != null) 'poolingWindows': s.poolingWindows,
+      if (s.poolingMaxAgeSeconds != null)
+        'poolingMaxAgeSeconds': s.poolingMaxAgeSeconds,
     };
 
     final audio = <String, dynamic>{
@@ -647,7 +672,11 @@ Map<String, dynamic>? _batchAnalysisExportMetadata(LiveSession session) {
 /// Generates a JSON representation of the session and its detections.
 ///
 /// When [metadata] is provided it is embedded under a top-level `meta` key.
-String buildJsonExport(LiveSession session, {Map<String, dynamic>? metadata}) {
+String buildJsonExport(
+  LiveSession session, {
+  Map<String, dynamic>? metadata,
+  TaxonomyService? taxonomy,
+}) {
   final map = {
     if (metadata != null) 'meta': metadata,
     'session': session.displayName,
@@ -685,7 +714,7 @@ String buildJsonExport(LiveSession session, {Map<String, dynamic>? metadata}) {
             'timestamp': d.timestamp.toUtc().toIso8601String(),
             'beginTimeSec': num.parse(beginSec.toStringAsFixed(3)),
             'commonName': d.commonName,
-            'scientificName': d.scientificName,
+            'scientificName': _displaySci(d, taxonomy: taxonomy),
             'confidence': num.parse(d.confidence.toStringAsFixed(4)),
             if (d.latitude != null) 'latitude': d.latitude,
             if (d.longitude != null) 'longitude': d.longitude,
@@ -693,6 +722,9 @@ String buildJsonExport(LiveSession session, {Map<String, dynamic>? metadata}) {
             'confirmed': d.isConfirmed,
             if (d.confirmedAt != null)
               'confirmedAt': d.confirmedAt!.toUtc().toIso8601String(),
+            if (d.hasNote) 'note': d.note,
+            if (d.hasVoiceMemo)
+              'voiceMemo': 'memos/${p.basename(d.voiceMemoPath!)}',
           };
         }).toList(),
     if (session.annotations.isNotEmpty)
@@ -793,6 +825,7 @@ Future<String?> buildSessionExport(
   LiveSession session, {
   required Set<String> formats,
   required bool includeAudio,
+  bool shareAudioAsWav = false,
   TaxonomyService? taxonomy,
   String speciesLocale = 'en',
   int? clipContextSecondsOverride,
@@ -808,10 +841,11 @@ Future<String?> buildSessionExport(
   final selected = formats.where(allFormats.contains).toSet();
 
   final prefix = _exportPrefix(session);
-  final audioPath = session.recordingPath;
+  final fullRecordingPath = _resolveFullRecordingPath(session.recordingPath);
 
-  // Full recording: single file at recordingPath.
-  final hasFullRecording = audioPath != null && File(audioPath).existsSync();
+  // Full recording: single finalized file, or a session directory containing
+  // the finalized `full.wav` / `full.flac` recording.
+  final hasFullRecording = fullRecordingPath != null;
   final baseMetadata =
       metadata ??
       (session.aruMetadata != null
@@ -820,7 +854,7 @@ Future<String?> buildSessionExport(
   var exportMetadata = await _withAudioIntegrityMetadata(
     session,
     baseMetadata,
-    hasFullRecording ? audioPath : null,
+    fullRecordingPath,
   );
 
   // Detection clips: collect per-detection audio files that exist on disk,
@@ -839,10 +873,15 @@ Future<String?> buildSessionExport(
   final hasAnyAudio = hasFullRecording || hasClips;
 
   // ── Build export clip names (sequential, 1-indexed, zero-padded) ────
-  final audioExt =
-      hasFullRecording
-          ? p.extension(audioPath)
-          : (hasClips ? p.extension(clipEntries.values.first.path) : '.flac');
+  String resolveExt(String originalExt) =>
+      (shareAudioAsWav && originalExt.toLowerCase() == '.flac')
+          ? '.wav'
+          : originalExt;
+  final audioExt = resolveExt(
+    hasFullRecording
+        ? p.extension(fullRecordingPath)
+        : (hasClips ? p.extension(clipEntries.values.first.path) : '.flac'),
+  );
   final audioFileName = '$prefix$audioExt';
 
   // Map detection index → export clip filename.
@@ -874,7 +913,7 @@ Future<String?> buildSessionExport(
     final file = File(path);
     if (!file.existsSync()) continue;
     final cycleName =
-        'aru_cycles/${prefix}_cycle_${cycle.index.toString().padLeft(3, '0')}${p.extension(path)}';
+        'aru_cycles/${prefix}_cycle_${cycle.index.toString().padLeft(3, '0')}${resolveExt(p.extension(path))}';
     aruCycleAudioEntries[cycle.index] = (file: file, name: cycleName);
   }
   final hasAruCycleAudio = aruCycleAudioEntries.isNotEmpty;
@@ -912,11 +951,18 @@ Future<String?> buildSessionExport(
       case 'json':
         docs[fmt] = (
           extension: '.json',
-          content: buildJsonExport(session, metadata: exportMetadata),
+          content: buildJsonExport(
+            session,
+            metadata: exportMetadata,
+            taxonomy: taxonomy,
+          ),
         );
         break;
       case 'gpx':
-        docs[fmt] = (extension: '.gpx', content: buildGpxExport(session));
+        docs[fmt] = (
+          extension: '.gpx',
+          content: buildGpxExport(session, taxonomy: taxonomy),
+        );
         break;
       case 'raven':
       default:
@@ -949,29 +995,42 @@ Future<String?> buildSessionExport(
       includeHtmlReport ||
       (includeAppMetadata && exportMetadata != null) ||
       session.annotations.isNotEmpty;
+  final hasMemos = session.detections.any((d) => d.hasVoiceMemo);
   final mustZip =
       (includeAudio && hasAruCycleAudio) ||
       (includeAudio && hasClips) ||
       (includeAudio && hasFullRecording && hasCompanion) ||
       docs.length > 1 ||
       includeHtmlReport ||
-      (docs.isNotEmpty && includeAppMetadata && exportMetadata != null);
+      (docs.isNotEmpty && includeAppMetadata && exportMetadata != null) ||
+      // Session annotations and detection voice memos each produce companion
+      // files (annotations.txt, memos/) that only exist inside a ZIP bundle.
+      // Force ZIP whenever either is present alongside at least one document
+      // so these files are never silently dropped from the export.
+      (docs.isNotEmpty && session.annotations.isNotEmpty) ||
+      (docs.isNotEmpty && hasMemos);
 
   // Audio-only mode: the user unchecked every companion (no formats,
   // no HTML, no app metadata). For full-recording sessions we share the
-  // raw audio file as-is, renamed to the BirdNET_Live_… prefix so the
-  // receiving app shows a sensible filename.
+  // raw audio file (converted to WAV if requested), renamed to the
+  // BirdNET_Live_… prefix so the receiving app shows a sensible filename.
   if (!mustZip && includeAudio && hasFullRecording && !hasCompanion) {
-    final dest = p.join(p.dirname(audioPath), audioFileName);
-    if (dest != audioPath) {
-      final destFile = File(dest);
-      if (await destFile.exists()) {
-        try {
-          await destFile.delete();
-        } catch (_) {}
-      }
-      await File(audioPath).copy(dest);
+    final dest = p.join(p.dirname(fullRecordingPath), audioFileName);
+    final destFile = File(dest);
+    if (await destFile.exists()) {
+      try {
+        await destFile.delete();
+      } catch (_) {}
     }
+    if (shareAudioAsWav &&
+        p.extension(fullRecordingPath).toLowerCase() == '.flac') {
+      final wavBytes = await _flacToWavBytes(fullRecordingPath);
+      if (wavBytes != null) {
+        await destFile.writeAsBytes(wavBytes);
+        return dest;
+      }
+    }
+    if (dest != fullRecordingPath) await File(fullRecordingPath).copy(dest);
     return dest;
   }
 
@@ -982,26 +1041,29 @@ Future<String?> buildSessionExport(
   if (mustZip) {
     final archive = Archive();
 
+    Future<Uint8List> audioBytes(String path) async {
+      if (shareAudioAsWav && p.extension(path).toLowerCase() == '.flac') {
+        return await _flacToWavBytes(path) ?? await File(path).readAsBytes();
+      }
+      return File(path).readAsBytes();
+    }
+
     if (includeAudio && hasAnyAudio) {
       if (hasFullRecording) {
-        final audioBytes = await File(audioPath).readAsBytes();
-        archive.addFile(
-          ArchiveFile(audioFileName, audioBytes.length, audioBytes),
-        );
+        final bytes = await audioBytes(fullRecordingPath);
+        archive.addFile(ArchiveFile(audioFileName, bytes.length, bytes));
       } else {
         for (final entry in clipExportNames.entries) {
-          final clipBytes = await clipEntries[entry.key]!.readAsBytes();
-          archive.addFile(
-            ArchiveFile(entry.value, clipBytes.length, clipBytes),
-          );
+          final bytes = await audioBytes(clipEntries[entry.key]!.path);
+          archive.addFile(ArchiveFile(entry.value, bytes.length, bytes));
         }
       }
     }
 
     if (includeAudio && hasAruCycleAudio) {
       for (final entry in aruCycleAudioEntries.values) {
-        final audioBytes = await entry.file.readAsBytes();
-        archive.addFile(ArchiveFile(entry.name, audioBytes.length, audioBytes));
+        final bytes = await audioBytes(entry.file.path);
+        archive.addFile(ArchiveFile(entry.name, bytes.length, bytes));
       }
     }
 
@@ -1084,7 +1146,7 @@ Future<String?> buildSessionExport(
     if (session.type == SessionType.survey &&
         !selected.contains('gpx') &&
         docs.isNotEmpty) {
-      final gpxContent = buildGpxExport(session);
+      final gpxContent = buildGpxExport(session, taxonomy: taxonomy);
       final gpxBytes = Uint8List.fromList(utf8.encode(gpxContent));
       archive.addFile(ArchiveFile('$prefix.gpx', gpxBytes.length, gpxBytes));
     }
@@ -1102,6 +1164,7 @@ Future<String?> buildSessionExport(
         audioFileName: hasFullRecording ? audioFileName : null,
         taxonomy: taxonomy,
         speciesLocale: speciesLocale,
+        metadata: exportMetadata,
       );
       final reportBytes = Uint8List.fromList(utf8.encode(reportHtml));
       archive.addFile(
@@ -1112,7 +1175,7 @@ Future<String?> buildSessionExport(
     final zipBytes = ZipEncoder().encode(archive);
     final zipDir =
         hasFullRecording
-            ? p.dirname(audioPath)
+            ? p.dirname(fullRecordingPath)
             : (hasClips
                 ? p.dirname(clipEntries.values.first.path)
                 : (hasAruCycleAudio
@@ -1127,7 +1190,7 @@ Future<String?> buildSessionExport(
     final entry = docs.values.first;
     final dir =
         hasFullRecording
-            ? p.dirname(audioPath)
+            ? p.dirname(fullRecordingPath)
             : (hasClips
                 ? p.dirname(clipEntries.values.first.path)
                 : Directory.systemTemp.path);
@@ -1137,6 +1200,29 @@ Future<String?> buildSessionExport(
     ).writeAsBytes(Uint8List.fromList(utf8.encode(entry.content)));
     return filePath;
   }
+}
+
+/// Resolves [recordingPath] to a continuous session audio file on disk.
+///
+/// Most completed sessions store the finalized file path directly. Active or
+/// crash-recovered sessions may still point at the session recording directory;
+/// support that shape as well so export does not silently drop available audio.
+String? _resolveFullRecordingPath(String? recordingPath) {
+  if (recordingPath == null || recordingPath.isEmpty) return null;
+
+  if (FileSystemEntity.isFileSync(recordingPath)) {
+    final ext = p.extension(recordingPath).toLowerCase();
+    return (ext == '.wav' || ext == '.flac') ? recordingPath : null;
+  }
+
+  if (FileSystemEntity.isDirectorySync(recordingPath)) {
+    final flac = File(p.join(recordingPath, 'full.flac'));
+    if (flac.existsSync()) return flac.path;
+    final wav = File(p.join(recordingPath, 'full.wav'));
+    if (wav.existsSync()) return wav.path;
+  }
+
+  return null;
 }
 
 /// Builds a human-readable text file of session annotations.
@@ -1186,7 +1272,7 @@ String _buildAnnotationsText(LiveSession session) {
 /// Contains:
 ///   • `<trk>` with `<trkseg>` of GPS track points
 ///   • `<wpt>` for each detection with lat/lon coordinates
-String buildGpxExport(LiveSession session) {
+String buildGpxExport(LiveSession session, {TaxonomyService? taxonomy}) {
   final buf = StringBuffer();
 
   buf.writeln('<?xml version="1.0" encoding="UTF-8"?>');
@@ -1218,7 +1304,7 @@ String buildGpxExport(LiveSession session) {
     buf.writeln('    <time>${d.timestamp.toUtc().toIso8601String()}</time>');
     buf.writeln('    <name>${_xmlEscape(d.commonName)}</name>');
     buf.writeln(
-      '    <desc>${_xmlEscape(d.scientificName)} (${(d.confidence * 100).toStringAsFixed(1)}%)</desc>',
+      '    <desc>${_xmlEscape(_displaySci(d, taxonomy: taxonomy))} (${(d.confidence * 100).toStringAsFixed(1)}%)</desc>',
     );
     if (d.isConfirmed) {
       // GPX <sym> is a free-form symbol hint; downstream tools (QGIS,
@@ -1278,6 +1364,7 @@ Future<String?> buildMultiSessionExport(
   List<LiveSession> sessions, {
   required Set<String> formats,
   required bool includeAudio,
+  bool shareAudioAsWav = false,
   TaxonomyService? taxonomy,
   String speciesLocale = 'en',
   int? clipContextSecondsOverride,
@@ -1301,6 +1388,7 @@ Future<String?> buildMultiSessionExport(
       session,
       formats: formats,
       includeAudio: includeAudio,
+      shareAudioAsWav: shareAudioAsWav,
       taxonomy: taxonomy,
       speciesLocale: speciesLocale,
       clipContextSecondsOverride: clipContextSecondsOverride,

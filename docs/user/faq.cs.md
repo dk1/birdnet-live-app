@@ -8,7 +8,7 @@
 Odpověď: Ne. Veškeré odvození běží na zařízení pomocí modelu ONNX. Jedinými funkcemi sítě jsou vyhledávání obrázků/popisů druhů z API taxonomie, které jsou volitelné.
 
 **Otázka: Kolik druhů dokáže identifikovat?**
-Odpověď: Model BirdNET+ V3.0 identifikuje 5 250 druhů ptáků po celém světě (ořezaný průnik zvukového klasifikátoru a geomodelu).
+Odpověď: Model BirdNET+ V3.0 identifikuje 10 208 druhů po celém světě – ptáky, obojživelníky, savce a hmyz (ořezaný průnik zvukového klasifikátoru a geomodelu).
 
 **Otázka: Jaké platformy jsou podporovány?**
 Odpověď: Android (8.0+), iOS (15.0+) a Windows (experimentální).
@@ -35,7 +35,7 @@ A: Ano. Otevřete Analýzu souborů z domovské obrazovky, vyberte zvukový soub
 ## Počet bodů
 
 **Otázka: Co je režim počítání bodů?**
-A: Režim časovaného průzkumu pro formální pozorování počtu ptačích bodů. Nastavíte pevnou dobu trvání (3–20 minut) a umístění, poté aplikace běží nepřetržitě a automaticky se zastaví, když časovač dosáhne nuly.
+A: Časovaný režim pro formální bodové sčítání ptáků (point count). Nastavíte pevnou dobu trvání (3–20 minut) a umístění, poté aplikace běží nepřetržitě a automaticky se zastaví, když časovač dosáhne nuly.
 
 **Otázka: Mohu pozastavit počítání bodů?**
 Odpověď: Ne. Soulad s protokolem vyžaduje nepřerušované nahrávání. Předčasně můžete ukončit pomocí tlačítka stop.

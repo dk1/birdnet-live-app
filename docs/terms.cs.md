@@ -1,11 +1,11 @@
-# Podmínky použití
+﻿# Podmínky použití
 
 Tento dokument upravuje používání aplikace BirdNET Live a jejích modelů.
 
 ## 1. Popis
 BirdNET Live identifikuje ptáky offline pomocí:
-- **BirdNET+ V3.0-preview3**
-- **BirdNET Geomodel V3.0.1**
+- **BirdNET+ V3.0-preview3.1**
+- **BirdNET+ Geomodel V3.0.4**
 
 ## 2. Licence
 Kód aplikace: MIT License. Modely: CC BY-SA 4.0.
@@ -24,7 +24,7 @@ Software NESMÍTE použít pro:
 3. Opětovné vydání, redistribuci nebo šíření softwaru – nebo jakéhokoli odvozeného díla – pod stejným názvem aplikace ("BirdNET Live"), názvem balíčku (`de.tu_chemnitz.mi.kahst.birdnet_live` / `com.birdnet.birdnetLive`) nebo brandingem bez výslovného písemného souhlasu správců.
 
 ## 6. Uvedení zdroje
-Použití modelů publikacích musí být řádně ocitováno ("Powered by BirdNET").
+Použití modelů v publikacích musí být řádně ocitováno ("Powered by BirdNET").
 
 ## 7. Omezení odpovědnosti
 Autoři nenesou odpovědnost za škody plynoucí z použití.

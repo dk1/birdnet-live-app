@@ -613,7 +613,8 @@ class _GeoList extends ConsumerWidget {
                   padding: const EdgeInsets.only(bottom: gap),
                   child: SpeciesCard(
                     key: ValueKey(s.scientificName),
-                    scientificName: s.scientificName,
+                    scientificName:
+                        s.taxonomy?.displayScientificName ?? s.scientificName,
                     commonName: s.commonName,
                     showScientificName: showScientificName,
                     detected: detected.contains(s.scientificName),
@@ -810,7 +811,7 @@ class _SearchResults extends ConsumerWidget {
           final hit = entry.hit!;
           child = SpeciesCard(
             key: ValueKey(hit.species.scientificName),
-            scientificName: hit.species.scientificName,
+            scientificName: hit.species.displayScientificName,
             commonName: hit.displayName,
             showScientificName: showScientificName,
             detected: detected.contains(hit.species.scientificName),

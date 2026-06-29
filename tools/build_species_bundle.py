@@ -19,6 +19,7 @@ import gzip
 import hashlib
 import io
 import json
+import re
 import shutil
 import sys
 import urllib.request
@@ -30,20 +31,36 @@ try:
 except ImportError:
     sys.exit("Pillow is required: pip install Pillow")
 
+# Ensure console output can't crash on non-ASCII (species names, arrows) on
+# Windows code pages like cp1252.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
 # ---------------------------------------------------------------------------
 # Defaults (overridable via CLI)
 # ---------------------------------------------------------------------------
 ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = ROOT / "tools"
-DEFAULT_TAXONOMY_JSON = TOOLS_DIR / "data" / "birdnet_taxonomy_0.1-Mar2026.json"
-LEGACY_TAXONOMY_JSON = ROOT / "dev" / "birdnet_taxonomy_0.1-Mar2026.json"
+DEFAULT_TAXONOMY_JSON = TOOLS_DIR / "data" / "birdnet_taxonomy_0.2-Jun2026.json"
+LEGACY_TAXONOMY_JSON = ROOT / "dev" / "birdnet_taxonomy_0.2-Jun2026.json"
 TAXONOMY_DOWNLOAD_URL = "https://birdnet.cornell.edu/taxonomy/api/download/json"
-DEFAULT_LABELS_CSV = (
-    ROOT
-    / "assets"
-    / "models"
-    / "BirdNET+_V3.0-preview3_Global_5K-pruned_Labels.csv"
-)
+
+
+def _audio_labels_from_config() -> Path:
+    """Resolve the audio labels CSV from model_config.json (falls back to 5K)."""
+    models_dir = ROOT / "assets" / "models"
+    try:
+        with open(models_dir / "model_config.json", encoding="utf-8") as f:
+            cfg = json.load(f)
+        return models_dir / cfg["audioModel"]["labels"]["file"]
+    except Exception:
+        return models_dir / "BirdNET+_V3.0-preview3_Global_5K-pruned_Labels.csv"
+
+
+DEFAULT_LABELS_CSV = _audio_labels_from_config()
 DEFAULT_IMAGE_WIDTH = 480
 DEFAULT_IMAGE_HEIGHT = 320
 DEFAULT_WEBP_QUALITY = 70
@@ -51,6 +68,10 @@ DEFAULT_DOWNLOAD_WORKERS = 50
 
 # App interface languages — one gzip description file per locale
 DESCRIPTION_LOCALES = ["en", "de", "fr", "es", "cs", "pt", "it"]
+
+# Wikipedia URL locales — emitted as wikipedia_url_{locale} columns in
+# taxonomy.csv and consumed by the app (taxonomy_species.dart).
+WIKIPEDIA_URL_LOCALES = ["en", "de", "fr", "es", "cs", "pt", "it"]
 
 # Top-20 species-language picker locales.  Must all appear as
 # common_name_{locale} columns in the rebuilt taxonomy.csv.
@@ -70,9 +91,111 @@ IMAGE_CACHE_DIR = TOOLS_DIR / ".cache" / "species_images"
 IMAGE_OUTPUT_DIR = ROOT / "assets" / "species_images"
 DATA_OUTPUT_DIR = ROOT / "assets" / "species_data"
 TAXONOMY_CSV_PATH = ROOT / "assets" / "models" / "taxonomy.csv"
+PRESERVED_OUTPUT_FILES = ("dummy.webp",)
 
 # All common-name locale columns (top-20 + extras), deduplicated, stable order
 ALL_NAME_LOCALES = list(dict.fromkeys(NAME_LOCALES + EXTRA_NAME_LOCALES))
+
+# ---------------------------------------------------------------------------
+# Model label -> taxonomy mapping
+# ---------------------------------------------------------------------------
+#
+# Some model labels use older genus names or "(Domestic type)" qualifiers that
+# are absent from the taxonomy export.  We resolve each label to its canonical
+# taxonomy entry so the app can show taxonomy-canonical names, images, and
+# descriptions for these species too.  The model label remains the join key
+# (taxonomy.csv `scientific_name`); the resolved canonical name is emitted as
+# the `canonical_scientific_name` column.
+#
+# Resolution order (see resolve_taxonomy_entry):
+#   1. Exact match on the model label.
+#   2. Curated synonym alias (CURATED_LABEL_ALIASES).
+#   3. Normalized match: strip "(...)" qualifiers, collapse whitespace,
+#      case-insensitive.
+#
+# Labels that still do not resolve keep their raw model name (no taxonomy data).
+#
+# Every alias target below was verified to exist in the taxonomy export and to
+# be a 1:1 mapping (no two labels share a target, no target is itself a label).
+CURATED_LABEL_ALIASES = {
+    # Treefrogs: Hypsiboas -> Boana (genus revision)
+    "Hypsiboas albomarginatus": "Boana albomarginata",
+    "Hypsiboas albopunctatus": "Boana albopunctata",
+    "Hypsiboas bischoffi": "Boana bischoffi",
+    "Hypsiboas boans": "Boana boans",
+    "Hypsiboas cinerascens": "Boana cinerascens",
+    "Hypsiboas faber": "Boana faber",
+    "Hypsiboas lanciformis": "Boana lanciformis",
+    "Hypsiboas pardalis": "Boana pardalis",
+    "Hypsiboas pulchellus": "Boana pulchella",
+    "Hypsiboas punctatus": "Boana punctata",
+    "Hypsiboas raniceps": "Boana raniceps",
+    "Hypsiboas riojanus": "Boana riojana",
+    "Hypsiboas rosenbergi": "Boana rosenbergi",
+    # Woodpeckers: Dryobates -> Leuconotopicus
+    "Dryobates villosus": "Leuconotopicus villosus",
+    "Dryobates borealis": "Leuconotopicus borealis",
+    "Dryobates albolarvatus": "Leuconotopicus albolarvatus",
+    "Dryobates arizonae": "Leuconotopicus arizonae",
+    "Dryobates stricklandi": "Leuconotopicus stricklandi",
+    "Dryobates fumigatus": "Leuconotopicus fumigatus",
+    # Ground squirrels: Spermophilus -> Otospermophilus / Urocitellus
+    "Spermophilus beecheyi": "Otospermophilus beecheyi",
+    "Spermophilus variegatus": "Otospermophilus variegatus",
+    "Spermophilus beldingi": "Urocitellus beldingi",
+    "Spermophilus columbianus": "Urocitellus columbianus",
+    "Spermophilus parryii": "Urocitellus parryii",
+    "Spermophilus richardsonii": "Urocitellus richardsonii",
+    "Spermophilus armatus": "Urocitellus armatus",
+    # Primates and other mammals
+    "Callicebus donacophilus": "Plecturocebus donacophilus",
+    "Callicebus moloch": "Plecturocebus moloch",
+    "Cebus apella": "Sapajus apella",
+    "Cebus nigritus": "Sapajus nigritus",
+    "Lagothrix lagotricha": "Lagothrix lagothricha",
+    "Galago demidoff": "Galagoides demidoff",
+    "Bunopithecus hoolock": "Hoolock hoolock",
+    "Pteropus giganteus": "Pteropus medius",
+    "Physeter catodon": "Physeter macrocephalus",
+    # Birds and amphibians
+    "Coccothraustes vespertinus": "Hesperiphona vespertina",
+    "Coccothraustes abeillei": "Hesperiphona abeillei",
+    "Anthropoides virgo": "Grus virgo",
+    "Hyliola regilla": "Pseudacris regilla",
+    # Curated examples for labels that may return in future model builds
+    # (no-ops while the label is absent from the model set).
+    "Homo Sapiens": "Homo sapiens",
+    "Canis lupus (Domestic type)": "Canis familiaris",
+}
+
+
+def _normalize_sci(name: str) -> str:
+    """Lowercase, strip parenthetical qualifiers, and collapse whitespace."""
+    name = re.sub(r"\(.*?\)", "", name)
+    return re.sub(r"\s+", " ", name).strip().lower()
+
+
+def build_normalized_index(taxonomy: dict[str, dict]) -> dict[str, dict]:
+    """Index taxonomy entries by their normalized scientific name."""
+    index: dict[str, dict] = {}
+    for sci, entry in taxonomy.items():
+        index.setdefault(_normalize_sci(sci), entry)
+    return index
+
+
+def resolve_taxonomy_entry(
+    sci_name: str,
+    taxonomy: dict[str, dict],
+    norm_index: dict[str, dict],
+) -> dict | None:
+    """Resolve a model label to its taxonomy entry (exact, alias, normalized)."""
+    entry = taxonomy.get(sci_name)
+    if entry is not None:
+        return entry
+    alias = CURATED_LABEL_ALIASES.get(sci_name)
+    if alias and alias in taxonomy:
+        return taxonomy[alias]
+    return norm_index.get(_normalize_sci(sci_name))
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -177,6 +300,7 @@ def load_taxonomy_json(json_path: Path) -> dict[str, dict]:
 def download_and_resize_images(
     model_species: dict[str, dict],
     taxonomy: dict[str, dict],
+    norm_index: dict[str, dict],
     target_w: int,
     target_h: int,
     quality: int,
@@ -195,7 +319,7 @@ def download_and_resize_images(
     # Build work items: (scientific_name, birdnet_id, image_url, cache_path)
     work = []
     for sci_name in model_species:
-        entry = taxonomy.get(sci_name)
+        entry = resolve_taxonomy_entry(sci_name, taxonomy, norm_index)
         if entry is None:
             results[sci_name] = "no_entry"
             continue
@@ -242,6 +366,7 @@ def download_and_resize_images(
 def extract_descriptions(
     model_species: dict[str, dict],
     taxonomy: dict[str, dict],
+    norm_index: dict[str, dict],
     locales: list[str],
 ) -> dict[str, int]:
     """Extract and write gzip-compressed description JSON files.
@@ -255,7 +380,7 @@ def extract_descriptions(
     for locale in locales:
         descs: dict[str, str] = {}
         for sci_name in model_species:
-            entry = taxonomy.get(sci_name)
+            entry = resolve_taxonomy_entry(sci_name, taxonomy, norm_index)
             if entry is None:
                 continue
             desc_map = entry.get("descriptions", {})
@@ -272,7 +397,7 @@ def extract_descriptions(
             f.write(json_bytes)
         raw_kb = len(json_bytes) / 1024
         gz_kb = gz_path.stat().st_size / 1024
-        print(f"  {locale}: {len(descs)} descriptions, {raw_kb:.0f} KB raw → {gz_kb:.0f} KB gzip")
+        print(f"  {locale}: {len(descs)} descriptions, {raw_kb:.0f} KB raw -> {gz_kb:.0f} KB gzip")
 
     return coverage
 
@@ -280,6 +405,7 @@ def extract_descriptions(
 def rebuild_taxonomy_csv(
     model_species: dict[str, dict],
     taxonomy: dict[str, dict],
+    norm_index: dict[str, dict],
 ) -> int:
     """Rebuild taxonomy.csv with all needed columns including it+ko.
 
@@ -287,24 +413,27 @@ def rebuild_taxonomy_csv(
     """
     # Column order: metadata columns, then common_name_{locale} for all locales
     meta_cols = [
-        "birdnet_id", "scientific_name", "common_name", "common_name_alt",
+        "birdnet_id", "scientific_name", "canonical_scientific_name",
+        "common_name", "common_name_alt",
         "taxon_group", "inat_id", "ebird_code", "gbif_id", "ncbi_id",
         "avibase_id", "birdlife_id", "ml_taxon_code", "xc_name",
         "observationorg_id", "observations_count", "description_source",
         "image_url", "image_author", "image_license", "image_source",
     ]
     name_cols = [f"common_name_{loc}" for loc in ALL_NAME_LOCALES]
-    header = meta_cols + name_cols
+    wiki_cols = [f"wikipedia_url_{loc}" for loc in WIKIPEDIA_URL_LOCALES]
+    header = meta_cols + name_cols + wiki_cols
 
     rows = []
     for sci_name, model_info in sorted(model_species.items()):
-        entry = taxonomy.get(sci_name)
+        entry = resolve_taxonomy_entry(sci_name, taxonomy, norm_index)
         if entry is None:
             # Minimal row for species not in taxonomy JSON
             row = {col: "" for col in header}
             # Derive birdnet_id from the labels id field
             row["birdnet_id"] = f"BN{model_info['id']:05d}"
             row["scientific_name"] = sci_name
+            row["canonical_scientific_name"] = sci_name
             row["common_name"] = model_info["com_name"]
             row["taxon_group"] = model_info["class"]
             rows.append(row)
@@ -316,6 +445,7 @@ def rebuild_taxonomy_csv(
         row = {
             "birdnet_id": entry.get("birdnet_id", ""),
             "scientific_name": sci_name,
+            "canonical_scientific_name": entry.get("scientific_name", sci_name),
             "common_name": entry.get("common_name", ""),
             "common_name_alt": entry.get("common_name_alt", ""),
             "taxon_group": entry.get("taxon_group", ""),
@@ -339,6 +469,11 @@ def rebuild_taxonomy_csv(
         # Common names
         for loc in ALL_NAME_LOCALES:
             row[f"common_name_{loc}"] = cn_map.get(loc, "")
+
+        # Wikipedia URLs
+        wiki_map = entry.get("wikipedia_urls", {})
+        for loc in WIKIPEDIA_URL_LOCALES:
+            row[f"wikipedia_url_{loc}"] = wiki_map.get(loc, "")
 
         rows.append(row)
 
@@ -364,7 +499,7 @@ def print_report(
     print("BUILD SPECIES BUNDLE — SUMMARY")
     print("=" * 60)
     print(f"Model species:      {model_count}")
-    print(f"Taxonomy entries:   {taxonomy_count} ({model_count - taxonomy_count} missing)")
+    print(f"Resolved entries:   {taxonomy_count} ({model_count - taxonomy_count} unmatched)")
     print()
 
     # Image stats
@@ -430,6 +565,19 @@ def restore_backups(backups: dict[Path, Path]) -> None:
             backup.replace(target)
 
 
+def restore_preserved_output_files(backups: dict[Path, Path]) -> None:
+    """Keep tracked placeholder assets across a successful rebuild."""
+    for output_dir in (IMAGE_OUTPUT_DIR, DATA_OUTPUT_DIR):
+        backup = backups.get(output_dir)
+        if backup is None or not backup.is_dir():
+            continue
+        output_dir.mkdir(parents=True, exist_ok=True)
+        for filename in PRESERVED_OUTPUT_FILES:
+            src = backup / filename
+            if src.exists():
+                shutil.copy2(src, output_dir / filename)
+
+
 def discard_backups(backups: dict[Path, Path]) -> None:
     """Delete backups after a successful rebuild."""
     for backup in backups.values():
@@ -462,10 +610,15 @@ def main():
     print("Step 1: Loading species data ...")
     model_species = load_model_species(labels_csv)
     taxonomy = load_taxonomy_json(taxonomy_json)
-    overlap = sum(1 for s in model_species if s in taxonomy)
+    norm_index = build_normalized_index(taxonomy)
+    resolved = sum(
+        1 for s in model_species
+        if resolve_taxonomy_entry(s, taxonomy, norm_index) is not None
+    )
+    exact = sum(1 for s in model_species if s in taxonomy)
     print(f"  Model species: {len(model_species)}")
     print(f"  Taxonomy entries: {len(taxonomy)}")
-    print(f"  Overlap: {overlap}")
+    print(f"  Resolved: {resolved} (exact {exact}, aliased {resolved - exact})")
     print(
         f"  Image output: {args.image_width}x{args.image_height} WebP @ quality {args.quality}"
     )
@@ -473,40 +626,47 @@ def main():
 
     backups = backup_existing_outputs()
     try:
-        # 2. Clean output directories (not the cache)
+        # 2. Clean output directories (not the cache).
+        # Preserve hand-crafted fallback assets (e.g. dummy.webp) that are
+        # not generated by this script and must survive a rebuild.
+        _PRESERVED_IMAGES = {"dummy.webp"}
         print("Step 2: Preparing output directories ...")
         for d in (IMAGE_OUTPUT_DIR, DATA_OUTPUT_DIR):
             if d.exists():
                 for f in d.iterdir():
-                    f.unlink()
+                    if f.name not in _PRESERVED_IMAGES:
+                        f.unlink()
             d.mkdir(parents=True, exist_ok=True)
         print()
 
         # 3. Download and resize images
         print("Step 3: Images ...")
         image_results = download_and_resize_images(
-            model_species, taxonomy,
+            model_species, taxonomy, norm_index,
             args.image_width, args.image_height, args.quality, args.workers,
         )
         print()
 
         # 4. Extract descriptions
         print("Step 4: Descriptions ...")
-        desc_coverage = extract_descriptions(model_species, taxonomy, DESCRIPTION_LOCALES)
+        desc_coverage = extract_descriptions(
+            model_species, taxonomy, norm_index, DESCRIPTION_LOCALES
+        )
         print()
 
         # 5. Rebuild taxonomy.csv
         print("Step 5: Rebuilding taxonomy.csv ...")
-        csv_rows = rebuild_taxonomy_csv(model_species, taxonomy)
+        csv_rows = rebuild_taxonomy_csv(model_species, taxonomy, norm_index)
         print()
 
         # 6. Report
-        print_report(len(model_species), overlap, image_results, desc_coverage, csv_rows)
+        print_report(len(model_species), resolved, image_results, desc_coverage, csv_rows)
     except Exception:
         restore_backups(backups)
         print("Build failed; restored previous species bundle outputs.", file=sys.stderr)
         raise
     else:
+        restore_preserved_output_files(backups)
         discard_backups(backups)
 
 

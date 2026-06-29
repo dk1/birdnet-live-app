@@ -41,6 +41,7 @@ class SessionSettings {
     this.sensitivity,
     this.poolingMode,
     this.poolingWindows,
+    this.poolingMaxAgeSeconds,
     this.gainLinear,
     this.highPassHz,
     this.recordingMode,
@@ -118,13 +119,17 @@ class SessionSettings {
   /// Sensitivity multiplier applied to model logits (1.0 = neutral).
   final double? sensitivity;
 
-  /// Score pooling mode (`avg`, `max`, `lme`, …) applied to the rolling
+  /// Score pooling mode (`avg`, `max`, `lme`, `adaptive_lme_peak`, etc.)
+  /// applied to the rolling
   /// detection window.
   final String? poolingMode;
 
   /// Number of inference windows pooled together (`null` = unlimited /
   /// session-wide).
   final int? poolingWindows;
+
+  /// Maximum real-time age in seconds for windows included in score pooling.
+  final double? poolingMaxAgeSeconds;
 
   /// Linear input gain applied before model inference (1.0 = unity).
   final double? gainLinear;
@@ -180,6 +185,7 @@ class SessionSettings {
       sensitivity: (json['sensitivity'] as num?)?.toDouble(),
       poolingMode: json['poolingMode'] as String?,
       poolingWindows: (json['poolingWindows'] as num?)?.toInt(),
+      poolingMaxAgeSeconds: (json['poolingMaxAgeSeconds'] as num?)?.toDouble(),
       gainLinear: (json['gainLinear'] as num?)?.toDouble(),
       highPassHz: (json['highPassHz'] as num?)?.toDouble(),
       recordingMode: json['recordingMode'] as String?,
@@ -212,6 +218,8 @@ class SessionSettings {
     if (sensitivity != null) 'sensitivity': sensitivity,
     if (poolingMode != null) 'poolingMode': poolingMode,
     if (poolingWindows != null) 'poolingWindows': poolingWindows,
+    if (poolingMaxAgeSeconds != null)
+      'poolingMaxAgeSeconds': poolingMaxAgeSeconds,
     if (gainLinear != null) 'gainLinear': gainLinear,
     if (highPassHz != null) 'highPassHz': highPassHz,
     if (recordingMode != null) 'recordingMode': recordingMode,

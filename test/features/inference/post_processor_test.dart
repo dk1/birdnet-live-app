@@ -249,6 +249,28 @@ void main() {
   // Temporal pooling (Log-Mean-Exp)
   // ─────────────────────────────────────────────────────────────────────────
 
+  group('PostProcessor.recentPeakScores', () {
+    test(
+      'returns per-class recent peaks after sensitivity and multipliers',
+      () {
+        final windows = [
+          [0.20, 0.40, 0.95],
+          [0.80, 0.30, 0.10],
+          [0.50, 0.90, 0.20],
+        ];
+
+        final peaks = PostProcessor.recentPeakScores(
+          windows,
+          multipliers: [1.0, 0.5, 0.1],
+        );
+
+        expect(peaks[0], closeTo(0.80, 1e-10));
+        expect(peaks[1], closeTo(0.45, 1e-10));
+        expect(peaks[2], closeTo(0.095, 1e-10));
+      },
+    );
+  });
+
   group('PostProcessor.logMeanExp', () {
     test('single window returns same values', () {
       final scores = [0.1, 0.5, 0.9];

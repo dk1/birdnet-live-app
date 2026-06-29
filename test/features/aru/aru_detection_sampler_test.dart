@@ -57,10 +57,10 @@ void main() {
     test('smart mode keeps stronger clip from the same time window', () async {
       final sampler = AruDetectionSampler(
         mode: SamplingMode.smart,
-        topN: 3,
-        minKeepPerSpecies: 0,
+        topN: 1,
       );
       // Two detections seconds apart (within the same-spot time window).
+      // topN=1: the first fills the slot, the second triggers rivalry and wins.
       final weaker = record(confidence: 0.4, secondsIntoCycle: 0);
       final stronger = record(confidence: 0.8, secondsIntoCycle: 10);
 
@@ -72,24 +72,29 @@ void main() {
       expect(sampler.keptClipCount, 1);
     });
 
-    test('smart mode honors the per-species minimum before rivalry', () async {
+    test('smart mode admits same-spot clips freely until topN, then rivalry',
+        () async {
       final sampler = AruDetectionSampler(
         mode: SamplingMode.smart,
-        topN: 5,
-        minKeepPerSpecies: 3,
+        topN: 3,
       );
-      // All within the same time window, but the floor keeps the first three.
+      // All within the same time window. Rivalry doesn't fire until topN is
+      // full, so all three are kept.
       final a = record(confidence: 0.4, secondsIntoCycle: 0, clip: 'a.flac');
       final b = record(confidence: 0.5, secondsIntoCycle: 10, clip: 'b.flac');
       final c = record(confidence: 0.6, secondsIntoCycle: 20, clip: 'c.flac');
+      // Fourth same-window clip: topN full, rivalry fires, weaker d loses.
+      final d = record(confidence: 0.3, secondsIntoCycle: 30, clip: 'd.flac');
 
       expect(await sampler.onRecordClosed(a), isTrue);
       expect(await sampler.onRecordClosed(b), isTrue);
       expect(await sampler.onRecordClosed(c), isTrue);
+      expect(await sampler.onRecordClosed(d), isFalse);
 
       expect(a.audioClipPath, isNotNull);
       expect(b.audioClipPath, isNotNull);
       expect(c.audioClipPath, isNotNull);
+      expect(d.audioClipPath, isNull);
       expect(sampler.keptClipCount, 3);
     });
 
@@ -97,9 +102,9 @@ void main() {
       final sampler = AruDetectionSampler(
         mode: SamplingMode.smart,
         topN: 2,
-        minKeepPerSpecies: 0,
       );
-      // Same window: only the stronger survives.
+      // Same window: both admitted (topN=2 not yet full), then window1 evicts
+      // the weaker one when the budget is full.
       final window0Low = record(
         confidence: 0.4,
         secondsIntoCycle: 0,
@@ -140,7 +145,6 @@ void main() {
       final sampler = AruDetectionSampler(
         mode: SamplingMode.smart,
         topN: 1,
-        minKeepPerSpecies: 0,
         scopeKeyFor:
             (record) => 'cycle-${record.timestamp.difference(start).inHours}',
       );
@@ -161,7 +165,6 @@ void main() {
         final sampler = AruDetectionSampler(
           mode: SamplingMode.smart,
           topN: 1,
-          minKeepPerSpecies: 10,
         );
         final original = record(
           confidence: 0.8,
