@@ -371,7 +371,8 @@ class SurveyController {
     int autoStopBattery = 0,
     SessionSettings? settingsSnapshot,
     int? poolingWindows,
-    String poolingMode = 'lme',
+    String poolingMode = 'adaptive_lme_peak',
+    double? poolingMaxAgeSeconds,
     double sensitivity = 1.0,
     double? gainLinear,
     double? highPassHz,
@@ -404,6 +405,7 @@ class SurveyController {
               sensitivity: sensitivity,
               poolingMode: poolingMode,
               poolingWindows: poolingWindows,
+              poolingMaxAgeSeconds: poolingMaxAgeSeconds,
               gainLinear: gainLinear,
               highPassHz: highPassHz,
               recordingMode: recordingMode.name,
@@ -432,6 +434,7 @@ class SurveyController {
       _confidenceThreshold = confidenceThreshold;
       _sensitivity = sensitivity;
       _isolate.setMaxPoolWindows(poolingWindows);
+      _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
       _isolate.setPoolingMode(poolingMode);
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
@@ -555,7 +558,8 @@ class SurveyController {
     bool foregroundGps = false,
     int autoStopBattery = 0,
     int? poolingWindows,
-    String poolingMode = 'lme',
+    String poolingMode = 'adaptive_lme_peak',
+    double? poolingMaxAgeSeconds,
     double sensitivity = 1.0,
   }) async {
     if (_state == SurveyState.active) return;
@@ -580,6 +584,7 @@ class SurveyController {
       _confidenceThreshold = confidenceThreshold;
       _sensitivity = sensitivity;
       _isolate.setMaxPoolWindows(poolingWindows);
+      _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
       _isolate.setPoolingMode(poolingMode);
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
@@ -913,6 +918,12 @@ class SurveyController {
   /// isolate. Pass `null` to use the model-config default.
   void setPoolingWindows(int? value) {
     _isolate.setMaxPoolWindows(value);
+  }
+
+  /// Update the score-pooling real-time age gate and forward to the inference
+  /// isolate. Pass `null` to use the model-config default.
+  void setPoolingMaxAgeSeconds(double? value) {
+    _isolate.setMaxPoolAgeSeconds(value);
   }
 
   /// Update the score-pooling mode and forward to the inference isolate.

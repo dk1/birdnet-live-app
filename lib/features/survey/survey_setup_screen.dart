@@ -794,9 +794,9 @@ class _ParametersStep extends ConsumerWidget {
         ),
         Slider(
           value: inferenceRate,
-          min: 0.1,
-          max: 1.0,
-          divisions: 9,
+          min: inferenceRateHzValues.first,
+          max: inferenceRateHzValues.last,
+          divisions: inferenceRateHzValues.length - 1,
           label: '${inferenceRate.toStringAsFixed(2)} Hz',
           onChanged:
               (v) => ref.read(surveyInferenceRateProvider.notifier).set(v),
@@ -1719,7 +1719,7 @@ class _CreateWatchlistScreenState
     final showSci = ref.watch(showSciNamesProvider);
 
     String labelFor(TaxonomySpecies sp) {
-      if (showSci) return sp.scientificName;
+      if (showSci) return sp.displayScientificName;
       return sp.commonNameForLocale(speciesLocale);
     }
 
@@ -1819,7 +1819,7 @@ class _CreateWatchlistScreenState
                                       style: theme.textTheme.bodySmall,
                                     )
                                     : Text(
-                                      sp.scientificName,
+                                      sp.displayScientificName,
                                       style: theme.textTheme.bodySmall
                                           ?.copyWith(
                                             fontStyle: FontStyle.italic,
@@ -1855,7 +1855,7 @@ class _CreateWatchlistScreenState
   }
 }
 
-class _SelectedSpeciesList extends StatelessWidget {
+class _SelectedSpeciesList extends ConsumerWidget {
   const _SelectedSpeciesList({
     required this.selected,
     required this.labels,
@@ -1866,9 +1866,10 @@ class _SelectedSpeciesList extends StatelessWidget {
   final ValueChanged<String> onRemove;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
     if (selected.isEmpty) {
       return Center(
         child: Padding(
@@ -1891,7 +1892,7 @@ class _SelectedSpeciesList extends StatelessWidget {
           leading: const Icon(AppIcons.checkRounded),
           title: Text(label),
           subtitle: Text(
-            sci,
+            taxonomy?.displayScientificName(sci) ?? sci,
             style: theme.textTheme.bodySmall?.copyWith(
               fontStyle: FontStyle.italic,
             ),

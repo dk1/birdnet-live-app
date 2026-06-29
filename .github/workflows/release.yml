@@ -50,6 +50,9 @@ jobs:
       - name: Show Flutter version
         run: flutter --version
 
+      - name: Prepare generated asset directories
+        run: mkdir -p assets/species_data
+
       - name: Install Dart and Flutter packages
         run: flutter pub get
 

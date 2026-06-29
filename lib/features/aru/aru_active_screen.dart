@@ -203,6 +203,9 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     ref.listen<int?>(scorePoolingWindowsProvider, (_, next) {
       ref.read(liveControllerProvider).setPoolingWindows(next);
     });
+    ref.listen<double>(scorePoolingMaxAgeSecondsProvider, (_, next) {
+      ref.read(liveControllerProvider).setPoolingMaxAgeSeconds(next);
+    });
     ref.listen<String>(scorePoolingProvider, (_, next) {
       ref.read(liveControllerProvider).setPoolingMode(next);
     });
@@ -1224,7 +1227,10 @@ class _SummaryPanelState extends ConsumerState<_SummaryPanel> {
                       ),
                       if (showSciNames)
                         Text(
-                          item.scientificName,
+                          taxonomy?.displayScientificName(
+                                item.scientificName,
+                              ) ??
+                              item.scientificName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.labelSmall?.copyWith(

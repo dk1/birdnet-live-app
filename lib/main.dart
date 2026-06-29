@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
+import 'core/constants/app_constants.dart';
 import 'features/aru/aru_notification.dart';
 import 'features/survey/survey_notification.dart';
 import 'shared/providers/app_providers.dart';
@@ -45,6 +46,23 @@ Future<void> main() async {
     if (!hasNewGeo) {
       await prefs.setBool('privacy_allow_reverse_geocoding', legacyConsent);
     }
+  }
+
+  // One-time hidden pooling-default migration. Pooling controls are not exposed
+  // in Settings, so installations that persisted the old default need to move
+  // forward explicitly; later explicit internal changes remain respected.
+  if (!(prefs.getBool(PrefKeys.scorePoolingDefaultMigration) ?? false)) {
+    final currentPooling = prefs.getString(PrefKeys.scorePooling);
+    if (currentPooling == null || currentPooling == 'lme') {
+      await prefs.setString(PrefKeys.scorePooling, 'adaptive_lme_peak');
+    }
+    if (!prefs.containsKey(PrefKeys.scorePoolingWindows)) {
+      await prefs.setInt(PrefKeys.scorePoolingWindows, 5);
+    }
+    if (!prefs.containsKey(PrefKeys.scorePoolingMaxAgeSeconds)) {
+      await prefs.setDouble(PrefKeys.scorePoolingMaxAgeSeconds, 10.0);
+    }
+    await prefs.setBool(PrefKeys.scorePoolingDefaultMigration, true);
   }
 
   runApp(

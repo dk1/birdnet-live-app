@@ -1027,7 +1027,8 @@ String _buildDataPayload(
     final clipName = clipFileMap?[i];
     dets.add({
       'common': _localizedCommon(d, taxonomy, speciesLocale),
-      'sci': d.scientificName,
+      'sci': taxonomy?.displayScientificName(d.scientificName) ??
+          d.scientificName,
       'conf': d.confidence,
       'lat': d.latitude,
       'lon': d.longitude,
@@ -1403,6 +1404,9 @@ String _analysisSettingsSummary(
   final poolingMode = _stringAt(analysis, 'poolingMode') ?? s.poolingMode;
   final poolingWindows =
       _numAt(analysis, 'poolingWindows')?.round() ?? s.poolingWindows;
+  final poolingMaxAgeSeconds =
+      _numAt(analysis, 'poolingMaxAgeSeconds')?.toDouble() ??
+      s.poolingMaxAgeSeconds;
 
   return [
     '${windowSeconds}s window',
@@ -1412,7 +1416,9 @@ String _analysisSettingsSummary(
     if (poolingMode != null && poolingMode.isNotEmpty)
       poolingWindows == null
           ? 'pooling $poolingMode'
-          : 'pooling $poolingMode/$poolingWindows',
+          : poolingMaxAgeSeconds == null
+          ? 'pooling $poolingMode/$poolingWindows'
+          : 'pooling $poolingMode/$poolingWindows/${_fmtNumber(poolingMaxAgeSeconds)}s',
     if (speciesFilter.isNotEmpty && speciesFilter != 'off')
       'species filter $speciesFilter',
   ].join(' | ');
@@ -1512,7 +1518,11 @@ String _buildSettingsRows(LiveSession session) {
     rows.add(('Sensitivity', s.sensitivity!.toStringAsFixed(2)));
   }
   if (s.poolingMode != null && s.poolingWindows != null) {
-    rows.add(('Pooling', '${s.poolingMode} (${s.poolingWindows}x)'));
+    final gate =
+        s.poolingMaxAgeSeconds == null
+            ? ''
+            : ', ${_fmtNumber(s.poolingMaxAgeSeconds!)}s gate';
+    rows.add(('Pooling', '${s.poolingMode} (${s.poolingWindows}x$gate)'));
   }
   if (s.gainLinear != null) {
     rows.add(('Gain', '${s.gainLinear!.toStringAsFixed(2)}x'));

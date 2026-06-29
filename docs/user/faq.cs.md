@@ -8,7 +8,7 @@
 Odpověď: Ne. Veškeré odvození běží na zařízení pomocí modelu ONNX. Jedinými funkcemi sítě jsou vyhledávání obrázků/popisů druhů z API taxonomie, které jsou volitelné.
 
 **Otázka: Kolik druhů dokáže identifikovat?**
-Odpověď: Model BirdNET+ V3.0 identifikuje 5 250 druhů ptáků po celém světě (ořezaný průnik zvukového klasifikátoru a geomodelu).
+Odpověď: Model BirdNET+ V3.0 identifikuje 10 208 druhů po celém světě – ptáky, obojživelníky, savce a hmyz (ořezaný průnik zvukového klasifikátoru a geomodelu).
 
 **Otázka: Jaké platformy jsou podporovány?**
 Odpověď: Android (8.0+), iOS (15.0+) a Windows (experimentální).

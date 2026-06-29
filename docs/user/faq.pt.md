@@ -8,7 +8,7 @@ Perguntas frequentes.
 R: Não. Todas as inferências são executadas no dispositivo usando o modelo ONNX. Os únicos recursos de rede são pesquisas de imagem/descrição de espécies da API de taxonomia, que são opcionais.
 
 **P: Quantas espécies ele consegue identificar?**
-R: O modelo BirdNET+ V3.0 identifica 5.250 espécies de aves em todo o mundo (a interseção podada do classificador de áudio e do geomodelo).
+R: O modelo BirdNET+ V3.0 identifica 10.208 espécies em todo o mundo: aves, anfíbios, mamíferos e insetos (a interseção podada do classificador de áudio e do geomodelo).
 
 **P: Quais plataformas são compatíveis?**
 R: Android (8.0+), iOS (15.0+) e Windows (experimental).

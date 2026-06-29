@@ -113,19 +113,38 @@ class InferenceService {
   /// Log-Mean-Exp alpha from the active config.
   double get poolingAlpha => _config?.inference.temporalPooling.alpha ?? 5.0;
 
+  /// Maximum real-time age, in seconds, for windows included in score pooling.
+  double get maxPoolAgeSeconds =>
+      _maxPoolAgeSecondsOverride ??
+      _config?.inference.temporalPooling.maxAgeSeconds ??
+      10.0;
+  double? _maxPoolAgeSecondsOverride;
+
+  /// Override the pooling time gate. Pass `null` to fall back to config.
+  void setMaxPoolAgeSeconds(double? value) {
+    if (value != null && value <= 0) {
+      _maxPoolAgeSecondsOverride = 0.001;
+    } else {
+      _maxPoolAgeSecondsOverride = value;
+    }
+  }
+
   /// Score-pooling mode driven by the user setting. Recognized values:
   /// `'off'` (no pooling — single-window scores), `'average'`,
-  /// `'max'`, and `'lme'` (log-mean-exp, default and historical
-  /// behavior). Unknown values fall back to `'lme'`.
-  String _poolingMode = 'lme';
+  /// `'max'`, `'lme'`, and `'adaptive_lme_peak'`. Unknown values fall back to
+  /// `'adaptive_lme_peak'`.
+  String _poolingMode = 'adaptive_lme_peak';
   String get poolingMode => _poolingMode;
 
   /// Override the pooling mode at runtime from a user setting. Pass
-  /// `null` or an empty string to revert to `'lme'`. The rolling
+  /// `null` or an empty string to revert to `'adaptive_lme_peak'`. The rolling
   /// score buffer is cleared so a switch (e.g. lme → max) doesn't
   /// cross-contaminate the new mode with stale logits.
   void setPoolingMode(String? mode) {
-    final next = (mode == null || mode.isEmpty) ? 'lme' : mode;
+    final requested =
+        (mode == null || mode.isEmpty) ? 'adaptive_lme_peak' : mode;
+    final next =
+        _isSupportedPoolingMode(requested) ? requested : 'adaptive_lme_peak';
     if (next == _poolingMode) return;
     _poolingMode = next;
     _recentScores.clear();
@@ -260,13 +279,25 @@ class InferenceService {
       final validRecentTimestamped =
           _recentScores.where((ts) {
             final age = now.difference(ts.timestamp);
-            return age.inMicroseconds >= 0 && age.inSeconds <= 10;
+            return age.inMicroseconds >= 0 &&
+                age.inMicroseconds <= maxPoolAgeSeconds * 1000000;
           }).toList();
 
       poolingInputScores =
           validRecentTimestamped.map((ts) => ts.scores).toList();
 
       switch (_poolingMode) {
+        case 'adaptive_lme_peak':
+          final stepSeconds = _estimatedStepSeconds(validRecentTimestamped);
+          finalScores =
+              stepSeconds <= 1.25
+                  ? PostProcessor.average(poolingInputScores)
+                  : PostProcessor.logMeanExp(
+                    poolingInputScores,
+                    alpha: poolingAlpha,
+                  );
+          break;
+        case 'avg':
         case 'average':
           finalScores = PostProcessor.average(poolingInputScores);
           break;
@@ -274,12 +305,20 @@ class InferenceService {
           finalScores = PostProcessor.max(poolingInputScores);
           break;
         case 'lme':
-        default:
           finalScores = PostProcessor.logMeanExp(
             poolingInputScores,
             alpha: poolingAlpha,
-            peakRetention: cfg.inference.temporalPooling.peakRetention,
           );
+          break;
+        default:
+          final stepSeconds = _estimatedStepSeconds(validRecentTimestamped);
+          finalScores =
+              stepSeconds <= 1.25
+                  ? PostProcessor.average(poolingInputScores)
+                  : PostProcessor.logMeanExp(
+                    poolingInputScores,
+                    alpha: poolingAlpha,
+                  );
       }
     }
 
@@ -294,7 +333,7 @@ class InferenceService {
     );
 
     final gated =
-        _poolingMode == 'lme' &&
+        (_poolingMode == 'lme' || _poolingMode == 'adaptive_lme_peak') &&
                 useTemporalPooling &&
                 poolingInputScores.isNotEmpty
             ? PostProcessor.applyTemporalSupportGate(
@@ -311,7 +350,7 @@ class InferenceService {
             )
             : adjusted;
 
-    final detections = PostProcessor.topK(
+    var detections = PostProcessor.topK(
       scores: gated,
       labels: _labels,
       k: k,
@@ -319,11 +358,70 @@ class InferenceService {
       timestamp: now,
     );
 
+    if (_poolingMode == 'adaptive_lme_peak' &&
+        useTemporalPooling &&
+        poolingInputScores.isNotEmpty) {
+      detections = _withRecentPeakConfidence(
+        detections,
+        poolingInputScores,
+        sens,
+      );
+    }
+
     _confirmedDetectionIndexes
       ..clear()
       ..addAll(detections.map((detection) => detection.species.index));
 
     return detections;
+  }
+
+  bool _isSupportedPoolingMode(String mode) {
+    return mode == 'off' ||
+        mode == 'avg' ||
+        mode == 'average' ||
+        mode == 'max' ||
+        mode == 'lme' ||
+        mode == 'adaptive_lme_peak';
+  }
+
+  double _estimatedStepSeconds(List<_TimestampedScores> scores) {
+    if (scores.length < 2) return 1.0;
+    final last = scores[scores.length - 1].timestamp;
+    final previous = scores[scores.length - 2].timestamp;
+    final seconds = last.difference(previous).inMicroseconds / 1000000.0;
+    return seconds > 0 ? seconds : 1.0;
+  }
+
+  List<Detection> _withRecentPeakConfidence(
+    List<Detection> detections,
+    List<List<double>> windowScores,
+    double sensitivity,
+  ) {
+    if (detections.isEmpty) return detections;
+
+    final peaks = PostProcessor.recentPeakScores(
+      windowScores,
+      sensitivity: sensitivity,
+      multipliers: _scoreMultipliers,
+    );
+    final adjusted = <Detection>[];
+    for (final detection in detections) {
+      final index = detection.species.index;
+      var peak = detection.confidence;
+      if (index >= 0 && index < peaks.length && peaks[index] > peak) {
+        peak = peaks[index];
+      }
+      adjusted.add(
+        Detection(
+          species: detection.species,
+          confidence: peak.clamp(0.0, 1.0).toDouble(),
+          timestamp: detection.timestamp,
+        ),
+      );
+    }
+
+    adjusted.sort((a, b) => b.confidence.compareTo(a.confidence));
+    return adjusted;
   }
 
   /// Clear the temporal pooling buffer.
