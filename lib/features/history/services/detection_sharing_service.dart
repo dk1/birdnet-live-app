@@ -77,7 +77,7 @@ Future<ShareResult> shareDetection(
       shareAudioAsWav: shareAudioAsWav,
     );
     return SharePlus.instance.share(
-      ShareParams(files: [XFile(staged.path)], text: body, subject: subject),
+      _shareParamsForAudioFile(staged, body: body, subject: subject),
     );
   }
 
@@ -92,11 +92,7 @@ Future<ShareResult> shareDetection(
     );
     if (extracted != null) {
       return SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(extracted.path)],
-          text: body,
-          subject: subject,
-        ),
+        _shareParamsForAudioFile(extracted, body: body, subject: subject),
       );
     }
   }
@@ -104,6 +100,41 @@ Future<ShareResult> shareDetection(
   // 3) No audio available — share text only. The body still carries
   //    location + timestamp so the recipient gets the full picture.
   return SharePlus.instance.share(ShareParams(text: body, subject: subject));
+}
+
+ShareParams _shareParamsForAudioFile(
+  File file, {
+  required String body,
+  required String subject,
+}) {
+  final name = p.basename(file.path);
+  return ShareParams(
+    files: [XFile(file.path, mimeType: _audioMimeTypeForPath(file.path))],
+    fileNameOverrides: [name],
+    text: body,
+    subject: subject,
+    title: name,
+  );
+}
+
+String _audioMimeTypeForPath(String path) {
+  switch (p.extension(path).toLowerCase()) {
+    case '.wav':
+      return 'audio/wav';
+    case '.flac':
+      return 'audio/flac';
+    case '.m4a':
+      return 'audio/mp4';
+    case '.aac':
+      return 'audio/aac';
+    case '.mp3':
+      return 'audio/mpeg';
+    case '.ogg':
+    case '.oga':
+      return 'audio/ogg';
+    default:
+      return 'application/octet-stream';
+  }
 }
 
 /// Copies [clip] into the temp dir under the export-style filename so the
@@ -115,8 +146,7 @@ Future<File> _stageClipForShare(
   bool shareAudioAsWav = false,
 }) async {
   final srcExt = p.extension(clip.path).toLowerCase();
-  final outExt =
-      (shareAudioAsWav && srcExt == '.flac') ? '.wav' : srcExt;
+  final outExt = (shareAudioAsWav && srcExt == '.flac') ? '.wav' : srcExt;
   final name = _exportClipName(d, outExt);
   final tmp = await getTemporaryDirectory();
   final shareDir = Directory(p.join(tmp.path, 'shared_clips'));
@@ -180,7 +210,11 @@ Future<File?> extractClipFromFullAudio(
   LiveSession session,
   DetectionRecord detection, {
   bool shareAudioAsWav = false,
-}) => _extractClipFromFullAudio(session, detection, shareAudioAsWav: shareAudioAsWav);
+}) => _extractClipFromFullAudio(
+  session,
+  detection,
+  shareAudioAsWav: shareAudioAsWav,
+);
 
 Future<File?> _extractClipFromFullAudio(
   LiveSession session,
