@@ -4,10 +4,13 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:birdnet_live/features/history/session_export.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
+import 'package:birdnet_live/features/recording/audio_decoder.dart';
+import 'package:birdnet_live/features/recording/flac_encoder.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
@@ -44,12 +47,14 @@ DetectionRecord _det(
   Duration offset,
   DateTime start, {
   String? audioClipPath,
+  Duration? endOffset,
 }) {
   return DetectionRecord(
     scientificName: sci,
     commonName: common,
     confidence: conf,
     timestamp: start.add(offset),
+    endTimestamp: endOffset == null ? null : start.add(endOffset),
     audioClipPath: audioClipPath,
   );
 }
@@ -238,6 +243,60 @@ void main() {
       expect(cols[5], '12.000'); // End (7 + 5)
     });
 
+    test('uses endTimestamp for continuous detections in full recordings', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        windowDuration: 3,
+        detections: [
+          _det(
+            'Certhia familiaris',
+            'Eurasian Treecreeper',
+            0.90,
+            const Duration(seconds: 5),
+            start,
+            endOffset: const Duration(seconds: 19),
+          ),
+        ],
+      );
+
+      final table = buildRavenSelectionTable(
+        session,
+        audioFileName: '$_prefix.wav',
+      );
+      final cols = table.split('\n')[1].split('\t');
+
+      expect(cols[4], '5.000');
+      expect(cols[5], '19.000');
+    });
+
+    test('uses endTimestamp for continuous detections inside clips', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        windowDuration: 3,
+        clipContextSeconds: 1,
+        detections: [
+          _det(
+            'Certhia familiaris',
+            'Eurasian Treecreeper',
+            0.90,
+            const Duration(seconds: 5),
+            start,
+            endOffset: const Duration(seconds: 19),
+          ),
+        ],
+      );
+
+      final table = buildRavenSelectionTable(
+        session,
+        clipFileMap: {0: '${_prefix}_clip_001_Eurasian_Treecreeper.wav'},
+      );
+      final cols = table.split('\n')[1].split('\t');
+
+      expect(cols[4], '1.000');
+      expect(cols[5], '15.000');
+      expect(cols[11], '5.000');
+    });
+
     test('includes Latitude/Longitude when detections have coordinates', () {
       final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
       final session = _makeSession(
@@ -388,6 +447,29 @@ void main() {
       final idx = header.indexOf('Survey Time (s)');
       final cols = lines[1].split(',');
       expect(cols[idx], '5.000');
+    });
+
+    test('uses endTimestamp for continuous detection ranges', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        windowDuration: 3,
+        detections: [
+          _det(
+            'Certhia familiaris',
+            'Eurasian Treecreeper',
+            0.90,
+            const Duration(seconds: 5),
+            start,
+            endOffset: const Duration(seconds: 19),
+          ),
+        ],
+      );
+
+      final csv = buildCsvExport(session, audioFileName: '$_prefix.wav');
+      final cols = csv.split('\n')[1].split(',');
+
+      expect(cols[1], '5.000');
+      expect(cols[2], '19.000');
     });
 
     test('useAbsoluteSurveyTime renames CSV column and emits ISO UTC', () {
@@ -562,6 +644,105 @@ void main() {
       expect(tableContent, contains('_clip_002_European_Robin.flac'));
     });
 
+    test('converts FLAC clips to valid WAV files in ZIP exports', () async {
+      final clipDir = '${tempDir.path}/clips_wav';
+      Directory(clipDir).createSync();
+      final clipPath = '$clipDir/clip_1000.flac';
+      final sourceSamples = _pcmLikeFloatSamples(32000);
+      await FlacEncoder.writeFile(filePath: clipPath, samples: sourceSamples);
+
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        recordingPath: clipDir,
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.91,
+            const Duration(seconds: 5),
+            start,
+            audioClipPath: clipPath,
+          ),
+        ],
+      );
+
+      final zipPath = await buildSessionExport(
+        session,
+        formats: const {'raven'},
+        includeAudio: true,
+        shareAudioAsWav: true,
+      );
+      expect(zipPath, isNotNull);
+
+      final archive = ZipDecoder().decodeBytes(
+        File(zipPath!).readAsBytesSync(),
+      );
+      final wavEntry = archive.firstWhere((f) => f.name.endsWith('.wav'));
+      final wavBytes = Uint8List.fromList(wavEntry.content as List<int>);
+      expect(String.fromCharCodes(wavBytes.sublist(0, 4)), 'RIFF');
+      expect(String.fromCharCodes(wavBytes.sublist(8, 12)), 'WAVE');
+
+      final wavFile = File(p.join(tempDir.path, 'converted_clip.wav'));
+      await wavFile.writeAsBytes(wavBytes);
+      final decoded = await AudioDecoder.decodeFile(wavFile.path);
+      expect(decoded.sampleRate, 32000);
+      expect(decoded.samples, _expectedPcm16(sourceSamples));
+
+      final tableFile = archive.firstWhere(
+        (f) => f.name.endsWith('.selections.txt'),
+      );
+      final tableContent = String.fromCharCodes(tableFile.content as List<int>);
+      expect(tableContent, contains('_clip_001_Eurasian_Blackbird.wav'));
+      expect(tableContent, isNot(contains('.flac')));
+    });
+
+    test('adds detected extensions for clips that have none', () async {
+      final clipDir = '${tempDir.path}/clips_no_ext';
+      Directory(clipDir).createSync();
+      final clipPath = '$clipDir/clip_1000';
+      await FlacEncoder.writeFile(
+        filePath: clipPath,
+        samples: _pcmLikeFloatSamples(32000),
+      );
+
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        recordingPath: clipDir,
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.91,
+            const Duration(seconds: 5),
+            start,
+            audioClipPath: clipPath,
+          ),
+        ],
+      );
+
+      final zipPath = await buildSessionExport(
+        session,
+        formats: const {'raven'},
+        includeAudio: true,
+      );
+      expect(zipPath, isNotNull);
+
+      final archive = ZipDecoder().decodeBytes(
+        File(zipPath!).readAsBytesSync(),
+      );
+      expect(
+        archive.any(
+          (f) => f.name.endsWith('_clip_001_Eurasian_Blackbird.flac'),
+        ),
+        isTrue,
+      );
+      final tableFile = archive.firstWhere(
+        (f) => f.name.endsWith('.selections.txt'),
+      );
+      final tableContent = String.fromCharCodes(tableFile.content as List<int>);
+      expect(tableContent, contains('_clip_001_Eurasian_Blackbird.flac'));
+    });
+
     test('includes custom name in export filenames', () async {
       final wavPath = '${tempDir.path}/full.wav';
       File(wavPath).writeAsBytesSync([0x52, 0x49, 0x46, 0x46]);
@@ -726,6 +907,52 @@ void main() {
       },
     );
 
+    test(
+      'converts full FLAC recording to a valid WAV in ZIP exports',
+      () async {
+        final sessionDir = Directory('${tempDir.path}/recording_wav');
+        sessionDir.createSync();
+        final flacPath = p.join(sessionDir.path, 'full.flac');
+        final sourceSamples = _pcmLikeFloatSamples(32000);
+        await FlacEncoder.writeFile(filePath: flacPath, samples: sourceSamples);
+
+        final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+        final session = _makeSession(
+          recordingPath: sessionDir.path,
+          detections: [
+            _det(
+              'Turdus merula',
+              'Eurasian Blackbird',
+              0.91,
+              const Duration(seconds: 5),
+              start,
+            ),
+          ],
+        );
+
+        final zipPath = await buildSessionExport(
+          session,
+          formats: const {'raven'},
+          includeAudio: true,
+          shareAudioAsWav: true,
+        );
+        expect(zipPath, isNotNull);
+
+        final archive = ZipDecoder().decodeBytes(
+          File(zipPath!).readAsBytesSync(),
+        );
+        final wavEntry = archive.firstWhere((f) => f.name == '$_prefix.wav');
+        final wavBytes = Uint8List.fromList(wavEntry.content as List<int>);
+        expect(String.fromCharCodes(wavBytes.sublist(0, 4)), 'RIFF');
+
+        final wavFile = File(p.join(tempDir.path, 'converted_full.wav'));
+        await wavFile.writeAsBytes(wavBytes);
+        final decoded = await AudioDecoder.decodeFile(wavFile.path);
+        expect(decoded.sampleRate, 32000);
+        expect(decoded.samples, _expectedPcm16(sourceSamples));
+      },
+    );
+
     test('audio-only export returns raw audio file (no ZIP) when every '
         'companion is disabled', () async {
       final wavPath = '${tempDir.path}/full.wav';
@@ -757,6 +984,79 @@ void main() {
       expect(p.basename(result), '$_prefix.wav');
       expect(File(result).existsSync(), isTrue);
     });
+
+    test(
+      'audio-only export adds a detected extension when source has none',
+      () async {
+        final flacPath = '${tempDir.path}/full';
+        final encodedPath = '${tempDir.path}/full.flac';
+        await FlacEncoder.writeFile(
+          filePath: encodedPath,
+          samples: _pcmLikeFloatSamples(32000),
+        );
+        await File(encodedPath).copy(flacPath);
+
+        final session = _makeSession(
+          recordingPath: flacPath,
+          detections: [
+            _det(
+              'Turdus merula',
+              'Eurasian Blackbird',
+              0.91,
+              const Duration(seconds: 5),
+              DateTime.utc(2025, 6, 15, 8, 0, 0),
+            ),
+          ],
+        );
+
+        final result = await buildSessionExport(
+          session,
+          formats: const <String>{},
+          includeAudio: true,
+          includeHtmlReport: false,
+          includeAppMetadata: false,
+        );
+
+        expect(result, isNotNull);
+        expect(p.basename(result!), '$_prefix.flac');
+        expect(File(result).existsSync(), isTrue);
+      },
+    );
+
+    test(
+      'audio-only WAV conversion fallback keeps original FLAC extension',
+      () async {
+        final flacPath = '${tempDir.path}/full.flac';
+        File(flacPath).writeAsBytesSync([0x66, 0x4C, 0x61, 0x43]);
+
+        final session = _makeSession(
+          recordingPath: flacPath,
+          detections: [
+            _det(
+              'Turdus merula',
+              'Eurasian Blackbird',
+              0.91,
+              const Duration(seconds: 5),
+              DateTime.utc(2025, 6, 15, 8, 0, 0),
+            ),
+          ],
+        );
+
+        final result = await buildSessionExport(
+          session,
+          formats: const <String>{},
+          includeAudio: true,
+          shareAudioAsWav: true,
+          includeHtmlReport: false,
+          includeAppMetadata: false,
+        );
+
+        expect(result, isNotNull);
+        expect(result!.endsWith('.flac'), isTrue);
+        expect(p.basename(result), '$_prefix.flac');
+        expect(File(result).existsSync(), isTrue);
+      },
+    );
 
     test(
       'disabling app metadata drops the .metadata.json side-file from the ZIP',
@@ -1391,4 +1691,21 @@ void main() {
       );
     });
   });
+}
+
+Float32List _pcmLikeFloatSamples(int count) {
+  final samples = Float32List(count);
+  for (var i = 0; i < count; i++) {
+    final pcm = ((i * 997) % 60001) - 30000;
+    samples[i] = pcm / 32767.0;
+  }
+  return samples;
+}
+
+Int16List _expectedPcm16(Float32List samples) {
+  final pcm = Int16List(samples.length);
+  for (var i = 0; i < samples.length; i++) {
+    pcm[i] = (samples[i] * 32767.0).round().clamp(-32768, 32767);
+  }
+  return pcm;
 }

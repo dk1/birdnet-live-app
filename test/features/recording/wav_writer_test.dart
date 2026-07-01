@@ -22,17 +22,13 @@ void main() {
     });
 
     test('starts with RIFF magic', () {
-      final bytes = WavWriter.toBytes(
-        samples: Float32List.fromList([0.0]),
-      );
+      final bytes = WavWriter.toBytes(samples: Float32List.fromList([0.0]));
 
       expect(String.fromCharCodes(bytes.sublist(0, 4)), 'RIFF');
     });
 
     test('contains WAVE format', () {
-      final bytes = WavWriter.toBytes(
-        samples: Float32List.fromList([0.0]),
-      );
+      final bytes = WavWriter.toBytes(samples: Float32List.fromList([0.0]));
 
       expect(String.fromCharCodes(bytes.sublist(8, 12)), 'WAVE');
     });
@@ -83,23 +79,17 @@ void main() {
 
     test('PCM data is correctly encoded', () {
       // silence → 0
-      final silence = WavWriter.toBytes(
-        samples: Float32List.fromList([0.0]),
-      );
+      final silence = WavWriter.toBytes(samples: Float32List.fromList([0.0]));
       final silenceView = ByteData.view(silence.buffer);
       expect(silenceView.getInt16(44, Endian.little), 0);
 
       // max positive → ~32767
-      final maxPos = WavWriter.toBytes(
-        samples: Float32List.fromList([1.0]),
-      );
+      final maxPos = WavWriter.toBytes(samples: Float32List.fromList([1.0]));
       final maxPosView = ByteData.view(maxPos.buffer);
       expect(maxPosView.getInt16(44, Endian.little), 32767);
 
       // max negative → ~-32767
-      final maxNeg = WavWriter.toBytes(
-        samples: Float32List.fromList([-1.0]),
-      );
+      final maxNeg = WavWriter.toBytes(samples: Float32List.fromList([-1.0]));
       final maxNegView = ByteData.view(maxNeg.buffer);
       expect(maxNegView.getInt16(44, Endian.little), -32767);
     });
@@ -115,9 +105,7 @@ void main() {
     });
 
     test('empty samples produces header-only WAV', () {
-      final bytes = WavWriter.toBytes(
-        samples: Float32List(0),
-      );
+      final bytes = WavWriter.toBytes(samples: Float32List(0));
 
       expect(bytes.length, 44);
       final view = ByteData.view(bytes.buffer);
@@ -184,6 +172,40 @@ void main() {
       expect(String.fromCharCodes(bytes.sublist(8, 12)), 'WAVE');
     });
 
+    test('writes configured sample rate to the file header', () async {
+      final filePath = '${tempDir.path}/rate.wav';
+
+      await WavWriter.writeFile(
+        filePath: filePath,
+        samples: Float32List.fromList([0.0]),
+        sampleRate: 44100,
+      );
+
+      final bytes = await File(filePath).readAsBytes();
+      final view = ByteData.sublistView(bytes);
+      expect(view.getUint32(24, Endian.little), 44100);
+      expect(view.getUint32(28, Endian.little), 44100 * 2);
+    });
+
+    test('writes PCM16 bytes without changing sample values', () async {
+      final filePath = '${tempDir.path}/pcm16.wav';
+      final samples = Int16List.fromList([-32768, -1234, 0, 1234, 32767]);
+
+      await WavWriter.writePcm16File(
+        filePath: filePath,
+        samples: samples,
+        sampleRate: 48000,
+      );
+
+      final bytes = await File(filePath).readAsBytes();
+      final view = ByteData.sublistView(bytes);
+      expect(view.getUint32(24, Endian.little), 48000);
+      expect(view.getUint32(40, Endian.little), samples.length * 2);
+      for (var i = 0; i < samples.length; i++) {
+        expect(view.getInt16(44 + i * 2, Endian.little), samples[i]);
+      }
+    });
+
     test('creates parent directories', () async {
       final filePath = '${tempDir.path}/nested/dir/test.wav';
       final samples = Float32List.fromList([0.0]);
@@ -236,6 +258,23 @@ void main() {
       // RIFF size should be correct.
       expect(view.getUint32(4, Endian.little), 44);
     });
+
+    test(
+      'streaming writer preserves configured sample rate in header',
+      () async {
+        final filePath = '${tempDir.path}/stream_rate.wav';
+        final writer = WavWriter(filePath: filePath, sampleRate: 44100);
+
+        await writer.open();
+        await writer.writeSamples(Float32List.fromList([0.0, 0.0]));
+        await writer.close();
+
+        final bytes = await File(filePath).readAsBytes();
+        final view = ByteData.sublistView(bytes);
+        expect(view.getUint32(24, Endian.little), 44100);
+        expect(view.getUint32(28, Endian.little), 44100 * 2);
+      },
+    );
 
     test('duration calculates correctly', () async {
       final filePath = '${tempDir.path}/dur.wav';

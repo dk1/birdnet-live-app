@@ -89,6 +89,7 @@ import '../spectrogram/spectrogram_widget.dart';
 import 'export_metadata_helper.dart';
 import 'session_export.dart';
 import 'session_map_screen.dart';
+import 'services/share_file_params.dart';
 import 'widgets/clip_player_sheet.dart';
 import 'widgets/detection_actions.dart';
 import 'widgets/voice_memo_overlay.dart';
@@ -1970,7 +1971,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     );
 
     if (exportPath == null) return;
-    await SharePlus.instance.share(ShareParams(files: [XFile(exportPath)]));
+    await SharePlus.instance.share(shareParamsForFile(exportPath));
   }
 
   void _done() {

@@ -72,12 +72,13 @@ LiveSession _session({
   );
 }
 
-DetectionRecord _det(DateTime ts) {
+DetectionRecord _det(DateTime ts, {DateTime? endTimestamp}) {
   return DetectionRecord(
     scientificName: 'Troglodytes troglodytes',
     commonName: 'Eurasian Wren',
     confidence: 0.9,
     timestamp: ts,
+    endTimestamp: endTimestamp,
   );
 }
 
@@ -105,32 +106,86 @@ Future<File> _writeFakeWav(Directory dir, double seconds) async {
   return File(path);
 }
 
+Future<File> _writeQuietWav(Directory dir, double seconds) async {
+  const sampleRate = 32000;
+  final path = p.join(dir.path, 'full.wav');
+  await WavWriter.writeFile(
+    filePath: path,
+    samples: _quietFloatSamples((seconds * sampleRate).round()),
+    sampleRate: sampleRate,
+  );
+  return File(path);
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late Directory tmp;
   late SharePlatform originalSharePlatform;
-  late _FakeSharePlatform fakeSharePlatform;
+  final fakeSharePlatform = _FakeSharePlatform();
+
+  setUpAll(() {
+    originalSharePlatform = SharePlatform.instance;
+    SharePlatform.instance = fakeSharePlatform;
+  });
+
+  tearDownAll(() {
+    SharePlatform.instance = originalSharePlatform;
+  });
 
   setUp(() async {
     tmp = await Directory.systemTemp.createTemp('share_extract_');
     PathProviderPlatform.instance = _FakePathProvider(tmp.path);
-    originalSharePlatform = SharePlatform.instance;
-    fakeSharePlatform = _FakeSharePlatform();
-    SharePlatform.instance = fakeSharePlatform;
+    fakeSharePlatform.lastParams = null;
   });
 
   tearDown(() async {
-    SharePlatform.instance = originalSharePlatform;
     if (tmp.existsSync()) {
       await tmp.delete(recursive: true);
     }
   });
 
   group('shareDetection', () {
-    test('shares staged audio with filename override and MIME type', () async {
+    test('shares a saved FLAC detection clip as valid WAV', () async {
       final clip = File(p.join(tmp.path, 'kept_clip.flac'));
-      await clip.writeAsBytes([0x66, 0x4c, 0x61, 0x43]);
+      final sourceSamples = _pcmLikeFloatSamples(32000);
+      await FlacEncoder.writeFile(filePath: clip.path, samples: sourceSamples);
+      final detection = _det(DateTime.utc(2026, 5, 11, 10, 0, 0))
+        ..audioClipPath = clip.path;
+
+      await shareDetection(detection, shareAudioAsWav: true);
+
+      final params = fakeSharePlatform.lastParams;
+      expect(params, isNotNull);
+      expect(params!.files, hasLength(1));
+      expect(params.files!.single.mimeType, 'audio/wav');
+      expect(params.fileNameOverrides, hasLength(1));
+      expect(params.fileNameOverrides!.single, endsWith('.wav'));
+      expect(params.fileNameOverrides!.single, params.files!.single.name);
+      expect(params.title, params.fileNameOverrides!.single);
+      expect(params.text, isNull);
+      expect(params.subject, isNull);
+
+      final sharedFile = File(params.files!.single.path);
+      final header = await sharedFile
+          .openRead(0, 12)
+          .fold<List<int>>(<int>[], (acc, chunk) => acc..addAll(chunk));
+      expect(String.fromCharCodes(header.sublist(0, 4)), 'RIFF');
+      expect(String.fromCharCodes(header.sublist(8, 12)), 'WAVE');
+
+      final decoded = await AudioDecoder.decodeFile(sharedFile.path);
+      expect(decoded.sampleRate, 32000);
+      expect(decoded.samples, _expectedPcm16(sourceSamples));
+    });
+
+    test('adds a detected extension when the saved clip has none', () async {
+      final clip = File(p.join(tmp.path, 'kept_clip'));
+      final encoded = File(p.join(tmp.path, 'kept_clip.flac'));
+      await FlacEncoder.writeFile(
+        filePath: encoded.path,
+        samples: _pcmLikeFloatSamples(32000),
+      );
+      await encoded.copy(clip.path);
       final detection = _det(DateTime.utc(2026, 5, 11, 10, 0, 0))
         ..audioClipPath = clip.path;
 
@@ -140,10 +195,53 @@ void main() {
       expect(params, isNotNull);
       expect(params!.files, hasLength(1));
       expect(params.files!.single.mimeType, 'audio/flac');
-      expect(params.fileNameOverrides, hasLength(1));
-      expect(params.fileNameOverrides!.single, endsWith('.flac'));
-      expect(params.fileNameOverrides!.single, params.files!.single.name);
-      expect(params.title, params.fileNameOverrides!.single);
+      expect(params.files!.single.name, endsWith('.flac'));
+      expect(params.fileNameOverrides, [params.files!.single.name]);
+      expect(params.title, params.files!.single.name);
+      expect(params.text, isNull);
+      expect(params.subject, isNull);
+      expect(File(params.files!.single.path).path, endsWith('.flac'));
+    });
+
+    test('normalizes quiet WAV detection clips on share', () async {
+      final clip = File(p.join(tmp.path, 'quiet_clip.wav'));
+      await WavWriter.writeFile(
+        filePath: clip.path,
+        samples: _quietFloatSamples(32000),
+      );
+      final detection = _det(DateTime.utc(2026, 5, 11, 10, 0, 0))
+        ..audioClipPath = clip.path;
+
+      await shareDetection(detection);
+
+      final params = fakeSharePlatform.lastParams;
+      expect(params, isNotNull);
+      expect(params!.files, hasLength(1));
+      expect(params.files!.single.name, endsWith('.wav'));
+
+      final decoded = await AudioDecoder.decodeFile(params.files!.single.path);
+      expect(_peak(decoded.samples), greaterThan(0.9));
+    });
+
+    test('normalizes quiet FLAC detection clips on share', () async {
+      final clip = File(p.join(tmp.path, 'quiet_clip.flac'));
+      await FlacEncoder.writeFile(
+        filePath: clip.path,
+        samples: _quietFloatSamples(32000),
+      );
+      final detection = _det(DateTime.utc(2026, 5, 11, 10, 0, 0))
+        ..audioClipPath = clip.path;
+
+      await shareDetection(detection);
+
+      final params = fakeSharePlatform.lastParams;
+      expect(params, isNotNull);
+      expect(params!.files, hasLength(1));
+      expect(params.files!.single.name, endsWith('.flac'));
+      expect(params.files!.single.mimeType, 'audio/flac');
+
+      final decoded = await AudioDecoder.decodeFile(params.files!.single.path);
+      expect(_peak(decoded.samples), greaterThan(0.9));
     });
   });
 
@@ -189,6 +287,64 @@ void main() {
       expect(view.getUint32(24, Endian.little), 32000);
       expect(view.getUint16(22, Endian.little), 1); // channels
       expect(view.getUint16(34, Endian.little), 16); // bits per sample
+    });
+
+    test(
+      'shares the full continuous detection duration from full.wav',
+      () async {
+        final start = DateTime.utc(2026, 5, 11, 10, 0, 0);
+        final sessionDir =
+            await Directory(p.join(tmp.path, 'rec_long_detection')).create();
+        await _writeFakeWav(sessionDir, 30.0);
+        final session = _session(
+          recordingPath: sessionDir.path,
+          start: start,
+          windowDuration: 3,
+          clipContextSeconds: 0,
+        );
+        final detection = _det(
+          start.add(const Duration(seconds: 5)),
+          endTimestamp: start.add(const Duration(seconds: 19)),
+        );
+
+        await shareDetection(detection, session: session);
+
+        final params = fakeSharePlatform.lastParams;
+        expect(params, isNotNull);
+        expect(params!.files, hasLength(1));
+        expect(params.files!.single.name, endsWith('.wav'));
+
+        final decoded = await AudioDecoder.decodeFile(
+          params.files!.single.path,
+        );
+        expect(decoded.sampleRate, 32000);
+        expect(decoded.totalSamples, 32000 * 14);
+      },
+    );
+
+    test('normalizes quiet slices from full.wav on share', () async {
+      final start = DateTime.utc(2026, 5, 11, 10, 0, 0);
+      final sessionDir =
+          await Directory(p.join(tmp.path, 'rec_quiet_slice')).create();
+      await _writeQuietWav(sessionDir, 10.0);
+      final session = _session(
+        recordingPath: sessionDir.path,
+        start: start,
+        windowDuration: 3,
+        clipContextSeconds: 0,
+      );
+      final detection = _det(start.add(const Duration(seconds: 2)));
+
+      await shareDetection(detection, session: session);
+
+      final params = fakeSharePlatform.lastParams;
+      expect(params, isNotNull);
+      expect(params!.files, hasLength(1));
+      expect(params.files!.single.name, endsWith('.wav'));
+
+      final decoded = await AudioDecoder.decodeFile(params.files!.single.path);
+      expect(decoded.totalSamples, 32000 * 3);
+      expect(_peak(decoded.samples), greaterThan(0.9));
     });
 
     test('accepts a direct file path (post-stop shape)', () async {
@@ -331,6 +487,52 @@ void main() {
       expect(String.fromCharCodes(magic), 'fLaC');
     });
 
+    test('converts a full FLAC slice to valid WAV when requested', () async {
+      final start = DateTime.utc(2026, 5, 11, 10, 0, 0);
+      final sessionDir =
+          await Directory(p.join(tmp.path, 'rec_flac_wav')).create();
+      const sampleRate = 32000;
+      final flacPath = p.join(sessionDir.path, 'full.flac');
+      final sourceSamples = _pcmLikeFloatSamples(sampleRate * 10);
+      await FlacEncoder.writeFile(filePath: flacPath, samples: sourceSamples);
+
+      final session = _session(
+        recordingPath: sessionDir.path,
+        start: start,
+        windowDuration: 3,
+        clipContextSeconds: 1,
+      );
+      final detection = _det(start.add(const Duration(seconds: 5)));
+
+      final out = await extractClipFromFullAudio(
+        session,
+        detection,
+        shareAudioAsWav: true,
+      );
+      expect(out, isNotNull);
+      expect(p.extension(out!.path), '.wav');
+
+      final header = await out
+          .openRead(0, 12)
+          .fold<List<int>>(<int>[], (acc, chunk) => acc..addAll(chunk));
+      expect(String.fromCharCodes(header.sublist(0, 4)), 'RIFF');
+      expect(String.fromCharCodes(header.sublist(8, 12)), 'WAVE');
+
+      final decoded = await AudioDecoder.decodeFile(out.path);
+      expect(decoded.sampleRate, sampleRate);
+      expect(decoded.totalSamples, sampleRate * 5);
+      expect(
+        decoded.samples,
+        _expectedPcm16(
+          Float32List.sublistView(
+            sourceSamples,
+            sampleRate * 4,
+            sampleRate * 9,
+          ),
+        ),
+      );
+    });
+
     test('returns null when no full recording exists at all', () async {
       final start = DateTime.utc(2026, 5, 11, 10, 0, 0);
       final sessionDir =
@@ -380,4 +582,38 @@ void main() {
       }
     });
   });
+}
+
+Float32List _pcmLikeFloatSamples(int count) {
+  final samples = Float32List(count);
+  for (var i = 0; i < count; i++) {
+    final pcm = ((i * 997) % 60001) - 30000;
+    samples[i] = pcm / 32767.0;
+  }
+  return samples;
+}
+
+Float32List _quietFloatSamples(int count) {
+  final samples = Float32List(count);
+  for (var i = 0; i < count; i++) {
+    samples[i] = (((i % 97) / 96.0) * 2.0 - 1.0) * 0.05;
+  }
+  return samples;
+}
+
+double _peak(Int16List samples) {
+  var peak = 0;
+  for (final sample in samples) {
+    final abs = sample < 0 ? -sample : sample;
+    if (abs > peak) peak = abs;
+  }
+  return peak / 32768.0;
+}
+
+Int16List _expectedPcm16(Float32List samples) {
+  final pcm = Int16List(samples.length);
+  for (var i = 0; i < samples.length; i++) {
+    pcm[i] = (samples[i] * 32767.0).round().clamp(-32768, 32767);
+  }
+  return pcm;
 }
