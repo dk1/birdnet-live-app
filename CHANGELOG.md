@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.2] - 2026-07-01
+
+### Fixed
+
+- Fixed audio sharing and exports so converted FLAC files are written as valid WAV files, shared files keep their filename extensions, quiet single-detection audio shares are normalized, and continuous detections export their full start-to-end audio span instead of only one inference window. (#149)
+
 ## [0.18.1] - 2026-06-28
 
 ### Changed
