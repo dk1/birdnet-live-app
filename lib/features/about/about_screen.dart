@@ -4,6 +4,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_theme.dart';
 import '../../features/explore/explore_providers.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/utils/app_icons.dart';
@@ -22,6 +23,7 @@ class AboutScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     final packageInfo = ref.watch(packageInfoProvider);
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
 
@@ -59,7 +61,12 @@ class AboutScreen extends ConsumerWidget {
                             info.buildNumber,
                           ),
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withAlpha(153),
+                            color:
+                                highContrast
+                                    ? theme.colorScheme.onSurface
+                                    : theme.colorScheme.onSurface.withAlpha(
+                                      153,
+                                    ),
                           ),
                         ),
                     loading: () => const SizedBox.shrink(),
@@ -121,13 +128,18 @@ class AboutScreen extends ConsumerWidget {
                         final parts = <String>[];
                         for (final entry in groupLabels.entries) {
                           final count = counts[entry.key];
-                          if (count != null) parts.add('${entry.value}: $count');
+                          if (count != null) {
+                            parts.add('${entry.value}: $count');
+                          }
                         }
                         if (parts.isEmpty) return base;
                         return '$base (${parts.join(', ')})';
                       }(),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withAlpha(153),
+                        color:
+                            highContrast
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.onSurface.withAlpha(153),
                       ),
                     ),
                   ],

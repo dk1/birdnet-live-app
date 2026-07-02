@@ -34,6 +34,34 @@ void main() {
     });
   });
 
+  group('HighContrastThemeNotifier', () {
+    test('defaults to false', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final notifier = HighContrastThemeNotifier(prefs);
+
+      expect(notifier.state, false);
+    });
+
+    test('persists high contrast theme preference', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final notifier = HighContrastThemeNotifier(prefs);
+
+      await notifier.set(true);
+      expect(notifier.state, true);
+      expect(prefs.getBool('high_contrast_theme'), true);
+    });
+
+    test('loads persisted high contrast theme preference', () async {
+      SharedPreferences.setMockInitialValues({'high_contrast_theme': true});
+      final prefs = await SharedPreferences.getInstance();
+      final notifier = HighContrastThemeNotifier(prefs);
+
+      expect(notifier.state, true);
+    });
+  });
+
   group('LocaleNotifier', () {
     test('defaults to null (system)', () async {
       SharedPreferences.setMockInitialValues({});
@@ -131,11 +159,9 @@ void main() {
         () => container.read(sharedPreferencesProvider),
         throwsA(
           predicate(
-            (error) => error
-                .toString()
-                .contains(
-                  'sharedPreferencesProvider must be overridden with a real instance',
-                ),
+            (error) => error.toString().contains(
+              'sharedPreferencesProvider must be overridden with a real instance',
+            ),
           ),
         ),
       );
@@ -146,13 +172,12 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
 
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 
       expect(container.read(themeModeProvider), ThemeMode.system);
+      expect(container.read(highContrastThemeProvider), false);
       expect(container.read(localeProvider), isNull);
       expect(container.read(onboardingCompleteProvider), false);
       expect(container.read(termsAcceptedProvider), false);

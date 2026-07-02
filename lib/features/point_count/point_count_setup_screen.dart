@@ -860,7 +860,9 @@ class _ParamTile extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          child,
+          value.isEmpty
+              ? child
+              : Semantics(label: title, value: value, child: child),
         ],
       ),
     );

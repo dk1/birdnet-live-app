@@ -20,6 +20,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 
+import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/taxonomy_species.dart';
 import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/services/link_launcher.dart';
@@ -127,6 +129,7 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     final l10n = AppLocalizations.of(context)!;
 
     return DraggableScrollableSheet(
@@ -193,7 +196,10 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                     '${_detail!.imageLicense != null ? ' (${_detail!.imageLicense})' : ''}'
                     '${_detail!.imageSource != null ? ' — ${_detail!.imageSource}' : ''}',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withAlpha(100),
+                      color:
+                          highContrast
+                              ? theme.colorScheme.onSurface
+                              : theme.colorScheme.onSurface.withAlpha(100),
                     ),
                   ),
                 ),
@@ -447,6 +453,7 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     final l10n = AppLocalizations.of(context)!;
     final speciesAsync = ref.watch(exploreSpeciesProvider);
 
@@ -515,7 +522,10 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
               child: Text(
                 l10n.speciesExpectedFrequencySubtitle,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withAlpha(180),
+                  color:
+                      highContrast
+                          ? theme.colorScheme.onSurface
+                          : theme.colorScheme.onSurface.withAlpha(180),
                 ),
               ),
             ),
@@ -532,10 +542,15 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
                     final isCurrentWeek = index == currentWeekIndex;
 
                     final barHeight =
-                        score > 0 ? (normalized * 80).clamp(2.0, 80.0) : 0.0;
+                        score > 0 || isCurrentWeek
+                            ? (normalized * 80).clamp(2.0, 80.0)
+                            : 0.0;
 
                     final baseColor = theme.colorScheme.primary;
-                    final activeColor = theme.colorScheme.tertiary;
+                    final activeColor =
+                        highContrast
+                            ? theme.colorScheme.surface
+                            : theme.colorScheme.tertiary;
 
                     return Expanded(
                       child: Center(
@@ -546,6 +561,8 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
                             color:
                                 isCurrentWeek
                                     ? activeColor
+                                    : highContrast
+                                    ? baseColor
                                     : baseColor.withAlpha(
                                       (50 + (normalized * 150)).toInt().clamp(
                                         0,
@@ -631,11 +648,12 @@ class _OverlayDetectedBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final semanticColors = AppSemanticColors.of(context);
     return Container(
       width: 28,
       height: 28,
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary,
+        color: semanticColors.success,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -645,7 +663,7 @@ class _OverlayDetectedBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(AppIcons.check, size: 18, color: theme.colorScheme.onPrimary),
+      child: Icon(AppIcons.check, size: 18, color: semanticColors.onSuccess),
     );
   }
 }
@@ -663,6 +681,7 @@ class _DetectionStatsTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     final l10n = AppLocalizations.of(context)!;
     final asyncSessions = ref.watch(sessionListProvider);
 
@@ -705,15 +724,25 @@ class _DetectionStatsTile extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer.withAlpha(120),
+              color:
+                  highContrast
+                      ? Colors.white
+                      : theme.colorScheme.primaryContainer.withAlpha(120),
               borderRadius: BorderRadius.circular(10),
+              border:
+                  highContrast
+                      ? Border.all(color: Colors.black, width: 1.5)
+                      : null,
             ),
             child: Row(
               children: [
                 Icon(
                   AppIcons.checkCircle,
                   size: 20,
-                  color: theme.colorScheme.primary,
+                  color:
+                      highContrast
+                          ? AppSemanticColors.of(context).success
+                          : theme.colorScheme.primary,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -727,13 +756,17 @@ class _DetectionStatsTile extends ConsumerWidget {
                           sessionCount,
                         ),
                         style: theme.textTheme.bodyMedium?.copyWith(
+                          color: highContrast ? Colors.black : null,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
                         l10n.speciesLastSeen(lastSeenText),
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withAlpha(170),
+                          color:
+                              highContrast
+                                  ? Colors.black
+                                  : theme.colorScheme.onSurface.withAlpha(170),
                         ),
                       ),
                     ],

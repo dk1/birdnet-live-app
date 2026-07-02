@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 
+import '../../core/theme/app_theme.dart';
 import '../about/about_screen.dart';
 import '../aru/aru_active_screen.dart';
 import '../aru/aru_controller.dart';
@@ -177,6 +178,7 @@ class _LogoHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     final logoSize =
         compact ? (isTablet ? 72.0 : 56.0) : (isTablet ? 160.0 : 120.0);
     final logo = Container(
@@ -186,7 +188,10 @@ class _LogoHeader extends ConsumerWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withAlpha(60),
+            color: (highContrast
+                    ? AppTheme.brandPrimaryLight
+                    : theme.colorScheme.primary)
+                .withAlpha(60),
             blurRadius: compact ? 16 : 32,
             spreadRadius: compact ? 2 : 4,
           ),
@@ -216,7 +221,10 @@ class _LogoHeader extends ConsumerWidget {
     final subtitle = Text(
       l10n.homeSubtitle,
       style: theme.textTheme.bodyMedium?.copyWith(
-        color: theme.colorScheme.onSurface.withAlpha(153),
+        color:
+            highContrast
+                ? theme.colorScheme.onSurface
+                : theme.colorScheme.onSurface.withAlpha(153),
         fontSize: isTablet ? 16 : null,
       ),
       textAlign: compact ? TextAlign.left : TextAlign.center,
@@ -673,6 +681,7 @@ class _ModeCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final isBrandTheme = isBrandThemeColorScheme(theme.colorScheme);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     final cardColor =
         isBrandTheme
             ? (theme.brightness == Brightness.dark
@@ -758,9 +767,12 @@ class _ModeCard extends StatelessWidget {
                 label,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface.withAlpha(
-                    comingSoon ? 150 : 255,
-                  ),
+                  color:
+                      highContrast
+                          ? theme.colorScheme.onSurface
+                          : theme.colorScheme.onSurface.withAlpha(
+                            comingSoon ? 150 : 255,
+                          ),
                   fontSize:
                       compact ? (isTablet ? 13 : 12) : (isTablet ? 14 : null),
                 ),
@@ -772,9 +784,12 @@ class _ModeCard extends StatelessWidget {
                 child: Text(
                   description,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withAlpha(
-                      comingSoon ? 80 : 100,
-                    ),
+                    color:
+                        highContrast
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.onSurface.withAlpha(
+                              comingSoon ? 80 : 100,
+                            ),
                     fontSize:
                         compact ? (isTablet ? 11 : 10) : (isTablet ? 12 : 11),
                   ),
@@ -806,7 +821,11 @@ class _Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = theme.colorScheme.onSurface.withAlpha(153);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
+    final color =
+        highContrast
+            ? theme.colorScheme.onSurface
+            : theme.colorScheme.onSurface.withAlpha(153);
     final fontSize = isTablet ? 16.0 : 14.0;
     return Wrap(
       alignment: WrapAlignment.center,

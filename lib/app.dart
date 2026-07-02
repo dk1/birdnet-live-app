@@ -50,6 +50,7 @@ class App extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final useDynamicColor = ref.watch(dynamicColorProvider);
+    final useHighContrastTheme = ref.watch(highContrastThemeProvider);
     final locale = ref.watch(localeProvider);
 
     return DynamicColorBuilder(
@@ -59,7 +60,12 @@ class App extends ConsumerWidget {
         final ThemeData lightTheme;
         final ThemeData darkTheme;
 
-        if (useDynamicColor && lightDynamic != null && darkDynamic != null) {
+        if (useHighContrastTheme) {
+          lightTheme = AppTheme.highContrastLight();
+          darkTheme = AppTheme.highContrastDark();
+        } else if (useDynamicColor &&
+            lightDynamic != null &&
+            darkDynamic != null) {
           lightTheme = AppTheme.fromColorScheme(lightDynamic.harmonized());
           darkTheme = AppTheme.fromColorScheme(darkDynamic.harmonized());
         } else {

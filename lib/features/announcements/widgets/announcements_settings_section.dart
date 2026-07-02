@@ -225,18 +225,22 @@ class _FrequencyPicker extends ConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Slider(
-            min: 0,
-            max: (presets.length - 1).toDouble(),
-            divisions: presets.length - 1,
-            value: sliderPos,
-            label: labelFor(presets[sliderPos.round()]),
-            onChanged: (raw) {
-              final idx = raw.round().clamp(0, presets.length - 1);
-              final next = presets[idx];
-              if (next == value) return;
-              ref.read(announcementsFrequencyProvider.notifier).set(next);
-            },
+          child: Semantics(
+            label: l10n.settingsAnnouncementsFrequency,
+            value: labelFor(presets[sliderPos.round()]),
+            child: Slider(
+              min: 0,
+              max: (presets.length - 1).toDouble(),
+              divisions: presets.length - 1,
+              value: sliderPos,
+              label: labelFor(presets[sliderPos.round()]),
+              onChanged: (raw) {
+                final idx = raw.round().clamp(0, presets.length - 1);
+                final next = presets[idx];
+                if (next == value) return;
+                ref.read(announcementsFrequencyProvider.notifier).set(next);
+              },
+            ),
           ),
         ),
         Padding(
@@ -338,13 +342,17 @@ class _LabeledSlider extends StatelessWidget {
         children: [
           SizedBox(width: 100, child: Text(label)),
           Expanded(
-            child: Slider(
-              value: value.clamp(min, max),
-              min: min,
-              max: max,
-              divisions: divisions,
-              label: display,
-              onChanged: onChanged,
+            child: Semantics(
+              label: label,
+              value: display,
+              child: Slider(
+                value: value.clamp(min, max),
+                min: min,
+                max: max,
+                divisions: divisions,
+                label: display,
+                onChanged: onChanged,
+              ),
             ),
           ),
           SizedBox(width: 48, child: Text(display, textAlign: TextAlign.end)),

@@ -66,6 +66,8 @@
   "settingsThemeSystem": "Sistema",
   "settingsDynamicColor": "Color dinámico",
   "settingsDynamicColorDescription": "Usar la paleta de colores de tu dispositivo Android cuando esté disponible. No tiene efecto en iPhone ni iPad.",
+  "settingsHighContrastTheme": "Tema de alto contraste",
+  "settingsHighContrastThemeDescription": "Usa una paleta de interfaz en blanco y negro con más contraste y texto más grueso. Los colores de peligro, advertencia, validación, modo, puntuación y espectrograma no cambian.",
   "settingsResetOnboarding": "Restablecer introducción",
   "settingsClearData": "Eliminar todos los datos",
   "settingsClearDataConfirmTitle": "¿Eliminar todos los datos?",

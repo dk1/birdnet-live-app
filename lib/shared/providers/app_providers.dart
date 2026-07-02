@@ -70,6 +70,30 @@ class DynamicColorNotifier extends StateNotifier<bool> {
   }
 }
 
+/// Whether to use the dedicated high-contrast light/dark themes.
+///
+/// Defaults to `false` so existing installs keep their current appearance.
+/// When enabled, this takes precedence over dynamic color but still follows
+/// the selected [ThemeMode].
+final highContrastThemeProvider =
+    StateNotifierProvider<HighContrastThemeNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return HighContrastThemeNotifier(prefs);
+    });
+
+/// Notifier for the high-contrast theme toggle backed by [SharedPreferences].
+class HighContrastThemeNotifier extends StateNotifier<bool> {
+  HighContrastThemeNotifier(this._prefs)
+    : super(_prefs.getBool(PrefKeys.highContrastTheme) ?? false);
+
+  final SharedPreferences _prefs;
+
+  Future<void> set(bool value) async {
+    state = value;
+    await _prefs.setBool(PrefKeys.highContrastTheme, value);
+  }
+}
+
 /// Provider for the current [Locale].
 final localeProvider = StateNotifierProvider<LocaleNotifier, Locale?>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);

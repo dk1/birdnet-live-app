@@ -167,6 +167,13 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged:
                     (v) => ref.read(dynamicColorProvider.notifier).set(v),
               ),
+              SwitchListTile(
+                title: Text(l10n.settingsHighContrastTheme),
+                subtitle: Text(l10n.settingsHighContrastThemeDescription),
+                value: ref.watch(highContrastThemeProvider),
+                onChanged:
+                    (v) => ref.read(highContrastThemeProvider.notifier).set(v),
+              ),
               _LanguageTile(l10n: l10n),
               _SpeciesLanguageTile(l10n: l10n),
               SwitchListTile(
@@ -444,16 +451,20 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Slider(
-                    value: ref.watch(clipContextProvider).toDouble(),
-                    min: 0,
-                    max: 5,
-                    divisions: 5,
-                    label: '\u00b1${ref.watch(clipContextProvider)}s',
-                    onChanged:
-                        (v) => ref
-                            .read(clipContextProvider.notifier)
-                            .set(v.round()),
+                  child: Semantics(
+                    label: l10n.surveyClipContext,
+                    value: '\u00b1${ref.watch(clipContextProvider)}s',
+                    child: Slider(
+                      value: ref.watch(clipContextProvider).toDouble(),
+                      min: 0,
+                      max: 5,
+                      divisions: 5,
+                      label: '\u00b1${ref.watch(clipContextProvider)}s',
+                      onChanged:
+                          (v) => ref
+                              .read(clipContextProvider.notifier)
+                              .set(v.round()),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -1405,13 +1416,17 @@ class _SliderTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: _TitleWithHelp(title: title, helpBody: helpBody),
-      subtitle: Slider(
-        value: value,
-        min: min,
-        max: max,
-        divisions: divisions,
-        label: format(value),
-        onChanged: onChanged,
+      subtitle: Semantics(
+        label: title,
+        value: format(value),
+        child: Slider(
+          value: value,
+          min: min,
+          max: max,
+          divisions: divisions,
+          label: format(value),
+          onChanged: onChanged,
+        ),
       ),
       trailing: Text(
         format(value),
@@ -1449,22 +1464,26 @@ class _DiscreteSliderTile<T> extends StatelessWidget {
     final selectedValue = values[selectedIndex];
     return ListTile(
       title: _TitleWithHelp(title: title, helpBody: helpBody),
-      subtitle: Slider(
-        value: selectedIndex.toDouble(),
-        min: 0,
-        max: (values.length - 1).toDouble(),
-        divisions: values.length - 1,
-        label: format(selectedValue),
-        onChanged: (raw) {
-          final rounded = raw.round();
-          final index =
-              rounded < 0
-                  ? 0
-                  : rounded >= values.length
-                  ? values.length - 1
-                  : rounded;
-          onChanged(values[index]);
-        },
+      subtitle: Semantics(
+        label: title,
+        value: format(selectedValue),
+        child: Slider(
+          value: selectedIndex.toDouble(),
+          min: 0,
+          max: (values.length - 1).toDouble(),
+          divisions: values.length - 1,
+          label: format(selectedValue),
+          onChanged: (raw) {
+            final rounded = raw.round();
+            final index =
+                rounded < 0
+                    ? 0
+                    : rounded >= values.length
+                    ? values.length - 1
+                    : rounded;
+            onChanged(values[index]);
+          },
+        ),
       ),
       trailing: Text(
         format(selectedValue),

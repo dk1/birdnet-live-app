@@ -111,15 +111,98 @@ abstract final class AppTheme {
       tertiary: Color(0xFFF57C00), // Orange 800
       // ── Surfaces ──
       surface: Color(0xFFFAFAFA),
-      onSurface: Color(0xFF212121),
+      onSurface: Colors.black,
+      onSurfaceVariant: Color(0xFF424242),
       surfaceContainerHighest: Color(0xFFEEEEEE),
-      outline: Color(0xFFBDBDBD),
+      outline: Color(0xFF757575),
+      outlineVariant: Color(0xFF9E9E9E),
     );
 
     return _buildThemeData(colorScheme, Brightness.light);
   }
 
-  // ─── Dynamic Color ─────────────────────────────────────────────────────────
+  // ---------------------------------------------------------------------------
+  // High Contrast
+  // ---------------------------------------------------------------------------
+
+  /// High-contrast light theme.
+  ///
+  /// Uses dedicated color definitions rather than dynamic color so contrast
+  /// stays predictable. Score colors and spectrogram color maps remain
+  /// separate from this palette.
+  static ThemeData highContrastLight() {
+    const colorScheme = ColorScheme.light(
+      primary: Colors.black,
+      onPrimary: Colors.white,
+      primaryContainer: Colors.black,
+      onPrimaryContainer: Colors.white,
+      secondary: Colors.black,
+      onSecondary: Colors.white,
+      secondaryContainer: Colors.black,
+      onSecondaryContainer: Colors.white,
+      tertiary: Color(0xFF7A4A00),
+      onTertiary: Colors.white,
+      tertiaryContainer: Color(0xFFFFC107),
+      onTertiaryContainer: Colors.black,
+      error: Color(0xFFB00020),
+      onError: Colors.white,
+      errorContainer: Color(0xFFB00020),
+      onErrorContainer: Colors.white,
+      surface: Colors.white,
+      onSurface: Colors.black,
+      onSurfaceVariant: Colors.black,
+      surfaceContainerLow: Colors.white,
+      surfaceContainerHigh: Colors.white,
+      surfaceContainerHighest: Colors.white,
+      outline: Colors.black,
+      outlineVariant: Colors.black,
+      inverseSurface: Colors.black,
+      onInverseSurface: Colors.white,
+    );
+
+    return _buildThemeData(colorScheme, Brightness.light, highContrast: true);
+  }
+
+  /// High-contrast dark theme.
+  ///
+  /// Keeps surfaces near black and controls near white for maximum separation
+  /// while preserving the existing score and spectrogram palettes.
+  static ThemeData highContrastDark() {
+    const colorScheme = ColorScheme.dark(
+      primary: Colors.white,
+      onPrimary: Colors.black,
+      primaryContainer: Colors.white,
+      onPrimaryContainer: Colors.black,
+      secondary: Colors.white,
+      onSecondary: Colors.black,
+      secondaryContainer: Colors.white,
+      onSecondaryContainer: Colors.black,
+      tertiary: Color(0xFFFFD54F),
+      onTertiary: Colors.black,
+      tertiaryContainer: Color(0xFFFFD54F),
+      onTertiaryContainer: Colors.black,
+      error: Color(0xFFFFB4AB),
+      onError: Colors.black,
+      errorContainer: Color(0xFFFFB4AB),
+      onErrorContainer: Colors.black,
+      surface: Colors.black,
+      onSurface: Colors.white,
+      onSurfaceVariant: Colors.white,
+      surfaceContainerLow: Colors.black,
+      surfaceContainerHigh: Colors.black,
+      surfaceContainerHighest: Colors.black,
+      outline: Colors.white,
+      outlineVariant: Colors.white,
+      inverseSurface: Colors.white,
+      onInverseSurface: Colors.black,
+    );
+
+    return _buildThemeData(colorScheme, Brightness.dark, highContrast: true);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Dynamic Color
+  // ---------------------------------------------------------------------------
 
   /// Build a theme from an externally provided [ColorScheme], typically
   /// obtained from the `dynamic_color` package's [DynamicColorBuilder].
@@ -143,8 +226,9 @@ abstract final class AppTheme {
   /// identical structural styling (shapes, padding, touch targets).
   static ThemeData _buildThemeData(
     ColorScheme colorScheme,
-    Brightness brightness,
-  ) {
+    Brightness brightness, {
+    bool highContrast = false,
+  }) {
     final isDark = brightness == Brightness.dark;
     final isBrandTheme = _isBrandThemeColorScheme(colorScheme);
 
@@ -153,9 +237,13 @@ abstract final class AppTheme {
       colorScheme: colorScheme,
       brightness: brightness,
       scaffoldBackgroundColor: colorScheme.surface,
+      textTheme:
+          highContrast ? _highContrastTextTheme(colorScheme, brightness) : null,
       extensions: <ThemeExtension<dynamic>>[
         isDark ? ScoreColors.dark : ScoreColors.light,
-        isBrandTheme
+        highContrast
+            ? AppSemanticColors.highContrast(colorScheme)
+            : isBrandTheme
             ? (isDark
                 ? AppSemanticColors.dark(colorScheme)
                 : AppSemanticColors.light)
@@ -163,8 +251,18 @@ abstract final class AppTheme {
       ],
 
       // ── Bottom Sheets ──
-      bottomSheetTheme: const BottomSheetThemeData(
-        constraints: BoxConstraints(maxWidth: 640),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: highContrast ? colorScheme.surface : null,
+        constraints: const BoxConstraints(maxWidth: 640),
+        shape:
+            highContrast
+                ? RoundedRectangleBorder(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                  side: BorderSide(color: colorScheme.outline),
+                )
+                : null,
       ),
 
       // ── App Bar ──
@@ -178,7 +276,9 @@ abstract final class AppTheme {
       // ── Bottom Navigation ──
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor:
-            isBrandTheme
+            highContrast
+                ? colorScheme.surface
+                : isBrandTheme
                 ? (isDark ? const Color(0xFF1E1E1E) : Colors.white)
                 : (isDark
                     ? colorScheme.surfaceContainerHigh
@@ -191,13 +291,22 @@ abstract final class AppTheme {
       // ── Cards ──
       cardTheme: CardThemeData(
         color:
-            isBrandTheme
+            highContrast
+                ? colorScheme.surface
+                : isBrandTheme
                 ? (isDark ? const Color(0xFF1E1E1E) : Colors.white)
                 : (isDark
                     ? colorScheme.surfaceContainerHigh
                     : colorScheme.surfaceContainerLow),
-        elevation: isDark ? 0 : 1,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: highContrast || isDark ? 0 : 1,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(highContrast ? 8 : 12),
+          side:
+              highContrast
+                  ? BorderSide(color: colorScheme.outline)
+                  : BorderSide.none,
+        ),
       ),
 
       // ── List Tiles ──
@@ -206,34 +315,51 @@ abstract final class AppTheme {
       // ── Dialogs ──
       dialogTheme: DialogThemeData(
         backgroundColor:
-            isBrandTheme
+            highContrast
+                ? colorScheme.surface
+                : isBrandTheme
                 ? (isDark ? const Color(0xFF1E1E1E) : Colors.white)
                 : (isDark
                     ? colorScheme.surfaceContainerHigh
                     : colorScheme.surfaceContainerLow),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side:
+              highContrast
+                  ? BorderSide(color: colorScheme.outline)
+                  : BorderSide.none,
+        ),
       ),
 
       // ── Switches ──
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return colorScheme.primary;
+            return highContrast ? colorScheme.onPrimary : colorScheme.primary;
           }
           return colorScheme.outline;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return colorScheme.primaryContainer;
+            return highContrast
+                ? colorScheme.primary
+                : colorScheme.primaryContainer;
           }
-          return colorScheme.surfaceContainerHighest;
+          return highContrast
+              ? colorScheme.surface
+              : colorScheme.surfaceContainerHighest;
         }),
+        trackOutlineColor:
+            highContrast ? WidgetStateProperty.all(colorScheme.outline) : null,
       ),
 
       // ── Sliders ──
       sliderTheme: SliderThemeData(
         activeTrackColor: colorScheme.primary,
-        inactiveTrackColor: colorScheme.surfaceContainerHighest,
+        inactiveTrackColor:
+            highContrast
+                ? colorScheme.outlineVariant
+                : colorScheme.surfaceContainerHighest,
         thumbColor: colorScheme.primary,
         overlayColor: colorScheme.primary.withAlpha(30),
       ),
@@ -298,6 +424,17 @@ abstract final class AppTheme {
             colorScheme.primaryContainer == brandPrimaryContainerDark);
   }
 
+  /// Whether [theme] is one of the dedicated high-contrast themes.
+  static bool isHighContrastTheme(ThemeData theme) {
+    final scheme = theme.colorScheme;
+    return (scheme.brightness == Brightness.light &&
+            scheme.primary == Colors.black &&
+            scheme.surface == Colors.white) ||
+        (scheme.brightness == Brightness.dark &&
+            scheme.primary == Colors.white &&
+            scheme.surface == Colors.black);
+  }
+
   // ---------------------------------------------------------------------------
   // Shared component themes
   // ---------------------------------------------------------------------------
@@ -315,6 +452,39 @@ abstract final class AppTheme {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       minVerticalPadding: 8,
+    );
+  }
+
+  static TextTheme _highContrastTextTheme(
+    ColorScheme colorScheme,
+    Brightness brightness,
+  ) {
+    final base = ThemeData(
+      brightness: brightness,
+      useMaterial3: true,
+    ).textTheme.apply(
+      bodyColor: colorScheme.onSurface,
+      displayColor: colorScheme.onSurface,
+    );
+
+    return base.copyWith(
+      displayLarge: base.displayLarge?.copyWith(fontWeight: FontWeight.w700),
+      displayMedium: base.displayMedium?.copyWith(fontWeight: FontWeight.w700),
+      displaySmall: base.displaySmall?.copyWith(fontWeight: FontWeight.w700),
+      headlineLarge: base.headlineLarge?.copyWith(fontWeight: FontWeight.w700),
+      headlineMedium: base.headlineMedium?.copyWith(
+        fontWeight: FontWeight.w700,
+      ),
+      headlineSmall: base.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+      titleLarge: base.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+      titleMedium: base.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+      titleSmall: base.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+      bodyLarge: base.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+      bodyMedium: base.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+      bodySmall: base.bodySmall?.copyWith(fontWeight: FontWeight.w500),
+      labelLarge: base.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+      labelMedium: base.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+      labelSmall: base.labelSmall?.copyWith(fontWeight: FontWeight.w700),
     );
   }
 }

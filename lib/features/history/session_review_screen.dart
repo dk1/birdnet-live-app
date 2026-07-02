@@ -63,6 +63,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/score_colors.dart';
 import '../../shared/models/gps_point.dart';
 import '../../shared/models/taxonomy_species.dart';
@@ -245,6 +246,7 @@ class _ReviewWarningCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final showTitle = title.isNotEmpty;
     return Card(
       color: theme.colorScheme.errorContainer,
@@ -288,6 +290,7 @@ class _ReviewWarningCard extends StatelessWidget {
                 color: theme.colorScheme.onErrorContainer,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
+                tooltip: l10n.tooltipClose,
                 onPressed: onDismiss,
               ),
             ],
@@ -849,12 +852,19 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _speciesGroups = const [];
     _groupsBuilding = true;
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       final groups = _buildSpeciesGroups(
         _detections,
         widget.session.settings.windowDuration,
       );
-      if (mounted) setState(() { _speciesGroups = groups; _groupsBuilding = false; });
+      if (mounted) {
+        setState(() {
+          _speciesGroups = groups;
+          _groupsBuilding = false;
+        });
+      }
     });
     _initAudio();
     _resolveLocation();
@@ -3408,26 +3418,32 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         appBar: AppBar(
           title: GestureDetector(
             onTap: _showRenameDialog,
-            child: Tooltip(
-              message: l10n.sessionRenameTap,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      _sessionReviewTitle(l10n, widget.session),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+            child: Semantics(
+              button: true,
+              label: l10n.sessionRenameTap,
+              child: ExcludeSemantics(
+                child: Tooltip(
+                  message: l10n.sessionRenameTap,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _sessionReviewTitle(l10n, widget.session),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        AppIcons.edit,
+                        size: 16,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(153),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    AppIcons.edit,
-                    size: 16,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withAlpha(153),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -3926,7 +3942,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         child: Text(
           l10n.sessionNoDetections,
           style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onSurface.withAlpha(120),
+            color: _reviewOnSurface(theme, 120),
           ),
         ),
       );
@@ -3942,7 +3958,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             l10n.sessionNoResultsFor(_speciesSearchQuery),
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(140),
+              color: _reviewOnSurface(theme, 140),
             ),
           ),
         ),
@@ -4039,6 +4055,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                               minWidth: 32,
                               minHeight: 32,
                             ),
+                            tooltip: l10n.tooltipClearSearch,
                             onPressed: () {
                               _speciesSearchController.clear();
                               setState(() => _speciesSearchQuery = '');
@@ -4908,14 +4925,12 @@ class _SpeciesPickerTile extends ConsumerWidget {
                       fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
-                  if (showSciNames &&
-                      displaySci != null &&
-                      displaySci != label)
+                  if (showSciNames && displaySci != null && displaySci != label)
                     Text(
                       displaySci,
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontStyle: FontStyle.italic,
-                        color: theme.colorScheme.onSurfaceVariant,
+                        color: _reviewOnSurface(theme, 180),
                       ),
                     ),
                 ],
