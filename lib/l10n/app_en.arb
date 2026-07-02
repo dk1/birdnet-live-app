@@ -264,6 +264,14 @@
   "@settingsDynamicColorDescription": {
     "description": "Dynamic color toggle description"
   },
+  "settingsHighContrastTheme": "High Contrast Theme",
+  "@settingsHighContrastTheme": {
+    "description": "High contrast theme toggle label"
+  },
+  "settingsHighContrastThemeDescription": "Use a black-and-white UI palette with stronger contrast and heavier text. Danger, warning, validation, mode, score, and spectrogram colors stay unchanged.",
+  "@settingsHighContrastThemeDescription": {
+    "description": "High contrast theme toggle description"
+  },
   "settingsResetOnboarding": "Reset Onboarding",
   "@settingsResetOnboarding": {
     "description": "Reset onboarding setting"

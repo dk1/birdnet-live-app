@@ -63,6 +63,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/score_colors.dart';
 import '../../shared/models/gps_point.dart';
 import '../../shared/models/taxonomy_species.dart';
@@ -849,12 +850,19 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _speciesGroups = const [];
     _groupsBuilding = true;
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       final groups = _buildSpeciesGroups(
         _detections,
         widget.session.settings.windowDuration,
       );
-      if (mounted) setState(() { _speciesGroups = groups; _groupsBuilding = false; });
+      if (mounted) {
+        setState(() {
+          _speciesGroups = groups;
+          _groupsBuilding = false;
+        });
+      }
     });
     _initAudio();
     _resolveLocation();
@@ -3926,7 +3934,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         child: Text(
           l10n.sessionNoDetections,
           style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onSurface.withAlpha(120),
+            color: _reviewOnSurface(theme, 120),
           ),
         ),
       );
@@ -3942,7 +3950,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             l10n.sessionNoResultsFor(_speciesSearchQuery),
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(140),
+              color: _reviewOnSurface(theme, 140),
             ),
           ),
         ),
@@ -4908,14 +4916,12 @@ class _SpeciesPickerTile extends ConsumerWidget {
                       fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
-                  if (showSciNames &&
-                      displaySci != null &&
-                      displaySci != label)
+                  if (showSciNames && displaySci != null && displaySci != label)
                     Text(
                       displaySci,
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontStyle: FontStyle.italic,
-                        color: theme.colorScheme.onSurfaceVariant,
+                        color: _reviewOnSurface(theme, 180),
                       ),
                     ),
                 ],

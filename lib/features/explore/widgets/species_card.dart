@@ -14,6 +14,8 @@
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 
+import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/app_icons.dart';
 import '../../inference/geo_model.dart';
 import '../explore_providers.dart';
@@ -64,6 +66,7 @@ class SpeciesCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     final cardHeight =
         weeklyScores == null
             ? (showScientificName ? 78.0 : 68.0)
@@ -186,7 +189,12 @@ class SpeciesCard extends StatelessWidget {
                         Text(
                           scientificName,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withAlpha(150),
+                            color:
+                                highContrast
+                                    ? theme.colorScheme.onSurface
+                                    : theme.colorScheme.onSurface.withAlpha(
+                                      150,
+                                    ),
                             fontStyle: FontStyle.italic,
                             height: 1.0,
                           ),
@@ -255,6 +263,7 @@ class _MiniChart extends StatelessWidget {
     if (weeklyScores.every((p) => p == 0)) return const SizedBox();
 
     final theme = Theme.of(context);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     final l10n = AppLocalizations.of(context)!;
     final currentWeekIndex = GeoModel.dateTimeToWeek(DateTime.now()) - 1;
 
@@ -270,8 +279,12 @@ class _MiniChart extends StatelessWidget {
             painter: _MiniChartBarsPainter(
               weeklyScores: weeklyScores,
               currentWeekIndex: currentWeekIndex,
+              highContrast: highContrast,
               baseColor: theme.colorScheme.primary,
-              activeColor: theme.colorScheme.tertiary,
+              activeColor:
+                  highContrast
+                      ? theme.colorScheme.surface
+                      : theme.colorScheme.tertiary,
               borderColor: theme.colorScheme.onSurface,
             ),
           ),
@@ -290,7 +303,10 @@ class _MiniChart extends StatelessWidget {
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontSize: 7,
                         height: 1.0,
-                        color: theme.colorScheme.onSurface.withAlpha(100),
+                        color:
+                            highContrast
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.onSurface.withAlpha(100),
                       ),
                     ),
                   );
@@ -321,6 +337,7 @@ class _MiniChartBarsPainter extends CustomPainter {
   const _MiniChartBarsPainter({
     required this.weeklyScores,
     required this.currentWeekIndex,
+    required this.highContrast,
     required this.baseColor,
     required this.activeColor,
     required this.borderColor,
@@ -328,6 +345,7 @@ class _MiniChartBarsPainter extends CustomPainter {
 
   final List<double> weeklyScores;
   final int currentWeekIndex;
+  final bool highContrast;
   final Color baseColor;
   final Color activeColor;
   final Color borderColor;
@@ -348,7 +366,8 @@ class _MiniChartBarsPainter extends CustomPainter {
 
     for (var index = 0; index < weeklyScores.length; index++) {
       final score = weeklyScores[index];
-      if (score <= 0) continue;
+      final isCurrentWeek = index == currentWeekIndex;
+      if (score <= 0 && !isCurrentWeek) continue;
 
       final normalized = (score / 100.0).clamp(0.0, 1.0);
       final barHeight = (normalized * _MiniChart._chartHeight).clamp(
@@ -360,10 +379,11 @@ class _MiniChartBarsPainter extends CustomPainter {
       final rect = Rect.fromLTWH(left, top, barWidth, barHeight);
       final rrect = RRect.fromRectAndRadius(rect, radius);
 
-      final isCurrentWeek = index == currentWeekIndex;
       fillPaint.color =
           isCurrentWeek
               ? activeColor
+              : highContrast
+              ? baseColor
               : baseColor.withAlpha(
                 (50 + (normalized * 150)).toInt().clamp(0, 255),
               );
@@ -376,6 +396,7 @@ class _MiniChartBarsPainter extends CustomPainter {
   bool shouldRepaint(covariant _MiniChartBarsPainter oldDelegate) {
     return weeklyScores != oldDelegate.weeklyScores ||
         currentWeekIndex != oldDelegate.currentWeekIndex ||
+        highContrast != oldDelegate.highContrast ||
         baseColor != oldDelegate.baseColor ||
         activeColor != oldDelegate.activeColor ||
         borderColor != oldDelegate.borderColor;
@@ -392,6 +413,7 @@ class _DetectedBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final semanticColors = AppSemanticColors.of(context);
     return Container(
       width: 18,
       height: 18,
@@ -399,7 +421,7 @@ class _DetectedBadge extends StatelessWidget {
         // Solid background so the icon stays legible over both bright and
         // dark areas of the bird photo. Using the primary color makes it
         // clearly an "earned" marker rather than a UI affordance.
-        color: theme.colorScheme.primary,
+        color: semanticColors.success,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -409,7 +431,7 @@ class _DetectedBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(AppIcons.check, size: 12, color: theme.colorScheme.onPrimary),
+      child: Icon(AppIcons.check, size: 12, color: semanticColors.onSuccess),
     );
   }
 }

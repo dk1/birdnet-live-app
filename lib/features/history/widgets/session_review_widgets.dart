@@ -1,5 +1,17 @@
 part of '../session_review_screen.dart';
 
+Color _reviewOnSurface(ThemeData theme, int alpha) {
+  return AppTheme.isHighContrastTheme(theme)
+      ? theme.colorScheme.onSurface
+      : theme.colorScheme.onSurface.withAlpha(alpha);
+}
+
+Color _reviewPrimary(ThemeData theme, int alpha) {
+  return AppTheme.isHighContrastTheme(theme)
+      ? theme.colorScheme.primary
+      : theme.colorScheme.primary.withAlpha(alpha);
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // Data Models
 // ═════════════════════════════════════════════════════════════════════════════
@@ -1251,9 +1263,7 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
     if (widget.audioAvailable) {
       _clusterHasClip = List.filled(widget.group.clusters.length, true);
     } else {
-      _clusterHasClip = [
-        for (final c in widget.group.clusters) c.hasAudioClip,
-      ];
+      _clusterHasClip = [for (final c in widget.group.clusters) c.hasAudioClip];
     }
   }
 
@@ -1275,7 +1285,8 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
     for (final cluster in widget.group.clusters) {
       for (final r in cluster.records) {
         final relSec = session.absoluteToRelative(r.timestamp);
-        final start = Duration(microseconds: (relSec * 1e6).round()) - clipOffset;
+        final start =
+            Duration(microseconds: (relSec * 1e6).round()) - clipOffset;
         final end =
             r.endTimestamp != null
                 ? Duration(
@@ -1528,7 +1539,7 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                             offsetStr,
                             maxLines: 1,
                             style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withAlpha(120),
+                              color: _reviewOnSurface(theme, 120),
                               fontSize: 10,
                             ),
                           ),
@@ -1663,8 +1674,7 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                                         widget.group.scientificName,
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       fontStyle: FontStyle.italic,
-                                      color: theme.colorScheme.onSurface
-                                          .withAlpha(153),
+                                      color: _reviewOnSurface(theme, 153),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -1710,7 +1720,7 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                             child: Icon(
                               AppIcons.expandMore,
                               size: 24,
-                              color: theme.colorScheme.onSurface.withAlpha(120),
+                              color: _reviewOnSurface(theme, 120),
                             ),
                           ),
                         ),
@@ -1780,8 +1790,8 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
   /// first, then up to [_noClipVisibleCount] without a clip, followed by
   /// a "Show N more" button that reveals another 50 per tap.
   Widget _buildClusterRows(AppLocalizations l10n) {
-    final allHaveAudio = widget.audioAvailable ||
-        _clusterHasClip.every((b) => b);
+    final allHaveAudio =
+        widget.audioAvailable || _clusterHasClip.every((b) => b);
 
     if (allHaveAudio) {
       return Column(
@@ -1812,16 +1822,14 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
           TextButton.icon(
             style: TextButton.styleFrom(
               visualDensity: VisualDensity.compact,
-              foregroundColor:
-                  Theme.of(context).colorScheme.onSurface.withAlpha(150),
+              foregroundColor: _reviewOnSurface(Theme.of(context), 150),
             ),
             icon: const Icon(AppIcons.expandMore, size: 18),
             label: Text(
               l10n.sessionClusterShowMore(nextBatch),
               style: Theme.of(context).textTheme.bodySmall,
             ),
-            onPressed: () =>
-                setState(() => _noClipVisibleCount += 50),
+            onPressed: () => setState(() => _noClipVisibleCount += 50),
           ),
       ],
     );
@@ -2018,7 +2026,7 @@ class _ClusterRow extends ConsumerWidget {
                   color:
                       isActive
                           ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurface.withAlpha(180),
+                          : _reviewOnSurface(theme, 180),
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
@@ -2041,7 +2049,7 @@ class _ClusterRow extends ConsumerWidget {
                 child: Text(
                   '×${cluster.count}',
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withAlpha(120),
+                    color: _reviewOnSurface(theme, 120),
                   ),
                 ),
               ),
@@ -2056,7 +2064,7 @@ class _ClusterRow extends ConsumerWidget {
                     child: Icon(
                       AppIcons.mic,
                       size: 22,
-                      color: theme.colorScheme.primary.withAlpha(180),
+                      color: _reviewPrimary(theme, 180),
                     ),
                   ),
                 ),
@@ -2073,7 +2081,7 @@ class _ClusterRow extends ConsumerWidget {
                     child: Icon(
                       AppIcons.stickyNote2,
                       size: 22,
-                      color: theme.colorScheme.primary.withAlpha(180),
+                      color: _reviewPrimary(theme, 180),
                     ),
                   ),
                 ),
@@ -2082,7 +2090,7 @@ class _ClusterRow extends ConsumerWidget {
               cluster.bestConfidencePercent,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w500,
-                color: theme.colorScheme.onSurface.withAlpha(180),
+                color: _reviewOnSurface(theme, 180),
               ),
             ),
             const SizedBox(width: 4),
@@ -2095,7 +2103,7 @@ class _ClusterRow extends ConsumerWidget {
                   child: Icon(
                     AppIcons.map,
                     size: 24,
-                    color: theme.colorScheme.onSurface.withAlpha(100),
+                    color: _reviewOnSurface(theme, 100),
                   ),
                 ),
               ),
@@ -2117,7 +2125,7 @@ class _ClusterRow extends ConsumerWidget {
                     color:
                         confirmed
                             ? AppSemanticColors.of(context).success
-                            : theme.colorScheme.onSurface.withAlpha(100),
+                            : _reviewOnSurface(theme, 100),
                   ),
                 ),
               ),
@@ -2134,7 +2142,7 @@ class _ClusterRow extends ConsumerWidget {
                 onDeleteVoiceMemo: onDeleteVoiceMemo,
                 hasVoiceMemo: cluster.records.first.hasVoiceMemo,
               ),
-              iconColor: theme.colorScheme.onSurface.withAlpha(100),
+              iconColor: _reviewOnSurface(theme, 100),
             ),
           ],
         ),
@@ -2871,7 +2879,7 @@ class _AnnotationsSectionState extends State<_AnnotationsSection> {
                       color:
                           _atTimestamp
                               ? theme.colorScheme.primary
-                              : theme.colorScheme.onSurface.withAlpha(120),
+                              : _reviewOnSurface(theme, 120),
                     ),
                     tooltip:
                         _atTimestamp
@@ -2987,7 +2995,7 @@ class _AnnotationRowState extends State<_AnnotationRow> {
             ? theme.textTheme.bodySmall
             : theme.textTheme.bodySmall?.copyWith(
               fontStyle: FontStyle.italic,
-              color: theme.colorScheme.onSurface.withAlpha(160),
+              color: _reviewOnSurface(theme, 160),
             );
 
     return Padding(
@@ -3032,7 +3040,7 @@ class _AnnotationRowState extends State<_AnnotationRow> {
               child: Icon(
                 AppIcons.deleteOutline,
                 size: 16,
-                color: theme.colorScheme.onSurface.withAlpha(100),
+                color: _reviewOnSurface(theme, 100),
               ),
             ),
           ),
@@ -3679,13 +3687,14 @@ class _ExpandedSectionState extends State<_ExpandedSection>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, child) => ClipRect(
-        child: Align(
-          alignment: Alignment.topCenter,
-          heightFactor: _heightFactor.value,
-          child: child,
-        ),
-      ),
+      builder:
+          (context, child) => ClipRect(
+            child: Align(
+              alignment: Alignment.topCenter,
+              heightFactor: _heightFactor.value,
+              child: child,
+            ),
+          ),
       child: _showChild ? widget.child : const SizedBox.shrink(),
     );
   }

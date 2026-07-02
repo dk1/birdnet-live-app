@@ -66,6 +66,8 @@
   "settingsThemeSystem": "System",
   "settingsDynamicColor": "Dynamische Farben",
   "settingsDynamicColorDescription": "Farbpalette Ihres Android-Geräts verwenden, wenn verfügbar. Hat auf iPhone und iPad keine Wirkung.",
+  "settingsHighContrastTheme": "Design mit hohem Kontrast",
+  "settingsHighContrastThemeDescription": "Eine schwarz-weiße UI-Palette mit stärkerem Kontrast und kräftigerer Schrift verwenden. Gefahr-, Warn-, Validierungs-, Modus-, Score- und Spektrogrammfarben bleiben unverändert.",
   "settingsResetOnboarding": "Onboarding zurücksetzen",
   "settingsClearData": "Alle Daten löschen",
   "settingsClearDataConfirmTitle": "Alle Daten löschen?",

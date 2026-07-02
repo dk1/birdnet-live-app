@@ -39,6 +39,8 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   final Color sessionAru;
 
   static const Color _successBase = Color(0xFF43A047);
+  static const Color _successHighContrastLight = Color(0xFF005C1A);
+  static const Color _successHighContrastDark = Color(0xFF6DDE76);
   static const Color _successContainerLight = Color(0xFFD7F0DA);
   static const Color _successContainerForegroundLight = Color(0xFF1B5E20);
   static const Color _liveBase = Color(0xFFE53935);
@@ -70,6 +72,28 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
         colorScheme.surfaceContainerHigh,
       ),
       onSuccessContainer: Colors.white,
+      sessionLive: _liveBase,
+      sessionPointCount: _pointCountBase,
+      sessionSurvey: _surveyBase,
+      sessionFileAnalysis: _fileAnalysisBase,
+      sessionBatchAnalysis: _batchAnalysisBase,
+      sessionAru: _aruBase,
+    );
+  }
+
+  /// Dedicated high-contrast semantic roles. These follow Material semantic
+  /// slots where possible so mode accents remain legible against the stronger
+  /// light/dark palettes.
+  static AppSemanticColors highContrast(ColorScheme colorScheme) {
+    final success =
+        colorScheme.brightness == Brightness.dark
+            ? _successHighContrastDark
+            : _successHighContrastLight;
+    return AppSemanticColors(
+      success: success,
+      onSuccess: _onColorFor(success),
+      successContainer: success,
+      onSuccessContainer: _onColorFor(success),
       sessionLive: _liveBase,
       sessionPointCount: _pointCountBase,
       sessionSurvey: _surveyBase,

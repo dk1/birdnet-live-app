@@ -15,6 +15,8 @@ Choose **Dark**, **Light**, or **System**.
 
 If **Dynamic Color** is enabled, BirdNET Live also tries to match your Android device's system palette. This has an effect only on supported Android devices; on iPhone and iPad the app keeps using the standard BirdNET Live theme, so turning the toggle on there changes nothing.
 
+Enable **High Contrast Theme** to use a black-and-white light or dark UI palette with heavier text and bordered surfaces instead of tinted cards. It follows the **Dark**, **Light**, or **System** theme choice, overrides Dynamic Color while enabled, and preserves danger, warning, validation, mode, score, and spectrogram colors.
+
 ### App Language
 
 Sets the interface language.

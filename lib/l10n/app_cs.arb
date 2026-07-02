@@ -66,6 +66,8 @@
   "settingsThemeSystem": "Systém",
   "settingsDynamicColor": "Dynamické barvy",
   "settingsDynamicColorDescription": "Použít paletu barev zařízení Android, když je k dispozici. Nemá žádný vliv na iPhone ani iPad.",
+  "settingsHighContrastTheme": "Motiv s vysokým kontrastem",
+  "settingsHighContrastThemeDescription": "Použít černobílou paletu rozhraní s výraznějším kontrastem a silnějším textem. Barvy nebezpečí, varování, ověření, režimů, skóre a spektrogramu zůstanou beze změny.",
   "settingsResetOnboarding": "Obnovit úvod",
   "settingsClearData": "Smazat všechna data",
   "settingsClearDataConfirmTitle": "Smazat všechna data?",

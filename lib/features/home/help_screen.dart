@@ -12,6 +12,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_theme.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/utils/session_type_visuals.dart';
 import '../../shared/widgets/content_width_constraint.dart';
@@ -26,6 +27,7 @@ class HelpScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isBrandTheme = isBrandThemeColorScheme(theme.colorScheme);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.helpTitle)),
@@ -39,7 +41,10 @@ class HelpScreen extends StatelessWidget {
             Text(
               l10n.helpIntro,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withAlpha(200),
+                color:
+                    highContrast
+                        ? theme.colorScheme.onSurface
+                        : theme.colorScheme.onSurface.withAlpha(200),
                 height: 1.5,
               ),
             ),
@@ -134,9 +139,10 @@ class HelpScreen extends StatelessWidget {
               color: sessionTypeAccentColor(theme, SessionType.aru),
               containerColor:
                   isBrandTheme
-                      ? sessionTypeAccentColor(theme, SessionType.aru).withAlpha(
-                        30,
-                      )
+                      ? sessionTypeAccentColor(
+                        theme,
+                        SessionType.aru,
+                      ).withAlpha(30)
                       : sessionTypeContainerColor(theme, SessionType.aru),
               title: l10n.helpAruTitle,
               body: l10n.helpAruBody,
@@ -213,7 +219,10 @@ class HelpScreen extends StatelessWidget {
 
             // ── 6. Deeper dive — link out to the online user guide ──
             Card(
-              color: theme.colorScheme.surfaceContainerLow,
+              color:
+                  highContrast
+                      ? theme.colorScheme.surface
+                      : theme.colorScheme.surfaceContainerLow,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -239,7 +248,10 @@ class HelpScreen extends StatelessWidget {
                     Text(
                       l10n.helpTipGuide,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withAlpha(180),
+                        color:
+                            highContrast
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.onSurface.withAlpha(180),
                         height: 1.4,
                       ),
                     ),
@@ -312,19 +324,33 @@ class _HelpSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 0,
-      color: theme.colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color:
+          highContrast
+              ? theme.colorScheme.surface
+              : theme.colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(highContrast ? 8 : 12),
+        side:
+            highContrast
+                ? BorderSide(color: theme.colorScheme.outline)
+                : BorderSide.none,
+      ),
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
         leading: Container(
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: containerColor,
+            color: highContrast ? theme.colorScheme.surface : containerColor,
             borderRadius: BorderRadius.circular(10),
+            border:
+                highContrast
+                    ? Border.all(color: theme.colorScheme.outline)
+                    : null,
           ),
           child: Icon(icon, color: color, size: 20),
         ),
@@ -340,7 +366,10 @@ class _HelpSection extends StatelessWidget {
           Text(
             body,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(200),
+              color:
+                  highContrast
+                      ? theme.colorScheme.onSurface
+                      : theme.colorScheme.onSurface.withAlpha(200),
               height: 1.5,
             ),
           ),
@@ -364,11 +393,21 @@ class _ControlCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 0,
-      color: theme.colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color:
+          highContrast
+              ? theme.colorScheme.surface
+              : theme.colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(highContrast ? 8 : 12),
+        side:
+            highContrast
+                ? BorderSide(color: theme.colorScheme.outline)
+                : BorderSide.none,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(
@@ -378,8 +417,15 @@ class _ControlCard extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withAlpha(24),
+                color:
+                    highContrast
+                        ? theme.colorScheme.surface
+                        : theme.colorScheme.primary.withAlpha(24),
                 borderRadius: BorderRadius.circular(10),
+                border:
+                    highContrast
+                        ? Border.all(color: theme.colorScheme.outline)
+                        : null,
               ),
               child: Icon(icon, color: theme.colorScheme.primary, size: 20),
             ),
@@ -398,7 +444,10 @@ class _ControlCard extends StatelessWidget {
                   Text(
                     body,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withAlpha(180),
+                      color:
+                          highContrast
+                              ? theme.colorScheme.onSurface
+                              : theme.colorScheme.onSurface.withAlpha(180),
                       height: 1.4,
                     ),
                   ),
@@ -423,6 +472,7 @@ class _TipRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -433,7 +483,10 @@ class _TipRow extends StatelessWidget {
             child: Icon(
               AppIcons.chevronRight,
               size: 16,
-              color: theme.colorScheme.primary.withAlpha(180),
+              color:
+                  highContrast
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.primary.withAlpha(180),
             ),
           ),
           const SizedBox(width: 10),
@@ -441,7 +494,10 @@ class _TipRow extends StatelessWidget {
             child: Text(
               text,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withAlpha(180),
+                color:
+                    highContrast
+                        ? theme.colorScheme.onSurface
+                        : theme.colorScheme.onSurface.withAlpha(180),
                 height: 1.4,
               ),
             ),

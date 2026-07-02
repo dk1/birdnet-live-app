@@ -167,6 +167,13 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged:
                     (v) => ref.read(dynamicColorProvider.notifier).set(v),
               ),
+              SwitchListTile(
+                title: Text(l10n.settingsHighContrastTheme),
+                subtitle: Text(l10n.settingsHighContrastThemeDescription),
+                value: ref.watch(highContrastThemeProvider),
+                onChanged:
+                    (v) => ref.read(highContrastThemeProvider.notifier).set(v),
+              ),
               _LanguageTile(l10n: l10n),
               _SpeciesLanguageTile(l10n: l10n),
               SwitchListTile(

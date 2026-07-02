@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.3] - 2026-07-02
+
+### Added
+
+- Added a Settings > General high-contrast theme toggle with black-and-white light and dark UI palettes, retained danger, warning, validation, and mode colors, heavier text, bordered cards and surfaces, high-contrast weekly abundance current-week markers, and unchanged score colors and spectrogram color maps.
+
+### Changed
+
+- Darkened muted text in the standard light theme for better readability.
+
 ## [0.18.2] - 2026-07-01
 
 ### Added

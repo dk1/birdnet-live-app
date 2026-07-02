@@ -20,6 +20,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_theme.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/locale_time_format.dart';
@@ -305,9 +306,9 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                             _typeFilters.isEmpty
                                 ? null
                                 : () {
-                                    _typeFilters.clear();
-                                    update(() {});
-                                  },
+                                  _typeFilters.clear();
+                                  update(() {});
+                                },
                         clearLabel: l10n.exploreFilterAll,
                       ),
                     ],
@@ -994,6 +995,7 @@ class _SessionTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     final l10n = AppLocalizations.of(context)!;
     final dateStr = DateFormat.yMMMd().format(session.startTime.toLocal());
     final timeStr = formatLocaleTime(
@@ -1008,8 +1010,16 @@ class _SessionTile extends ConsumerWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: highContrast ? 0 : 2,
+      color: highContrast ? theme.colorScheme.surface : null,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(highContrast ? 8 : 16),
+        side:
+            highContrast
+                ? BorderSide(color: theme.colorScheme.outline)
+                : BorderSide.none,
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -1118,36 +1128,35 @@ class _SessionTile extends ConsumerWidget {
                   spacing: 8,
                   runSpacing: 4,
                   children: () {
-                        final speciesLocale = ref.watch(
-                          effectiveSpeciesLocaleProvider,
-                        );
-                        final taxonomy =
-                            ref.watch(taxonomyServiceProvider).value;
-                        final entries =
-                            _topSpeciesSci(session).map((entry) {
-                              final displayName =
-                                  taxonomy
-                                      ?.lookup(entry.key)
-                                      ?.commonNameForLocale(speciesLocale) ??
-                                  entry.value;
-                              return displayName;
-                            }).toList()
-                              ..sort((a, b) => a.compareTo(b));
-                        return entries
-                            .map(
-                              (name) => Chip(
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                                visualDensity: VisualDensity.compact,
-                                label: Text(
-                                  name,
-                                  style: theme.textTheme.labelSmall,
-                                ),
-                                padding: EdgeInsets.zero,
-                              ),
-                            )
-                            .toList();
-                      }(),
+                    final speciesLocale = ref.watch(
+                      effectiveSpeciesLocaleProvider,
+                    );
+                    final taxonomy = ref.watch(taxonomyServiceProvider).value;
+                    final entries =
+                        _topSpeciesSci(session).map((entry) {
+                            final displayName =
+                                taxonomy
+                                    ?.lookup(entry.key)
+                                    ?.commonNameForLocale(speciesLocale) ??
+                                entry.value;
+                            return displayName;
+                          }).toList()
+                          ..sort((a, b) => a.compareTo(b));
+                    return entries
+                        .map(
+                          (name) => Chip(
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                            label: Text(
+                              name,
+                              style: theme.textTheme.labelSmall,
+                            ),
+                            padding: EdgeInsets.zero,
+                          ),
+                        )
+                        .toList();
+                  }(),
                 ),
               ],
               const SizedBox(height: 12),
