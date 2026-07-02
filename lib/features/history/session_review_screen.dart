@@ -246,6 +246,7 @@ class _ReviewWarningCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final showTitle = title.isNotEmpty;
     return Card(
       color: theme.colorScheme.errorContainer,
@@ -289,6 +290,7 @@ class _ReviewWarningCard extends StatelessWidget {
                 color: theme.colorScheme.onErrorContainer,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
+                tooltip: l10n.tooltipClose,
                 onPressed: onDismiss,
               ),
             ],
@@ -3416,26 +3418,32 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         appBar: AppBar(
           title: GestureDetector(
             onTap: _showRenameDialog,
-            child: Tooltip(
-              message: l10n.sessionRenameTap,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      _sessionReviewTitle(l10n, widget.session),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+            child: Semantics(
+              button: true,
+              label: l10n.sessionRenameTap,
+              child: ExcludeSemantics(
+                child: Tooltip(
+                  message: l10n.sessionRenameTap,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _sessionReviewTitle(l10n, widget.session),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        AppIcons.edit,
+                        size: 16,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(153),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    AppIcons.edit,
-                    size: 16,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withAlpha(153),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -4047,6 +4055,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                               minWidth: 32,
                               minHeight: 32,
                             ),
+                            tooltip: l10n.tooltipClearSearch,
                             onPressed: () {
                               _speciesSearchController.clear();
                               setState(() => _speciesSearchQuery = '');

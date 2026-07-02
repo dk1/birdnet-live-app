@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Darkened muted text in the standard light theme for better readability.
+- Improved screen-reader accessibility by announcing slider labels and values across Settings, announcements, File Analysis, Point Count, and Survey, and added missing tooltips for close, clear-search, and session-rename controls.
 
 ## [0.18.2] - 2026-07-01
 

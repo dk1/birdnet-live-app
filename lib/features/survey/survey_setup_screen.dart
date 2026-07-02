@@ -1768,6 +1768,7 @@ class _CreateWatchlistScreenState
                               ? null
                               : IconButton(
                                 icon: const Icon(AppIcons.clearRounded),
+                                tooltip: l10n.tooltipClearSearch,
                                 onPressed: () {
                                   _searchCtrl.clear();
                                   _onSearchChanged('');
