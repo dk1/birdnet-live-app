@@ -41,6 +41,8 @@ import '../recording/audio_decoder.dart';
 import '../recording/native_audio_decoder.dart';
 import '../recording/wav_writer.dart';
 import 'html_report.dart';
+import 'services/audio_share_extension.dart';
+import 'services/detection_audio_window.dart';
 
 /// Upper frequency bound for Raven annotations (Nyquist of 32 kHz).
 const int _highFreqHz = 16000;
@@ -51,12 +53,10 @@ Future<Uint8List?> _flacToWavBytes(String flacPath) async {
   try {
     if (!await AudioDecoder.canDecodeDart(flacPath)) return null;
     final decoded = await AudioDecoder.decodeFile(flacPath);
-    // DecodedAudio stores mono Int16; convert to Float32 for WavWriter.
-    final float = Float32List(decoded.samples.length);
-    for (var i = 0; i < decoded.samples.length; i++) {
-      float[i] = decoded.samples[i] / 32768.0;
-    }
-    return WavWriter.toBytes(samples: float, sampleRate: decoded.sampleRate);
+    return WavWriter.toBytesFromPcm16(
+      samples: decoded.samples,
+      sampleRate: decoded.sampleRate,
+    );
   } catch (_) {
     return null;
   }
@@ -136,8 +136,9 @@ String _displaySci(DetectionRecord d, {TaxonomyService? taxonomy}) =>
 /// Time semantics:
 ///   • For rows referencing a per-detection **clip**, `Begin/End Time` are
 ///     offsets *within the clip*. With pre/post context of
-///     [SessionSettings.clipContextSeconds] seconds, the detection sits at
-///     `[clipContext, clipContext + windowDuration]`.
+///     [SessionSettings.clipContextSeconds] seconds, the detection starts
+///     after the available pre-roll and ends at [DetectionRecord.endTimestamp]
+///     when present, otherwise after one inference window.
 ///   • For rows referencing the **full recording** (or no audio), `Begin/End
 ///     Time` are session-relative offsets.
 ///   • A `Survey Time` column is always appended so analysts can recover the
@@ -198,7 +199,6 @@ String buildRavenSelectionTable(
     '${hasNotes ? '\tNote' : ''}',
   );
 
-  final windowSeconds = session.settings.windowDuration;
   final sessionDurationSec =
       session.endTime != null
           ? session.endTime!.difference(session.startTime).inMilliseconds /
@@ -214,26 +214,28 @@ String buildRavenSelectionTable(
     final beginFile = clipName ?? audioFileName ?? '';
     final referencesClip = clipName != null;
 
-    // Session-relative offset (always computed; used for either Begin Time or
-    // the auxiliary Survey Time column).
-    final surveySec =
-        isGlobal
-            ? 0.0
-            : d.timestamp.difference(session.startTime).inMilliseconds / 1000.0;
+    final timing = detectionAudioWindow(
+      session,
+      d,
+      clipContextSeconds: clipContext,
+    );
+    // Session-relative offset (always computed; used for either Begin Time
+    // or the auxiliary Survey Time column).
+    final surveySec = isGlobal ? 0.0 : timing.detectionStartSec;
 
     // Begin/End times depend on whether the row references a clip file.
     final double beginSec;
     final double endSec;
     if (referencesClip) {
       // Inside the clip: detection sits after the pre-roll context.
-      beginSec = clipContext;
-      endSec = clipContext + windowSeconds;
+      beginSec = timing.clipDetectionStartSec;
+      endSec = timing.clipDetectionEndSec;
     } else if (isGlobal) {
       beginSec = 0.0;
       endSec = sessionDurationSec;
     } else {
-      beginSec = surveySec;
-      endSec = surveySec + windowSeconds;
+      beginSec = timing.detectionStartSec;
+      endSec = timing.detectionEndSec;
     }
 
     final commonName = _localizedCommon(
@@ -338,7 +340,6 @@ String buildCsvExport(
     '${hasMemos ? ',Voice Memo' : ''}',
   );
 
-  final windowSeconds = session.settings.windowDuration;
   final sessionDurationSec =
       session.endTime != null
           ? session.endTime!.difference(session.startTime).inMilliseconds /
@@ -352,23 +353,25 @@ String buildCsvExport(
     final clipName = clipFileMap?[i];
     final referencesClip = clipName != null;
 
+    final timing = detectionAudioWindow(
+      session,
+      d,
+      clipContextSeconds: clipContext,
+    );
     // Session-relative offset.
-    final surveySec =
-        isGlobal
-            ? 0.0
-            : d.timestamp.difference(session.startTime).inMilliseconds / 1000.0;
+    final surveySec = isGlobal ? 0.0 : timing.detectionStartSec;
 
     final double beginSec;
     final double endSec;
     if (referencesClip) {
-      beginSec = clipContext;
-      endSec = clipContext + windowSeconds;
+      beginSec = timing.clipDetectionStartSec;
+      endSec = timing.clipDetectionEndSec;
     } else if (isGlobal) {
       beginSec = 0.0;
       endSec = sessionDurationSec;
     } else {
-      beginSec = surveySec;
-      endSec = surveySec + windowSeconds;
+      beginSec = timing.detectionStartSec;
+      endSec = timing.detectionEndSec;
     }
 
     final localizedCommon = _localizedCommon(
@@ -841,11 +844,23 @@ Future<String?> buildSessionExport(
   final selected = formats.where(allFormats.contains).toSet();
 
   final prefix = _exportPrefix(session);
-  final fullRecordingPath = _resolveFullRecordingPath(session.recordingPath);
+  final fullRecordingPath = await _resolveFullRecordingPath(
+    session.recordingPath,
+  );
 
   // Full recording: single finalized file, or a session directory containing
   // the finalized `full.wav` / `full.flac` recording.
   final hasFullRecording = fullRecordingPath != null;
+  final fullRecordingFile =
+      fullRecordingPath == null ? null : File(fullRecordingPath);
+  final fullRecordingSourceExt =
+      fullRecordingFile == null
+          ? ''
+          : await sourceAudioExtensionForFile(fullRecordingFile);
+  final fullRecordingExportExt = sharedAudioExtensionForSource(
+    fullRecordingSourceExt,
+    shareAudioAsWav: shareAudioAsWav,
+  );
   final baseMetadata =
       metadata ??
       (session.aruMetadata != null
@@ -860,12 +875,19 @@ Future<String?> buildSessionExport(
   // Detection clips: collect per-detection audio files that exist on disk,
   // indexed by detection position so we can build a clip-file map.
   final clipEntries = <int, File>{};
+  final clipAudioExts = <int, String>{};
   if (!hasFullRecording) {
     for (var i = 0; i < session.detections.length; i++) {
       final clip = session.detections[i].audioClipPath;
       if (clip != null) {
         final f = File(clip);
-        if (f.existsSync()) clipEntries[i] = f;
+        if (f.existsSync()) {
+          clipEntries[i] = f;
+          clipAudioExts[i] = await sharedAudioExtensionForFile(
+            f,
+            shareAudioAsWav: shareAudioAsWav,
+          );
+        }
       }
     }
   }
@@ -873,15 +895,13 @@ Future<String?> buildSessionExport(
   final hasAnyAudio = hasFullRecording || hasClips;
 
   // ── Build export clip names (sequential, 1-indexed, zero-padded) ────
-  String resolveExt(String originalExt) =>
-      (shareAudioAsWav && originalExt.toLowerCase() == '.flac')
-          ? '.wav'
-          : originalExt;
-  final audioExt = resolveExt(
-    hasFullRecording
-        ? p.extension(fullRecordingPath)
-        : (hasClips ? p.extension(clipEntries.values.first.path) : '.flac'),
-  );
+  final audioExt =
+      hasFullRecording
+          ? fullRecordingExportExt
+          : (hasClips
+              ? clipAudioExts[clipEntries.keys.first] ??
+                  fallbackAudioShareExtension
+              : fallbackAudioShareExtension);
   final audioFileName = '$prefix$audioExt';
 
   // Map detection index → export clip filename.
@@ -897,8 +917,9 @@ Future<String?> buildSessionExport(
         speciesLocale: speciesLocale,
       );
       final species = _sanitizeFilename(localized);
+      final clipAudioExt = clipAudioExts[i] ?? audioExt;
       final name =
-          '${prefix}_clip_${seq.toString().padLeft(pad, '0')}_$species$audioExt';
+          '${prefix}_clip_${seq.toString().padLeft(pad, '0')}_$species$clipAudioExt';
       clipExportNames[i] = name;
       seq++;
     }
@@ -912,8 +933,12 @@ Future<String?> buildSessionExport(
     if (path == null || path.isEmpty) continue;
     final file = File(path);
     if (!file.existsSync()) continue;
+    final cycleExt = await sharedAudioExtensionForFile(
+      file,
+      shareAudioAsWav: shareAudioAsWav,
+    );
     final cycleName =
-        'aru_cycles/${prefix}_cycle_${cycle.index.toString().padLeft(3, '0')}${resolveExt(p.extension(path))}';
+        'aru_cycles/${prefix}_cycle_${cycle.index.toString().padLeft(3, '0')}$cycleExt';
     aruCycleAudioEntries[cycle.index] = (file: file, name: cycleName);
   }
   final hasAruCycleAudio = aruCycleAudioEntries.isNotEmpty;
@@ -1015,20 +1040,31 @@ Future<String?> buildSessionExport(
   // raw audio file (converted to WAV if requested), renamed to the
   // BirdNET_Live_… prefix so the receiving app shows a sensible filename.
   if (!mustZip && includeAudio && hasFullRecording && !hasCompanion) {
-    final dest = p.join(p.dirname(fullRecordingPath), audioFileName);
+    if (shareAudioAsWav && fullRecordingSourceExt == '.flac') {
+      final wavBytes = await _flacToWavBytes(fullRecordingPath);
+      if (wavBytes != null) {
+        final dest = p.join(p.dirname(fullRecordingPath), audioFileName);
+        final destFile = File(dest);
+        if (await destFile.exists()) {
+          try {
+            await destFile.delete();
+          } catch (_) {}
+        }
+        await destFile.writeAsBytes(wavBytes);
+        return dest;
+      }
+    }
+
+    final fallbackName =
+        shareAudioAsWav && fullRecordingSourceExt == '.flac'
+            ? '$prefix$fullRecordingSourceExt'
+            : audioFileName;
+    final dest = p.join(p.dirname(fullRecordingPath), fallbackName);
     final destFile = File(dest);
     if (await destFile.exists()) {
       try {
         await destFile.delete();
       } catch (_) {}
-    }
-    if (shareAudioAsWav &&
-        p.extension(fullRecordingPath).toLowerCase() == '.flac') {
-      final wavBytes = await _flacToWavBytes(fullRecordingPath);
-      if (wavBytes != null) {
-        await destFile.writeAsBytes(wavBytes);
-        return dest;
-      }
     }
     if (dest != fullRecordingPath) await File(fullRecordingPath).copy(dest);
     return dest;
@@ -1042,8 +1078,13 @@ Future<String?> buildSessionExport(
     final archive = Archive();
 
     Future<Uint8List> audioBytes(String path) async {
-      if (shareAudioAsWav && p.extension(path).toLowerCase() == '.flac') {
-        return await _flacToWavBytes(path) ?? await File(path).readAsBytes();
+      final sourceExt = await sourceAudioExtensionForFile(File(path));
+      if (shareAudioAsWav && sourceExt == '.flac') {
+        final bytes = await _flacToWavBytes(path);
+        if (bytes == null) {
+          throw FormatException('Could not convert FLAC to WAV: $path');
+        }
+        return bytes;
       }
       return File(path).readAsBytes();
     }
@@ -1207,11 +1248,11 @@ Future<String?> buildSessionExport(
 /// Most completed sessions store the finalized file path directly. Active or
 /// crash-recovered sessions may still point at the session recording directory;
 /// support that shape as well so export does not silently drop available audio.
-String? _resolveFullRecordingPath(String? recordingPath) {
+Future<String?> _resolveFullRecordingPath(String? recordingPath) async {
   if (recordingPath == null || recordingPath.isEmpty) return null;
 
   if (FileSystemEntity.isFileSync(recordingPath)) {
-    final ext = p.extension(recordingPath).toLowerCase();
+    final ext = await sourceAudioExtensionForFile(File(recordingPath));
     return (ext == '.wav' || ext == '.flac') ? recordingPath : null;
   }
 

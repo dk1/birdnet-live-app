@@ -42,6 +42,7 @@ import '../survey/survey_setup_screen.dart';
 import 'export_metadata_helper.dart';
 import 'session_export.dart';
 import 'session_review_screen.dart';
+import 'services/share_file_params.dart';
 
 /// How sessions are ordered in the library.
 enum _SortMode {
@@ -833,7 +834,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       includeAppMetadata: includeAppMetadata,
     );
     if (exportPath == null) return;
-    await SharePlus.instance.share(ShareParams(files: [XFile(exportPath)]));
+    await SharePlus.instance.share(shareParamsForFile(exportPath));
   }
 
   /// Toggles whether a compact-view row is expanded to show the full
@@ -931,7 +932,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         return;
       }
 
-      await SharePlus.instance.share(ShareParams(files: [XFile(zipPath)]));
+      await SharePlus.instance.share(shareParamsForFile(zipPath));
       if (mounted) {
         _clearSelection();
       }

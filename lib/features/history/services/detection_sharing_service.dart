@@ -18,13 +18,13 @@
 //
 //   1. The detection has a kept per-detection clip on disk — stage and ship.
 //   2. The host passed an in-progress [LiveSession] with a full recording
-//      — slice the relevant `windowDuration + 2 × clipContextSeconds` window
-//      out of the file and ship that. Both WAV and FLAC full recordings are
-//      supported; the slice is shipped in the same container as the source
-//      (WAV in, WAV out; FLAC in, FLAC out) so the recipient gets a file
-//      whose extension matches its bytes. This is what makes "share" work
-//      mid-survey when the user opted for a single continuous recording
-//      instead of per-detection clips.
+//      — slice the detection's full timestamp span, including configured
+//      context padding, out of the file and ship that. Both WAV and FLAC full
+//      recordings are supported; the slice is shipped in the same container as
+//      the source (WAV in, WAV out; FLAC in, FLAC out) so the recipient gets a
+//      file whose extension matches its bytes. This is what makes "share" work
+//      mid-survey when the user opted for a single continuous recording instead
+//      of per-detection clips.
 //   3. No audio at all (recording mode = off, or the full recording is in
 //      a container we don't know how to slice) — share text only. Location
 //      + timestamp still land in the payload via [_buildBody].
@@ -48,6 +48,10 @@ import '../../live/live_session.dart';
 import '../../recording/audio_decoder.dart';
 import '../../recording/flac_encoder.dart';
 import '../../recording/wav_writer.dart';
+import 'audio_export_normalizer.dart';
+import 'audio_share_extension.dart';
+import 'detection_audio_window.dart';
+import 'share_file_params.dart';
 
 /// Share a single [detection] using the platform share sheet.
 ///
@@ -76,9 +80,7 @@ Future<ShareResult> shareDetection(
       detection,
       shareAudioAsWav: shareAudioAsWav,
     );
-    return SharePlus.instance.share(
-      _shareParamsForAudioFile(staged, body: body, subject: subject),
-    );
+    return SharePlus.instance.share(_shareParamsForAudioFile(staged));
   }
 
   // 2) Try to slice from the session's full recording. Both WAV and
@@ -91,9 +93,7 @@ Future<ShareResult> shareDetection(
       shareAudioAsWav: shareAudioAsWav,
     );
     if (extracted != null) {
-      return SharePlus.instance.share(
-        _shareParamsForAudioFile(extracted, body: body, subject: subject),
-      );
+      return SharePlus.instance.share(_shareParamsForAudioFile(extracted));
     }
   }
 
@@ -102,40 +102,8 @@ Future<ShareResult> shareDetection(
   return SharePlus.instance.share(ShareParams(text: body, subject: subject));
 }
 
-ShareParams _shareParamsForAudioFile(
-  File file, {
-  required String body,
-  required String subject,
-}) {
-  final name = p.basename(file.path);
-  return ShareParams(
-    files: [XFile(file.path, mimeType: _audioMimeTypeForPath(file.path))],
-    fileNameOverrides: [name],
-    text: body,
-    subject: subject,
-    title: name,
-  );
-}
-
-String _audioMimeTypeForPath(String path) {
-  switch (p.extension(path).toLowerCase()) {
-    case '.wav':
-      return 'audio/wav';
-    case '.flac':
-      return 'audio/flac';
-    case '.m4a':
-      return 'audio/mp4';
-    case '.aac':
-      return 'audio/aac';
-    case '.mp3':
-      return 'audio/mpeg';
-    case '.ogg':
-    case '.oga':
-      return 'audio/ogg';
-    default:
-      return 'application/octet-stream';
-  }
-}
+ShareParams _shareParamsForAudioFile(File file) =>
+    shareParamsForFile(file.path);
 
 /// Copies [clip] into the temp dir under the export-style filename so the
 /// share sheet exposes a friendly name. Reuses an existing staged file when
@@ -145,8 +113,11 @@ Future<File> _stageClipForShare(
   DetectionRecord d, {
   bool shareAudioAsWav = false,
 }) async {
-  final srcExt = p.extension(clip.path).toLowerCase();
-  final outExt = (shareAudioAsWav && srcExt == '.flac') ? '.wav' : srcExt;
+  final srcExt = await sourceAudioExtensionForFile(clip);
+  final outExt = sharedAudioExtensionForSource(
+    srcExt,
+    shareAudioAsWav: shareAudioAsWav,
+  );
   final name = _exportClipName(d, outExt);
   final tmp = await getTemporaryDirectory();
   final shareDir = Directory(p.join(tmp.path, 'shared_clips'));
@@ -155,18 +126,15 @@ Future<File> _stageClipForShare(
 
   if (shareAudioAsWav && srcExt == '.flac') {
     final decoded = await AudioDecoder.decodeFile(clip.path);
-    final floats = Float32List(decoded.samples.length);
-    for (var i = 0; i < decoded.samples.length; i++) {
-      floats[i] = decoded.samples[i] / 32768.0;
-    }
-    await WavWriter.writeFile(
+    await WavWriter.writePcm16File(
       filePath: target.path,
-      samples: floats,
+      samples: decoded.samples,
       sampleRate: decoded.sampleRate,
     );
   } else {
     await clip.copy(target.path);
   }
+  await AudioExportNormalizer.normalizeFileInPlace(target, outExt);
   return target;
 }
 
@@ -201,10 +169,10 @@ String _sanitizeFilename(String input) {
 /// `recordingPath`, missing file, unsupported container) so the caller
 /// can fall back to text sharing. Both WAV and FLAC full recordings are
 /// supported, and the output container matches the source so the
-/// recipient gets a file whose extension matches its bytes. The slice
-/// spans `windowDuration + 2 × clipContextSeconds`, centered on the
-/// detection's analysis window, to match the per-detection clip layout
-/// used elsewhere.
+/// recipient gets a file whose extension matches its bytes. The slice spans
+/// [DetectionRecord.timestamp] to [DetectionRecord.endTimestamp] when present
+/// and falls back to one inference window for legacy records, with the
+/// session's configured pre/post context added around that span.
 @visibleForTesting
 Future<File?> extractClipFromFullAudio(
   LiveSession session,
@@ -221,29 +189,27 @@ Future<File?> _extractClipFromFullAudio(
   DetectionRecord detection, {
   bool shareAudioAsWav = false,
 }) async {
-  final fullPath = _resolveFullAudioPath(session.recordingPath);
+  final fullPath = await _resolveFullAudioPath(session.recordingPath);
   if (fullPath == null) return null;
   final src = File(fullPath);
   if (!src.existsSync()) return null;
 
-  final settings = session.settings;
   // Mid-recording the writer's flushed length lags slightly behind the
   // current sample position. We accept that and clamp at the file end
   // — a fractionally short clip is better than nothing.
-  final clipDurationSec =
-      settings.windowDuration + 2 * settings.clipContextSeconds;
-  final detOffsetSec =
-      detection.timestamp.difference(session.startTime).inMicroseconds /
-      Duration.microsecondsPerSecond;
-  final startSec = (detOffsetSec - settings.clipContextSeconds).clamp(
-    0.0,
-    double.infinity,
+  final timing = detectionAudioWindow(
+    session,
+    detection,
+    clipContextSeconds: session.settings.clipContextSeconds.toDouble(),
   );
 
-  final ext = p.extension(fullPath).toLowerCase();
+  final ext = await sourceAudioExtensionForFile(src);
   if (ext != '.wav' && ext != '.flac') return null;
 
-  final outExt = (shareAudioAsWav && ext == '.flac') ? '.wav' : ext;
+  final outExt = sharedAudioExtensionForSource(
+    ext,
+    shareAudioAsWav: shareAudioAsWav,
+  );
   final tmp = await getTemporaryDirectory();
   final shareDir = Directory(p.join(tmp.path, 'shared_clips'));
   if (!shareDir.existsSync()) shareDir.createSync(recursive: true);
@@ -255,8 +221,8 @@ Future<File?> _extractClipFromFullAudio(
     if (ext == '.wav') {
       final sliceBytes = await _sliceWav(
         src,
-        startSec: startSec,
-        durationSec: clipDurationSec.toDouble(),
+        startSec: timing.clipStartSec,
+        durationSec: timing.clipDurationSec,
       );
       if (sliceBytes == null || sliceBytes.isEmpty) return null;
       await target.writeAsBytes(sliceBytes, flush: true);
@@ -264,19 +230,20 @@ Future<File?> _extractClipFromFullAudio(
       final wrote = await _sliceFlacToWavFile(
         src,
         target,
-        startSec: startSec,
-        durationSec: clipDurationSec.toDouble(),
+        startSec: timing.clipStartSec,
+        durationSec: timing.clipDurationSec,
       );
       if (!wrote) return null;
     } else {
       final wrote = await _sliceFlacToFile(
         src,
         target,
-        startSec: startSec,
-        durationSec: clipDurationSec.toDouble(),
+        startSec: timing.clipStartSec,
+        durationSec: timing.clipDurationSec,
       );
       if (!wrote) return null;
     }
+    await AudioExportNormalizer.normalizeFileInPlace(target, outExt);
   } on FormatException {
     // Header truncated or unsupported — caller falls back to text.
     return null;
@@ -288,11 +255,11 @@ Future<File?> _extractClipFromFullAudio(
 /// `null` when none is reachable. Handles both shapes set by the
 /// recording service: a session directory (live, mid-recording) or a
 /// finalized file path (post-stop). WAV and FLAC are both supported.
-String? _resolveFullAudioPath(String? recordingPath) {
+Future<String?> _resolveFullAudioPath(String? recordingPath) async {
   if (recordingPath == null) return null;
   // Direct file reference (post-stop in full mode).
   if (FileSystemEntity.isFileSync(recordingPath)) {
-    final ext = p.extension(recordingPath).toLowerCase();
+    final ext = await sourceAudioExtensionForFile(File(recordingPath));
     return (ext == '.wav' || ext == '.flac') ? recordingPath : null;
   }
   // Directory reference (live mode while recording is in progress).
@@ -435,13 +402,9 @@ Future<bool> _sliceFlacToWavFile(
   );
   if (decoded.totalSamples == 0) return false;
 
-  final floats = Float32List(decoded.totalSamples);
-  for (var i = 0; i < decoded.totalSamples; i++) {
-    floats[i] = decoded.samples[i] / 32768.0;
-  }
-  await WavWriter.writeFile(
+  await WavWriter.writePcm16File(
     filePath: target.path,
-    samples: floats,
+    samples: decoded.samples,
     sampleRate: decoded.sampleRate,
   );
   return true;

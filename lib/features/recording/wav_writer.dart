@@ -90,7 +90,13 @@ class WavWriter implements AudioFileWriter {
     _file = await file.open(mode: FileMode.write);
     _dataSize = 0;
     _closed = false;
-    await _writeHeader(_file!, 0);
+    await _writeHeader(
+      _file!,
+      0,
+      sampleRate: sampleRate,
+      channels: channels,
+      bitsPerSample: bitsPerSample,
+    );
   }
 
   /// Append audio samples.
@@ -119,7 +125,13 @@ class WavWriter implements AudioFileWriter {
 
     // Rewrite header with correct sizes.
     await _file!.setPosition(0);
-    await _writeHeader(_file!, _dataSize);
+    await _writeHeader(
+      _file!,
+      _dataSize,
+      sampleRate: sampleRate,
+      channels: channels,
+      bitsPerSample: bitsPerSample,
+    );
     await _file!.close();
     _file = null;
   }
@@ -145,6 +157,18 @@ class WavWriter implements AudioFileWriter {
     await writer.open();
     await writer.writeSamples(samples);
     await writer.close();
+  }
+
+  /// Write a complete mono PCM16 WAV file without a float round-trip.
+  static Future<void> writePcm16File({
+    required String filePath,
+    required Int16List samples,
+    int sampleRate = 32000,
+  }) async {
+    final file = File(filePath);
+    await file.parent.create(recursive: true);
+    final bytes = toBytesFromPcm16(samples: samples, sampleRate: sampleRate);
+    await file.writeAsBytes(bytes, flush: true);
   }
 
   /// Generate a complete WAV file as bytes (in-memory).
@@ -214,19 +238,72 @@ class WavWriter implements AudioFileWriter {
     return result;
   }
 
+  /// Generate a mono 16-bit PCM WAV file from already-decoded samples.
+  static Uint8List toBytesFromPcm16({
+    required Int16List samples,
+    int sampleRate = 32000,
+  }) {
+    final dataSize = samples.length * 2;
+    final fileSize = 44 + dataSize;
+    const channels = 1;
+    const bitsPerSample = 16;
+    final byteRate = sampleRate * channels * bitsPerSample ~/ 8;
+    const blockAlign = channels * bitsPerSample ~/ 8;
+
+    final buffer = ByteData(fileSize);
+    final result = buffer.buffer.asUint8List();
+    var offset = 0;
+
+    result.setRange(offset, offset + 4, const [0x52, 0x49, 0x46, 0x46]);
+    offset += 4;
+    buffer.setUint32(offset, fileSize - 8, Endian.little);
+    offset += 4;
+    result.setRange(offset, offset + 4, const [0x57, 0x41, 0x56, 0x45]);
+    offset += 4;
+    result.setRange(offset, offset + 4, const [0x66, 0x6D, 0x74, 0x20]);
+    offset += 4;
+    buffer.setUint32(offset, 16, Endian.little);
+    offset += 4;
+    buffer.setUint16(offset, 1, Endian.little);
+    offset += 2;
+    buffer.setUint16(offset, channels, Endian.little);
+    offset += 2;
+    buffer.setUint32(offset, sampleRate, Endian.little);
+    offset += 4;
+    buffer.setUint32(offset, byteRate, Endian.little);
+    offset += 4;
+    buffer.setUint16(offset, blockAlign, Endian.little);
+    offset += 2;
+    buffer.setUint16(offset, bitsPerSample, Endian.little);
+    offset += 2;
+    result.setRange(offset, offset + 4, const [0x64, 0x61, 0x74, 0x61]);
+    offset += 4;
+    buffer.setUint32(offset, dataSize, Endian.little);
+    offset += 4;
+
+    for (var i = 0; i < samples.length; i++) {
+      buffer.setInt16(offset + i * 2, samples[i], Endian.little);
+    }
+
+    return result;
+  }
+
   // ---------------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------------
 
   /// Write a 44-byte WAV header to [file] with the given [dataSize].
-  static Future<void> _writeHeader(RandomAccessFile file, int dataSize) async {
+  static Future<void> _writeHeader(
+    RandomAccessFile file,
+    int dataSize, {
+    required int sampleRate,
+    required int channels,
+    required int bitsPerSample,
+  }) async {
     final header = Uint8List(44);
     final view = ByteData.view(header.buffer);
-    const sampleRate = 32000;
-    const channels = 1;
-    const bitsPerSample = 16;
-    const byteRate = sampleRate * channels * bitsPerSample ~/ 8;
-    const blockAlign = channels * bitsPerSample ~/ 8;
+    final byteRate = sampleRate * channels * bitsPerSample ~/ 8;
+    final blockAlign = channels * bitsPerSample ~/ 8;
 
     var offset = 0;
     // RIFF

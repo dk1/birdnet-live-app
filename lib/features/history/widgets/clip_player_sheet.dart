@@ -195,7 +195,9 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
         _spectrogramImage = image;
         _decoding = false;
       });
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('[ClipPlayerSheet] spectrogram decode failed for '
+          '${widget.clipPath}: $e\n$st');
       if (mounted) setState(() => _decoding = false);
     }
   }
