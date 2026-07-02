@@ -604,6 +604,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   double? _lastMemoCheckPositionSec;
   double? _mainVolumeBeforeMemoOverlay;
   StreamSubscription<Duration>? _positionSubscription;
+  StreamSubscription<Duration?>? _durationSubscription;
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<PlayerState>? _clipPlayerStateSubscription;
   StreamSubscription<PlayerState>? _memoAutoPlayerStateSubscription;
@@ -931,6 +932,24 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         _audioAvailable = true;
       });
 
+      // just_audio_windows doesn't reliably resolve the duration from
+      // setFilePath() itself — it can come back null/zero and only arrive
+      // later via durationStream once the Media Foundation backend finishes
+      // loading metadata. Without this, _duration (and therefore
+      // _fullDurationSec) stays 0 forever, which makes the spectrogram
+      // painter bail out on its `durationSec <= 0` guard even though the
+      // spectrogram image itself decoded fine.
+      _durationSubscription = _player.durationStream.listen((newDuration) {
+        if (!mounted || newDuration == null || newDuration <= Duration.zero) {
+          return;
+        }
+        if (newDuration == _duration) return;
+        setState(() {
+          _duration = newDuration;
+          _fullDurationSec = _duration.inMicroseconds / 1e6;
+        });
+      });
+
       await _inspectAudioIntegrity(path);
 
       _positionSubscription = _player.positionStream.listen((pos) {
@@ -963,8 +982,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       // Decode audio for spectrogram, then restore saved trim if present.
       await _decodeAudioForSpectrogram(path);
       await _restoreSavedTrim();
-    } catch (_) {
+    } catch (e, st) {
       // Audio not available — review still works without playback.
+      debugPrint('[SessionReview] _initAudio failed for $path: $e\n$st');
     } finally {
       if (mounted) setState(() => _initializing = false);
     }
@@ -1757,6 +1777,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   void dispose() {
     _positionNotifier.dispose();
     _positionSubscription?.cancel();
+    _durationSubscription?.cancel();
     _playerStateSubscription?.cancel();
     _clipPlayerStateSubscription?.cancel();
     _memoAutoPlayerStateSubscription?.cancel();

@@ -9,9 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.18.2] - 2026-07-01
 
+### Added
+
+- Added native decoding of compressed audio (such as M4A/AAC and MP3) on Windows, so those recordings now play back and render spectrograms in session review just like on Android and iOS.
+
 ### Fixed
 
 - Fixed audio sharing and exports so converted FLAC files are written as valid WAV files, shared files keep their filename extensions, quiet single-detection audio shares are normalized, and continuous detections export their full start-to-end audio span instead of only one inference window. (#149)
+- Fixed session review on Windows so the spectrogram renders reliably when the audio duration is reported late by the player backend.
 
 ## [0.18.1] - 2026-06-28
 
