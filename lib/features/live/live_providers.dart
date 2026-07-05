@@ -98,6 +98,15 @@ final sessionDetectionsProvider = StateProvider<List<DetectionRecord>>(
   (ref) => const [],
 );
 
+/// All detection records from the current Live or Point Count session
+/// (newest first).
+///
+/// Updated by the active live-inference screen after each inference cycle.
+/// Used by the optional all-detected-species display.
+final allSessionDetectionsProvider = StateProvider<List<DetectionRecord>>(
+  (ref) => const [],
+);
+
 /// Latest batch of detections from the most recent inference cycle.
 ///
 /// Updated by the live screen after each inference cycle.

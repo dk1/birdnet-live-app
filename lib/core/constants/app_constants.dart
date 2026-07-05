@@ -75,6 +75,8 @@ abstract final class PrefKeys {
   static const String inferenceRate = 'inference_rate';
   static const String speciesFilterMode = 'species_filter_mode';
   static const String sensitivity = 'sensitivity';
+  static const String showAllDetectedSpecies = 'show_all_detected_species';
+  static const String detectedSpeciesSortMode = 'detected_species_sort_mode';
   static const String scorePooling = 'score_pooling';
   static const String scorePoolingWindows = 'score_pooling_windows';
   static const String scorePoolingMaxAgeSeconds =

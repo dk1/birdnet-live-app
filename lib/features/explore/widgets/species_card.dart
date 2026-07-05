@@ -14,7 +14,6 @@
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 
-import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/utils/app_icons.dart';
 import '../../inference/geo_model.dart';
@@ -413,15 +412,16 @@ class _DetectedBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final semanticColors = AppSemanticColors.of(context);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     return Container(
       width: 18,
       height: 18,
       decoration: BoxDecoration(
         // Solid background so the icon stays legible over both bright and
-        // dark areas of the bird photo. Using the primary color makes it
-        // clearly an "earned" marker rather than a UI affordance.
-        color: semanticColors.success,
+        // dark areas of the bird photo. Brand blue marks it as an "earned"
+        // badge; high-contrast themes use black with a white check for maximum
+        // separation.
+        color: highContrast ? Colors.black : theme.colorScheme.primary,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -431,7 +431,11 @@ class _DetectedBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(AppIcons.check, size: 12, color: semanticColors.onSuccess),
+      child: Icon(
+        AppIcons.check,
+        size: 12,
+        color: highContrast ? Colors.white : theme.colorScheme.onPrimary,
+      ),
     );
   }
 }

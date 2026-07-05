@@ -29,6 +29,12 @@ Controls the language used for species names. **Follow app language** uses the s
 
 Shows scientific names below common names across the app.
 
+### Show all detected species
+
+Live Mode and Point Count only. Off by default, so these screens continue to show only species detected in the latest inference cycle: effectively the species that are currently vocalizing. Turn it on to keep every species detected during the running session visible in the list, even after it stops vocalizing or falls below the confidence threshold.
+
+When this is enabled, **Species list sorting** appears. **Newest first** shows currently vocalizing species first, sorted by their current confidence, then retained species by their most recent detection. **Confidence** sorts by each species' highest confidence reached during the session, **Alphabetically** sorts by the localized common name, and **Occurrences** sorts by detection count. In every sorting mode, the confidence percentage and bar appear only while that species is currently vocalizing (retained rows that stopped vocalizing are dimmed), and repeated detections show a count chip at the end of the common-name row.
+
 ### Playback overlay in review
 
 When enabled (which is the default), reviewing an audio clip in a clips-only Session Review (where no full audio recording/spectrogram is available) triggers a dedicated modal player overlay with transport controls and a spectrogram preview, rather than playing the clip in the background. If a session has full audio, this setting is bypassed and the playback overlay is never shown.

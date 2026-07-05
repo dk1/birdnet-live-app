@@ -2189,6 +2189,26 @@
   "@settingsHelpInferenceRate": {
     "description": "Help text for inference rate setting"
   },
+  "settingsHelpShowAllDetectedSpecies": "Controls which species cards Live Mode and Point Count keep visible during a running session. The default shows only species detected in the latest inference cycle, so the list behaves like a currently vocalizing display. Show all detected species keeps each species visible after it drops below the threshold, making the list a running session species list.",
+  "@settingsHelpShowAllDetectedSpecies": {
+    "description": "Help text for the Live Mode and Point Count species-list display setting"
+  },
+  "settingsHelpDetectedSpeciesSortNewest": "Currently vocalizing species appear first, sorted by their current confidence, then retained species follow by their most recent detection time.",
+  "@settingsHelpDetectedSpeciesSortNewest": {
+    "description": "Help text for newest-first all-species sorting"
+  },
+  "settingsHelpDetectedSpeciesSortConfidence": "Species are sorted by the highest confidence each species reached during the session, from highest to lowest. Retained inactive species stay in the list without confidence visuals.",
+  "@settingsHelpDetectedSpeciesSortConfidence": {
+    "description": "Help text for confidence all-species sorting"
+  },
+  "settingsHelpDetectedSpeciesSortAlphabetical": "Species are sorted alphabetically by common name. Confidence visuals still appear only while the species is currently vocalizing.",
+  "@settingsHelpDetectedSpeciesSortAlphabetical": {
+    "description": "Help text for alphabetical all-species sorting"
+  },
+  "settingsHelpDetectedSpeciesSortOccurrences": "Species with more detections appear first. The count chip after the common name shows the number used for this sorting.",
+  "@settingsHelpDetectedSpeciesSortOccurrences": {
+    "description": "Help text for occurrence-count all-species sorting"
+  },
   "settingsHelpScorePooling": "How scores from overlapping analysis windows are combined. 'Max' is most reactive; 'average' smooths flickering; 'LME' (log-mean-exp) is a soft maximum that balances both, requires repeated raw-window support before a new species first appears, and keeps supported high scores close to their strongest recent raw score.",
   "@settingsHelpScorePooling": {
     "description": "Help text for score pooling setting"
@@ -3806,6 +3826,34 @@
   "@settingsInferenceRate": {
     "description": "Inference rate (inferences per second) setting label"
   },
+  "settingsShowAllDetectedSpecies": "Show all detected species",
+  "@settingsShowAllDetectedSpecies": {
+    "description": "Switch label for keeping all detected species visible in Live Mode and Point Count"
+  },
+  "settingsShowAllDetectedSpeciesDescription": "Keep species visible after they stop vocalizing.",
+  "@settingsShowAllDetectedSpeciesDescription": {
+    "description": "Subtitle for the show-all detected species switch"
+  },
+  "settingsDetectedSpeciesSortMode": "Species list sorting",
+  "@settingsDetectedSpeciesSortMode": {
+    "description": "Dropdown label for sorting the all-species Live Mode and Point Count list"
+  },
+  "settingsDetectedSpeciesSortNewest": "Newest first",
+  "@settingsDetectedSpeciesSortNewest": {
+    "description": "Sort option for most recent detections first"
+  },
+  "settingsDetectedSpeciesSortConfidence": "Confidence",
+  "@settingsDetectedSpeciesSortConfidence": {
+    "description": "Sort option for confidence score order"
+  },
+  "settingsDetectedSpeciesSortAlphabetical": "Alphabetically",
+  "@settingsDetectedSpeciesSortAlphabetical": {
+    "description": "Sort option for common-name alphabetical order"
+  },
+  "settingsDetectedSpeciesSortOccurrences": "Occurrences",
+  "@settingsDetectedSpeciesSortOccurrences": {
+    "description": "Sort option for detection-count order"
+  },
   "settingsFftSize": "FFT size",
   "@settingsFftSize": {
     "description": "FFT window size setting label"
@@ -4254,6 +4302,33 @@
   "liveScreenHelpInfoBar": "The info line under the spectrogram summarizes the current session, including visible detections, unique species, total detections, elapsed time, and recording size when audio capture is enabled.",
   "@liveScreenHelpInfoBar": {
     "description": "Explains the session info bar on the Live Mode help overlay"
+  },
+  "liveStatusNow": "{count} now",
+  "@liveStatusNow": {
+    "description": "Compact status token under the spectrogram: number of species currently being detected (right now).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "liveStatusSpecies": "{count} spp",
+  "@liveStatusSpecies": {
+    "description": "Compact status token under the spectrogram: cumulative unique species count. 'spp' is the abbreviation for species (plural); translate to the locale's short form for species.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "liveStatusDetections": "{count} det",
+  "@liveStatusDetections": {
+    "description": "Compact status token under the spectrogram: cumulative detection count. 'det' is the abbreviation for detections; translate to the locale's short form.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "liveScreenHelpDetections": "Tap any species row to open the species details sheet. When you stop the session, BirdNET Live saves it and opens Session Review.",
   "@liveScreenHelpDetections": {

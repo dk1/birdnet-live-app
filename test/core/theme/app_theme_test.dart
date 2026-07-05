@@ -56,7 +56,7 @@ void main() {
       expect(semanticColors.success, isNot(theme.colorScheme.primary));
     });
 
-    test('high contrast light preserves score, success, and mode colors', () {
+    test('high contrast light tunes score, success, and mode colors', () {
       final theme = AppTheme.highContrastLight();
       final semanticColors = theme.extension<AppSemanticColors>()!;
 
@@ -66,15 +66,26 @@ void main() {
       expect(theme.extension<ScoreColors>(), same(ScoreColors.light));
       expect(semanticColors.success, isNot(theme.colorScheme.primary));
       expect(semanticColors.success, isNot(theme.colorScheme.onSurface));
-      expect(semanticColors.sessionLive, AppSemanticColors.light.sessionLive);
+
+      // Mode accents are deepened for the white high-contrast surface, so they
+      // differ from the standard hues, stay dark enough to be legible on white,
+      // and remain distinct from one another.
+      final modes = _modeAccents(semanticColors);
       expect(
-        semanticColors.sessionPointCount,
-        AppSemanticColors.light.sessionPointCount,
+        semanticColors.sessionLive,
+        isNot(AppSemanticColors.light.sessionLive),
       );
-      expect(semanticColors.sessionAru, AppSemanticColors.light.sessionAru);
+      for (final accent in modes) {
+        expect(
+          ThemeData.estimateBrightnessForColor(accent),
+          Brightness.dark,
+          reason: 'high-contrast-light accent $accent must be dark on white',
+        );
+      }
+      expect(modes.toSet(), hasLength(modes.length));
     });
 
-    test('high contrast dark preserves score, success, and mode colors', () {
+    test('high contrast dark tunes score, success, and mode colors', () {
       final theme = AppTheme.highContrastDark();
       final semanticColors = theme.extension<AppSemanticColors>()!;
 
@@ -84,14 +95,32 @@ void main() {
       expect(theme.extension<ScoreColors>(), same(ScoreColors.dark));
       expect(semanticColors.success, isNot(theme.colorScheme.primary));
       expect(semanticColors.success, isNot(theme.colorScheme.onSurface));
+
+      // Mode accents are brightened for the black high-contrast surface.
+      final modes = _modeAccents(semanticColors);
       expect(
         semanticColors.sessionSurvey,
-        AppSemanticColors.light.sessionSurvey,
+        isNot(AppSemanticColors.light.sessionSurvey),
       );
-      expect(
-        semanticColors.sessionBatchAnalysis,
-        AppSemanticColors.light.sessionBatchAnalysis,
-      );
+      for (final accent in modes) {
+        expect(
+          ThemeData.estimateBrightnessForColor(accent),
+          Brightness.light,
+          reason: 'high-contrast-dark accent $accent must be light on black',
+        );
+      }
+      expect(modes.toSet(), hasLength(modes.length));
     });
   });
 }
+
+/// The six session-mode accent colors, in a stable order for distinctness
+/// checks.
+List<Color> _modeAccents(AppSemanticColors c) => [
+  c.sessionLive,
+  c.sessionPointCount,
+  c.sessionSurvey,
+  c.sessionFileAnalysis,
+  c.sessionBatchAnalysis,
+  c.sessionAru,
+];
