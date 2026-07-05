@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added Live Mode and Point Count General settings to show all species detected during the current session, with sorting by newest detection, confidence, common name, or occurrence count, repeated-detection count chips, and dimmed inactive rows that hide confidence visuals. In newest-first sorting, currently vocalizing species float to the top ordered by their current confidence.
 
+### Changed
+
+- Tuned the session-mode accent colors for the high-contrast themes so each mode stays legible and distinct against the black-and-white surfaces, and switched the "detected" badges and detection-stats marker to a high-contrast-aware brand-blue/black styling.
+
+### Fixed
+
+- Localized the compact session status line under the Live Mode and Point Count spectrogram (the "now", "spp", and "det" tokens were previously hardcoded in English).
+
 ## [0.18.3] - 2026-07-02
 
 ### Added

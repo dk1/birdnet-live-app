@@ -4303,6 +4303,33 @@
   "@liveScreenHelpInfoBar": {
     "description": "Explains the session info bar on the Live Mode help overlay"
   },
+  "liveStatusNow": "{count} now",
+  "@liveStatusNow": {
+    "description": "Compact status token under the spectrogram: number of species currently being detected (right now).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "liveStatusSpecies": "{count} spp",
+  "@liveStatusSpecies": {
+    "description": "Compact status token under the spectrogram: cumulative unique species count. 'spp' is the abbreviation for species (plural); translate to the locale's short form for species.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "liveStatusDetections": "{count} det",
+  "@liveStatusDetections": {
+    "description": "Compact status token under the spectrogram: cumulative detection count. 'det' is the abbreviation for detections; translate to the locale's short form.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "liveScreenHelpDetections": "Tap any species row to open the species details sheet. When you stop the session, BirdNET Live saves it and opens Session Review.",
   "@liveScreenHelpDetections": {
     "description": "Explains the detection list on the Live Mode help overlay"

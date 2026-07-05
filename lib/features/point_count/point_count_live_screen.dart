@@ -799,6 +799,7 @@ class _PointCountInfoBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     if (!visible) {
       return const Padding(
@@ -815,9 +816,11 @@ class _PointCountInfoBar extends StatelessWidget {
             .length;
 
     final parts = <String>[];
-    if (currentDetectionCount > 0) parts.add('$currentDetectionCount now');
-    parts.add('$totalUnique spp');
-    parts.add('$totalDetections det');
+    if (currentDetectionCount > 0) {
+      parts.add(l10n.liveStatusNow(currentDetectionCount));
+    }
+    parts.add(l10n.liveStatusSpecies(totalUnique));
+    parts.add(l10n.liveStatusDetections(totalDetections));
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),

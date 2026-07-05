@@ -955,6 +955,7 @@ class _SessionInfoBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     if (!visible) {
       // Invisible placeholder — same height, no content.
@@ -997,9 +998,9 @@ class _SessionInfoBar extends ConsumerWidget {
         builder: (context, snap) {
           final bytes = snap.data ?? 0;
           final List<String> parts = [];
-          if (liveCount > 0) parts.add('$liveCount now');
-          parts.add('$totalUnique spp');
-          parts.add('$totalDetections det');
+          if (liveCount > 0) parts.add(l10n.liveStatusNow(liveCount));
+          parts.add(l10n.liveStatusSpecies(totalUnique));
+          parts.add(l10n.liveStatusDetections(totalDetections));
           if (durationSec > 0) {
             parts.add(durationStr);
             if (recordingMode != 'off' && bytes > 0) {
