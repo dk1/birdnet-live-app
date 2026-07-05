@@ -20,7 +20,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 
-import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/taxonomy_species.dart';
 import '../../../shared/providers/settings_providers.dart';
@@ -648,12 +647,14 @@ class _OverlayDetectedBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final semanticColors = AppSemanticColors.of(context);
+    final highContrast = AppTheme.isHighContrastTheme(theme);
     return Container(
       width: 28,
       height: 28,
       decoration: BoxDecoration(
-        color: semanticColors.success,
+        // Brand blue "earned" marker; high-contrast themes use black with a
+        // white check for maximum separation.
+        color: highContrast ? Colors.black : theme.colorScheme.primary,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -663,7 +664,11 @@ class _OverlayDetectedBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(AppIcons.check, size: 18, color: semanticColors.onSuccess),
+      child: Icon(
+        AppIcons.check,
+        size: 18,
+        color: highContrast ? Colors.white : theme.colorScheme.onPrimary,
+      ),
     );
   }
 }
@@ -739,10 +744,11 @@ class _DetectionStatsTile extends ConsumerWidget {
                 Icon(
                   AppIcons.checkCircle,
                   size: 20,
+                  // Black keeps maximum contrast against the white
+                  // high-contrast panel; normal themes use the vibrant
+                  // brand-blue primary.
                   color:
-                      highContrast
-                          ? AppSemanticColors.of(context).success
-                          : theme.colorScheme.primary,
+                      highContrast ? Colors.black : theme.colorScheme.primary,
                 ),
                 const SizedBox(width: 10),
                 Expanded(

@@ -50,6 +50,25 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   static const Color _batchAnalysisBase = Color(0xFFD4AF37);
   static const Color _aruBase = Color(0xFF8E24AA);
 
+  // High-contrast session-mode accents. Standard themes reuse the base hues,
+  // but the black/white high-contrast palettes need deeper tones on the white
+  // surface and brighter tones on the black surface so the modes stay legible
+  // and clearly distinct while keeping their identity (red, blue, green,
+  // orange, yellow, purple). "Light" = for the white high-contrast surface,
+  // "Dark" = for the black one.
+  static const Color _liveHighContrastLight = Color(0xFFC62828);
+  static const Color _liveHighContrastDark = Color(0xFFFF8A80);
+  static const Color _pointCountHighContrastLight = Color(0xFF1565C0);
+  static const Color _pointCountHighContrastDark = Color(0xFF64B5F6);
+  static const Color _surveyHighContrastLight = Color(0xFF2E7D32);
+  static const Color _surveyHighContrastDark = Color(0xFF66BB6A);
+  static const Color _fileAnalysisHighContrastLight = Color(0xFFE65100);
+  static const Color _fileAnalysisHighContrastDark = Color(0xFFFFA726);
+  static const Color _batchAnalysisHighContrastLight = Color(0xFFA67C00);
+  static const Color _batchAnalysisHighContrastDark = Color(0xFFFFEE58);
+  static const Color _aruHighContrastLight = Color(0xFF6A1B9A);
+  static const Color _aruHighContrastDark = Color(0xFFCE93D8);
+
   static const AppSemanticColors light = AppSemanticColors(
     success: _successBase,
     onSuccess: Colors.white,
@@ -85,21 +104,28 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   /// slots where possible so mode accents remain legible against the stronger
   /// light/dark palettes.
   static AppSemanticColors highContrast(ColorScheme colorScheme) {
+    final isDark = colorScheme.brightness == Brightness.dark;
     final success =
-        colorScheme.brightness == Brightness.dark
-            ? _successHighContrastDark
-            : _successHighContrastLight;
+        isDark ? _successHighContrastDark : _successHighContrastLight;
     return AppSemanticColors(
       success: success,
       onSuccess: _onColorFor(success),
       successContainer: success,
       onSuccessContainer: _onColorFor(success),
-      sessionLive: _liveBase,
-      sessionPointCount: _pointCountBase,
-      sessionSurvey: _surveyBase,
-      sessionFileAnalysis: _fileAnalysisBase,
-      sessionBatchAnalysis: _batchAnalysisBase,
-      sessionAru: _aruBase,
+      sessionLive: isDark ? _liveHighContrastDark : _liveHighContrastLight,
+      sessionPointCount:
+          isDark ? _pointCountHighContrastDark : _pointCountHighContrastLight,
+      sessionSurvey:
+          isDark ? _surveyHighContrastDark : _surveyHighContrastLight,
+      sessionFileAnalysis:
+          isDark
+              ? _fileAnalysisHighContrastDark
+              : _fileAnalysisHighContrastLight,
+      sessionBatchAnalysis:
+          isDark
+              ? _batchAnalysisHighContrastDark
+              : _batchAnalysisHighContrastLight,
+      sessionAru: isDark ? _aruHighContrastDark : _aruHighContrastLight,
     );
   }
 
