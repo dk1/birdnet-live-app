@@ -325,11 +325,13 @@ class DetectionRecord {
   /// Confidence score (0.0–1.0).
   final double confidence;
 
-  /// Wall-clock time when this detection first appeared.
+  /// Wall-clock time when this detection first crossed the active inference
+  /// threshold.
   final DateTime timestamp;
 
-  /// Wall-clock time when the species' card disappeared from the live
-  /// view (i.e. when continuous detection ended). May be `null` for:
+  /// Wall-clock time when this species stopped appearing in active inference
+  /// results (i.e. when the continuous detection window ended). May be `null`
+  /// for:
   ///   * detections still in progress,
   ///   * legacy sessions saved before this field existed,
   ///   * manual annotations.

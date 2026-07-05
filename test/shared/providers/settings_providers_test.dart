@@ -40,6 +40,17 @@ void main() {
       expect(container.read(inferenceRateProvider), 1.0);
     });
 
+    test('showAllDetectedSpecies defaults to false', () {
+      expect(container.read(showAllDetectedSpeciesProvider), false);
+    });
+
+    test('detectedSpeciesSortMode defaults to newest first', () {
+      expect(
+        container.read(detectedSpeciesSortModeProvider),
+        DetectedSpeciesSortMode.newest,
+      );
+    });
+
     test('fftSize defaults to 2048', () {
       expect(container.read(fftSizeProvider), 2048);
     });
@@ -198,6 +209,31 @@ void main() {
       await container.read(includeAudioProvider.notifier).set(true);
       expect(container.read(includeAudioProvider), true);
       expect(prefs.getBool('include_audio'), true);
+    });
+
+    test('species list settings persist', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(showAllDetectedSpeciesProvider.notifier).set(true);
+      await container
+          .read(detectedSpeciesSortModeProvider.notifier)
+          .set(DetectedSpeciesSortMode.occurrences);
+
+      expect(container.read(showAllDetectedSpeciesProvider), true);
+      expect(
+        container.read(detectedSpeciesSortModeProvider),
+        DetectedSpeciesSortMode.occurrences,
+      );
+      expect(prefs.getBool(PrefKeys.showAllDetectedSpecies), true);
+      expect(
+        prefs.getString(PrefKeys.detectedSpeciesSortMode),
+        DetectedSpeciesSortMode.occurrences,
+      );
     });
 
     test(

@@ -23,6 +23,7 @@ import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
 import 'live_controller.dart';
+import 'live_detection_display.dart';
 import 'live_providers.dart';
 import 'live_session.dart';
 import 'widgets/detection_list_widget.dart';
@@ -84,6 +85,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         if (mounted) {
           controller.clearSessionState();
           ref.read(sessionDetectionsProvider.notifier).state = const [];
+          ref.read(allSessionDetectionsProvider.notifier).state = const [];
           ref.read(latestLiveDetectionsProvider.notifier).state = const [];
           ref.read(currentSessionProvider.notifier).state = null;
 
@@ -103,6 +105,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
               controller.state != LiveState.paused) {
             controller.clearSessionState();
             ref.read(sessionDetectionsProvider.notifier).state = const [];
+            ref.read(allSessionDetectionsProvider.notifier).state = const [];
             ref.read(latestLiveDetectionsProvider.notifier).state = const [];
             ref.read(currentSessionProvider.notifier).state = null;
           }
@@ -123,6 +126,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     // Each species appears at most once with its latest confidence score.
     ref.read(sessionDetectionsProvider.notifier).state =
         controller.currentLiveDetections;
+    ref.read(allSessionDetectionsProvider.notifier).state =
+        controller.sessionDetections;
     ref.read(currentSessionProvider.notifier).state = controller.session;
 
     // Auto-start: if the user opted in via the Live setting, kick off a
@@ -466,10 +471,41 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final isCapturing = captureState == CaptureState.capturing;
     final isActive = liveState == LiveState.active;
     final isPaused = liveState == LiveState.paused;
-    final detections =
+    final currentDetections =
         (isActive || isPaused)
             ? ref.watch(sessionDetectionsProvider)
             : const <DetectionRecord>[];
+    final allDetections =
+        (isActive || isPaused)
+            ? ref.watch(allSessionDetectionsProvider)
+            : const <DetectionRecord>[];
+    final showAllDetectedSpecies = ref.watch(showAllDetectedSpeciesProvider);
+    final detectedSpeciesSortMode = ref.watch(detectedSpeciesSortModeProvider);
+    final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
+    final detections =
+        (isActive || isPaused)
+            ? buildLiveDetectionDisplayList(
+              currentDetections: currentDetections,
+              sessionDetections: allDetections,
+              showAllDetectedSpecies: showAllDetectedSpecies,
+              sortMode: detectedSpeciesSortMode,
+              localizedCommonName:
+                  (detection) =>
+                      taxonomy
+                          ?.lookup(detection.scientificName)
+                          ?.commonNameForLocale(speciesLocale) ??
+                      detection.commonName,
+            )
+            : const <DetectionRecord>[];
+    final activeDetections =
+        showAllDetectedSpecies
+            ? (Set<DetectionRecord>.identity()..addAll(currentDetections))
+            : null;
+    final speciesDetectionCounts =
+        showAllDetectedSpecies
+            ? buildSpeciesDetectionCounts(allDetections)
+            : null;
 
     // Hot-apply tunable settings to the running session: when the user
     // tweaks the confidence threshold or pooling window count from the
@@ -526,6 +562,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
             isActive: isActive,
             isPaused: isPaused,
             isCapturing: isCapturing,
+            currentDetectionCount: currentDetections.length,
+            activeDetections: activeDetections,
+            speciesDetectionCounts: speciesDetectionCounts,
             detections: detections,
           ),
         ),
@@ -542,6 +581,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     required bool isActive,
     required bool isPaused,
     required bool isCapturing,
+    required int currentDetectionCount,
+    required Set<DetectionRecord>? activeDetections,
+    required Map<String, int>? speciesDetectionCounts,
     required List<DetectionRecord> detections,
   }) {
     final isLandscape =
@@ -557,7 +599,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       child: _LiveSpectrogram(isCapturing: isCapturing),
     );
     final sessionInfo = _SessionInfoBar(
-      liveCount: detections.length,
+      liveCount: currentDetectionCount,
       controller: ref.read(liveControllerProvider),
       visible: isActive || isPaused,
     );
@@ -569,6 +611,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
           detections: detections,
           isActive: isActive || isPaused,
           showTips: true,
+          activeDetections: activeDetections,
+          speciesDetectionCounts: speciesDetectionCounts,
           onDetectionTap: (detection) {
             SpeciesInfoOverlay.show(
               context,

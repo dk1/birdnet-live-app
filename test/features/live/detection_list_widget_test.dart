@@ -4,20 +4,52 @@
 
 import 'package:birdnet_live/features/live/widgets/detection_list_widget.dart';
 import 'package:birdnet_live/features/live/widgets/live_tips.dart';
+import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:birdnet_live/shared/providers/app_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  Widget buildSubject({required bool showTips, bool isActive = false}) {
-    return MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: DetectionList(
-          detections: const [],
-          isActive: isActive,
-          showTips: showTips,
+  const countChipText = '\u00d73';
+  late SharedPreferences prefs;
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    prefs = await SharedPreferences.getInstance();
+  });
+
+  DetectionRecord record(String scientificName) {
+    return DetectionRecord(
+      scientificName: scientificName,
+      commonName: scientificName,
+      confidence: 0.8,
+      timestamp: DateTime(2026, 7, 5, 10),
+    );
+  }
+
+  Widget buildSubject({
+    required bool showTips,
+    bool isActive = false,
+    List<DetectionRecord> detections = const [],
+    Set<DetectionRecord>? activeDetections,
+    Map<String, int>? speciesDetectionCounts,
+  }) {
+    return ProviderScope(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: DetectionList(
+            detections: detections,
+            isActive: isActive,
+            showTips: showTips,
+            activeDetections: activeDetections,
+            speciesDetectionCounts: speciesDetectionCounts,
+          ),
         ),
       ),
     );
@@ -41,5 +73,49 @@ void main() {
     await tester.pumpWidget(buildSubject(showTips: true, isActive: true));
 
     expect(find.byType(LiveTipsCarousel), findsNothing);
+  });
+
+  testWidgets('shows species detection count chip when provided', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildSubject(
+        showTips: false,
+        isActive: true,
+        detections: [record('A')],
+        speciesDetectionCounts: const {'A': 3},
+      ),
+    );
+
+    expect(find.text(countChipText), findsOneWidget);
+    // Active rows (no activeDetections override) are shown at full opacity.
+    expect(
+      find.byWidgetPredicate((w) => w is Opacity && w.opacity != 1.0),
+      findsNothing,
+    );
+  });
+
+  testWidgets('keeps count chip on inactive retained species rows', (
+    tester,
+  ) async {
+    final detection = record('A');
+
+    await tester.pumpWidget(
+      buildSubject(
+        showTips: false,
+        isActive: true,
+        detections: [detection],
+        activeDetections: Set<DetectionRecord>.identity(),
+        speciesDetectionCounts: const {'A': 3},
+      ),
+    );
+
+    expect(find.text(countChipText), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    // Retained (inactive) rows are dimmed to read as no-longer-live.
+    expect(
+      find.byWidgetPredicate((w) => w is Opacity && w.opacity == 0.75),
+      findsOneWidget,
+    );
   });
 }

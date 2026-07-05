@@ -46,6 +46,7 @@ import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
 import '../live/live_controller.dart';
+import '../live/live_detection_display.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../live/widgets/detection_list_widget.dart';
@@ -127,6 +128,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
             controller.state != LiveState.paused) {
           controller.clearSessionState();
           ref.read(sessionDetectionsProvider.notifier).state = const [];
+          ref.read(allSessionDetectionsProvider.notifier).state = const [];
           ref.read(latestLiveDetectionsProvider.notifier).state = const [];
           ref.read(currentSessionProvider.notifier).state = null;
         }
@@ -141,6 +143,8 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     ref.read(liveStateProvider.notifier).state = controller.state;
     ref.read(sessionDetectionsProvider.notifier).state =
         controller.currentLiveDetections;
+    ref.read(allSessionDetectionsProvider.notifier).state =
+        controller.sessionDetections;
     ref.read(currentSessionProvider.notifier).state = controller.session;
   }
 
@@ -389,10 +393,41 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final captureState = ref.watch(captureStateProvider);
     final isCapturing = captureState == CaptureState.capturing;
     final isActive = liveState == LiveState.active;
-    final detections =
+    final currentDetections =
         isActive
             ? ref.watch(sessionDetectionsProvider)
             : const <DetectionRecord>[];
+    final allDetections =
+        isActive
+            ? ref.watch(allSessionDetectionsProvider)
+            : const <DetectionRecord>[];
+    final showAllDetectedSpecies = ref.watch(showAllDetectedSpeciesProvider);
+    final detectedSpeciesSortMode = ref.watch(detectedSpeciesSortModeProvider);
+    final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
+    final detections =
+        isActive
+            ? buildLiveDetectionDisplayList(
+              currentDetections: currentDetections,
+              sessionDetections: allDetections,
+              showAllDetectedSpecies: showAllDetectedSpecies,
+              sortMode: detectedSpeciesSortMode,
+              localizedCommonName:
+                  (detection) =>
+                      taxonomy
+                          ?.lookup(detection.scientificName)
+                          ?.commonNameForLocale(speciesLocale) ??
+                      detection.commonName,
+            )
+            : const <DetectionRecord>[];
+    final activeDetections =
+        showAllDetectedSpecies
+            ? (Set<DetectionRecord>.identity()..addAll(currentDetections))
+            : null;
+    final speciesDetectionCounts =
+        showAllDetectedSpecies
+            ? buildSpeciesDetectionCounts(allDetections)
+            : null;
 
     // Hot-apply tunable settings to the running point count: changes
     // made on the Settings screen mid-count are pushed straight to the
@@ -438,6 +473,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
             liveState,
             isActive,
             isCapturing,
+            currentDetections.length,
+            activeDetections,
+            speciesDetectionCounts,
             detections,
           ),
         ),
@@ -451,6 +489,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     LiveState liveState,
     bool isActive,
     bool isCapturing,
+    int currentDetectionCount,
+    Set<DetectionRecord>? activeDetections,
+    Map<String, int>? speciesDetectionCounts,
     List<DetectionRecord> detections,
   ) {
     final isLandscape =
@@ -481,7 +522,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       ),
     );
     final sessionInfo = _PointCountInfoBar(
-      detections: detections,
+      currentDetectionCount: currentDetectionCount,
       controller: ref.read(liveControllerProvider),
       visible: isActive,
     );
@@ -492,6 +533,8 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         child: DetectionList(
           detections: detections,
           isActive: isActive,
+          activeDetections: activeDetections,
+          speciesDetectionCounts: speciesDetectionCounts,
           onDetectionTap: (detection) {
             SpeciesInfoOverlay.show(
               context,
@@ -744,12 +787,12 @@ class _CountdownProgressBar extends StatelessWidget {
 
 class _PointCountInfoBar extends StatelessWidget {
   const _PointCountInfoBar({
-    required this.detections,
+    required this.currentDetectionCount,
     required this.controller,
     required this.visible,
   });
 
-  final List<DetectionRecord> detections;
+  final int currentDetectionCount;
   final LiveController controller;
   final bool visible;
 
@@ -772,7 +815,7 @@ class _PointCountInfoBar extends StatelessWidget {
             .length;
 
     final parts = <String>[];
-    if (detections.isNotEmpty) parts.add('${detections.length} now');
+    if (currentDetectionCount > 0) parts.add('$currentDetectionCount now');
     parts.add('$totalUnique spp');
     parts.add('$totalDetections det');
 

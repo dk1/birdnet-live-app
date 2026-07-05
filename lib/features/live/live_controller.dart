@@ -159,17 +159,22 @@ class LiveController {
   /// Updated by [setSensitivity] mid-session without restart.
   double _sensitivity = 1.0;
 
-  /// Species currently shown on the live screen (have visible cards).
+  /// Species currently present in the active inference result.
   ///
   /// Maps scientific name → active [DetectionRecord] in [_sessionDetections].
   /// A species is added when it first appears in inference results and
   /// removed when it drops out.  Re-appearance after removal creates a
   /// brand-new detection record for session review.
+  ///
+  /// This intentionally stays tied to inference presence, not UI row
+  /// visibility. The optional all-species display can keep old rows visible,
+  /// but [endTimestamp] still marks when the species stopped being actively
+  /// detected.
   final Map<String, DetectionRecord> _activeCardSpecies = {};
 
   /// Maximum number of in-memory detections (older entries are still
   /// persisted in the [LiveSession] object).
-  static const int _maxInMemoryDetections = 500;
+  static const int _maxInMemoryDetections = 1000;
 
   // ── Getters ───────────────────────────────────────────────────────────
 
@@ -507,22 +512,12 @@ class LiveController {
       MemoryMonitor.stop();
     }
 
-    // Close any still-open detection windows so that long-running cards
-    // visible at session end get a proper [endTimestamp].
+    // Close any still-open detection windows so active vocalizations at
+    // session end get a proper [endTimestamp].
     if (_activeCardSpecies.isNotEmpty) {
       final now = DateTime.now();
       for (final existing in _activeCardSpecies.values) {
-        final closed = DetectionRecord(
-          scientificName: existing.scientificName,
-          commonName: existing.commonName,
-          confidence: existing.confidence,
-          timestamp: existing.timestamp,
-          endTimestamp: now,
-          audioClipPath: existing.audioClipPath,
-          source: existing.source,
-          latitude: existing.latitude,
-          longitude: existing.longitude,
-        );
+        final closed = _recordWithEnd(existing, now);
         final sessionIdx = _sessionDetections.indexOf(existing);
         if (sessionIdx != -1) _sessionDetections[sessionIdx] = closed;
         final lsIdx = _session!.detections.indexOf(existing);
@@ -692,12 +687,16 @@ class LiveController {
         for (final d in filteredDetections) DetectionRecord.fromDetection(d),
       ];
 
-      // ── Detection counting: card-visibility based ─────────────────
+      // ── Detection counting: active-inference-window based ──────────
       //
-      // A species counts as ONE detection for as long as its card is
-      // continuously visible on the live screen.  Only when the card
-      // disappears (species drops out of inference results) and later
+      // A species counts as ONE detection for as long as it is continuously
+      // present in inference results. Only when it drops out and later
       // reappears does it become a SECOND detection for session review.
+      //
+      // Do not base this on UI row visibility: the optional all-species view
+      // keeps old rows visible after vocalization ends, but the persisted
+      // [endTimestamp] must still represent the end of the active detection
+      // window.
       if (_session != null) {
         // Determine which species are present this cycle.
         final currentNames = <String>{
@@ -711,8 +710,8 @@ class LiveController {
 
         // Species that disappeared → close the detection window and
         // stop tracking. Stamping `endTimestamp` lets the review screen
-        // visualize the full duration during which the species was on
-        // screen, instead of just the first inference window.
+        // visualize the full duration during which the species was actively
+        // detected, instead of just the first inference window.
         final disappeared = _activeCardSpecies.keys.toSet().difference(
           currentNames,
         );
@@ -720,17 +719,7 @@ class LiveController {
         for (final name in disappeared) {
           final existing = _activeCardSpecies.remove(name);
           if (existing == null) continue;
-          final closed = DetectionRecord(
-            scientificName: existing.scientificName,
-            commonName: existing.commonName,
-            confidence: existing.confidence,
-            timestamp: existing.timestamp,
-            endTimestamp: now,
-            audioClipPath: existing.audioClipPath,
-            source: existing.source,
-            latitude: existing.latitude,
-            longitude: existing.longitude,
-          );
+          final closed = _recordWithEnd(existing, now);
           final sessionIdx = _sessionDetections.indexOf(existing);
           if (sessionIdx != -1) _sessionDetections[sessionIdx] = closed;
           final lsIdx = _session!.detections.indexOf(existing);
@@ -751,7 +740,7 @@ class LiveController {
           final name = detection.species.scientificName;
 
           if (appeared.contains(name)) {
-            // New detection — species just appeared on screen.
+            // New detection — species just appeared in inference.
             final record = DetectionRecord.fromDetection(
               detection,
               audioClipPath: clipPath,
@@ -763,15 +752,10 @@ class LiveController {
             // Ongoing — update confidence if higher (same detection).
             final existing = _activeCardSpecies[name]!;
             if (detection.confidence > existing.confidence) {
-              final updated = DetectionRecord(
-                scientificName: existing.scientificName,
-                commonName: existing.commonName,
-                confidence: detection.confidence,
-                timestamp: existing.timestamp,
+              final updated = _recordWithConfidence(
+                existing,
+                detection.confidence,
                 audioClipPath: existing.audioClipPath ?? clipPath,
-                source: existing.source,
-                latitude: existing.latitude,
-                longitude: existing.longitude,
               );
               final sessionIdx = _sessionDetections.indexOf(existing);
               if (sessionIdx != -1) _sessionDetections[sessionIdx] = updated;
@@ -794,8 +778,8 @@ class LiveController {
         // pipeline (no-op when the feature is disabled). We submit the
         // full per-cycle list, not just newly-appeared species: the
         // first sighting is often near the confidence floor, while the
-        // peak score arrives a few cycles later when the card is still
-        // on screen. The controller's per-species streak silence and
+        // peak score arrives a few cycles later while the detection window is
+        // still active. The controller's per-species streak silence and
         // global min-interval gates dedup re-submissions, and it picks
         // the highest score per species inside the batch, so this
         // surfaces the strongest call rather than the marginal one.
@@ -819,7 +803,7 @@ class LiveController {
       }
 
       // Always notify — even when the list becomes empty (species dropped
-      // below threshold), so the UI clears stale cards.
+      // below threshold), so the current-vocalizing UI clears stale rows.
       _notifyListeners();
     } catch (e, st) {
       // Inference errors are logged but don't stop the session.
@@ -838,6 +822,44 @@ class LiveController {
     if (secs > 0) session.accumulateRecordedSeconds(secs);
     session.closeSegment();
     _segmentStart = null;
+  }
+
+  DetectionRecord _recordWithEnd(DetectionRecord existing, DateTime end) {
+    return DetectionRecord(
+      scientificName: existing.scientificName,
+      commonName: existing.commonName,
+      confidence: existing.confidence,
+      timestamp: existing.timestamp,
+      endTimestamp: end,
+      audioClipPath: existing.audioClipPath,
+      source: existing.source,
+      latitude: existing.latitude,
+      longitude: existing.longitude,
+      confirmedAt: existing.confirmedAt,
+      note: existing.note,
+      voiceMemoPath: existing.voiceMemoPath,
+    );
+  }
+
+  DetectionRecord _recordWithConfidence(
+    DetectionRecord existing,
+    double confidence, {
+    String? audioClipPath,
+  }) {
+    return DetectionRecord(
+      scientificName: existing.scientificName,
+      commonName: existing.commonName,
+      confidence: confidence,
+      timestamp: existing.timestamp,
+      endTimestamp: existing.endTimestamp,
+      audioClipPath: audioClipPath,
+      source: existing.source,
+      latitude: existing.latitude,
+      longitude: existing.longitude,
+      confirmedAt: existing.confirmedAt,
+      note: existing.note,
+      voiceMemoPath: existing.voiceMemoPath,
+    );
   }
 
   /// Clear the session state to prepare for a fresh run.

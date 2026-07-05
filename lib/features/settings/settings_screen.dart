@@ -18,6 +18,20 @@ import 'offline_map_download_tile.dart';
 
 bool get _showOfflineMapDownloadSetting => false;
 
+String _detectedSpeciesSortHelp(AppLocalizations l10n, String sortMode) {
+  switch (DetectedSpeciesSortMode.normalize(sortMode)) {
+    case DetectedSpeciesSortMode.confidence:
+      return l10n.settingsHelpDetectedSpeciesSortConfidence;
+    case DetectedSpeciesSortMode.alphabetical:
+      return l10n.settingsHelpDetectedSpeciesSortAlphabetical;
+    case DetectedSpeciesSortMode.occurrences:
+      return l10n.settingsHelpDetectedSpeciesSortOccurrences;
+    case DetectedSpeciesSortMode.newest:
+    default:
+      return l10n.settingsHelpDetectedSpeciesSortNewest;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Settings context — determines which settings are visible
 // ---------------------------------------------------------------------------
@@ -186,6 +200,51 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged:
                     (v) => ref.read(showSciNamesProvider.notifier).set(v),
               ),
+              if (settingsContext == SettingsContext.live ||
+                  settingsContext == SettingsContext.pointCount ||
+                  settingsContext == SettingsContext.all) ...[
+                SwitchListTile(
+                  title: _TitleWithHelp(
+                    title: l10n.settingsShowAllDetectedSpecies,
+                    helpBody: l10n.settingsHelpShowAllDetectedSpecies,
+                  ),
+                  subtitle: Text(
+                    l10n.settingsShowAllDetectedSpeciesDescription,
+                  ),
+                  value: ref.watch(showAllDetectedSpeciesProvider),
+                  onChanged:
+                      (v) => ref
+                          .read(showAllDetectedSpeciesProvider.notifier)
+                          .set(v),
+                ),
+                if (ref.watch(showAllDetectedSpeciesProvider))
+                  _ChoiceTile<String>(
+                    title: l10n.settingsDetectedSpeciesSortMode,
+                    value: ref.watch(detectedSpeciesSortModeProvider),
+                    options: {
+                      DetectedSpeciesSortMode.newest:
+                          l10n.settingsDetectedSpeciesSortNewest,
+                      DetectedSpeciesSortMode.confidence:
+                          l10n.settingsDetectedSpeciesSortConfidence,
+                      DetectedSpeciesSortMode.alphabetical:
+                          l10n.settingsDetectedSpeciesSortAlphabetical,
+                      DetectedSpeciesSortMode.occurrences:
+                          l10n.settingsDetectedSpeciesSortOccurrences,
+                    },
+                    subtitle: _detectedSpeciesSortHelp(
+                      l10n,
+                      ref.watch(detectedSpeciesSortModeProvider),
+                    ),
+                    helpBody: _detectedSpeciesSortHelp(
+                      l10n,
+                      ref.watch(detectedSpeciesSortModeProvider),
+                    ),
+                    onChanged:
+                        (v) => ref
+                            .read(detectedSpeciesSortModeProvider.notifier)
+                            .set(v),
+                  ),
+              ],
               SwitchListTile(
                 title: _TitleWithHelp(
                   title: l10n.settingsPlaybackOverlay,
@@ -1499,6 +1558,7 @@ class _ChoiceTile<T> extends StatelessWidget {
     required this.value,
     required this.options,
     required this.onChanged,
+    this.subtitle,
     this.helpBody,
   });
 
@@ -1506,12 +1566,14 @@ class _ChoiceTile<T> extends StatelessWidget {
   final T value;
   final Map<T, String> options;
   final ValueChanged<T> onChanged;
+  final String? subtitle;
   final String? helpBody;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       title: _TitleWithHelp(title: title, helpBody: helpBody),
+      subtitle: subtitle == null ? null : Text(subtitle!),
       trailing: DropdownButton<T>(
         value: value,
         underline: const SizedBox.shrink(),

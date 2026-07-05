@@ -75,6 +75,38 @@ final sensitivityProvider =
       return DoubleSettingNotifier(prefs, PrefKeys.sensitivity, 1.0);
     });
 
+/// Show every species detected in the current Live or Point Count session
+/// instead of only species present in the latest inference cycle.
+final showAllDetectedSpeciesProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(prefs, PrefKeys.showAllDetectedSpecies, false);
+    });
+
+abstract final class DetectedSpeciesSortMode {
+  static const newest = 'newest';
+  static const confidence = 'confidence';
+  static const alphabetical = 'alphabetical';
+  static const occurrences = 'occurrences';
+
+  static const values = <String>[newest, confidence, alphabetical, occurrences];
+
+  static String normalize(String value) {
+    return values.contains(value) ? value : newest;
+  }
+}
+
+/// Sorting for the all-species Live and Point Count display.
+final detectedSpeciesSortModeProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.detectedSpeciesSortMode,
+        DetectedSpeciesSortMode.newest,
+      );
+    });
+
 /// Score pooling mode ('off', 'average', 'max', 'lme', 'adaptive_lme_peak').
 ///
 /// Controls how scores from consecutive inference windows are combined.
