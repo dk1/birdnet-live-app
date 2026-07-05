@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.4] - 2026-07-05
+
+### Added
+
+- Added Live Mode and Point Count General settings to show all species detected during the current session, with sorting by newest detection, confidence, common name, or occurrence count, repeated-detection count chips, and dimmed inactive rows that hide confidence visuals. In newest-first sorting, currently vocalizing species float to the top ordered by their current confidence.
+
 ## [0.18.3] - 2026-07-02
 
 ### Added
