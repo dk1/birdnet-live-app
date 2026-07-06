@@ -1,3 +1,5 @@
+import 'dart:ui' show Locale;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -110,6 +112,132 @@ void main() {
     test('manualLongitude defaults to 13.405', () {
       expect(container.read(manualLongitudeProvider), 13.405);
     });
+  });
+
+  group('effectiveSpeciesLocaleProvider', () {
+    test('uses phone locale when app language follows system', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          platformLocalesProvider.overrideWithValue(const [Locale('ru', 'RU')]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(localeProvider), isNull);
+      expect(container.read(effectiveSpeciesLocaleProvider), 'ru');
+    });
+
+    test('system uses phone locale even when app locale is explicit', () async {
+      SharedPreferences.setMockInitialValues({PrefKeys.locale: 'de'});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          platformLocalesProvider.overrideWithValue(const [Locale('ru', 'RU')]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(effectiveSpeciesLocaleProvider), 'ru');
+    });
+
+    test('follow app language uses explicit app locale', () async {
+      SharedPreferences.setMockInitialValues({
+        PrefKeys.locale: 'de',
+        PrefKeys.speciesLanguage: 'app',
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          platformLocalesProvider.overrideWithValue(const [Locale('ru', 'RU')]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(effectiveSpeciesLocaleProvider), 'de');
+    });
+
+    test(
+      'follow app language uses English for unsupported system UI locale',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          PrefKeys.speciesLanguage: 'app',
+        });
+        final prefs = await SharedPreferences.getInstance();
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            platformLocalesProvider.overrideWithValue(const [
+              Locale('ru', 'RU'),
+            ]),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        expect(container.read(localeProvider), isNull);
+        expect(container.read(effectiveSpeciesLocaleProvider), 'en');
+      },
+    );
+
+    test('follow app language uses supported system UI locale', () async {
+      SharedPreferences.setMockInitialValues({PrefKeys.speciesLanguage: 'app'});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          platformLocalesProvider.overrideWithValue(const [Locale('de', 'DE')]),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(localeProvider), isNull);
+      expect(container.read(effectiveSpeciesLocaleProvider), 'de');
+    });
+
+    test(
+      'uses explicit species language before app and phone locales',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          PrefKeys.locale: 'de',
+          PrefKeys.speciesLanguage: 'fr',
+        });
+        final prefs = await SharedPreferences.getInstance();
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            platformLocalesProvider.overrideWithValue(const [
+              Locale('ru', 'RU'),
+            ]),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        expect(container.read(effectiveSpeciesLocaleProvider), 'fr');
+      },
+    );
+
+    test(
+      'keeps Chinese region because the taxonomy has regional names',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            platformLocalesProvider.overrideWithValue(const [
+              Locale('zh', 'CN'),
+            ]),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        expect(container.read(effectiveSpeciesLocaleProvider), 'zh-CN');
+      },
+    );
   });
 
   group('Settings providers persist changes', () {

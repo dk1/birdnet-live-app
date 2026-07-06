@@ -1,10 +1,11 @@
-import 'dart:ui' show PlatformDispatcher;
+import 'dart:ui' show Locale, PlatformDispatcher;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../l10n/app_localizations.dart';
 import 'app_providers.dart';
 
 // ---------------------------------------------------------------------------
@@ -520,27 +521,68 @@ final manualLongitudeProvider =
 // Species Language
 // ---------------------------------------------------------------------------
 
-/// Species name language code ('system', 'en', 'de', 'es', etc.).
+/// Species name language code ('system', 'app', 'en', 'de', 'es', etc.).
 ///
-/// When 'system', follows the app locale.
+/// When 'system', uses the phone's preferred locale. When 'app', follows the
+/// resolved app interface locale.
 final speciesLanguageProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
       return StringSettingNotifier(prefs, PrefKeys.speciesLanguage, 'system');
     });
 
+/// Preferred phone locales, exposed as a provider so locale fallback is testable.
+final platformLocalesProvider = Provider<List<Locale>>((ref) {
+  final locales = PlatformDispatcher.instance.locales;
+  return locales.isNotEmpty
+      ? locales
+      : <Locale>[PlatformDispatcher.instance.locale];
+});
+
 /// Resolved species locale code (never 'system').
 ///
-/// Resolves 'system' → app locale → platform locale → 'en'.
+/// Resolves 'system' to the phone locale and 'app' to the app interface locale.
 final effectiveSpeciesLocaleProvider = Provider<String>((ref) {
   final setting = ref.watch(speciesLanguageProvider);
+  if (setting == 'app') return _effectiveAppLocaleTag(ref);
   if (setting != 'system') return setting;
 
-  final appLocale = ref.watch(localeProvider);
-  if (appLocale != null) return appLocale.languageCode;
-
-  return PlatformDispatcher.instance.locale.languageCode;
+  return _platformSpeciesLocaleTag(ref);
 });
+
+String _effectiveAppLocaleTag(Ref ref) {
+  final appLocale = ref.watch(localeProvider);
+  if (appLocale != null) return _speciesLocaleTag(appLocale);
+
+  final platformLocales = ref.watch(platformLocalesProvider);
+  for (final preferred in platformLocales) {
+    for (final supported in AppLocalizations.supportedLocales) {
+      if (supported.languageCode == preferred.languageCode) {
+        return _speciesLocaleTag(supported);
+      }
+    }
+  }
+
+  return 'en';
+}
+
+String _platformSpeciesLocaleTag(Ref ref) {
+  final platformLocales = ref.watch(platformLocalesProvider);
+  if (platformLocales.isEmpty) return 'en';
+  return _speciesLocaleTag(platformLocales.first);
+}
+
+String _speciesLocaleTag(Locale locale) {
+  final language = locale.languageCode.trim();
+  if (language.isEmpty) return 'en';
+
+  final country = locale.countryCode?.trim();
+  if (country != null && country.isNotEmpty && language == 'zh') {
+    return '$language-$country';
+  }
+
+  return language;
+}
 
 // ---------------------------------------------------------------------------
 // Point Count

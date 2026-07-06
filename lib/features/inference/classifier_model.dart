@@ -16,7 +16,7 @@
 //
 // ```
 // Input:  <inputName>       — float32 [batch, samples]
-// Output: <predictionsName> — float32 [batch, N]       (raw logits per class)
+// Output: <predictionsName> — float32 [batch, N]       (probabilities per class)
 // Output: <embeddingsName>  — float32 [batch, M]       (feature vectors, optional)
 // ```
 //
@@ -60,7 +60,7 @@ class ClassifierModel {
   /// Tensor name used for the audio input.
   String _inputName = 'input';
 
-  /// Tensor name used for the predictions (logits) output.
+  /// Tensor name used for the predictions output.
   String _predictionsName = 'predictions';
 
   /// Tensor name for embeddings output, or `null` if the model doesn't
@@ -83,7 +83,7 @@ class ClassifierModel {
   /// Tensor names default to BirdNET conventions but can be overridden to
   /// support any ONNX model:
   /// - [inputName] — name of the audio input tensor (default `"input"`).
-  /// - [predictionsName] — name of the logits output tensor (default
+  /// - [predictionsName] — name of the predictions output tensor (default
   ///   `"predictions"`).
   /// - [embeddingsName] — name of the embeddings output tensor, or `null` if
   ///   the model does not produce embeddings (default `"embeddings"`).
@@ -129,7 +129,7 @@ class ClassifierModel {
   /// window duration (e.g. 96 000 for 3 s at 32 kHz).  If [audioSamples] is
   /// shorter it is zero-padded; if longer it is truncated.
   ///
-  /// Returns a [ModelOutput] with the raw logits and embeddings.
+  /// Returns a [ModelOutput] with model predictions and embeddings.
   Future<ModelOutput> predict(
     Float32List audioSamples, {
     required int windowSamples,
@@ -232,7 +232,7 @@ class ClassifierModel {
 
 /// Raw output from a single model inference run.
 ///
-/// Contains the logit scores for all species classes plus optional feature
+/// Contains the probability scores for all species classes plus optional feature
 /// embeddings.
 class ModelOutput {
   /// Creates a model output container.
@@ -242,7 +242,7 @@ class ModelOutput {
   ///
   /// The BirdNET model outputs sigmoid-activated probabilities in [0, 1].
   /// Do **not** apply sigmoid again — pass these directly to sensitivity
-  /// scaling and top-K extraction.
+  /// scaling before pooling and thresholding.
   final List<double> predictions;
 
   /// Feature embeddings (length = 1 280) for similarity/clustering.

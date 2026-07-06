@@ -635,6 +635,10 @@ class LiveController {
     try {
       final sampleRate = _config?.audio.sampleRate ?? AppConstants.sampleRate;
       final windowSamples = windowDuration * sampleRate;
+      final audioReadAt = DateTime.now();
+      final windowTimestamp = audioReadAt.subtract(
+        Duration(seconds: windowDuration),
+      );
       final audioSamples = ringBuffer.readLast(windowSamples);
 
       // Log memory every 10 cycles (~10s at 1Hz) to track growth.
@@ -648,6 +652,7 @@ class LiveController {
         windowSeconds: windowDuration,
         sensitivity: sensitivity,
         confidenceThreshold: confidenceThreshold / 100.0,
+        timestamp: windowTimestamp,
       );
 
       if (generation != _sessionGeneration) {

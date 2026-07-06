@@ -75,9 +75,7 @@ void main() {
     });
 
     test('handles missing scientific_name gracefully', () {
-      final sp = TaxonomySpecies.fromCsvRow({
-        'common_name': 'Unknown',
-      });
+      final sp = TaxonomySpecies.fromCsvRow({'common_name': 'Unknown'});
       expect(sp.scientificName, '');
     });
   });
@@ -119,7 +117,9 @@ void main() {
       expect(sp.descriptions!['en'], 'A small bird.');
       expect(sp.commonNames!['de'], 'Kohlmeise');
       expect(
-          sp.wikipediaUrls!['en'], 'https://en.wikipedia.org/wiki/Great_tit');
+        sp.wikipediaUrls!['en'],
+        'https://en.wikipedia.org/wiki/Great_tit',
+      );
     });
 
     test('handles missing image block', () {
@@ -254,6 +254,25 @@ void main() {
         commonNames: {'de': 'Kohlmeise'},
       );
       expect(sp.commonNameForLocale('fr'), 'Great Tit');
+    });
+
+    test('commonNameForLocale matches phone locale variants', () {
+      const sp = TaxonomySpecies(
+        scientificName: 'Parus major',
+        commonName: 'Great Tit',
+        commonNames: {
+          'ru': 'Большая синица',
+          'zh-CN': '大山雀',
+          'pt': 'Chapim-real',
+          'es': 'Generic Spanish',
+          'es_MX': 'Mexican Spanish',
+        },
+      );
+      expect(sp.commonNameForLocale('ru_RU'), 'Большая синица');
+      expect(sp.commonNameForLocale('ru-RU'), 'Большая синица');
+      expect(sp.commonNameForLocale('zh_CN'), '大山雀');
+      expect(sp.commonNameForLocale('pt_BR'), 'Chapim-real');
+      expect(sp.commonNameForLocale('es_MX'), 'Mexican Spanish');
     });
   });
 

@@ -21,7 +21,7 @@ Définit la langue de l'interface.
 
 ### Noms des espèces
 
-Contrôle la langue utilisée pour les noms d'espèces. **Utiliser la langue de l'application** emploie la même langue que l'interface lorsque ce nom est disponible.
+Contrôle la langue utilisée pour les noms d'espèces. **Système** utilise la langue préférée du téléphone lorsque ce nom est disponible, même si l'interface revient à l'anglais. **Suivre l'app** utilise plutôt la langue de l'interface.
 
 ### Afficher les noms scientifiques
 
@@ -80,7 +80,7 @@ Définit le degré de prudence des détections. La valeur par défaut est de **3
 
 ### Sensibilité
 
-Pente de la sigmoïde appliquée à la sortie brute du classifieur avant la vérification du seuil de confiance. Des valeurs plus élevées rendent le détecteur plus permissif — des chants plus faibles ou plus ambigus franchissent le seuil, au prix de plus de faux positifs. Des valeurs plus basses sont plus strictes et ne laissent passer que les détections sûres. La valeur par défaut de **1,0** correspond à la référence BirdNET. Essayez **1,25** si vous suspectez que le modèle manque des chants lointains ; descendez à **0,75** si vous êtes submergé par des détections de faible qualité d'espèces communes. La sensibilité est appliquée à chaud : la modifier en cours de session prend effet à la fenêtre d'inférence suivante.
+Un décalage sur l'axe x appliqué aux scores de probabilité bruts du modèle avant le Score Pooling, le filtrage géographique et le seuil de confiance. Le modèle audio BirdNET inclut déjà une activation sigmoïde ; BirdNET Live reconvertit donc d'abord chaque probabilité en espace logit, ajoute le biais de sensibilité, puis la reconvertit en probabilité. Des valeurs plus élevées rendent le détecteur plus permissif — des chants plus faibles ou plus ambigus franchissent le seuil, au prix de plus de faux positifs. Des valeurs plus basses sont plus strictes et ne laissent passer que les détections sûres. La valeur par défaut de **1,0** n'applique aucun décalage et correspond à la référence BirdNET. Essayez **1,25** si vous suspectez que le modèle manque des chants lointains ; descendez à **0,75** si vous êtes submergé par des détections de faible qualité d'espèces communes. La sensibilité est appliquée à chaud : la modifier en cours de session prend effet à la fenêtre d'inférence suivante.
 
 ### Fréquence d'inférence
 
@@ -88,7 +88,7 @@ Contrôle la fréquence à laquelle BirdNET exécute l'inférence.
 
 ### Agrégation des scores
 
-Combine les scores des fenêtres d'inférence récentes pour qu'une seule fenêtre bruitée ne domine pas le résultat. **Désactivée** utilise la probabilité brute de chaque fenêtre — la plus réactive, la plus bruitée. **Moyenne** fait la moyenne arithmétique des fenêtres récentes pour la sortie la plus lissée. **Max** conserve le pic le plus fort par espèce, ce qui est le mode de lissage le plus réactif, adapté aux chants brefs et marqués. **LME** (log-mean-exp, par défaut) est le maximum doux de référence de BirdNET : il se comporte comme *max* quand une fenêtre domine et comme *moyenne* quand plusieurs fenêtres concordent. En mode LME, une nouvelle espèce a aussi besoin de plusieurs confirmations de fenêtres brutes avant d'apparaître pour la première fois, tandis que les détections soutenues conservent l'essentiel de leur score brut récent le plus fort, et qu'une espèce déjà visible reste affichée jusqu'à ce que son score agrégé passe sous le seuil de confiance. Changer de mode en cours de session vide la mémoire glissante pour que les anciens scores ne se reportent pas sur le nouveau mode.
+Combine les scores des fenêtres d'inférence récentes pour qu'une seule fenêtre bruitée ne domine pas le résultat. **Désactivée** utilise la probabilité de chaque fenêtre — la plus réactive, la plus bruitée. **Moyenne** fait la moyenne arithmétique des fenêtres récentes pour la sortie la plus lissée. **Max** conserve le pic le plus fort par espèce, ce qui est le mode de lissage le plus réactif, adapté aux chants brefs et marqués. **LME** (log-mean-exp, par défaut) est le maximum doux de référence de BirdNET : il se comporte comme *max* quand une fenêtre domine et comme *moyenne* quand plusieurs fenêtres concordent. En mode LME, une nouvelle espèce a aussi besoin de plusieurs confirmations de fenêtres individuelles avant d'apparaître pour la première fois, tandis que les détections soutenues conservent l'essentiel de leur meilleur score récent sur une seule fenêtre, et qu'une espèce déjà visible reste affichée jusqu'à ce que son score agrégé passe sous le seuil de confiance. Changer de mode en cours de session vide la mémoire glissante pour que les anciens scores ne se reportent pas sur le nouveau mode.
 
 ### Nombre de fenêtres de pooling
 

@@ -23,7 +23,7 @@ Sets the interface language.
 
 ### Species Names
 
-Controls the language used for species names. **Follow app language** uses the same language as the interface when that name is available.
+Controls the language used for species names. **System** uses the phone's preferred language when that name is available, even if the interface falls back to English. **Follow app** uses the interface language instead.
 
 ### Show scientific names
 
@@ -96,7 +96,7 @@ Sets how conservative detections should be. The default is **35%**, which keeps 
 
 ### Sensitivity
 
-Sigmoid steepness applied to the raw classifier output before the confidence threshold is checked. Higher values make the detector more permissive — fainter or more ambiguous calls cross the threshold, at the cost of more false positives. Lower values are stricter and only let confident detections through. The default of **1.0** matches the BirdNET reference. Try **1.25** if you suspect the model is missing distant calls; drop to **0.75** if you are flooded with low-quality detections of common species. Sensitivity is hot-applied: changing it mid-session takes effect on the next inference window.
+An x-axis offset applied to the model's raw probability scores before score pooling, geographic filtering, and the confidence threshold. BirdNET's audio model already includes a sigmoid activation, so BirdNET Live first converts each probability back to logit space, adds the sensitivity bias, then converts it back to a probability. Higher values make the detector more permissive — fainter or more ambiguous calls cross the threshold, at the cost of more false positives. Lower values are stricter and only let confident detections through. The default of **1.0** applies no offset and matches the BirdNET reference. Try **1.25** if you suspect the model is missing distant calls; drop to **0.75** if you are flooded with low-quality detections of common species. Sensitivity is hot-applied: changing it mid-session takes effect on the next inference window.
 
 ### Inference rate
 
@@ -105,8 +105,8 @@ Controls how frequently BirdNET runs inference. The slider uses the same **0.10�
 BirdNET Live internally smooths scores across recent inference windows to
 reduce one-off false positives. This pooling is not exposed as a user setting;
 the default uses an adaptive pooling mode with five recent windows and a
-10-second real-time age cap. At live-rate inference it uses average pooling for
-stable detection decisions. At slower Survey and ARU cadences it uses LME
+10-second real-time age cap. At high inference rates it uses average pooling
+for stable live decisions; at slower Survey and ARU cadences it uses LME
 pooling to keep precision high over longer runs. Accepted detections display
 the strongest recent supported model confidence, so obvious vocalizations can
 still show high confidence instead of being flattened by smoothing.

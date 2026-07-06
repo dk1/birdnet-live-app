@@ -27,7 +27,7 @@
 ## Required Coding Rules
 
 - Use American English in code, comments, docs, and UI strings.
-- Keep user-facing strings in all 7 locales: `en`, `de`, `cs`, `es`, `fr`, `it`, `pt`.
+- Keep user-facing strings in all 10 locales: `en`, `de`, `cs`, `es`, `fr`, `it`, `pt`, `nl`, `pl`, `ru`.
 - Use `l10n.keyName` in widgets; after ARB edits run `flutter gen-l10n` and ensure 0 untranslated messages.
 - Keep technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Smart.
 - Add/modify settings via `PrefKeys` + settings providers/UI, and update `docs/user/settings.md` with user-facing rationale.

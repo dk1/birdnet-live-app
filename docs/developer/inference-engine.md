@@ -23,7 +23,7 @@ Low-level `flutter_onnxruntime` session wrapper:
 High-level coordinator:
 
 - `initialize(modelFilePath, labelsCsv, config)` — load model + parse labels
-- `infer(audioSamples)` — model → temporal pooling → sensitivity → top-K
+- `infer(audioSamples)` — model → sensitivity → temporal pooling → top-K
 - Log-Mean-Exp temporal smoothing across recent windows (α=5.0, max 5 windows)
 
 ## InferenceIsolate

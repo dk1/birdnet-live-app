@@ -21,7 +21,7 @@ Define o idioma da interface.
 
 ### Nomes de espécies
 
-Controla o idioma usado para os nomes das espécies. **Usar idioma do aplicativo** usa o mesmo idioma da interface quando esse nome está disponível.
+Controla o idioma usado para os nomes das espécies. **Sistema** usa o idioma preferido do telefone quando esse nome estiver disponível, mesmo que a interface volte para inglês. **Seguir app** usa o idioma da interface.
 
 ### Mostrar nomes científicos
 
@@ -80,7 +80,7 @@ Define o quão conservadoras as detecções devem ser. O padrão é **35%**, que
 
 ### Sensibilidade
 
-Inclinação sigmoide aplicada à saída bruta do classificador antes de o limiar de confiança ser verificado. Valores mais altos tornam o detector mais permissivo — chamados mais fracos ou mais ambíguos cruzam o limiar, ao custo de mais falsos positivos. Valores mais baixos são mais rigorosos e só deixam passar detecções confiáveis. O padrão de **1.0** corresponde à referência do BirdNET. Experimente **1.25** se suspeitar que o modelo está perdendo chamados distantes; reduza para **0.75** se estiver inundado de detecções de baixa qualidade de espécies comuns. A sensibilidade é aplicada imediatamente: alterá-la no meio de uma Session entra em vigor na próxima janela de inferência.
+Um deslocamento no eixo x aplicado às pontuações de probabilidade brutas do modelo antes do Score Pooling, da filtragem geográfica e do limiar de confiança. O modelo de áudio BirdNET já inclui uma ativação sigmoide, por isso o BirdNET Live primeiro converte cada probabilidade de volta para o espaço logit, soma o viés de sensibilidade e depois a converte novamente em probabilidade. Valores mais altos tornam o detector mais permissivo — chamados mais fracos ou mais ambíguos cruzam o limiar, ao custo de mais falsos positivos. Valores mais baixos são mais rigorosos e só deixam passar detecções confiáveis. O padrão de **1.0** não aplica deslocamento e corresponde à referência do BirdNET. Experimente **1.25** se suspeitar que o modelo está perdendo chamados distantes; reduza para **0.75** se estiver inundado de detecções de baixa qualidade de espécies comuns. A sensibilidade é aplicada imediatamente: alterá-la no meio de uma Session entra em vigor na próxima janela de inferência.
 
 ### Taxa de inferência
 
@@ -88,7 +88,7 @@ Controla com que frequência o BirdNET executa a inferência.
 
 ### Score Pooling
 
-Combina as pontuações entre as janelas de inferência recentes para que uma única janela ruidosa não domine o resultado. **Desativado** usa a probabilidade bruta de cada janela — o mais reativo e o mais ruidoso. **Média** faz a média aritmética das janelas recentes para a saída mais suave. **Max** mantém o pico mais alto por espécie, que é o modo de suavização mais reativo e bom para chamados breves e nítidos. **LME** (log-mean-exp, o padrão) é o máximo suave de referência do BirdNET: comporta-se como *max* quando uma janela domina e como *média* quando várias janelas concordam. No modo LME, uma nova espécie também precisa de suporte repetido nas janelas brutas antes de aparecer pela primeira vez, enquanto as detecções suportadas mantêm a maior parte de sua pontuação bruta recente mais forte, e as espécies já visíveis continuam até que sua pontuação combinada caia abaixo do limiar de confiança. Trocar de modo no meio de uma Session limpa o buffer móvel para que pontuações antigas não vazem para o novo modo.
+Combina as pontuações entre as janelas de inferência recentes para que uma única janela ruidosa não domine o resultado. **Desativado** usa a probabilidade de cada janela — o mais reativo e o mais ruidoso. **Média** faz a média aritmética das janelas recentes para a saída mais suave. **Max** mantém o pico mais alto por espécie, que é o modo de suavização mais reativo e bom para chamados breves e nítidos. **LME** (log-mean-exp, o padrão) é o máximo suave de referência do BirdNET: comporta-se como *max* quando uma janela domina e como *média* quando várias janelas concordam. No modo LME, uma nova espécie também precisa de suporte repetido em janelas individuais antes de aparecer pela primeira vez, enquanto as detecções suportadas mantêm a maior parte da sua pontuação recente mais forte numa única janela, e as espécies já visíveis continuam até que sua pontuação combinada caia abaixo do limiar de confiança. Trocar de modo no meio de uma Session limpa o buffer móvel para que pontuações antigas não vazem para o novo modo.
 
 ### Número de janelas de pooling
 

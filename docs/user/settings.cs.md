@@ -21,7 +21,7 @@ Nastaví jazyk rozhraní.
 
 ### Názvy druhů
 
-Řídí jazyk používaný pro názvy druhů. **Následovat jazyk aplikace** používá stejný jazyk jako rozhraní, pokud je daný název k dispozici.
+Řídí jazyk používaný pro názvy druhů. **Systém** používá preferovaný jazyk telefonu, pokud je daný název k dispozici, i když rozhraní přejde na angličtinu. **Sledovat aplikaci** místo toho používá jazyk rozhraní.
 
 ### Zobrazit vědecké názvy
 
@@ -80,7 +80,7 @@ Nastavuje, jak konzervativní by detekce měly být. Výchozí hodnota je **35 %
 
 ### Citlivost
 
-Strmost sigmoidy aplikovaná na surový výstup klasifikátoru před kontrolou prahu spolehlivosti. Vyšší hodnoty činí detektor tolerantnějším — slabší nebo nejednoznačnější hlasy překročí práh za cenu více falešných detekcí. Nižší hodnoty jsou přísnější a propouštějí jen jisté detekce. Výchozí hodnota **1,0** odpovídá referenci BirdNET. Zkuste **1,25**, pokud máte podezření, že model přehlíží vzdálené hlasy; snižte na **0,75**, pokud vás zaplavují nekvalitní detekce běžných druhů. Citlivost se aplikuje za běhu: změna v průběhu Session se projeví v dalším inferenčním okně.
+Posun na ose x aplikovaný na surová pravděpodobnostní skóre modelu před Score Pooling, geografickým filtrováním a kontrolou prahu spolehlivosti. Audiomodel BirdNET už obsahuje sigmoidovou aktivaci, takže BirdNET Live nejprve převede každou pravděpodobnost zpět do logitového prostoru, přičte bias citlivosti a potom ji převede zpět na pravděpodobnost. Vyšší hodnoty činí detektor tolerantnějším — slabší nebo nejednoznačnější hlasy překročí práh za cenu více falešných detekcí. Nižší hodnoty jsou přísnější a propouštějí jen jisté detekce. Výchozí hodnota **1,0** nepřidává žádný posun a odpovídá referenci BirdNET. Zkuste **1,25**, pokud máte podezření, že model přehlíží vzdálené hlasy; snižte na **0,75**, pokud vás zaplavují nekvalitní detekce běžných druhů. Citlivost se aplikuje za běhu: změna v průběhu Session se projeví v dalším inferenčním okně.
 
 ### Míra inference
 

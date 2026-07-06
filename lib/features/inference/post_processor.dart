@@ -2,17 +2,16 @@
 // Post-Processor — Pure Dart post-processing for model output
 // =============================================================================
 //
-// Transforms raw model logits into actionable detection results.  All methods
-// are static, side-effect-free, and operate on plain Dart lists — fully
-// testable without platform dependencies.
+// Transforms sigmoid-activated model probabilities into actionable detection
+// results. All methods are static, side-effect-free, and operate on plain
+// Dart lists — fully testable without platform dependencies.
 //
 // ### Pipeline
 //
-// 1. **Sigmoid** — convert raw logits to probabilities [0, 1].
-// 2. **Sensitivity scaling** — shift the sigmoid curve to boost or suppress
+// 1. **Sensitivity scaling** — offset the sigmoid curve in logit space to boost or suppress
 //    weak signals (reference: BirdNET PWA `applySensitivity`).
-// 3. **Top-K extraction** — select the N highest-confidence species.
-// 4. **Threshold filtering** — discard detections below a confidence floor.
+// 2. **Top-K extraction** — select the N highest-confidence species.
+// 3. **Threshold filtering** — discard detections below a confidence floor.
 //
 // ### Reference
 //
@@ -55,14 +54,15 @@ abstract final class PostProcessor {
   // Sensitivity scaling
   // ---------------------------------------------------------------------------
 
-  /// Apply sensitivity scaling to a probability [p].
+  /// Apply sensitivity scaling to a sigmoid-activated probability [p].
   ///
   /// [sensitivity] is typically in [0.5, 1.5]:
   /// - `1.0` = no change.
   /// - `> 1.0` = boost weak signals (more detections, more false positives).
   /// - `< 1.0` = suppress weak signals (fewer detections, fewer false positives).
   ///
-  /// The formula converts p → logit, adds a bias, then converts back:
+  /// The formula reverses sigmoid with logit(p), adds an x-axis bias, then
+  /// converts back to probability space:
   /// ```
   /// bias = (sensitivity - 1.0) * 5.0
   /// logit = ln(p / (1 - p))
@@ -78,7 +78,7 @@ abstract final class PostProcessor {
     return sigmoid(logit + bias);
   }
 
-  /// Apply sensitivity scaling to all probabilities in [probs].
+  /// Apply sensitivity scaling to all sigmoid-activated probabilities in [probs].
   static List<double> applySensitivityAll(
     List<double> probs,
     double sensitivity,
@@ -171,7 +171,8 @@ abstract final class PostProcessor {
   /// Pool multiple inference windows using Log-Mean-Exp for temporal stability.
   ///
   /// [windowScores] is a list of per-class probability vectors from recent
-  /// inference cycles.  Returns a single pooled probability vector.
+  /// inference cycles. In the app pipeline these have already been adjusted
+  /// for sensitivity. Returns a single pooled probability vector.
   ///
   /// The formula (per class):
   /// ```
@@ -180,7 +181,8 @@ abstract final class PostProcessor {
   ///
   /// [alpha] controls smoothing: higher values emphasise peaks (default 5.0,
   /// matching the BirdNET PWA reference implementation). [peakRetention]
-  /// optionally keeps the pooled score close to the strongest recent raw score;
+  /// optionally keeps the pooled score close to the strongest recent
+  /// per-window score;
   /// temporal support gating should be used with this so one-off spikes do not
   /// become first detections.
   static List<double> logMeanExp(
@@ -278,7 +280,7 @@ abstract final class PostProcessor {
     return peaks;
   }
 
-  /// Whether class [index] has enough raw-window support to appear.
+  /// Whether class [index] has enough per-window support to appear.
   ///
   /// This is separate from LME scoring: LME preserves high peaks, while this
   /// gate prevents a single unsupported peak from becoming a first detection.
@@ -306,7 +308,34 @@ abstract final class PostProcessor {
     return false;
   }
 
-  /// Suppress new pooled detections that lack raw-window support.
+  /// Earliest timestamp whose score supports a detected class.
+  ///
+  /// Used after temporal pooling accepts a detection so review timestamps point
+  /// back to the first recent window that contributed evidence, not the later
+  /// window where pooled scoring finally crossed the display threshold.
+  static DateTime? earliestSupportingTimestamp({
+    required List<List<double>> windowScores,
+    required List<DateTime> timestamps,
+    required int index,
+    required double supportThreshold,
+  }) {
+    assert(
+      windowScores.length == timestamps.length,
+      'windowScores and timestamps must have the same length',
+    );
+
+    for (var i = 0; i < windowScores.length; i++) {
+      final window = windowScores[i];
+      if (index >= 0 &&
+          index < window.length &&
+          window[index] >= supportThreshold) {
+        return timestamps[i];
+      }
+    }
+    return null;
+  }
+
+  /// Suppress new pooled detections that lack per-window support.
   ///
   /// [confirmedIndexes] are already visible detections from the previous
   /// inference cycle. They keep using pooled scores until they fall below the

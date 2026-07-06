@@ -150,10 +150,29 @@ class TaxonomySpecies {
 
   /// Get common name for a specific locale with fallback to English.
   String commonNameForLocale(String locale) {
-    if (commonNames != null && commonNames!.containsKey(locale)) {
-      return commonNames![locale]!;
+    final names = commonNames;
+    if (names != null) {
+      for (final candidate in _localeCandidates(locale)) {
+        final name = names[candidate];
+        if (name != null && name.isNotEmpty) return name;
+      }
     }
     return commonName;
+  }
+
+  static Iterable<String> _localeCandidates(String locale) sync* {
+    final normalized = locale.trim().replaceAll('_', '-');
+    if (normalized.isEmpty) return;
+
+    yield normalized;
+
+    final parts = normalized.split('-');
+    if (parts.length > 1) {
+      final country = parts[1].toUpperCase();
+      yield '${parts.first}_$country';
+      if (parts.first == 'zh' && country == 'CN') yield 'zh-CN';
+      yield parts.first;
+    }
   }
 
   // ---------------------------------------------------------------------------

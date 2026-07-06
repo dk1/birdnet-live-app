@@ -24,6 +24,15 @@ abstract final class AppConstants {
   static const String docsUrl =
       'https://birdnet-team.github.io/birdnet-live-app';
 
+  /// UI locales that have translated documentation on the docs site.
+  /// Other UI locales (e.g. nl, pl, ru) fall back to the English docs.
+  static const Set<String> docsLocales = {'de', 'cs', 'es', 'fr', 'it', 'pt'};
+
+  /// Docs-site path prefix for [languageCode] (e.g. `/de`), or an empty
+  /// string (English docs) when no translated docs exist for that locale.
+  static String docsLocalePrefix(String languageCode) =>
+      docsLocales.contains(languageCode) ? '/$languageCode' : '';
+
   /// Support email address.
   static const String supportEmail = 'ccb-birdnet@cornell.edu';
 

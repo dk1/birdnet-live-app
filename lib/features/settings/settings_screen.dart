@@ -1136,30 +1136,45 @@ class _LanguageTile extends ConsumerWidget {
   const _LanguageTile({required this.l10n});
   final AppLocalizations l10n;
 
+  static const double _dropdownWidth = 164;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localeProvider);
 
     return ListTile(
       title: Text(l10n.settingsAppLanguage),
-      trailing: DropdownButton<String?>(
-        value: locale?.languageCode,
-        underline: const SizedBox.shrink(),
-        items: const [
-          DropdownMenuItem(value: null, child: Text('System')),
-          DropdownMenuItem(value: 'en', child: Text('English')),
-          DropdownMenuItem(value: 'de', child: Text('Deutsch')),
-          DropdownMenuItem(value: 'fr', child: Text('Français')),
-          DropdownMenuItem(value: 'es', child: Text('Español')),
-          DropdownMenuItem(value: 'cs', child: Text('Čeština')),
-          DropdownMenuItem(value: 'pt', child: Text('Português')),
-          DropdownMenuItem(value: 'it', child: Text('Italiano')),
-        ],
-        onChanged: (value) {
-          ref
-              .read(localeProvider.notifier)
-              .setLocale(value == null ? null : Locale(value));
-        },
+      trailing: SizedBox(
+        width: _dropdownWidth,
+        child: DropdownButton<String?>(
+          value: locale?.languageCode,
+          isExpanded: true,
+          underline: const SizedBox.shrink(),
+          items: [
+            DropdownMenuItem(
+              value: null,
+              child: Text(
+                l10n.settingsSpeciesLanguageSystem,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const DropdownMenuItem(value: 'cs', child: Text('Čeština')),
+            const DropdownMenuItem(value: 'de', child: Text('Deutsch')),
+            const DropdownMenuItem(value: 'en', child: Text('English')),
+            const DropdownMenuItem(value: 'es', child: Text('Español')),
+            const DropdownMenuItem(value: 'fr', child: Text('Français')),
+            const DropdownMenuItem(value: 'it', child: Text('Italiano')),
+            const DropdownMenuItem(value: 'nl', child: Text('Nederlands')),
+            const DropdownMenuItem(value: 'pl', child: Text('Polski')),
+            const DropdownMenuItem(value: 'pt', child: Text('Português')),
+            const DropdownMenuItem(value: 'ru', child: Text('Русский')),
+          ],
+          onChanged: (value) {
+            ref
+                .read(localeProvider.notifier)
+                .setLocale(value == null ? null : Locale(value));
+          },
+        ),
       ),
     );
   }
@@ -1168,6 +1183,7 @@ class _LanguageTile extends ConsumerWidget {
 /// Available species name locales (code → native name).
 const _speciesLanguages = <String, String>{
   'system': '', // placeholder — label comes from l10n
+  'app': '', // placeholder — label comes from l10n
   'en': 'English',
   'de': 'Deutsch',
   'es': 'Español',
@@ -1183,16 +1199,16 @@ const _speciesLanguages = <String, String>{
   'bg': 'Български',
   'sv': 'Svenska',
   'da': 'Dansk',
-  'zh-CN': '中文 (简体)',
+  'zh-CN': '中文 (CN)',
   'tr': 'Türkçe',
   'sk': 'Slovenčina',
   'sr': 'Српски',
   'uk': 'Українська',
   'fi': 'Suomi',
-  'es_ES': 'Español (España)',
-  'es_MX': 'Español (México)',
-  'es_EC': 'Español (Ecuador)',
-  'pt_PT': 'Português (Portugal)',
+  'es_ES': 'Español (ES)',
+  'es_MX': 'Español (MX)',
+  'es_EC': 'Español (EC)',
+  'pt_PT': 'Português (PT)',
   'hr': 'Hrvatski',
   'lt': 'Lietuvių',
   'fa': 'فارسی',
@@ -1204,31 +1220,40 @@ class _SpeciesLanguageTile extends ConsumerWidget {
   const _SpeciesLanguageTile({required this.l10n});
   final AppLocalizations l10n;
 
+  static const double _dropdownWidth = _LanguageTile._dropdownWidth;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final speciesLang = ref.watch(speciesLanguageProvider);
 
     return ListTile(
       title: Text(l10n.settingsSpeciesLanguage),
-      trailing: DropdownButton<String>(
-        value: speciesLang,
-        underline: const SizedBox.shrink(),
-        items:
-            _speciesLanguages.entries.map((e) {
-              return DropdownMenuItem(
-                value: e.key,
-                child: Text(
-                  e.key == 'system'
-                      ? l10n.settingsSpeciesLanguageSystem
-                      : e.value,
-                ),
-              );
-            }).toList(),
-        onChanged: (value) {
-          if (value != null) {
-            ref.read(speciesLanguageProvider.notifier).set(value);
-          }
-        },
+      trailing: SizedBox(
+        width: _dropdownWidth,
+        child: DropdownButton<String>(
+          value: speciesLang,
+          isExpanded: true,
+          underline: const SizedBox.shrink(),
+          items:
+              _speciesLanguages.entries.map((e) {
+                return DropdownMenuItem(
+                  value: e.key,
+                  child: Text(
+                    e.key == 'system'
+                        ? l10n.settingsSpeciesLanguageSystem
+                        : e.key == 'app'
+                        ? l10n.settingsSpeciesLanguageFollowApp
+                        : e.value,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }).toList(),
+          onChanged: (value) {
+            if (value != null) {
+              ref.read(speciesLanguageProvider.notifier).set(value);
+            }
+          },
+        ),
       ),
     );
   }

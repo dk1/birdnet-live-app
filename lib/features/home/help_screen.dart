@@ -510,6 +510,6 @@ class _TipRow extends StatelessWidget {
 
 Future<void> _launchUserGuide(BuildContext context) async {
   final localeCode = Localizations.localeOf(context).languageCode;
-  final basePath = localeCode == 'en' ? '' : '/$localeCode';
+  final basePath = AppConstants.docsLocalePrefix(localeCode);
   await openExternalUrl(context, '${AppConstants.docsUrl}$basePath/user/');
 }

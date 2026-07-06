@@ -355,6 +355,47 @@ void main() {
   });
 
   group('PostProcessor.applyTemporalSupportGate', () {
+    test('earliestSupportingTimestamp returns first supporting window', () {
+      final timestamps = [
+        DateTime(2026, 1, 1, 12, 0, 0),
+        DateTime(2026, 1, 1, 12, 0, 1),
+        DateTime(2026, 1, 1, 12, 0, 2),
+      ];
+      final windows = [
+        [0.10, 0.20],
+        [0.31, 0.10],
+        [0.70, 0.80],
+      ];
+
+      final first = PostProcessor.earliestSupportingTimestamp(
+        windowScores: windows,
+        timestamps: timestamps,
+        index: 0,
+        supportThreshold: 0.30,
+      );
+
+      expect(first, timestamps[1]);
+    });
+
+    test('earliestSupportingTimestamp returns null without support', () {
+      final timestamps = [
+        DateTime(2026, 1, 1, 12, 0, 0),
+        DateTime(2026, 1, 1, 12, 0, 1),
+      ];
+
+      final first = PostProcessor.earliestSupportingTimestamp(
+        windowScores: [
+          [0.10],
+          [0.20],
+        ],
+        timestamps: timestamps,
+        index: 0,
+        supportThreshold: 0.30,
+      );
+
+      expect(first, isNull);
+    });
+
     test('suppresses a single high-scoring one-off false positive', () {
       final windows = [
         [0.05],

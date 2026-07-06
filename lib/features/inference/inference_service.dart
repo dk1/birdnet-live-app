@@ -16,7 +16,7 @@
 //
 // - [ClassifierModel] — low-level ONNX session wrapper
 // - [LabelParser] — configurable delimited-text parser for species labels
-// - [PostProcessor] — sigmoid, sensitivity, top-K
+// - [PostProcessor] — sensitivity, top-K
 //
 // ### Lifecycle
 //
@@ -62,7 +62,7 @@ class InferenceService {
   List<double> _scoreMultipliers = const [];
   ModelConfig? _config;
 
-  /// Rolling buffer of recent per-class probability vectors for temporal
+  /// Rolling buffer of recent raw per-class probability vectors for temporal
   /// pooling (newest last) with their start timestamps.
   final List<_TimestampedScores> _recentScores = [];
 
@@ -131,15 +131,16 @@ class InferenceService {
 
   /// Score-pooling mode driven by the user setting. Recognized values:
   /// `'off'` (no pooling — single-window scores), `'average'`,
-  /// `'max'`, `'lme'`, and `'adaptive_lme_peak'`. Unknown values fall back to
-  /// `'adaptive_lme_peak'`.
+  /// `'max'`, `'lme'`, and `'adaptive_lme_peak'`. Adaptive mode uses
+  /// average pooling at high inference rates and LME at low inference rates.
+  /// Unknown values fall back to `'adaptive_lme_peak'`.
   String _poolingMode = 'adaptive_lme_peak';
   String get poolingMode => _poolingMode;
 
   /// Override the pooling mode at runtime from a user setting. Pass
   /// `null` or an empty string to revert to `'adaptive_lme_peak'`. The rolling
   /// score buffer is cleared so a switch (e.g. lme → max) doesn't
-  /// cross-contaminate the new mode with stale logits.
+  /// cross-contaminate the new mode with stale scores.
   void setPoolingMode(String? mode) {
     final requested =
         (mode == null || mode.isEmpty) ? 'adaptive_lme_peak' : mode;
@@ -254,7 +255,14 @@ class InferenceService {
     // The model output is already sigmoid-activated (probabilities in [0, 1]).
     // Do NOT apply sigmoid again — that would flatten all near-zero
     // probabilities to ~0.5, making every detection appear at 50 %.
-    final probs = output.predictions;
+    final rawProbs = output.predictions;
+
+    // Sensitivity is an x-axis offset in logit space. Apply it to raw model
+    // probabilities before any pooling or filtering so downstream stages
+    // operate on the adjusted curve. The rolling buffer stores raw
+    // probabilities so a sensitivity change hot-applies consistently to every
+    // recent window used by the next pooled result.
+    final currentScores = PostProcessor.applySensitivityAll(rawProbs, sens);
 
     // Temporal pooling (optional).
     //
@@ -262,15 +270,16 @@ class InferenceService {
     // [useTemporalPooling] flag still acts as a hard override (set to
     // `false` by callers that want raw single-window probs).
     List<double> finalScores;
+    List<_TimestampedScores> poolingInput = [];
     List<List<double>> poolingInputScores = [];
 
     if (!useTemporalPooling || _poolingMode == 'off') {
       // Don't grow the rolling buffer when pooling is off — it would
       // re-pollute results if the user switches back to a pooled mode
       // mid-session.
-      finalScores = probs;
+      finalScores = currentScores;
     } else {
-      _recentScores.add(_TimestampedScores(now, probs));
+      _recentScores.add(_TimestampedScores(now, rawProbs));
       if (_recentScores.length > maxPoolWindows) {
         _recentScores.removeAt(0);
       }
@@ -283,8 +292,16 @@ class InferenceService {
                 age.inMicroseconds <= maxPoolAgeSeconds * 1000000;
           }).toList();
 
-      poolingInputScores =
-          validRecentTimestamped.map((ts) => ts.scores).toList();
+      poolingInput =
+          validRecentTimestamped
+              .map(
+                (ts) => _TimestampedScores(
+                  ts.timestamp,
+                  PostProcessor.applySensitivityAll(ts.scores, sens),
+                ),
+              )
+              .toList();
+      poolingInputScores = poolingInput.map((ts) => ts.scores).toList();
 
       switch (_poolingMode) {
         case 'adaptive_lme_peak':
@@ -322,13 +339,9 @@ class InferenceService {
       }
     }
 
-    // Sensitivity + top-K + threshold.
-    final sensitivityAdjusted = PostProcessor.applySensitivityAll(
-      finalScores,
-      sens,
-    );
+    // Score multipliers + top-K + threshold.
     final adjusted = ScoreBlacklist.applyMultipliers(
-      scores: sensitivityAdjusted,
+      scores: finalScores,
       multipliers: _scoreMultipliers,
     );
 
@@ -358,14 +371,18 @@ class InferenceService {
       timestamp: now,
     );
 
+    if (useTemporalPooling && poolingInput.isNotEmpty) {
+      detections = _withEarliestSupportTimestamps(
+        detections,
+        poolingInput,
+        cfg.inference.temporalPooling.supportThresholdFor(thresh),
+      );
+    }
+
     if (_poolingMode == 'adaptive_lme_peak' &&
         useTemporalPooling &&
         poolingInputScores.isNotEmpty) {
-      detections = _withRecentPeakConfidence(
-        detections,
-        poolingInputScores,
-        sens,
-      );
+      detections = _withRecentPeakConfidence(detections, poolingInputScores);
     }
 
     _confirmedDetectionIndexes
@@ -395,13 +412,11 @@ class InferenceService {
   List<Detection> _withRecentPeakConfidence(
     List<Detection> detections,
     List<List<double>> windowScores,
-    double sensitivity,
   ) {
     if (detections.isEmpty) return detections;
 
     final peaks = PostProcessor.recentPeakScores(
       windowScores,
-      sensitivity: sensitivity,
       multipliers: _scoreMultipliers,
     );
     final adjusted = <Detection>[];
@@ -422,6 +437,33 @@ class InferenceService {
 
     adjusted.sort((a, b) => b.confidence.compareTo(a.confidence));
     return adjusted;
+  }
+
+  List<Detection> _withEarliestSupportTimestamps(
+    List<Detection> detections,
+    List<_TimestampedScores> windowScores,
+    double supportThreshold,
+  ) {
+    if (detections.isEmpty || windowScores.isEmpty) return detections;
+
+    final scores = windowScores.map((ts) => ts.scores).toList();
+    final timestamps = windowScores.map((ts) => ts.timestamp).toList();
+
+    return [
+      for (final detection in detections)
+        Detection(
+          species: detection.species,
+          confidence: detection.confidence,
+          timestamp:
+              PostProcessor.earliestSupportingTimestamp(
+                windowScores: scores,
+                timestamps: timestamps,
+                index: detection.species.index,
+                supportThreshold: supportThreshold,
+              ) ??
+              detection.timestamp,
+        ),
+    ];
   }
 
   /// Clear the temporal pooling buffer.

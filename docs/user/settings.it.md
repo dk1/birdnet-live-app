@@ -19,7 +19,7 @@ Imposta la lingua dell'interfaccia.
 
 ### Nomi delle specie
 
-Controlla la lingua utilizzata per i nomi delle specie. **Segui la lingua dell'app** utilizza la stessa lingua dell'interfaccia quando quel nome è disponibile.
+Controlla la lingua utilizzata per i nomi delle specie. **Sistema** usa la lingua preferita del telefono quando quel nome è disponibile, anche se l'interfaccia torna all'inglese. **Segui app** usa invece la lingua dell'interfaccia.
 
 ### Mostra nomi scientifici
 
@@ -68,7 +68,7 @@ Imposta il modo in cui dovrebbero essere conservativi i rilevamenti.
 
 ### Sensibilità
 
-Valori più alti rendono il rilevatore più permissivo, che può recuperare le chiamate più deboli al costo di più falsi positivi.
+Uno spostamento sull'asse x applicato ai punteggi di probabilità grezzi del modello prima dello Score Pooling, del filtro geografico e della soglia di confidenza. Il modello audio BirdNET include già un'attivazione sigmoide, quindi BirdNET Live converte prima ogni probabilità nello spazio logit, aggiunge il bias di sensibilità e poi la riconverte in probabilità. Valori più alti rendono il rilevatore più permissivo: canti più deboli o ambigui superano la soglia, al costo di più falsi positivi. Valori più bassi sono più severi e lasciano passare solo rilevamenti sicuri. Il valore predefinito di **1,0** non applica alcuno spostamento e corrisponde al riferimento BirdNET. Prova **1,25** se sospetti che il modello perda canti lontani; scendi a **0,75** se sei sommerso da rilevamenti di bassa qualità di specie comuni. La sensibilità viene applicata a caldo: cambiarla durante una Session ha effetto dalla finestra di inferenza successiva.
 
 ### Tasso di inferenza
 

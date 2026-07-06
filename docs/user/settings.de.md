@@ -21,7 +21,7 @@ Legt die Sprache der Benutzeroberfläche fest.
 
 ### Artennamen
 
-Steuert die Sprache, die für Artennamen verwendet wird. **App-Sprache folgen** verwendet dieselbe Sprache wie die Benutzeroberfläche, sofern dieser Name verfügbar ist.
+Steuert die Sprache, die für Artennamen verwendet wird. **System** nutzt die bevorzugte Sprache des Telefons, sofern dieser Name verfügbar ist, auch wenn die Benutzeroberfläche auf Englisch zurückfällt. **App folgen** verwendet stattdessen die Sprache der Benutzeroberfläche.
 
 ### Wissenschaftliche Namen anzeigen
 
@@ -80,7 +80,7 @@ Legt fest, wie konservativ Detektionen sein sollen. Der Standard ist **35 %**, w
 
 ### Empfindlichkeit
 
-Steilheit der Sigmoidfunktion, die auf die rohe Klassifikatorausgabe angewendet wird, bevor der Konfidenzschwellenwert geprüft wird. Höhere Werte machen den Detektor freizügiger – schwächere oder mehrdeutige Rufe überschreiten die Schwelle, auf Kosten von mehr Fehltreffern. Niedrigere Werte sind strenger und lassen nur sichere Detektionen durch. Der Standard von **1,0** entspricht der BirdNET-Referenz. Probieren Sie **1,25**, wenn Sie vermuten, dass das Modell entfernte Rufe übersieht; gehen Sie auf **0,75**, wenn Sie von minderwertigen Detektionen häufiger Arten überflutet werden. Die Empfindlichkeit wird sofort angewendet: Eine Änderung während der Session greift im nächsten Inferenzfenster.
+Ein x-Achsen-Offset auf den rohen Wahrscheinlichkeits-Scores des Modells, bevor Score-Pooling, geografische Filterung und der Konfidenzschwellenwert greifen. Das BirdNET-Audiomodell enthält bereits eine Sigmoid-Aktivierung; BirdNET Live wandelt deshalb jede Wahrscheinlichkeit zuerst zurück in den Logit-Raum, addiert den Empfindlichkeits-Bias und wandelt sie dann wieder in eine Wahrscheinlichkeit um. Höhere Werte machen den Detektor freizügiger – schwächere oder mehrdeutige Rufe überschreiten die Schwelle, auf Kosten von mehr Fehltreffern. Niedrigere Werte sind strenger und lassen nur sichere Detektionen durch. Der Standard von **1,0** wendet keinen Offset an und entspricht der BirdNET-Referenz. Probieren Sie **1,25**, wenn Sie vermuten, dass das Modell entfernte Rufe übersieht; gehen Sie auf **0,75**, wenn Sie von minderwertigen Detektionen häufiger Arten überflutet werden. Die Empfindlichkeit wird sofort angewendet: Eine Änderung während der Session greift im nächsten Inferenzfenster.
 
 ### Inferenzrate
 
@@ -88,7 +88,7 @@ Steuert, wie oft BirdNET die Inferenz ausführt.
 
 ### Score-Pooling
 
-Kombiniert die Scores über die jüngsten Inferenzfenster, sodass ein einzelnes verrauschtes Fenster das Ergebnis nicht dominiert. **Aus** verwendet die rohe Wahrscheinlichkeit jedes Fensters – am reaktivsten, am verrauschtesten. **Durchschnitt** bildet das arithmetische Mittel der jüngsten Fenster für die glatteste Ausgabe. **Max** behält den lautesten Spitzenwert pro Art und ist damit der reaktivste Glättungsmodus, gut für kurze, scharfe Rufe. **LME** (Log-Mean-Exp, der Standard) ist BirdNETs Referenz-Softmaximum: Es verhält sich wie *Max*, wenn ein Fenster dominiert, und wie *Durchschnitt*, wenn mehrere Fenster übereinstimmen. Im LME-Modus benötigt eine neue Art zudem wiederholte Unterstützung über mehrere Rohfenster, bevor sie erstmals erscheint, während gestützte Detektionen den Großteil ihres stärksten jüngsten Roh-Scores behalten und bereits sichtbare Arten so lange bestehen bleiben, bis ihr gepoolter Score unter den Konfidenzschwellenwert fällt. Ein Moduswechsel während der Session leert den gleitenden Puffer, damit keine alten Scores in den neuen Modus übergehen.
+Kombiniert die Scores über die jüngsten Inferenzfenster, sodass ein einzelnes verrauschtes Fenster das Ergebnis nicht dominiert. **Aus** verwendet die Wahrscheinlichkeit jedes Fensters – am reaktivsten, am verrauschtesten. **Durchschnitt** bildet das arithmetische Mittel der jüngsten Fenster für die glatteste Ausgabe. **Max** behält den lautesten Spitzenwert pro Art und ist damit der reaktivste Glättungsmodus, gut für kurze, scharfe Rufe. **LME** (Log-Mean-Exp, der Standard) ist BirdNETs Referenz-Softmaximum: Es verhält sich wie *Max*, wenn ein Fenster dominiert, und wie *Durchschnitt*, wenn mehrere Fenster übereinstimmen. Im LME-Modus benötigt eine neue Art zudem wiederholte Unterstützung über mehrere einzelne Fenster, bevor sie erstmals erscheint, während gestützte Detektionen den Großteil ihres stärksten jüngsten Fenster-Scores behalten und bereits sichtbare Arten so lange bestehen bleiben, bis ihr gepoolter Score unter den Konfidenzschwellenwert fällt. Ein Moduswechsel während der Session leert den gleitenden Puffer, damit keine alten Scores in den neuen Modus übergehen.
 
 ### Anzahl Pooling-Fenster
 

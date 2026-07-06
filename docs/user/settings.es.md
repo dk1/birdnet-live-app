@@ -21,7 +21,7 @@ Establece el idioma de la interfaz.
 
 ### Nombres de especies
 
-Controla el idioma usado para los nombres de las especies. **Usar idioma de la aplicación** emplea el mismo idioma que la interfaz cuando ese nombre está disponible.
+Controla el idioma usado para los nombres de las especies. **Sistema** usa el idioma preferido del teléfono cuando ese nombre está disponible, aunque la interfaz vuelva al inglés. **Seguir app** usa en cambio el idioma de la interfaz.
 
 ### Mostrar nombres científicos
 
@@ -80,7 +80,7 @@ Establece cuán exigentes deben ser las detecciones. El valor predeterminado es 
 
 ### Sensibilidad
 
-Pendiente de la sigmoide aplicada a la salida bruta del clasificador antes de comprobar el umbral de confianza. Los valores más altos hacen el detector más permisivo: cantos más débiles o ambiguos superan el umbral, a costa de más falsos positivos. Los valores más bajos son más estrictos y solo dejan pasar detecciones seguras. El valor predeterminado de **1.0** coincide con la referencia de BirdNET. Prueba **1.25** si sospechas que el modelo se pierde cantos lejanos; baja a **0.75** si te inundan detecciones de baja calidad de especies comunes. La sensibilidad se aplica en caliente: cambiarla a mitad de una Session surte efecto en la siguiente ventana de inferencia.
+Un desplazamiento en el eje x aplicado a las puntuaciones de probabilidad brutas del modelo antes del Score Pooling, el filtrado geográfico y el umbral de confianza. El modelo de audio de BirdNET ya incluye una activación sigmoide, así que BirdNET Live convierte primero cada probabilidad de vuelta al espacio logit, suma el sesgo de sensibilidad y luego la convierte de nuevo en probabilidad. Los valores más altos hacen el detector más permisivo: cantos más débiles o ambiguos superan el umbral, a costa de más falsos positivos. Los valores más bajos son más estrictos y solo dejan pasar detecciones seguras. El valor predeterminado de **1.0** no aplica desplazamiento y coincide con la referencia de BirdNET. Prueba **1.25** si sospechas que el modelo se pierde cantos lejanos; baja a **0.75** si te inundan detecciones de baja calidad de especies comunes. La sensibilidad se aplica en caliente: cambiarla a mitad de una Session surte efecto en la siguiente ventana de inferencia.
 
 ### Tasa de inferencia
 
@@ -88,7 +88,7 @@ Controla con qué frecuencia BirdNET ejecuta la inferencia.
 
 ### Score Pooling
 
-Combina las puntuaciones de las ventanas de inferencia recientes para que una sola ventana ruidosa no domine el resultado. **Desactivado** usa la probabilidad bruta de cada ventana: el modo más reactivo y más ruidoso. **Promedio** calcula la media aritmética de las ventanas recientes para obtener la salida más suave. **Max** conserva el pico más alto por especie, el modo de suavizado más reactivo y bueno para cantos breves y nítidos. **LME** (log-mean-exp, el predeterminado) es el máximo suave de referencia de BirdNET: se comporta como *max* cuando una ventana domina y como *promedio* cuando varias coinciden. En el modo LME, una especie nueva necesita además el respaldo repetido de varias ventanas brutas antes de aparecer por primera vez, mientras que las detecciones respaldadas conservan la mayor parte de su puntuación bruta reciente más fuerte y las especies ya visibles continúan hasta que su puntuación combinada cae por debajo del umbral de confianza. Cambiar de modo a mitad de una Session vacía el búfer móvil para que las puntuaciones antiguas no se filtren al nuevo modo.
+Combina las puntuaciones de las ventanas de inferencia recientes para que una sola ventana ruidosa no domine el resultado. **Desactivado** usa la probabilidad de cada ventana: el modo más reactivo y más ruidoso. **Promedio** calcula la media aritmética de las ventanas recientes para obtener la salida más suave. **Max** conserva el pico más alto por especie, el modo de suavizado más reactivo y bueno para cantos breves y nítidos. **LME** (log-mean-exp, el predeterminado) es el máximo suave de referencia de BirdNET: se comporta como *max* cuando una ventana domina y como *promedio* cuando varias coinciden. En el modo LME, una especie nueva necesita además el respaldo repetido de varias ventanas individuales antes de aparecer por primera vez, mientras que las detecciones respaldadas conservan la mayor parte de su puntuación reciente más fuerte de una sola ventana y las especies ya visibles continúan hasta que su puntuación combinada cae por debajo del umbral de confianza. Cambiar de modo a mitad de una Session vacía el búfer móvil para que las puntuaciones antiguas no se filtren al nuevo modo.
 
 ### Número de ventanas de pooling
 
