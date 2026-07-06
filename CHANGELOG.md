@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Apply the Sensitivity setting immediately after audio-model inference, before score pooling and filtering, by offsetting the model's sigmoid probabilities in logit space.
+
 ## [0.18.4] - 2026-07-05
 
 ### Added
