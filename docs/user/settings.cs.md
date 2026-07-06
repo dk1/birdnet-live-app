@@ -21,7 +21,7 @@ Nastaví jazyk rozhraní.
 
 ### Názvy druhů
 
-Řídí jazyk používaný pro názvy druhů. **Následovat jazyk aplikace** používá stejný jazyk jako rozhraní, pokud je daný název k dispozici.
+Řídí jazyk používaný pro názvy druhů. **Systém** používá preferovaný jazyk telefonu, pokud je daný název k dispozici, i když rozhraní přejde na angličtinu. **Sledovat aplikaci** místo toho používá jazyk rozhraní.
 
 ### Zobrazit vědecké názvy
 

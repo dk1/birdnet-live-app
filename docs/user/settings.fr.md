@@ -21,7 +21,7 @@ Définit la langue de l'interface.
 
 ### Noms des espèces
 
-Contrôle la langue utilisée pour les noms d'espèces. **Utiliser la langue de l'application** emploie la même langue que l'interface lorsque ce nom est disponible.
+Contrôle la langue utilisée pour les noms d'espèces. **Système** utilise la langue préférée du téléphone lorsque ce nom est disponible, même si l'interface revient à l'anglais. **Suivre l'app** utilise plutôt la langue de l'interface.
 
 ### Afficher les noms scientifiques
 

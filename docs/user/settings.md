@@ -23,7 +23,7 @@ Sets the interface language.
 
 ### Species Names
 
-Controls the language used for species names. **Follow app language** uses the same language as the interface when that name is available.
+Controls the language used for species names. **System** uses the phone's preferred language when that name is available, even if the interface falls back to English. **Follow app** uses the interface language instead.
 
 ### Show scientific names
 

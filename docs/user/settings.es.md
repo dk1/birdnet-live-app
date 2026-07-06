@@ -21,7 +21,7 @@ Establece el idioma de la interfaz.
 
 ### Nombres de especies
 
-Controla el idioma usado para los nombres de las especies. **Usar idioma de la aplicación** emplea el mismo idioma que la interfaz cuando ese nombre está disponible.
+Controla el idioma usado para los nombres de las especies. **Sistema** usa el idioma preferido del teléfono cuando ese nombre está disponible, aunque la interfaz vuelva al inglés. **Seguir app** usa en cambio el idioma de la interfaz.
 
 ### Mostrar nombres científicos
 

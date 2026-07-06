@@ -1168,6 +1168,7 @@ class _LanguageTile extends ConsumerWidget {
 /// Available species name locales (code → native name).
 const _speciesLanguages = <String, String>{
   'system': '', // placeholder — label comes from l10n
+  'app': '', // placeholder — label comes from l10n
   'en': 'English',
   'de': 'Deutsch',
   'es': 'Español',
@@ -1220,6 +1221,8 @@ class _SpeciesLanguageTile extends ConsumerWidget {
                 child: Text(
                   e.key == 'system'
                       ? l10n.settingsSpeciesLanguageSystem
+                      : e.key == 'app'
+                      ? l10n.settingsSpeciesLanguageFollowApp
                       : e.value,
                 ),
               );

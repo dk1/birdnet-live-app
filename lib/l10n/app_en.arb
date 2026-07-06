@@ -236,9 +236,13 @@
   "@settingsSpeciesLanguage": {
     "description": "Species name language selection setting"
   },
-  "settingsSpeciesLanguageSystem": "Follow app language",
+  "settingsSpeciesLanguageSystem": "System",
   "@settingsSpeciesLanguageSystem": {
-    "description": "Option to follow app language for species names"
+    "description": "Option to use the system locale for species names"
+  },
+  "settingsSpeciesLanguageFollowApp": "Follow app",
+  "@settingsSpeciesLanguageFollowApp": {
+    "description": "Option to use the app interface language for species names"
   },
   "settingsTheme": "Theme",
   "@settingsTheme": {

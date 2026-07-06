@@ -19,7 +19,7 @@ Imposta la lingua dell'interfaccia.
 
 ### Nomi delle specie
 
-Controlla la lingua utilizzata per i nomi delle specie. **Segui la lingua dell'app** utilizza la stessa lingua dell'interfaccia quando quel nome è disponibile.
+Controlla la lingua utilizzata per i nomi delle specie. **Sistema** usa la lingua preferita del telefono quando quel nome è disponibile, anche se l'interfaccia torna all'inglese. **Segui app** usa invece la lingua dell'interfaccia.
 
 ### Mostra nomi scientifici
 

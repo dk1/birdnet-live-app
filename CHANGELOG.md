@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Localized the compact session status line under the Live Mode and Point Count spectrogram (the "now", "spp", and "det" tokens were previously hardcoded in English).
 - Fixed Live Mode detection timestamps so pooled detections are anchored to the analyzed audio window, not inference completion time, and session review can show the earliest supporting recent window.
+- Fixed species common-name fallback so the default System setting uses the phone's preferred language when the bundled taxonomy includes it, while the separate Follow app option still follows the interface language.
 
 ## [0.18.3] - 2026-07-02
 

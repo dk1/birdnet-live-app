@@ -21,7 +21,7 @@ Legt die Sprache der Benutzeroberfläche fest.
 
 ### Artennamen
 
-Steuert die Sprache, die für Artennamen verwendet wird. **App-Sprache folgen** verwendet dieselbe Sprache wie die Benutzeroberfläche, sofern dieser Name verfügbar ist.
+Steuert die Sprache, die für Artennamen verwendet wird. **System** nutzt die bevorzugte Sprache des Telefons, sofern dieser Name verfügbar ist, auch wenn die Benutzeroberfläche auf Englisch zurückfällt. **App folgen** verwendet stattdessen die Sprache der Benutzeroberfläche.
 
 ### Wissenschaftliche Namen anzeigen
 
