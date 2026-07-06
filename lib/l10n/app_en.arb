@@ -2181,7 +2181,7 @@
   "@settingsHelpConfidenceThreshold": {
     "description": "Help text for confidence threshold setting"
   },
-  "settingsHelpSensitivity": "Logistic sigmoid steepness applied to model logits. Higher values push uncertain scores toward extremes (more high-confidence detections plus more false positives). Leave at 1.0 unless you know what you're doing.",
+  "settingsHelpSensitivity": "X-axis offset applied to raw model probabilities before score pooling and filtering. The app converts probabilities back to logit space, adds the sensitivity bias, then converts them back. Higher values catch fainter calls but can increase false positives.",
   "@settingsHelpSensitivity": {
     "description": "Help text for sensitivity setting"
   },

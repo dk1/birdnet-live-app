@@ -116,7 +116,8 @@ class SessionSettings {
   // what produced the detections instead of pretending the user never
   // touched the defaults. All nullable so legacy sessions round-trip.
 
-  /// Sensitivity multiplier applied to model logits (1.0 = neutral).
+  /// Sensitivity offset applied to model probabilities in logit space
+  /// (1.0 = neutral).
   final double? sensitivity;
 
   /// Score pooling mode (`avg`, `max`, `lme`, `adaptive_lme_peak`, etc.)

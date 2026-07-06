@@ -9,7 +9,7 @@
 // `flutter_onnxruntime` (the runtime we now ship) talks to the native ORT
 // session via platform channels and runs inference on a native background
 // thread queue, so the heavy work already happens off the UI thread.  The
-// remaining Dart-side post-processing (sigmoid, sort, top-K) takes
+// remaining Dart-side post-processing (sensitivity, sort, top-K) takes
 // sub-millisecond on the 9,789-class label space and is safe to run on the
 // root isolate.
 //
