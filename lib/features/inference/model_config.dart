@@ -350,19 +350,19 @@ class TemporalPoolingConfig {
   /// LME alpha — higher values weight peaks more heavily.
   final double alpha;
 
-  /// Fraction of the strongest recent raw score retained in LME mode.
+  /// Fraction of the strongest recent per-window score retained in LME mode.
   final double peakRetention;
 
   /// Maximum real-time age for windows included in temporal pooling.
   final double maxAgeSeconds;
 
-  /// Number of raw recent windows required before a new LME detection appears.
+  /// Number of recent per-window scores required before a new LME detection appears.
   final int minSupportWindows;
 
-  /// Fraction of the active confidence threshold used for raw-window support.
+  /// Fraction of the active confidence threshold used for per-window support.
   final double supportThresholdFraction;
 
-  /// Lower bound for the raw-window support threshold.
+  /// Lower bound for the per-window support threshold.
   final double supportThresholdFloor;
 
   /// Raw current-window score high enough to bypass multi-window support.

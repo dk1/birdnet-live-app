@@ -131,8 +131,9 @@ class InferenceService {
 
   /// Score-pooling mode driven by the user setting. Recognized values:
   /// `'off'` (no pooling — single-window scores), `'average'`,
-  /// `'max'`, `'lme'`, and `'adaptive_lme_peak'`. Unknown values fall back to
-  /// `'adaptive_lme_peak'`.
+  /// `'max'`, `'lme'`, and `'adaptive_lme_peak'`. Adaptive mode uses
+  /// average pooling at high inference rates and LME at low inference rates.
+  /// Unknown values fall back to `'adaptive_lme_peak'`.
   String _poolingMode = 'adaptive_lme_peak';
   String get poolingMode => _poolingMode;
 
@@ -269,6 +270,7 @@ class InferenceService {
     // [useTemporalPooling] flag still acts as a hard override (set to
     // `false` by callers that want raw single-window probs).
     List<double> finalScores;
+    List<_TimestampedScores> poolingInput = [];
     List<List<double>> poolingInputScores = [];
 
     if (!useTemporalPooling || _poolingMode == 'off') {
@@ -290,10 +292,16 @@ class InferenceService {
                 age.inMicroseconds <= maxPoolAgeSeconds * 1000000;
           }).toList();
 
-      poolingInputScores =
+      poolingInput =
           validRecentTimestamped
-              .map((ts) => PostProcessor.applySensitivityAll(ts.scores, sens))
+              .map(
+                (ts) => _TimestampedScores(
+                  ts.timestamp,
+                  PostProcessor.applySensitivityAll(ts.scores, sens),
+                ),
+              )
               .toList();
+      poolingInputScores = poolingInput.map((ts) => ts.scores).toList();
 
       switch (_poolingMode) {
         case 'adaptive_lme_peak':
@@ -363,6 +371,14 @@ class InferenceService {
       timestamp: now,
     );
 
+    if (useTemporalPooling && poolingInput.isNotEmpty) {
+      detections = _withEarliestSupportTimestamps(
+        detections,
+        poolingInput,
+        cfg.inference.temporalPooling.supportThresholdFor(thresh),
+      );
+    }
+
     if (_poolingMode == 'adaptive_lme_peak' &&
         useTemporalPooling &&
         poolingInputScores.isNotEmpty) {
@@ -421,6 +437,33 @@ class InferenceService {
 
     adjusted.sort((a, b) => b.confidence.compareTo(a.confidence));
     return adjusted;
+  }
+
+  List<Detection> _withEarliestSupportTimestamps(
+    List<Detection> detections,
+    List<_TimestampedScores> windowScores,
+    double supportThreshold,
+  ) {
+    if (detections.isEmpty || windowScores.isEmpty) return detections;
+
+    final scores = windowScores.map((ts) => ts.scores).toList();
+    final timestamps = windowScores.map((ts) => ts.timestamp).toList();
+
+    return [
+      for (final detection in detections)
+        Detection(
+          species: detection.species,
+          confidence: detection.confidence,
+          timestamp:
+              PostProcessor.earliestSupportingTimestamp(
+                windowScores: scores,
+                timestamps: timestamps,
+                index: detection.species.index,
+                supportThreshold: supportThreshold,
+              ) ??
+              detection.timestamp,
+        ),
+    ];
   }
 
   /// Clear the temporal pooling buffer.

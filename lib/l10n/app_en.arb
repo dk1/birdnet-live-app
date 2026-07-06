@@ -2209,7 +2209,7 @@
   "@settingsHelpDetectedSpeciesSortOccurrences": {
     "description": "Help text for occurrence-count all-species sorting"
   },
-  "settingsHelpScorePooling": "How scores from overlapping analysis windows are combined. 'Max' is most reactive; 'average' smooths flickering; 'LME' (log-mean-exp) is a soft maximum that balances both, requires repeated raw-window support before a new species first appears, and keeps supported high scores close to their strongest recent raw score.",
+  "settingsHelpScorePooling": "How scores from overlapping analysis windows are combined. 'Max' is most reactive; 'average' smooths flickering; 'LME' (log-mean-exp) is a soft maximum that balances both, requires repeated per-window support before a new species first appears, and keeps supported high scores close to their strongest recent per-window score.",
   "@settingsHelpScorePooling": {
     "description": "Help text for score pooling setting"
   },

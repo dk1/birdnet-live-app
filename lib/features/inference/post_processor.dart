@@ -181,7 +181,8 @@ abstract final class PostProcessor {
   ///
   /// [alpha] controls smoothing: higher values emphasise peaks (default 5.0,
   /// matching the BirdNET PWA reference implementation). [peakRetention]
-  /// optionally keeps the pooled score close to the strongest recent raw score;
+  /// optionally keeps the pooled score close to the strongest recent
+  /// per-window score;
   /// temporal support gating should be used with this so one-off spikes do not
   /// become first detections.
   static List<double> logMeanExp(
@@ -279,7 +280,7 @@ abstract final class PostProcessor {
     return peaks;
   }
 
-  /// Whether class [index] has enough raw-window support to appear.
+  /// Whether class [index] has enough per-window support to appear.
   ///
   /// This is separate from LME scoring: LME preserves high peaks, while this
   /// gate prevents a single unsupported peak from becoming a first detection.
@@ -307,7 +308,34 @@ abstract final class PostProcessor {
     return false;
   }
 
-  /// Suppress new pooled detections that lack raw-window support.
+  /// Earliest timestamp whose score supports a detected class.
+  ///
+  /// Used after temporal pooling accepts a detection so review timestamps point
+  /// back to the first recent window that contributed evidence, not the later
+  /// window where pooled scoring finally crossed the display threshold.
+  static DateTime? earliestSupportingTimestamp({
+    required List<List<double>> windowScores,
+    required List<DateTime> timestamps,
+    required int index,
+    required double supportThreshold,
+  }) {
+    assert(
+      windowScores.length == timestamps.length,
+      'windowScores and timestamps must have the same length',
+    );
+
+    for (var i = 0; i < windowScores.length; i++) {
+      final window = windowScores[i];
+      if (index >= 0 &&
+          index < window.length &&
+          window[index] >= supportThreshold) {
+        return timestamps[i];
+      }
+    }
+    return null;
+  }
+
+  /// Suppress new pooled detections that lack per-window support.
   ///
   /// [confirmedIndexes] are already visible detections from the previous
   /// inference cycle. They keep using pooled scores until they fall below the

@@ -5,12 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Changed
-
-- Apply the Sensitivity setting immediately after audio-model inference, before score pooling and filtering, by offsetting the model's sigmoid probabilities in logit space.
-
 ## [0.18.4] - 2026-07-05
 
 ### Added
@@ -20,10 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Tuned the session-mode accent colors for the high-contrast themes so each mode stays legible and distinct against the black-and-white surfaces, and switched the "detected" badges and detection-stats marker to a high-contrast-aware brand-blue/black styling.
+- Apply the Sensitivity setting immediately after audio-model inference, before score pooling and filtering, by offsetting the model's sigmoid probabilities in logit space.
 
 ### Fixed
 
 - Localized the compact session status line under the Live Mode and Point Count spectrogram (the "now", "spp", and "det" tokens were previously hardcoded in English).
+- Fixed Live Mode detection timestamps so pooled detections are anchored to the analyzed audio window, not inference completion time, and session review can show the earliest supporting recent window.
 
 ## [0.18.3] - 2026-07-02
 
