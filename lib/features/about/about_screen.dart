@@ -203,7 +203,7 @@ class AboutScreen extends ConsumerWidget {
               onTap:
                   () => openExternalUrl(
                     context,
-                    '${AppConstants.docsUrl}${Localizations.localeOf(context).languageCode == 'en' ? '' : '/${Localizations.localeOf(context).languageCode}'}/user/',
+                    '${AppConstants.docsUrl}${AppConstants.docsLocalePrefix(Localizations.localeOf(context).languageCode)}/user/',
                   ),
             ),
             ListTile(
@@ -213,7 +213,7 @@ class AboutScreen extends ConsumerWidget {
               onTap:
                   () => openExternalUrl(
                     context,
-                    '${AppConstants.docsUrl}${Localizations.localeOf(context).languageCode == 'en' ? '' : '/${Localizations.localeOf(context).languageCode}'}/privacy/',
+                    '${AppConstants.docsUrl}${AppConstants.docsLocalePrefix(Localizations.localeOf(context).languageCode)}/privacy/',
                   ),
             ),
             ListTile(
@@ -223,7 +223,7 @@ class AboutScreen extends ConsumerWidget {
               onTap:
                   () => openExternalUrl(
                     context,
-                    '${AppConstants.docsUrl}${Localizations.localeOf(context).languageCode == 'en' ? '' : '/${Localizations.localeOf(context).languageCode}'}/terms/',
+                    '${AppConstants.docsUrl}${AppConstants.docsLocalePrefix(Localizations.localeOf(context).languageCode)}/terms/',
                   ),
             ),
             ListTile(

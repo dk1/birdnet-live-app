@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added Live Mode and Point Count General settings to show all species detected during the current session, with sorting by newest detection, confidence, common name, or occurrence count, repeated-detection count chips, and dimmed inactive rows that hide confidence visuals. In newest-first sorting, currently vocalizing species float to the top ordered by their current confidence.
+- Added ru, pl and nl locales
 
 ### Changed
 
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Localized the compact session status line under the Live Mode and Point Count spectrogram (the "now", "spp", and "det" tokens were previously hardcoded in English).
 - Fixed Live Mode detection timestamps so pooled detections are anchored to the analyzed audio window, not inference completion time, and session review can show the earliest supporting recent window.
 - Fixed species common-name fallback so the default System setting uses the phone's preferred language when the bundled taxonomy includes it, while the separate Follow app option still follows the interface language.
+- Polished all locales
 
 ## [0.18.3] - 2026-07-02
 

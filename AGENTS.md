@@ -32,7 +32,7 @@ This file is for coding agents working in this repository.
 
 ## Core Rules
 
-- Always keep user-facing strings translated in all 7 locales: en, de, cs, es, fr, it, pt.
+- Always keep user-facing strings translated in all 10 locales: en, de, cs, es, fr, it, pt, nl, pl, ru.
 - After ARB edits, run flutter gen-l10n and verify no missing keys.
 - Use l10n keys in UI; do not hardcode user-facing text.
 - Keep these technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Smart.

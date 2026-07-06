@@ -36,7 +36,7 @@ lib/
     home/        # Home screen / main menu
     onboarding/  # Intro carousel + terms gate
     about/       # Credits, links, legal
-  l10n/          # ARB localization files (en, de, cs, es, fr, it, pt)
+  l10n/          # ARB localization files (en, de, cs, es, fr, it, pt, nl, pl, ru)
 ```
 
 ## Getting Started

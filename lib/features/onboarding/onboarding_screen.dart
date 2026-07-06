@@ -861,7 +861,7 @@ class _TermsPage extends StatelessWidget {
 
   Future<void> _open(BuildContext context, String path) async {
     final localeCode = Localizations.localeOf(context).languageCode;
-    final basePath = localeCode == 'en' ? '' : '/$localeCode';
+    final basePath = AppConstants.docsLocalePrefix(localeCode);
     await openExternalUrl(context, '${AppConstants.docsUrl}$basePath$path');
   }
 
