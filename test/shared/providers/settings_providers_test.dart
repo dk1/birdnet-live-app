@@ -172,7 +172,7 @@ void main() {
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
             platformLocalesProvider.overrideWithValue(const [
-              Locale('ru', 'RU'),
+              Locale('ja', 'JP'),
             ]),
           ],
         );
