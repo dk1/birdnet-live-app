@@ -416,6 +416,7 @@
   "exploreHelpLearnMore": "Více o geomodelu",
   "speciesDescriptionSource": "Zdroj: {source}",
   "speciesLearnMore": "Více o tomto druhu",
+  "speciesListenOnEbird": "Poslechněte si tento druh na eBird",
   "settingsSensitivity": "Citlivost",
   "settingsSensitivityDescription": "Vyšší hodnoty detekují více druhů, ale zvyšují falešné detekce",
   "settingsScorePooling": "Score Pooling",

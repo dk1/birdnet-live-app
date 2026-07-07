@@ -132,6 +132,18 @@ class TaxonomySpecies {
   String? get ebirdUrl =>
       ebirdCode != null ? 'https://ebird.org/species/$ebirdCode' : null;
 
+  /// eBird / Macaulay Library audio catalog for this species, sorted with the
+  /// best-quality recording first (if an eBird code is available).
+  ///
+  /// The species page's own "Listen" player is a click-only JavaScript overlay
+  /// with no deep-link, so we point at the public media catalog instead: it
+  /// opens in the browser with one-tap playable recordings and needs no login.
+  String? get ebirdListenUrl =>
+      ebirdCode != null
+          ? 'https://media.ebird.org/catalog?taxonCode=$ebirdCode'
+              '&mediaType=audio&sort=rating_rank_desc'
+          : null;
+
   /// iNaturalist species page URL (if iNat ID is available).
   String? get inatUrl =>
       inatId != null ? 'https://www.inaturalist.org/taxa/$inatId' : null;

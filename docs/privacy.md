@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** May 2026
+**Last updated:** July 2026
 
 BirdNET Live respects your privacy. This document explains how the app handles your data.
 
@@ -53,6 +53,12 @@ Weather requests send the session's latitude / longitude and end timestamp to `a
 **Revocation:** you can disable any of the three services at any time under **Settings → Privacy**. Existing locally-stored place names and weather snapshots remain attached to the sessions where they were captured; delete those sessions from Session Library or use **Settings → Danger Zone → Clear All Data** to remove that historical data.
 
 **No other network requests are made.** The app functions fully offline.
+
+## External Links
+
+BirdNET Live includes links to third-party websites that you can choose to open — for example, a species' **eBird**, **iNaturalist**, and **Wikipedia** pages and the *"Listen to this species on eBird"* audio link in the species view, plus links to the BirdNET project website, source code, user guide, and donation page from the **About** screen. Links that leave the app are marked with an external-link icon (↗) so you can recognize them before tapping.
+
+Nothing is sent while a link is merely displayed, and no external link is ever opened automatically — a browser opens only when you tap one. When you do, the link opens in your device's default web browser and you leave BirdNET Live. The destination is operated by a third party and governed by **its own** privacy policy and terms, not this one. Such sites may independently collect information about your visit — for example your IP address, device or browser details, and how you interact with their pages — and may set their own cookies. We do not control and are not responsible for the content or data practices of external websites; please review each site's own privacy policy.
 
 ## GPS & Location
 

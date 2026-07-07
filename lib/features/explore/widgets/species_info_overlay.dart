@@ -231,6 +231,43 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                         : const SizedBox.shrink(),
               ),
 
+              // ── Listen on eBird ─────────────────────────────────
+              // Prominent, clearly-external call-to-action placed above the
+              // detection-stats box. Shown only when the taxonomy carries an
+              // eBird code; opens the public eBird / Macaulay Library audio
+              // catalog in the browser. (The species page's own "Listen" player
+              // is a click-only JavaScript modal with no deep-link, so it can't
+              // be triggered from an external URL.) Tonal button colors resolve
+              // to secondaryContainer/onSecondaryContainer, which every app
+              // theme defines with strong contrast (incl. high-contrast).
+              if (_detail?.ebirdListenUrl != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FilledButton.tonalIcon(
+                      onPressed:
+                          () => openExternalUrl(
+                            context,
+                            _detail!.ebirdListenUrl!,
+                          ),
+                      icon: const Icon(AppIcons.volumeUpRounded),
+                      label: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(child: Text(l10n.speciesListenOnEbird)),
+                          const SizedBox(width: 8),
+                          Icon(
+                            AppIcons.openInNew,
+                            size: 16,
+                            color: theme.colorScheme.onSecondaryContainer,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
               // ── Personal detection stats ─────────────────────
               // Aggregated from the user's saved sessions so they can see
               // at a glance how often (and when last) they have logged

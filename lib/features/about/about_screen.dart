@@ -213,7 +213,7 @@ class AboutScreen extends ConsumerWidget {
               onTap:
                   () => openExternalUrl(
                     context,
-                    '${AppConstants.docsUrl}${AppConstants.docsLocalePrefix(Localizations.localeOf(context).languageCode)}/privacy/',
+                    '${AppConstants.docsUrl}${AppConstants.policyDocsLocalePrefix(Localizations.localeOf(context).languageCode)}/privacy/',
                   ),
             ),
             ListTile(
@@ -223,7 +223,7 @@ class AboutScreen extends ConsumerWidget {
               onTap:
                   () => openExternalUrl(
                     context,
-                    '${AppConstants.docsUrl}${AppConstants.docsLocalePrefix(Localizations.localeOf(context).languageCode)}/acceptable-use/',
+                    '${AppConstants.docsUrl}${AppConstants.policyDocsLocalePrefix(Localizations.localeOf(context).languageCode)}/acceptable-use/',
                   ),
             ),
             ListTile(

@@ -1,6 +1,6 @@
 # Zásady ochrany osobních údajů
 
-**Poslední aktualizace:** Květen 2026
+**Poslední aktualizace:** Červenec 2026
 
 BirdNET Live respektuje vaše soukromí. Tento dokument vysvětluje, jak aplikace nakládá s vašimi údaji.
 
@@ -54,11 +54,30 @@ Požadavky na počasí odesílají lat/lon Session a koncový čas na `api.open-
 
 **Žádné další síťové požadavky se neprovádějí.** Aplikace funguje plně offline.
 
-## GPS a Poloha
-Poloha se používá pro filtrování druhů, Survey a Point Count. Vše je lokální a lze to zakázat v nastavení systému.
+## Externí odkazy
 
-## Export a Smazání dat
-Data Session lze exportovat ve více formátech (Raven Selection Tables, CSV, JSON, GPX) — pod **Nastavení → Export → Formáty** zaškrtněte libovolnou kombinaci formátů naráz; vybrané formáty jsou sbaleny do jediného ZIPu spolu s audio klipy a volitelným samostatným HTML reportem. Jednotlivé Sessions lze odstranit v Knihovně Sessions; úplné místní vymazání Sessions, nahrávek, hlasových poznámek, vlastních seznamů druhů, nastavení a mezipamětí provedete pomocí **Nastavení → Nebezpečná zóna → Vymazat všechna data**. Můžete také vymazat úložiště aplikace v nastavení systému nebo aplikaci odinstalovat.
+BirdNET Live obsahuje odkazy na webové stránky třetích stran, které můžete otevřít — například stránky druhu na **eBird**, **iNaturalist** a **Wikipedii** a zvukový odkaz *„Poslechněte si tento druh na eBird“* v zobrazení druhu, dále odkazy na web projektu BirdNET, zdrojový kód, uživatelskou příručku a stránku pro dary v obrazovce **O aplikaci**. Odkazy, které opouštějí aplikaci, jsou označeny ikonou externího odkazu (↗), abyste je před klepnutím poznali.
+
+Dokud je odkaz pouze zobrazen, nic se neodesílá a žádný externí odkaz se nikdy neotevře automaticky — prohlížeč se otevře, až když na něj klepnete. Odkaz se poté otevře ve výchozím prohlížeči vašeho zařízení a opustíte BirdNET Live. Cílový web provozuje třetí strana a řídí se **jejími vlastními** zásadami ochrany soukromí a podmínkami, nikoli těmito. Takové weby mohou nezávisle shromažďovat informace o vaší návštěvě — například vaši IP adresu, údaje o zařízení či prohlížeči a způsob, jakým jejich stránky používáte — a mohou nastavovat vlastní soubory cookie. Obsah ani nakládání s daty externích webů nemáme pod kontrolou a neneseme za ně odpovědnost; přečtěte si prosím zásady ochrany soukromí každého webu.
+
+## GPS a Poloha
+
+Aplikace používá polohu GPS pro:
+
+- **Filtrování druhů** — předpověď, které druhy se pravděpodobně vyskytují ve vaší lokalitě.
+- **Režim Survey** — záznam GPS tras a geotagging detekcí podél transektu.
+- **Režim Point Count** — označení místa pozorování.
+
+Data GPS jsou uložena lokálně a do exportů jsou zahrnuta pouze tehdy, když Session výslovně sdílíte nebo exportujete. Přístup k poloze vyžaduje vaše povolení a lze jej kdykoliv odvolat v nastavení systému.
+
+## Export dat
+
+Data Session lze exportovat ve více formátech (Raven Selection Tables, CSV, JSON, GPX); pod **Nastavení → Export → Formáty** můžete zaškrtnout libovolnou kombinaci formátů naráz. Vybrané formáty jsou sbaleny do jediného ZIPu spolu s audio klipy a volitelným samostatným HTML reportem. Exporty se generují lokálně a sdílejí přes systémový panel sdílení. Aplikace nenahrává žádná exportovaná data na server.
+
+## Smazání dat
+
+Jednotlivé Sessions a jejich nahrávky lze odstranit v Knihovně Sessions. Pro místní vymazání Sessions, nahrávek, hlasových poznámek, vlastních seznamů druhů, nastavení a mezipamětí BirdNET Live přímo v aplikaci použijte **Nastavení → Nebezpečná zóna → Vymazat všechna data**. Úložiště aplikace BirdNET Live můžete také vymazat v nastavení operačního systému nebo aplikaci odinstalovat.
 
 ## Kontakt
+
 Otázky ohledně soukromí: [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu)

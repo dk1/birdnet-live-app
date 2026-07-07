@@ -1,6 +1,6 @@
 ﻿# Datenschutzerklärung
 
-**Zuletzt aktualisiert:** Mai 2026
+**Zuletzt aktualisiert:** Juli 2026
 
 BirdNET Live respektiert Ihre Privatsphäre. Dieses Dokument erklärt, wie die App mit Ihren Daten umgeht.
 
@@ -53,6 +53,12 @@ Wetteranfragen senden Lat/Lon der Sitzung und den Endzeitstempel über HTTPS an 
 **Widerruf:** Sie können jeden der drei Dienste jederzeit unter **Einstellungen → Datenschutz** deaktivieren. Bereits lokal gespeicherte Ortsnamen und Wetter-Snapshots bleiben an den Sitzungen, in denen sie erfasst wurden. Um diese historischen Daten zu entfernen, löschen Sie die betroffenen Sitzungen in der Session Library oder verwenden Sie **Einstellungen → Gefahrenzone → Alle Daten löschen**.
 
 **Es werden keine weiteren Netzwerkanfragen gestellt.** Die App funktioniert vollständig offline.
+
+## Externe Links
+
+BirdNET Live enthält Links zu Websites Dritter, die Sie bei Bedarf öffnen können — zum Beispiel die **eBird**-, **iNaturalist**- und **Wikipedia**-Seiten einer Art sowie den Audio-Link *„Diese Art auf eBird anhören“* in der Artenansicht, außerdem Links zur BirdNET-Projektwebsite, zum Quellcode, zum Benutzerhandbuch und zur Spendenseite im **Über**-Bildschirm. Links, die die App verlassen, sind mit einem Symbol für externe Links (↗) gekennzeichnet, sodass Sie sie vor dem Antippen erkennen können.
+
+Solange ein Link nur angezeigt wird, werden keine Daten gesendet, und kein externer Link wird jemals automatisch geöffnet — ein Browser öffnet sich nur, wenn Sie ihn antippen. Dann öffnet sich der Link im Standardbrowser Ihres Geräts und Sie verlassen BirdNET Live. Das Ziel wird von einem Dritten betrieben und unterliegt **dessen eigener** Datenschutzrichtlinie und Nutzungsbedingungen, nicht dieser. Solche Websites können unabhängig Informationen über Ihren Besuch erfassen — etwa Ihre IP-Adresse, Geräte- oder Browserdaten und Ihr Nutzungsverhalten — und eigene Cookies setzen. Wir kontrollieren die Inhalte und Datenpraktiken externer Websites nicht und übernehmen dafür keine Verantwortung; bitte lesen Sie die jeweilige Datenschutzrichtlinie.
 
 ## GPS & Standort
 

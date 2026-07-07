@@ -285,6 +285,24 @@ plugins:
         Acceptable Use Policy: Política de uso aceitável
         Testing: Teste
         User Guide: Guia do usuário
+    - locale: nl
+      name: Nederlands
+      build: true
+      nav_translations:
+        Privacy Policy: Privacybeleid
+        Acceptable Use Policy: Beleid voor aanvaardbaar gebruik
+    - locale: pl
+      name: Polski
+      build: true
+      nav_translations:
+        Privacy Policy: Polityka prywatności
+        Acceptable Use Policy: Polityka dopuszczalnego użycia
+    - locale: ru
+      name: Русский
+      build: true
+      nav_translations:
+        Privacy Policy: Политика конфиденциальности
+        Acceptable Use Policy: Политика допустимого использования
 nav:
 - Home: index.md
 - User Guide:

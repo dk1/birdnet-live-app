@@ -858,9 +858,12 @@ class _TermsPage extends StatelessWidget {
   final bool agreed;
   final ValueChanged<bool?> onAgreedChanged;
 
+  // Opens a policy page (Privacy / Acceptable Use) on the docs site. Uses the
+  // policy locale prefix so these pages resolve in every UI locale, including
+  // those (nl, pl, ru) whose user guide is not translated.
   Future<void> _open(BuildContext context, String path) async {
     final localeCode = Localizations.localeOf(context).languageCode;
-    final basePath = AppConstants.docsLocalePrefix(localeCode);
+    final basePath = AppConstants.policyDocsLocalePrefix(localeCode);
     await openExternalUrl(context, '${AppConstants.docsUrl}$basePath$path');
   }
 

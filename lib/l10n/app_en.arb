@@ -1834,6 +1834,10 @@
   "@speciesLearnMore": {
     "description": "Label above external species links"
   },
+  "speciesListenOnEbird": "Listen to this species on eBird",
+  "@speciesListenOnEbird": {
+    "description": "Tappable link opening the eBird/Macaulay Library audio catalog for the species"
+  },
   "settingsSensitivity": "Sensitivity",
   "@settingsSensitivity": {
     "description": "Sensitivity setting label"

@@ -432,6 +432,7 @@
   "exploreHelpLearnMore": "Meer informatie over het geomodel",
   "speciesDescriptionSource": "Bron: {source}",
   "speciesLearnMore": "Leer meer over deze soort",
+  "speciesListenOnEbird": "Luister naar deze soort op eBird",
   "settingsSensitivity": "Gevoeligheid",
   "settingsSensitivityDescription": "Hogere waarden detecteren meer soorten, maar verhogen het aantal valse positieven",
   "settingsScorePooling": "Scorepooling",

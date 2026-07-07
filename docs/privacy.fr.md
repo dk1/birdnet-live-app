@@ -1,36 +1,83 @@
 # Politique de Confidentialité
 
-**Dernière mise à jour :** Mai 2026
+**Dernière mise à jour :** Juillet 2026
 
-BirdNET Live respecte votre vie privée. Ce document explique le traitement de vos données.
+BirdNET Live respecte votre vie privée. Ce document explique comment l'application traite vos données.
 
 ## Traitement sur l'Appareil
-L'analyse audio et l'identification des espèces aviaires s'effectuent **intégralement sur votre appareil** (Modèles BirdNET+ et Geomodel). Aucune donnée n'est transmise aux serveurs.
+
+Toute l'analyse audio et l'identification des espèces d'oiseaux s'effectuent **intégralement sur votre appareil**. L'application utilise deux modèles de réseaux de neurones exécutés localement :
+
+- **Classificateur audio BirdNET+** — analyse l'audio du microphone pour identifier les espèces d'oiseaux.
+- **Géo-modèle BirdNET** — prédit quelles espèces sont probables à votre position et à cette période de l'année.
+
+Aucune donnée audio n'est jamais transmise à des serveurs externes.
 
 ## Collecte de Données
-L'application **ne** collecte **aucune** donnée personnelle, analyse ou télémétrie.
-- Fichiers audio, métadonnées de session JSON, GPS et préférences sont stockés localement.
-- Données des espèces sont intégrées hors-ligne.
-- Quand **Autoriser la requête météo** est actif, chaque session enregistre localement un instantané de température, précipitations, vent, nuages et code météo aux coordonnées de la session.
+
+BirdNET Live **ne** collecte, ne transmet ni ne partage **aucune** donnée personnelle. Il n'y a ni analyse, ni suivi, ni télémétrie.
+
+### Données stockées localement sur votre appareil :
+
+| Type de donnée | Objectif | Stockage |
+|----------------|----------|----------|
+| Enregistrements audio | Identification des oiseaux, lecture, export | Fichiers locaux |
+| Résultats de détection | Espèces, confiance, horodatages | Fichiers JSON de session locaux |
+| Coordonnées GPS | Géomarquage des détections, traces de Relevé, prédictions du géo-modèle | Fichiers JSON de session locaux |
+| Métadonnées de session | Historique des sessions, révision, export | Fichiers JSON de session locaux |
+| Instantané météo (optionnel) | Capture ponctuelle de température, précipitations, vent, nébulosité et code météo par session quand **Autoriser la requête météo** est activé | Fichiers JSON de session locaux |
+| Réglages de l'app | Préférences utilisateur | SharedPreferences |
+
+### Données hors-ligne intégrées
+
+Les images, descriptions et données taxonomiques des espèces sont **intégrées à l'application** et chargées depuis des ressources locales. Aucune requête réseau n'est effectuée pour les informations sur les espèces.
 
 ## Ressources Externes
 
-L'application peut accéder aux services externes ci-dessous. Chacun est contrôlé par un interrupteur indépendant sous **Paramètres → Confidentialité**, et **les trois sont désactivés par défaut** sur une nouvelle installation. Rien ne quitte votre appareil avant que vous l'autorisiez.
+L'application peut accéder aux ressources externes ci-dessous. Chacune est contrôlée par un interrupteur indépendant sous **Paramètres → Confidentialité**, et **les trois sont désactivés par défaut** sur une nouvelle installation. Rien ne quitte votre appareil avant que vous l'autorisiez.
 
-| Ressource | Objectif | Interrupteur | Envoyé à chaque requête |
+| Ressource | Objectif | Contrôlé par | Envoyé à chaque requête |
 |-----------|----------|--------------|--------------------------|
-| Tuiles de carte (OpenStreetMap) | Carte de base pour sélecteur de position, carte en direct du Relevé et carte de la session | **Paramètres → Confidentialité → Autoriser les tuiles de carte** | Coordonnées de tuile `(z, x, y)` et user-agent BirdNET Live — pas de PII |
-| Géocodage inverse (OpenStreetMap Nominatim) | Résoudre les coordonnées GPS en un nom de lieu (p. ex. «Paris, France») | **Paramètres → Confidentialité → Autoriser la recherche de nom de lieu** | Lat/lon de la session et user-agent BirdNET Live |
-| Instantané météo (Open-Meteo) | Capture ponctuelle des conditions (température, précipitations, vent, nuages, code WMO) aux coordonnées et à l'heure de fin | **Paramètres → Confidentialité → Autoriser la requête météo** | Lat/lon de la session et horodatage de fin, plus user-agent BirdNET Live |
+| Tuiles de carte (OpenStreetMap) | Carte de base pour le sélecteur de position, la carte en direct du Relevé et la carte de la session | **Paramètres → Confidentialité → Autoriser les tuiles de carte** | Coordonnées de tuile `(z, x, y)` et user-agent BirdNET Live — pas de PII |
+| Géocodage inverse (OpenStreetMap Nominatim) | Résoudre les coordonnées GPS en un nom de lieu lisible (p. ex. «Paris, France») pour l'affichage de la session | **Paramètres → Confidentialité → Autoriser la recherche de nom de lieu** | La latitude/longitude de la session, plus le user-agent BirdNET Live |
+| Instantané météo (Open-Meteo) | Capture ponctuelle des conditions locales (température, précipitations, vent, nébulosité, code WMO) aux coordonnées d'enregistrement et à l'heure de fin | **Paramètres → Confidentialité → Autoriser la requête météo** | La latitude/longitude de la session et l'horodatage de fin, plus le user-agent BirdNET Live |
 
-Les requêtes de tuiles sont des HTTPS GET standard vers `tile.openstreetmap.org` ; le géocodage inverse cible `nominatim.openstreetmap.org` selon la [Politique d'usage Nominatim](https://operations.osmfoundation.org/policies/nominatim/) ; les requêtes météo ciblent `api.open-meteo.com`. [Open-Meteo](https://open-meteo.com/) est un service gratuit et n'exige ni compte ni clé API.
+Les requêtes de tuiles de carte sont des requêtes HTTPS GET standard vers `tile.openstreetmap.org` avec le user-agent BirdNET Live. Seules les coordonnées de tuile sont envoyées — aucune information personnelle identifiable.
 
-**Rétention :** aucun de ces services externes ne stocke vos données. Les valeurs renvoyées (nom de lieu, instantané météo) ne vivent que dans l'enregistrement local de la session et ne voyagent que dans les fichiers d'export que vous produisez explicitement.
+Les requêtes de géocodage inverse envoient la latitude et la longitude de la session à `nominatim.openstreetmap.org` par HTTPS, avec le user-agent BirdNET Live comme l'exige la [Politique d'usage Nominatim](https://operations.osmfoundation.org/policies/nominatim/). Le nom de lieu résolu est stocké localement avec la session, de sorte qu'une session n'est géocodée qu'une seule fois. Aucune requête n'est effectuée si la session n'a pas de coordonnées GPS ou si l'appareil est hors ligne.
 
-**Révocation :** vous pouvez désactiver l'un des trois services à tout moment sous **Paramètres → Confidentialité**. Pour effacer aussi les noms de lieu et instantanés météo historiques, supprimez les sessions concernées dans Session Library ou utilisez **Paramètres → Zone dangereuse → Effacer toutes les données**.
+Les requêtes météo envoient la latitude/longitude de la session et l'horodatage de fin à `api.open-meteo.com` par HTTPS, avec le user-agent BirdNET Live. [Open-Meteo](https://open-meteo.com/) est un service gratuit qui n'exige ni compte ni clé API. L'instantané météo renvoyé est stocké localement avec la session et également écrit dans l'export JSON, dans le bloc `metadata.json` de la session et dans le rapport HTML.
 
-## Suppression et Exportation
-Vous pouvez supprimer des sessions individuelles dans Session Library. Pour effacer depuis l'app les sessions locales, enregistrements, mémos vocaux, listes d'espèces personnalisées, préférences et caches de BirdNET Live, utilisez **Paramètres → Zone dangereuse → Effacer toutes les données**. Vous pouvez aussi effacer le stockage de BirdNET Live dans les réglages du système ou désinstaller l'app. Sous **Paramètres → Exporter → Formats**, vous pouvez cocher n'importe quelle combinaison de formats (Raven Selection Table, CSV, JSON, GPX) ; ils sont regroupés dans un ZIP unique avec les clips audio et le rapport HTML optionnel.
+**Rétention :** aucun des services tiers ci-dessus n'est contacté pour *téléverser* ou *stocker* des données utilisateur. Les valeurs renvoyées (nom de lieu, instantané météo) ne vivent que dans l'enregistrement local de la session sur votre appareil, et ne voyagent que dans les fichiers d'export que vous produisez explicitement.
+
+**Révocation :** vous pouvez désactiver l'un des trois services à tout moment sous **Paramètres → Confidentialité**. Les noms de lieu et instantanés météo déjà stockés localement restent attachés aux sessions où ils ont été capturés ; supprimez ces sessions depuis Session Library ou utilisez **Paramètres → Zone dangereuse → Effacer toutes les données** pour retirer ces données historiques.
+
+**Aucune autre requête réseau n'est effectuée.** L'application fonctionne entièrement hors ligne.
+
+## Liens externes
+
+BirdNET Live comporte des liens vers des sites tiers que vous pouvez choisir d'ouvrir — par exemple les pages **eBird**, **iNaturalist** et **Wikipédia** d'une espèce et le lien audio *«Écouter cette espèce sur eBird»* dans la vue d'espèce, ainsi que des liens vers le site du projet BirdNET, le code source, le guide d'utilisation et la page de don depuis l'écran **À propos**. Les liens qui quittent l'application sont marqués d'une icône de lien externe (↗) afin que vous les reconnaissiez avant de les toucher.
+
+Tant qu'un lien est seulement affiché, rien n'est envoyé, et aucun lien externe ne s'ouvre automatiquement : un navigateur ne s'ouvre que lorsque vous le touchez. Le lien s'ouvre alors dans le navigateur par défaut de votre appareil et vous quittez BirdNET Live. La destination est exploitée par un tiers et régie par **sa propre** politique de confidentialité et ses conditions, non par la présente. Ces sites peuvent collecter de manière indépendante des informations sur votre visite — par exemple votre adresse IP, des détails sur votre appareil ou navigateur et votre façon d'interagir avec leurs pages — et déposer leurs propres cookies. Nous ne contrôlons pas et n'assumons aucune responsabilité quant au contenu ou aux pratiques de données des sites externes ; nous vous invitons à consulter la politique de confidentialité de chaque site.
+
+## GPS et Localisation
+
+L'application utilise la localisation GPS pour :
+
+- **Filtrage des espèces** — prédire quelles espèces sont probables à votre position.
+- **Mode Relevé** — enregistrer des traces GPS et géomarquer les détections le long d'un transect.
+- **Mode Point d'écoute** — marquer le lieu de l'observation.
+
+Les données GPS sont stockées localement et incluses dans les exports uniquement lorsque vous partagez ou exportez explicitement une session. L'accès à la localisation nécessite votre autorisation et peut être révoqué à tout moment via les réglages du système.
+
+## Export de Données
+
+Vous pouvez exporter les données de session dans plusieurs formats (Raven Selection Tables, CSV, JSON, GPX) et cocher n'importe quelle combinaison de formats à la fois sous **Paramètres → Exporter → Formats** ; les formats sélectionnés sont regroupés dans un ZIP unique avec les clips audio et le rapport HTML autonome optionnel. Les exports sont générés localement et partagés via la feuille de partage du système. L'application ne téléverse aucune donnée d'export sur un serveur.
+
+## Suppression de Données
+
+Les sessions individuelles et leurs enregistrements peuvent être supprimés depuis Session Library. Pour effacer depuis l'application les sessions locales, enregistrements, mémos vocaux, listes d'espèces personnalisées, préférences et caches de BirdNET Live, utilisez **Paramètres → Zone dangereuse → Effacer toutes les données**. Vous pouvez aussi effacer le stockage de l'application BirdNET Live dans les réglages de votre système d'exploitation ou désinstaller l'application.
 
 ## Contact
-[ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu)
+
+Pour toute question de confidentialité : [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu)

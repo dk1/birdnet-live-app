@@ -24,14 +24,36 @@ abstract final class AppConstants {
   static const String docsUrl =
       'https://birdnet-team.github.io/birdnet-live-app';
 
-  /// UI locales that have translated documentation on the docs site.
-  /// Other UI locales (e.g. nl, pl, ru) fall back to the English docs.
+  /// UI locales that have the full translated user guide on the docs site.
+  /// Other UI locales (e.g. nl, pl, ru) fall back to the English guide.
   static const Set<String> docsLocales = {'de', 'cs', 'es', 'fr', 'it', 'pt'};
 
+  /// UI locales that have a translated Privacy Policy and Acceptable Use
+  /// Policy on the docs site. Broader than [docsLocales]: the policies are
+  /// translated for every UI locale, even those whose user guide is not.
+  static const Set<String> policyDocsLocales = {
+    'de',
+    'cs',
+    'es',
+    'fr',
+    'it',
+    'pt',
+    'nl',
+    'pl',
+    'ru',
+  };
+
   /// Docs-site path prefix for [languageCode] (e.g. `/de`), or an empty
-  /// string (English docs) when no translated docs exist for that locale.
+  /// string (English docs) when no translated user guide exists for that
+  /// locale. Use this for user-guide links.
   static String docsLocalePrefix(String languageCode) =>
       docsLocales.contains(languageCode) ? '/$languageCode' : '';
+
+  /// Docs-site path prefix for the Privacy Policy / Acceptable Use Policy
+  /// pages in [languageCode] (e.g. `/nl`), or an empty string (English) when
+  /// no translated policy exists for that locale. Use this for policy links.
+  static String policyDocsLocalePrefix(String languageCode) =>
+      policyDocsLocales.contains(languageCode) ? '/$languageCode' : '';
 
   /// Support email address.
   static const String supportEmail = 'ccb-birdnet@cornell.edu';
