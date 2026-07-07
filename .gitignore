@@ -5,6 +5,8 @@
 !/dev/build_inno_installer.ps1
 !/dev/mockups/
 !/dev/mockups/**
+!/dev/store/
+!/dev/store/store-desc.md
 /dev/mockups/output/
 assets/species_images/*
 !assets/species_images/dummy.webp

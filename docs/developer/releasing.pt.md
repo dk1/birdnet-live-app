@@ -94,7 +94,10 @@ release/0.15.2/
     es-ES.txt
     fr-FR.txt
     it-IT.txt
+    nl-NL.txt
+    pl-PL.txt
     pt-PT.txt
+    ru-RU.txt
 ```
 
 Keep this folder around — it is the canonical record of what was uploaded.
@@ -106,9 +109,9 @@ only thing that matters.
 
 Each `release-notes/<locale>.txt` is plain text, max ~500 chars (Play Store
 limit). Mirror the CHANGELOG entry but written for users, not developers.
-Cover the same set of locales the app ships in: en-US, de-DE, cs-CZ, es-ES,
-fr-FR, it-IT, pt-PT. If a locale is missing on Play Console, it falls back
-to en-US.
+Cover all 10 locales the app ships in: en-US, de-DE, cs-CZ, es-ES, fr-FR,
+it-IT, nl-NL, pl-PL, pt-PT, ru-RU. If a locale is missing on Play Console,
+it falls back to en-US.
 
 ## 6. Upload to Play Console
 

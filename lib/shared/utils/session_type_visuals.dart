@@ -2,14 +2,14 @@
 // Session Type Visuals — Centralized icon + color mapping per app mode
 // =============================================================================
 //
-// The app has four modes — Live, Point Count, Survey, and File Analysis —
-// and each is shown with a distinct icon throughout the UI: the home menu,
+// The app has multiple modes, each shown with a distinct icon throughout the UI:
+// the home menu,
 // the help screen, the session library, the session review header, etc.
 //
 // To keep mode visuals recognizable under both the brand theme and dynamic
 // color, each mode starts from a stable base hue (red, blue, green, orange)
 // and is then harmonized with the active theme's primary color. This keeps
-// the four modes visually distinct without fighting the current palette.
+// the modes visually distinct without fighting the current palette.
 //
 // Centralizing the mapping here avoids drift between the home screen,
 // help screen, and history views.
