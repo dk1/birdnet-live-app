@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.5] - 2026-07-07
+
+### Added
+
+- Added a "Listen to this species on eBird" link in the species view that opens the eBird / Macaulay Library audio catalog (sorted best-quality first) in the browser.
+
+### Changed
+
+- Translated the Privacy Policy and Acceptable Use Policy into every interface language (including Dutch, Polish, and Russian), added an External Links section to the Privacy Policy describing third-party links, and made in-app policy links resolve to the matching localized page.
+
 ## [0.18.4] - 2026-07-05
 
 ### Added
