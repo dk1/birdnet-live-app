@@ -20,7 +20,7 @@ BirdNET Live ist für Android, iOS und Windows verfügbar.
 Wenn Sie BirdNET Live zum ersten Mal öffnen, führt die App Sie durch einen kurzen Onboarding-Ablauf und die Einrichtung der Berechtigungen.
 
 1. Lesen Sie die Onboarding-Bildschirme.
-2. Akzeptieren Sie die Nutzungsbedingungen und die Datenschutzerklärung.
+2. Lesen Sie die Richtlinie zur akzeptablen Nutzung und die Datenschutzerklärung.
 3. Erteilen Sie die Mikrofonberechtigung, damit BirdNET Live Audio verarbeiten kann.
 4. Erlauben Sie optional die Standortberechtigung für Geotagging, Erkunden, Point Count und Survey.
 5. Erlauben Sie optional Benachrichtigungen für langlaufende Surveys.
@@ -28,7 +28,7 @@ Wenn Sie BirdNET Live zum ersten Mal öffnen, führt die App Sie durch einen kur
 ## Erster Start
 
 1. **Onboarding** – Kurze Einführung in Funktionen und Berechtigungen
-2. **Nutzungsbedingungen und Datenschutz** – Nutzungsbedingungen und Datenschutzerklärung akzeptieren
+2. **Akzeptable Nutzung und Datenschutz** – Richtlinie zur akzeptablen Nutzung und Datenschutzerklärung lesen
 3. **Berechtigungen** – Mikrofonzugriff gewähren (für alle Modi erforderlich)
 4. **Fertig** – Los geht's mit der Vogelbestimmung!
 

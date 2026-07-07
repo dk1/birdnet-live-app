@@ -20,7 +20,7 @@ BirdNET Live je k dispozici pro Android, iOS a Windows.
 Když BirdNET Live otevřete poprvé, aplikace vás provede krátkým úvodem a nastavením oprávnění.
 
 1. Přečtěte si úvodní obrazovky.
-2. Přijměte Podmínky použití a Zásady ochrany osobních údajů.
+2. Přečtěte si Zásady přijatelného použití a Zásady ochrany osobních údajů.
 3. Udělte oprávnění k mikrofonu, aby BirdNET Live mohl zpracovávat zvuk.
 4. Volitelně povolte oprávnění k poloze pro geotagging, Prozkoumat, Point Count a Survey.
 5. Volitelně povolte oznámení pro dlouhotrvající surveye.
@@ -28,7 +28,7 @@ Když BirdNET Live otevřete poprvé, aplikace vás provede krátkým úvodem a 
 ## První spuštění
 
 1. **Úvod** — rychlé seznámení s funkcemi a oprávněními
-2. **Podmínky a soukromí** — přijetí Podmínek použití a Zásad ochrany osobních údajů
+2. **Přijatelné použití a soukromí** — přečtěte si Zásady přijatelného použití a Zásady ochrany osobních údajů
 3. **Oprávnění** — udělení přístupu k mikrofonu (vyžadováno pro všechny režimy)
 4. **Připraveno** — začněte určovat ptáky!
 

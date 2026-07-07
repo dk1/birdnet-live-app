@@ -58,4 +58,4 @@ Im [Entwicklerhandbuch](developer/index.md) finden Sie Informationen zu Architek
 
 ## Lizenz
 
-BirdNET Live ist Open Source unter der [MIT-Lizenz](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE).
+Der Quellcode von BirdNET Live ist Open Source unter der [MIT-Lizenz](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE). Die gebündelten BirdNET-Modellgewichte sind unter der [Apache License 2.0](https://github.com/birdnet-team/birdnet-live-app/blob/main/MODEL_LICENSE) lizenziert.

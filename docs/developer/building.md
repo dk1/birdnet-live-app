@@ -53,7 +53,7 @@ flutter build windows --release
 
 ## Forking and Re-releasing
 
-The [Terms of Use](https://github.com/birdnet-team/birdnet-live-app/blob/main/TERMS_OF_USE.md) prohibit re-releasing the app under the same name, package name, or branding. If you fork the project for your own distribution, you **must** change the app identity in all of the following places:
+The [Acceptable Use Policy](https://github.com/birdnet-team/birdnet-live-app/blob/main/ACCEPTABLE_USE.md) asks forks and redistributed versions to use distinct naming and branding unless explicit written permission has been granted. If you fork the project for your own distribution, you **must** change the app identity in all of the following places:
 
 **Android** — `android/app/build.gradle`:
 

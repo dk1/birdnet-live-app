@@ -20,7 +20,7 @@ BirdNET Live è disponibile per Android, iOS e Windows.
 Quando apri BirdNET Live per la prima volta, l'app ti guida attraverso un breve flusso di introduzione e la configurazione delle autorizzazioni.
 
 1. Leggi le schermate introduttive.
-2. Accetta i Termini di utilizzo e l'Informativa sulla privacy.
+2. Leggi la Politica di uso accettabile e l'Informativa sulla privacy.
 3. Concedi l'autorizzazione al microfono affinché BirdNET Live possa elaborare l'audio.
 4. Facoltativamente, consenti l'autorizzazione alla posizione per la georeferenziazione, Esplora, Point Count e Survey.
 5. Facoltativamente, consenti le notifiche per i Survey di lunga durata.
@@ -28,7 +28,7 @@ Quando apri BirdNET Live per la prima volta, l'app ti guida attraverso un breve 
 ## Primo avvio
 
 1. **Introduzione**: rapida presentazione di funzionalità e autorizzazioni
-2. **Termini e privacy**: accetta i Termini di utilizzo e l'Informativa sulla privacy
+2. **Uso accettabile e privacy**: leggi la Politica di uso accettabile e l'Informativa sulla privacy
 3. **Autorizzazioni**: concedi l'accesso al microfono (richiesto per tutte le modalità)
 4. **Pronto**: inizia a identificare gli uccelli!
 

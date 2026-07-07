@@ -77,4 +77,4 @@ Na mobilních zařízeních je postranní navigační panel skrytý za tlačítk
 
 - [Domovská stránka](../index.md) poskytuje přehled vydání a funkcí.
 - [Příručka pro vývojáře](../developer/index.md) pokrývá architekturu, nástroje a pracovní postupy sestavování.
-- [Zásady ochrany osobních údajů](../privacy.md) a [Podmínky použití](../terms.md) jsou na témže webu.
+- [Zásady ochrany osobních údajů](../privacy.md) a [Zásady přijatelného použití](../acceptable-use.md) jsou na témže webu.

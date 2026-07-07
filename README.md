@@ -56,7 +56,7 @@ Built for field researchers, conservationists, and birders, BirdNET Live identif
 - [Model Assets](#model-assets)
 - [Development](#development)
 - [License](#license)
-- [Terms of Use](#terms-of-use)
+- [Acceptable Use](#acceptable-use)
 - [Citation](#citation)
 - [Funding](#funding)
 - [Partners](#partners)
@@ -80,7 +80,7 @@ Built for field researchers, conservationists, and birders, BirdNET Live identif
 
 BirdNET Live is available on the [Google Play Store](https://play.google.com/store/apps/details?id=de.tu_chemnitz.mi.kahst.birdnet_live) and is available as a signed APK for sideloading. Download the latest release from the [Releases page](https://github.com/birdnet-team/birdnet-live-app/releases/latest), transfer the `.apk` file to your phone, and open it to install. You may need to allow installation from unknown sources in your device settings.
 
-> **Note:** The APK is ~253 MB because it includes the full BirdNET+ audio model (~152 MB) for offline inference.
+> **Note:** The APK is ~260 MB because it includes the full BirdNET+ audio model and all species images for full offline use.
 
 ## Quick Start
 
@@ -227,13 +227,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 ## License
 
 - **Source Code**: The source code for this project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
-- **Models**: The models used in this project are licensed under the [Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)](https://creativecommons.org/licenses/by-sa/4.0/).
+- **Models**: The bundled BirdNET model weights are licensed under the [Apache License 2.0](MODEL_LICENSE).
 
 Please ensure you review and adhere to the specific license terms provided with each model.
 
-## Terms of Use
+## Acceptable Use
 
-Please refer to the [TERMS OF USE](TERMS_OF_USE.md) file for detailed terms and conditions regarding the use of the BirdNET+ V3.0 preview models.
+Please refer to the [Acceptable Use Policy](ACCEPTABLE_USE.md) for responsible-use guidance for BirdNET and BirdNET Live.
 
 ## Citation
 

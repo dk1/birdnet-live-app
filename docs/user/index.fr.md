@@ -77,4 +77,4 @@ Sur mobile, la barre latérale de navigation est masquée derrière le bouton de
 
 - La [page d'accueil](../index.md) donne un aperçu de la version et des fonctionnalités.
 - Le [Guide du développeur](../developer/index.md) couvre l'architecture, les outils et les processus de compilation.
-- La [Politique de confidentialité](../privacy.md) et les [Conditions d'utilisation](../terms.md) sont disponibles sur ce même site.
+- La [Politique de confidentialité](../privacy.md) et la [Politique d'utilisation acceptable](../acceptable-use.md) sont disponibles sur ce même site.
