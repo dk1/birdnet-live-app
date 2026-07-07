@@ -60,25 +60,25 @@
   "@onboardingPermissionsBody": {
     "description": "Onboarding permissions screen body text"
   },
-  "onboardingTermsTitle": "Terms & Privacy",
+  "onboardingTermsTitle": "Acceptable Use & Privacy",
   "@onboardingTermsTitle": {
-    "description": "Onboarding terms & privacy screen title"
+    "description": "Onboarding acceptable use and privacy screen title"
   },
-  "onboardingTermsBody": "Detections are AI predictions, not confirmed observations — verify before reporting. Audio is processed on-device and never uploaded. The only network requests are optional map tiles and a single reverse-geocoding lookup per session to resolve coordinates into a place name; both require your one-time consent. Models (CC BY-SA 4.0) and the app may NOT be used for poaching or any military purpose. Tap below to read the full Terms of Use and Privacy Policy.",
+  "onboardingTermsBody": "Detections are AI predictions, not confirmed observations — verify before reporting. Audio is processed on-device and never uploaded. The only network requests are optional map tiles and a single reverse-geocoding lookup per Session to resolve coordinates into a place name; both require your one-time consent. Models (Apache 2.0) and the app should not be used to harm wildlife, ecosystems, or people. Tap below to read the full Acceptable Use Policy and Privacy Policy.",
   "@onboardingTermsBody": {
-    "description": "Onboarding terms & privacy screen body text"
+    "description": "Onboarding acceptable use and privacy screen body text"
   },
-  "onboardingTermsLink": "Terms of Use",
+  "onboardingTermsLink": "Acceptable Use Policy",
   "@onboardingTermsLink": {
-    "description": "Onboarding link to terms of use"
+    "description": "Onboarding link to acceptable use policy"
   },
   "onboardingPrivacyLink": "Privacy Policy",
   "@onboardingPrivacyLink": {
     "description": "Onboarding link to privacy policy"
   },
-  "onboardingTermsAccept": "I agree to the Terms of Use",
+  "onboardingTermsAccept": "I agree to follow the Acceptable Use Policy",
   "@onboardingTermsAccept": {
-    "description": "Onboarding terms acceptance checkbox"
+    "description": "Onboarding acceptable-use acceptance checkbox"
   },
   "onboardingReadyTitle": "Ready to Start",
   "@onboardingReadyTitle": {
@@ -104,9 +104,9 @@
   "@done": {
     "description": "Done button label"
   },
-  "termsOfUseTitle": "Terms of Use",
+  "termsOfUseTitle": "Acceptable Use Policy",
   "@termsOfUseTitle": {
-    "description": "Terms of use dialog title"
+    "description": "Acceptable use policy dialog title"
   },
   "privacyPolicyTitle": "Privacy Policy",
   "@privacyPolicyTitle": {
@@ -114,15 +114,15 @@
   },
   "acceptTerms": "Accept",
   "@acceptTerms": {
-    "description": "Accept terms button"
+    "description": "Accept policy button"
   },
   "declineTerms": "Decline",
   "@declineTerms": {
-    "description": "Decline terms button"
+    "description": "Decline policy button"
   },
-  "termsRequiredMessage": "You must accept the Terms of Use and Privacy Policy to use this app.",
+  "termsRequiredMessage": "You must accept the Acceptable Use Policy and Privacy Policy to use this app.",
   "@termsRequiredMessage": {
-    "description": "Message shown when terms are not accepted"
+    "description": "Message shown when policy is not accepted"
   },
   "permissionMicrophoneTitle": "Microphone",
   "@permissionMicrophoneTitle": {
@@ -417,9 +417,9 @@
   "@aboutPrivacyPolicy": {
     "description": "Privacy policy link label"
   },
-  "aboutTermsOfUse": "Terms of Use",
+  "aboutTermsOfUse": "Acceptable Use Policy",
   "@aboutTermsOfUse": {
-    "description": "Terms of use link label"
+    "description": "Acceptable use policy link label"
   },
   "aboutUserGuide": "User Guide",
   "@aboutUserGuide": {
