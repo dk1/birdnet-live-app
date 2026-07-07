@@ -4,8 +4,24 @@
      and AGENTS.md's "Dynamic color semantics: live=error") — static here
      since dynamic color can't be resolved outside the Flutter engine. The
      widget root itself is transparent so only this circle shows against
-     the home screen, not a full rectangular fill. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
-    <solid android:color="#B3261E" />
-</shape>
+     the home screen, not a full rectangular fill.
+
+     A thin outer ring (record-button look) sits outside the filled
+     circle with a small transparent gap — same red as the fill, so the
+     gap (not a color change) is what makes the ring read as separate. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <stroke android:width="2dp" android:color="#B3261E" />
+        </shape>
+    </item>
+    <item
+        android:top="6dp"
+        android:bottom="6dp"
+        android:left="6dp"
+        android:right="6dp">
+        <shape android:shape="oval">
+            <solid android:color="#B3261E" />
+        </shape>
+    </item>
+</layer-list>
