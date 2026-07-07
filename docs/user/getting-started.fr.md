@@ -28,7 +28,7 @@ Lorsque vous ouvrez BirdNET Live pour la première fois, l'application vous guid
 ## Premier démarrage
 
 1. **Introduction** — Présentation rapide des fonctionnalités et des autorisations
-2. **Conditions et confidentialité** — Acceptez les conditions d'utilisation et la politique de confidentialité
+2. **Utilisation acceptable et confidentialité** — consultez la politique d'utilisation acceptable et la politique de confidentialité
 3. **Autorisations** — Accordez l'accès au microphone (obligatoire pour tous les modes)
 4. **Prêt** — Commencez à identifier les oiseaux !
 

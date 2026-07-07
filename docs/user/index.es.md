@@ -77,4 +77,4 @@ En el móvil, la barra lateral de navegación queda oculta tras el botón de men
 
 - La [página de inicio](../index.md) ofrece una visión general de la versión y las funciones.
 - La [Guía para desarrolladores](../developer/index.md) cubre la arquitectura, las herramientas y los flujos de compilación.
-- La [Política de Privacidad](../privacy.md) y los [Términos de Uso](../terms.md) se encuentran en este mismo sitio.
+- La [Política de Privacidad](../privacy.md) y la [Política de uso aceptable](../acceptable-use.md) se encuentran en este mismo sitio.

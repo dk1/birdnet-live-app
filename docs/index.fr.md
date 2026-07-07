@@ -58,4 +58,4 @@ Consultez le [Guide du développeur](developer/index.md) pour l'architecture, la
 
 ## Licence
 
-BirdNET Live est un logiciel libre publié sous [licence MIT](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE).
+Le code source de BirdNET Live est un logiciel libre publié sous [licence MIT](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE). Les poids des modèles BirdNET intégrés sont sous [Apache License 2.0](https://github.com/birdnet-team/birdnet-live-app/blob/main/MODEL_LICENSE).

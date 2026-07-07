@@ -20,7 +20,7 @@ BirdNET Live is available for Android, iOS, and Windows.
 When you open BirdNET Live for the first time, the app walks you through a short onboarding flow and permission setup.
 
 1. Read the onboarding screens.
-2. Accept the Terms of Use and Privacy Policy.
+2. Review the Acceptable Use Policy and Privacy Policy.
 3. Grant microphone permission so BirdNET Live can process audio.
 4. Optionally allow location permission for geotagging, Explore, Point Count, and Survey.
 5. Optionally allow notifications for long-running surveys.
@@ -28,7 +28,7 @@ When you open BirdNET Live for the first time, the app walks you through a short
 ## First Launch
 
 1. **Onboarding** — Quick introduction to features and permissions
-2. **Terms & Privacy** — Accept Terms of Use and Privacy Policy
+2. **Acceptable Use & Privacy** — Review the Acceptable Use Policy and Privacy Policy
 3. **Permissions** — Grant microphone access (required for all modes)
 4. **Ready** — Start identifying birds!
 

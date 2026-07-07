@@ -91,7 +91,7 @@ plugins:
         Storage: Speicher
         Survey Mode: Survey-Modus
         Taxonomy & Sync API: Taxonomie- und Synchronisierungs-API
-        Terms of Use: Nutzungsbedingungen
+        Acceptable Use Policy: Richtlinie zur akzeptablen Nutzung
         Testing: Testen
         User Guide: Benutzerhandbuch
     - locale: cs
@@ -129,7 +129,7 @@ plugins:
         Storage: Úložiště
         Survey Mode: Režim Survey
         Taxonomy & Sync API: Taxonomy & Sync API
-        Terms of Use: Podmínky použití
+        Acceptable Use Policy: Zásady přijatelného použití
         Testing: Testování
         User Guide: Uživatelská příručka
     - locale: es
@@ -167,7 +167,7 @@ plugins:
         Storage: Almacenamiento
         Survey Mode: Modo Survey
         Taxonomy & Sync API: API de taxonomía y sincronización
-        Terms of Use: Condiciones de uso
+        Acceptable Use Policy: Política de uso aceptable
         Testing: Pruebas
         User Guide: Guía del usuario
     - locale: fr
@@ -205,7 +205,7 @@ plugins:
         Storage: Stockage
         Survey Mode: Mode Relevé
         Taxonomy & Sync API: API de taxonomie et de synchronisation
-        Terms of Use: Conditions d'utilisation
+        Acceptable Use Policy: Politique d'utilisation acceptable
         Testing: Essai
         User Guide: Guide de l'utilisateur
     - locale: it
@@ -243,7 +243,7 @@ plugins:
         Storage: Archiviazione
         Survey Mode: Modalità Survey
         Taxonomy & Sync API: API di tassonomia e sincronizzazione
-        Terms of Use: Termini di utilizzo
+        Acceptable Use Policy: Politica di uso accettabile
         Testing: Test
         User Guide: Guida per l'utente
     - locale: pt
@@ -282,7 +282,7 @@ plugins:
         Storage: Armazenamento
         Survey Mode: Modo Survey
         Taxonomy & Sync API: API de taxonomia e sincronização
-        Terms of Use: Termos de Uso
+        Acceptable Use Policy: Política de uso aceitável
         Testing: Teste
         User Guide: Guia do usuário
 nav:
@@ -322,4 +322,4 @@ nav:
 - API Reference:
   - Taxonomy & Sync API: api/sync-api.md
 - Privacy Policy: privacy.md
-- Terms of Use: terms.md
+- Acceptable Use Policy: acceptable-use.md

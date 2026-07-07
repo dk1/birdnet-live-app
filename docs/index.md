@@ -58,4 +58,4 @@ Check the [Developer Guide](developer/index.md) for architecture, building, and 
 
 ## License
 
-BirdNET Live is open source under the [MIT License](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE).
+BirdNET Live source code is open source under the [MIT License](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE). Bundled BirdNET model weights are licensed under the [Apache License 2.0](https://github.com/birdnet-team/birdnet-live-app/blob/main/MODEL_LICENSE).
