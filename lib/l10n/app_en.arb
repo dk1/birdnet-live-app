@@ -44,11 +44,11 @@
   "@onboardingHowItWorksBody": {
     "description": "Onboarding how it works body text"
   },
-  "onboardingFeaturesTitle": "Four Modes",
+  "onboardingFeaturesTitle": "Multiple Modes",
   "@onboardingFeaturesTitle": {
     "description": "Onboarding features screen title"
   },
-  "onboardingFeaturesBody": "Live monitoring, timed point counts, transect surveys, and offline file analysis — built for standardized field protocols with real-time spectrogram visualization.",
+  "onboardingFeaturesBody": "Choose the workflow that fits your field task, from live monitoring and structured surveys to file-based analysis and longer deployments — all with real-time spectrogram visualization.",
   "@onboardingFeaturesBody": {
     "description": "Onboarding features screen body text"
   },

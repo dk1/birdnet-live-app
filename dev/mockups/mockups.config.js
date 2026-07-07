@@ -265,6 +265,18 @@ window.BIRDNET_MOCKUPS = {
         },
       },
     },
+    nl: {
+      name: 'Nederlands',
+      slides: {},
+    },
+    pl: {
+      name: 'Polski',
+      slides: {},
+    },
+    ru: {
+      name: 'Русский',
+      slides: {},
+    },
   },
   slides: [
     {
