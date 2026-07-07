@@ -19,7 +19,7 @@ lib/features/
   settings/          # Settings screen (context-aware filtering)
   home/              # Home screen / main menu + help screen
   about/             # Credits, links, legal
-  onboarding/        # Intro carousel + terms gate
+  onboarding/        # Intro carousel + acceptable-use gate
   recording/         # WAV/FLAC writing (full + detection clips)
   spectrogram/       # FFT, color maps, CustomPainter
 ```

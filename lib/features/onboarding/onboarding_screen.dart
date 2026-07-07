@@ -1,12 +1,11 @@
 // =====================================================================
 // Onboarding flow
 //
-// First-run experience and Terms-of-Use gate, combined into a single
+// First-run experience and acceptable-use gate, combined into a single
 // PageView-based wizard. The previous version used the
-// `introduction_screen` package plus a separate `TermsGateScreen` that
-// re-prompted for ToU acceptance after onboarding finished â€” meaning
-// users were shown the terms twice and the layout wasted vertical space
-// on oversized centered icons.
+// `introduction_screen` package plus a separate policy gate that re-prompted
+// after onboarding finished, meaning users were shown the policy twice and
+// the layout wasted vertical space on oversized centered icons.
 //
 // This rewrite:
 //   * Custom PageView with a compact bottom controls bar so body text
@@ -14,10 +13,10 @@
 //   * Interactive Permissions page that actually triggers the OS
 //     microphone and location prompts via `record` + `geolocator`
 //     (instead of just describing the permissions in prose).
-//   * Terms & Privacy page with an "I agree" checkbox; the Get Started
+//   * Acceptable Use & Privacy page with an "I agree" checkbox; the Get Started
 //     button is disabled until the box is checked. On finish we mark
 //     both `onboardingComplete` and `termsAccepted` in one shot, so
-//     there is no follow-up gate screen.
+//     there is no follow-up policy gate screen.
 // =====================================================================
 
 import 'dart:io';
@@ -843,7 +842,7 @@ class _ConsentTile extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Page: Terms & Privacy (with required checkbox)
+// Page: Acceptable Use & Privacy (with required checkbox)
 // ---------------------------------------------------------------------------
 
 class _TermsPage extends StatelessWidget {
@@ -917,7 +916,7 @@ class _TermsPage extends StatelessWidget {
               spacing: 4,
               children: [
                 TextButton.icon(
-                  onPressed: () => _open(context, '/terms/'),
+                  onPressed: () => _open(context, '/acceptable-use/'),
                   icon: const Icon(AppIcons.gavelRounded, size: 18),
                   label: Text(l10n.onboardingTermsLink),
                 ),

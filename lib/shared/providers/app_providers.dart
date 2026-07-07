@@ -150,26 +150,26 @@ class OnboardingNotifier extends StateNotifier<bool> {
   }
 }
 
-/// Provider tracking whether terms have been accepted.
+/// Provider tracking whether the acceptable-use policy has been accepted.
 final termsAcceptedProvider = StateNotifierProvider<TermsNotifier, bool>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
   return TermsNotifier(prefs);
 });
 
-/// Notifier for terms acceptance state.
+/// Notifier for acceptable-use acceptance state.
 class TermsNotifier extends StateNotifier<bool> {
   TermsNotifier(this._prefs)
     : super(_prefs.getBool(PrefKeys.termsAccepted) ?? false);
 
   final SharedPreferences _prefs;
 
-  /// Accept terms of use.
+  /// Accept the acceptable-use policy.
   Future<void> accept() async {
     state = true;
     await _prefs.setBool(PrefKeys.termsAccepted, true);
   }
 
-  /// Revoke terms acceptance.
+  /// Revoke acceptable-use acceptance.
   Future<void> revoke() async {
     state = false;
     await _prefs.setBool(PrefKeys.termsAccepted, false);

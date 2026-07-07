@@ -77,4 +77,4 @@ No celular, a barra lateral de navegação fica oculta atrás do botão de menu 
 
 - A [página inicial](../index.md) oferece uma visão geral da versão e dos recursos.
 - O [Guia do Desenvolvedor](../developer/index.md) cobre arquitetura, ferramentas e fluxos de compilação.
-- A [Política de Privacidade](../privacy.md) e os [Termos de Uso](../terms.md) ficam neste mesmo site.
+- A [Política de Privacidade](../privacy.md) e a [Política de uso aceitável](../acceptable-use.md) ficam neste mesmo site.

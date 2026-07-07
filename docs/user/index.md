@@ -77,4 +77,4 @@ On mobile, the navigation sidebar is hidden behind the menu button in the top-le
 
 - The [Home page](../index.md) gives a release and feature overview.
 - The [Developer Guide](../developer/index.md) covers architecture, tooling, and build workflows.
-- The [Privacy Policy](../privacy.md) and [Terms of Use](../terms.md) live on this same site.
+- The [Privacy Policy](../privacy.md) and [Acceptable Use Policy](../acceptable-use.md) live on this same site.

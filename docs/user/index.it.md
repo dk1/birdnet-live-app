@@ -77,4 +77,4 @@ Sui dispositivi mobili la barra laterale di navigazione è nascosta dietro il pu
 
 - La [Home page](../index.md) offre una panoramica della versione e delle funzionalità.
 - La [Guida per sviluppatori](../developer/index.md) copre architettura, strumenti e flussi di compilazione.
-- L'[Informativa sulla privacy](../privacy.md) e i [Termini di utilizzo](../terms.md) si trovano su questo stesso sito.
+- L'[Informativa sulla privacy](../privacy.md) e la [Politica di uso accettabile](../acceptable-use.md) si trovano su questo stesso sito.

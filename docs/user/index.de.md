@@ -77,4 +77,4 @@ Auf Mobilgeräten ist die Navigationsseitenleiste hinter der Menüschaltfläche 
 
 - Die [Startseite](../index.md) bietet eine Release- und Funktionsübersicht.
 - Das [Entwicklerhandbuch](../developer/index.md) behandelt Architektur, Tools und Build-Workflows.
-- Die [Datenschutzerklärung](../privacy.md) und die [Nutzungsbedingungen](../terms.md) finden Sie auf derselben Website.
+- Die [Datenschutzerklärung](../privacy.md) und die [Richtlinie zur akzeptablen Nutzung](../acceptable-use.md) finden Sie auf derselben Website.

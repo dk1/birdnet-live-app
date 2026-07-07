@@ -36,7 +36,7 @@ lib/
     history/     # Session review, library, export
     settings/    # Settings screen
     home/        # Home screen / main menu
-    onboarding/  # Intro carousel + terms gate
+    onboarding/  # Intro carousel + acceptable-use gate
     about/       # Credits, links, legal
   l10n/          # ARB localization files (en, de, cs, es, fr, it, pt, nl, pl, ru)
 ```

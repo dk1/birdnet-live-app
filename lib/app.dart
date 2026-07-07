@@ -42,7 +42,7 @@ Locale resolveAppLocale(
 /// Root application widget.
 ///
 /// Configures theme, localization, and the initial route based on
-/// whether onboarding and terms acceptance have been completed.
+/// whether onboarding and policy acceptance have been completed.
 class App extends ConsumerWidget {
   const App({super.key});
 
@@ -193,7 +193,7 @@ class _AruNotificationActionListenerState
   Widget build(BuildContext context) => widget.child;
 }
 
-/// Gate widget that routes to onboarding, terms, or home screen.
+/// Gate widget that routes to onboarding or the home screen.
 class _AppGate extends ConsumerWidget {
   const _AppGate();
 
@@ -202,10 +202,10 @@ class _AppGate extends ConsumerWidget {
     final onboardingComplete = ref.watch(onboardingCompleteProvider);
     final termsAccepted = ref.watch(termsAcceptedProvider);
 
-    // The onboarding flow now also captures Terms of Use acceptance, so a
-    // completed onboarding implies accepted terms. We still gate on both
+    // The onboarding flow now also captures acceptable-use acceptance, so a
+    // completed onboarding implies accepted policy. We still gate on both
     // independently so a future settings reset of either flag re-shows the
-    // onboarding flow (rather than navigating to a separate terms screen).
+    // onboarding flow.
     if (!onboardingComplete || !termsAccepted) {
       return const OnboardingScreen();
     }
