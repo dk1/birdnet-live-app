@@ -10,7 +10,11 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'features/aru/aru_notification.dart';
 import 'features/aru/aru_notification_route.dart';
+import 'features/live/live_controller.dart';
+import 'features/live/live_providers.dart';
+import 'features/live/live_screen.dart';
 import 'shared/providers/app_providers.dart';
+import 'shared/services/quick_action_service.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/home/home_screen.dart';
 
@@ -116,7 +120,9 @@ class App extends ConsumerWidget {
           },
 
           // Initial screen based on app state
-          home: const _AruNotificationActionListener(child: _AppGate()),
+          home: const _AruNotificationActionListener(
+            child: _QuickActionListener(child: _AppGate()),
+          ),
         );
       },
     );
@@ -184,6 +190,78 @@ class _AruNotificationActionListenerState
     navigator.pushAndRemoveUntil(
       MaterialPageRoute<void>(
         builder: (_) => AruNotificationRoute(requestStop: requestStop),
+      ),
+      (route) => route.isFirst,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+/// Listens for the Quick Listen home-screen widget's launch action and
+/// jumps straight to Live Mode with recording auto-started, on both cold
+/// start (app was killed) and warm start (app already running). Mirrors
+/// [_AruNotificationActionListener]'s native-action bridge pattern.
+class _QuickActionListener extends ConsumerStatefulWidget {
+  const _QuickActionListener({required this.child});
+
+  final Widget child;
+
+  @override
+  ConsumerState<_QuickActionListener> createState() =>
+      _QuickActionListenerState();
+}
+
+class _QuickActionListenerState extends ConsumerState<_QuickActionListener> {
+  @override
+  void initState() {
+    super.initState();
+    QuickActionService.setNativeActionHandler(_onNativeAction);
+    unawaited(_takePendingNativeAction());
+  }
+
+  @override
+  void dispose() {
+    QuickActionService.setNativeActionHandler(null);
+    super.dispose();
+  }
+
+  Future<void> _takePendingNativeAction() async {
+    final action = await QuickActionService.takePendingNativeAction();
+    if (!mounted || action == null) return;
+    _handleQuickAction(action);
+  }
+
+  void _onNativeAction(String action) {
+    if (!mounted) return;
+    _handleQuickAction(action);
+  }
+
+  void _handleQuickAction(String action) {
+    if (action != QuickActionService.startListeningAction) return;
+
+    // Guard against a fresh install: if the user taps the widget before
+    // ever opening the app (onboarding/terms not yet completed), fall
+    // through to the normal onboarding flow instead of skipping straight
+    // to Live Mode.
+    final onboardingComplete = ref.read(onboardingCompleteProvider);
+    final termsAccepted = ref.read(termsAcceptedProvider);
+    if (!onboardingComplete || !termsAccepted) return;
+
+    final navigator = appNavigatorKey.currentState;
+    if (navigator == null) return;
+
+    // If a session is already active or paused, just bring the user to it
+    // instead of attempting to start a new one.
+    final controller = ref.read(liveControllerProvider);
+    final alreadyRecording =
+        controller.state == LiveState.active ||
+        controller.state == LiveState.paused;
+
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute<void>(
+        builder: (_) => LiveScreen(forceAutoStart: !alreadyRecording),
       ),
       (route) => route.isFirst,
     );

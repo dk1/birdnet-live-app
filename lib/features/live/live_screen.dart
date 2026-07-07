@@ -47,7 +47,15 @@ import 'widgets/detection_list_widget.dart';
 
 /// Live mode screen — real-time species identification.
 class LiveScreen extends ConsumerStatefulWidget {
-  const LiveScreen({super.key});
+  const LiveScreen({super.key, this.forceAutoStart = false});
+
+  /// One-shot override that starts a session as soon as the model is
+  /// ready, regardless of the persistent [liveAutoStartProvider] setting.
+  /// Used by the Quick Listen home-screen widget so tapping it always
+  /// starts listening without silently flipping the user's saved
+  /// preference. Guarded by the same [_autoStartAttempted] single-attempt
+  /// latch as the persistent setting.
+  final bool forceAutoStart;
 
   @override
   ConsumerState<LiveScreen> createState() => _LiveScreenState();
@@ -138,7 +146,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     if (!_autoStartAttempted &&
         !_isStarting &&
         controller.state == LiveState.ready &&
-        ref.read(liveAutoStartProvider)) {
+        (widget.forceAutoStart || ref.read(liveAutoStartProvider))) {
       _autoStartAttempted = true;
       SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) _toggleSession();
@@ -300,6 +308,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _sessionTimer?.cancel();
+    _lifecyclePauseDebounce?.cancel();
 
     // Clear the state-change callback on the long-lived controller to avoid calling
     // updates on a defunct/disposed widget state. Use the cached reference
@@ -324,10 +333,22 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       // App going to background — pause session to stop recording/inference.
+      // Debounced: relaunching via the Quick Listen widget while already in
+      // Live Mode briefly cycles the activity through `inactive` even though
+      // the app never really leaves the foreground (Android task-to-front
+      // on an already-topmost activity). Pausing/resuming immediately on
+      // that blip closed and reopened a session segment on every tap,
+      // which made the displayed duration visibly jump. Waiting a beat lets
+      // a same-app blip resolve back to `resumed` before we act on it.
       if (controller.state == LiveState.active) {
-        _pauseSessionForBackground();
+        _lifecyclePauseDebounce?.cancel();
+        _lifecyclePauseDebounce = Timer(const Duration(milliseconds: 400), () {
+          if (mounted) _pauseSessionForBackground();
+        });
       }
     } else if (state == AppLifecycleState.resumed) {
+      _lifecyclePauseDebounce?.cancel();
+      _lifecyclePauseDebounce = null;
       // App returning to foreground — resume if we paused for background.
       if (controller.state == LiveState.paused && _pausedByLifecycle) {
         _resumeSessionFromBackground();
@@ -335,6 +356,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     }
   }
 
+  Timer? _lifecyclePauseDebounce;
   bool _pausedByLifecycle = false;
 
   Future<void> _pauseSessionForBackground() async {
