@@ -432,6 +432,7 @@
   "exploreHelpLearnMore": "Узнайте больше о геомодели",
   "speciesDescriptionSource": "Источник: {source}",
   "speciesLearnMore": "Узнайте больше об этом виде",
+  "speciesListenOnEbird": "Послушайте этот вид на eBird",
   "settingsSensitivity": "Чувствительность",
   "settingsSensitivityDescription": "Более высокие значения обнаруживают больше видов, но увеличивают количество ложных срабатываний.",
   "settingsScorePooling": "Объединение оценок",

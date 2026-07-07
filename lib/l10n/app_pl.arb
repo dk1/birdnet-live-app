@@ -432,6 +432,7 @@
   "exploreHelpLearnMore": "Dowiedz się więcej o modelu geograficznym",
   "speciesDescriptionSource": "Źródło: {source}",
   "speciesLearnMore": "Dowiedz się więcej o tym gatunku",
+  "speciesListenOnEbird": "Posłuchaj tego gatunku na eBird",
   "settingsSensitivity": "Wrażliwość",
   "settingsSensitivityDescription": "Wyższe wartości wykrywają więcej gatunków, ale zwiększają liczbę wyników fałszywie dodatnich",
   "settingsScorePooling": "Łączenie wyników",

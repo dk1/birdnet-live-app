@@ -416,6 +416,7 @@
   "exploreHelpLearnMore": "En savoir plus sur le géo-modèle",
   "speciesDescriptionSource": "Source : {source}",
   "speciesLearnMore": "En savoir plus sur cette espèce",
+  "speciesListenOnEbird": "Écouter cette espèce sur eBird",
   "settingsSensitivity": "Sensibilité",
   "settingsSensitivityDescription": "Des valeurs plus élevées détectent plus d'espèces mais augmentent les faux positifs",
   "settingsScorePooling": "Agrégation des scores",

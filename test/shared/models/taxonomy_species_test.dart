@@ -171,6 +171,27 @@ void main() {
       expect(sp.ebirdUrl, 'https://ebird.org/species/gretit1');
     });
 
+    test('ebirdListenUrl is null when no ebird code', () {
+      const sp = TaxonomySpecies(
+        scientificName: 'Parus major',
+        commonName: 'Great Tit',
+      );
+      expect(sp.ebirdListenUrl, isNull);
+    });
+
+    test('ebirdListenUrl points at audio catalog for the ebird code', () {
+      const sp = TaxonomySpecies(
+        scientificName: 'Parus major',
+        commonName: 'Great Tit',
+        ebirdCode: 'gretit1',
+      );
+      expect(
+        sp.ebirdListenUrl,
+        'https://media.ebird.org/catalog?taxonCode=gretit1'
+            '&mediaType=audio&sort=rating_rank_desc',
+      );
+    });
+
     test('inatUrl is null when no iNat ID', () {
       const sp = TaxonomySpecies(
         scientificName: 'Parus major',
