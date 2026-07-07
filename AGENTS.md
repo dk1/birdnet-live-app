@@ -99,7 +99,7 @@ This file is for coding agents working in this repository.
 ## Version Bumping Checklist
 
 - Update version in pubspec.yaml as patch+build (example: 0.16.10+178 -> 0.16.11+179).
-- Add/update release notes in CHANGELOG.md under the matching version header.
+- Add/update release notes in CHANGELOG.md under the matching version header and prepare Play/App Store release notes for all 10 app locales: en, de, cs, es, fr, it, pt, nl, pl, ru.
 - Run dart dev/sync_version.dart to sync README/docs version badges.
 - If strings changed, run flutter gen-l10n and verify locale completeness.
 - Run flutter analyze (and flutter test when relevant) before committing.

@@ -196,6 +196,90 @@ window.BIRDNET_MOCKUP_COPY = {
           "subtitle": "Importe áudio, reveja deteções ao longo do tempo e processe tudo localmente, sem enviar som para a cloud."
         }
       }
+    },
+    "nl": {
+      "slides": {
+        "menu": {
+          "title": "Veldwerkflows in één app",
+          "subtitle": "Schakel tussen live opnemen, gestructureerde veldprotocollen, offline bestandsanalyse en review zonder van tool te wisselen."
+        },
+        "live": {
+          "title": "Herken roepen in realtime",
+          "subtitle": "Offline BirdNET+ inference zet microfoongeluid om in live soortdetecties, met betrouwbaarheidscores en een scrollend spectrogram."
+        },
+        "review": {
+          "title": "Review sessies en valideer detecties",
+          "subtitle": "Sorteer op betrouwbaarheid, inspecteer clips en spectrogrammen, voeg notities toe en exporteer resultaten voor rapporten of veldgegevens."
+        },
+        "species": {
+          "title": "Leer meer over je detecties",
+          "subtitle": "Open soortdetails met foto's, beschrijvingen, taxonomie en referentielinks terwijl je je waarnemingen bekijkt."
+        },
+        "explore": {
+          "title": "Verken waarschijnlijke soorten dichtbij",
+          "subtitle": "Gebruik locatiebewuste soortenlijsten, foto's, beschrijvingen en verspreidingscontext voor of na een opnamesessie."
+        },
+        "files": {
+          "title": "Analyseer opnamen offline",
+          "subtitle": "Importeer audiobestanden, bekijk detecties door de tijd en verwerk opnamen lokaal zonder geluid naar de cloud te sturen."
+        }
+      }
+    },
+    "pl": {
+      "slides": {
+        "menu": {
+          "title": "Praca terenowa w jednej aplikacji",
+          "subtitle": "Przechodź między nagrywaniem na żywo, ustrukturyzowanymi protokołami terenowymi, analizą plików offline i przeglądem bez zmiany narzędzia."
+        },
+        "live": {
+          "title": "Rozpoznawaj głosy w czasie rzeczywistym",
+          "subtitle": "Offline inference BirdNET+ zmienia dźwięk z mikrofonu w wykrycia gatunków na żywo, z wynikami pewności i przewijanym spektrogramem."
+        },
+        "review": {
+          "title": "Przeglądaj sesje i potwierdzaj wykrycia",
+          "subtitle": "Sortuj według pewności, sprawdzaj klipy i spektrogramy, dodawaj notatki i eksportuj wyniki do raportów lub dokumentacji terenowej."
+        },
+        "species": {
+          "title": "Dowiedz się więcej o wykrytych gatunkach",
+          "subtitle": "Otwieraj szczegóły gatunków ze zdjęciami, opisami, taksonomią i linkami referencyjnymi podczas przeglądu obserwacji."
+        },
+        "explore": {
+          "title": "Sprawdź prawdopodobne gatunki w pobliżu",
+          "subtitle": "Korzystaj z list gatunków opartych na lokalizacji, zdjęć, opisów i kontekstu zasięgu przed Session nagraniową lub po niej."
+        },
+        "files": {
+          "title": "Analizuj nagrania offline",
+          "subtitle": "Importuj pliki audio, przeglądaj wykrycia w czasie i przetwarzaj nagrania lokalnie bez wysyłania dźwięku do chmury."
+        }
+      }
+    },
+    "ru": {
+      "slides": {
+        "menu": {
+          "title": "Полевые рабочие процессы в одном приложении",
+          "subtitle": "Переключайтесь между live-записью, структурированными полевыми протоколами, offline-анализом файлов и review без смены инструмента."
+        },
+        "live": {
+          "title": "Распознавайте голоса в реальном времени",
+          "subtitle": "Offline inference BirdNET+ превращает звук с микрофона в live-обнаружения видов с оценками уверенности и прокручиваемой спектрограммой."
+        },
+        "review": {
+          "title": "Проверяйте сессии и подтверждайте обнаружения",
+          "subtitle": "Сортируйте по уверенности, изучайте клипы и спектрограммы, добавляйте заметки и экспортируйте результаты для отчётов или полевых записей."
+        },
+        "species": {
+          "title": "Узнавайте больше о найденных видах",
+          "subtitle": "Открывайте сведения о видах с фотографиями, описаниями, таксономией и справочными ссылками при просмотре наблюдений."
+        },
+        "explore": {
+          "title": "Изучайте вероятные виды поблизости",
+          "subtitle": "Используйте списки видов с учётом местоположения, фотографии, описания и контекст ареала до или после Session записи."
+        },
+        "files": {
+          "title": "Анализируйте записи offline",
+          "subtitle": "Импортируйте аудиофайлы, просматривайте обнаружения во времени и обрабатывайте записи локально без отправки звука в облако."
+        }
+      }
     }
   }
 };

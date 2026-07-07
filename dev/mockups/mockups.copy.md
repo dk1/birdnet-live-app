@@ -185,3 +185,82 @@ Subtitle: Listas por localização, fotos, descrições e contexto ajudam antes 
 ### files
 Title: Analise gravações offline
 Subtitle: Importe áudio, reveja deteções ao longo do tempo e processe tudo localmente, sem enviar som para a cloud.
+
+## nl
+
+### menu
+Title: Veldwerkflows in één app
+Subtitle: Schakel tussen live opnemen, gestructureerde veldprotocollen, offline bestandsanalyse en review zonder van tool te wisselen.
+
+### live
+Title: Herken roepen in realtime
+Subtitle: Offline BirdNET+ inference zet microfoongeluid om in live soortdetecties, met betrouwbaarheidscores en een scrollend spectrogram.
+
+### review
+Title: Review sessies en valideer detecties
+Subtitle: Sorteer op betrouwbaarheid, inspecteer clips en spectrogrammen, voeg notities toe en exporteer resultaten voor rapporten of veldgegevens.
+
+### species
+Title: Leer meer over je detecties
+Subtitle: Open soortdetails met foto's, beschrijvingen, taxonomie en referentielinks terwijl je je waarnemingen bekijkt.
+
+### explore
+Title: Verken waarschijnlijke soorten dichtbij
+Subtitle: Gebruik locatiebewuste soortenlijsten, foto's, beschrijvingen en verspreidingscontext voor of na een opnamesessie.
+
+### files
+Title: Analyseer opnamen offline
+Subtitle: Importeer audiobestanden, bekijk detecties door de tijd en verwerk opnamen lokaal zonder geluid naar de cloud te sturen.
+
+## pl
+
+### menu
+Title: Praca terenowa w jednej aplikacji
+Subtitle: Przechodź między nagrywaniem na żywo, ustrukturyzowanymi protokołami terenowymi, analizą plików offline i przeglądem bez zmiany narzędzia.
+
+### live
+Title: Rozpoznawaj głosy w czasie rzeczywistym
+Subtitle: Offline inference BirdNET+ zmienia dźwięk z mikrofonu w wykrycia gatunków na żywo, z wynikami pewności i przewijanym spektrogramem.
+
+### review
+Title: Przeglądaj sesje i potwierdzaj wykrycia
+Subtitle: Sortuj według pewności, sprawdzaj klipy i spektrogramy, dodawaj notatki i eksportuj wyniki do raportów lub dokumentacji terenowej.
+
+### species
+Title: Dowiedz się więcej o wykrytych gatunkach
+Subtitle: Otwieraj szczegóły gatunków ze zdjęciami, opisami, taksonomią i linkami referencyjnymi podczas przeglądu obserwacji.
+
+### explore
+Title: Sprawdź prawdopodobne gatunki w pobliżu
+Subtitle: Korzystaj z list gatunków opartych na lokalizacji, zdjęć, opisów i kontekstu zasięgu przed Session nagraniową lub po niej.
+
+### files
+Title: Analizuj nagrania offline
+Subtitle: Importuj pliki audio, przeglądaj wykrycia w czasie i przetwarzaj nagrania lokalnie bez wysyłania dźwięku do chmury.
+
+## ru
+
+### menu
+Title: Полевые рабочие процессы в одном приложении
+Subtitle: Переключайтесь между live-записью, структурированными полевыми протоколами, offline-анализом файлов и review без смены инструмента.
+
+### live
+Title: Распознавайте голоса в реальном времени
+Subtitle: Offline inference BirdNET+ превращает звук с микрофона в live-обнаружения видов с оценками уверенности и прокручиваемой спектрограммой.
+
+### review
+Title: Проверяйте сессии и подтверждайте обнаружения
+Subtitle: Сортируйте по уверенности, изучайте клипы и спектрограммы, добавляйте заметки и экспортируйте результаты для отчётов или полевых записей.
+
+### species
+Title: Узнавайте больше о найденных видах
+Subtitle: Открывайте сведения о видах с фотографиями, описаниями, таксономией и справочными ссылками при просмотре наблюдений.
+
+### explore
+Title: Изучайте вероятные виды поблизости
+Subtitle: Используйте списки видов с учётом местоположения, фотографии, описания и контекст ареала до или после Session записи.
+
+### files
+Title: Анализируйте записи offline
+Subtitle: Импортируйте аудиофайлы, просматривайте обнаружения во времени и обрабатывайте записи локально без отправки звука в облако.
+ 
