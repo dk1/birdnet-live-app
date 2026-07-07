@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added a "Listen to this species on eBird" link in the species view that opens the eBird / Macaulay Library audio catalog (sorted best-quality first) in the browser.
+- Added a "Quick Listen" home-screen widget (Android), in 2x1 and 1x1 sizes, that jumps straight into Live Mode and starts listening.
 
 ### Changed
 
@@ -21,7 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added Live Mode and Point Count General settings to show all species detected during the current session, with sorting by newest detection, confidence, common name, or occurrence count, repeated-detection count chips, and dimmed inactive rows that hide confidence visuals. In newest-first sorting, currently vocalizing species float to the top ordered by their current confidence.
 - Added ru, pl and nl locales
-- Added a "Quick Listen" home-screen widget (Android), in 2x1 and 1x1 sizes, that jumps straight into Live Mode and starts listening.
 
 ### Changed
 
