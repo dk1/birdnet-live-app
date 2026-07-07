@@ -8,13 +8,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 
 import 'core/theme/app_theme.dart';
+import 'features/aru/aru_controller.dart';
 import 'features/aru/aru_notification.dart';
 import 'features/aru/aru_notification_route.dart';
+import 'features/aru/aru_providers.dart';
 import 'features/live/live_controller.dart';
 import 'features/live/live_providers.dart';
 import 'features/live/live_screen.dart';
 import 'shared/providers/app_providers.dart';
 import 'shared/services/quick_action_service.dart';
+import 'shared/services/relaunch_signal.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/home/home_screen.dart';
 
@@ -187,6 +190,11 @@ class _AruNotificationActionListenerState
     final navigator = appNavigatorKey.currentState;
     if (navigator == null) return;
 
+    // This PendingIntent uses the same relaunch flags as the Quick Listen
+    // widget's — see RelaunchSignal for why this matters if the user is
+    // currently on LiveScreen.
+    RelaunchSignal.markExpected();
+
     navigator.pushAndRemoveUntil(
       MaterialPageRoute<void>(
         builder: (_) => AruNotificationRoute(requestStop: requestStop),
@@ -249,19 +257,42 @@ class _QuickActionListenerState extends ConsumerState<_QuickActionListener> {
     final termsAccepted = ref.read(termsAcceptedProvider);
     if (!onboardingComplete || !termsAccepted) return;
 
+    // LiveController is a single app-wide instance shared with the
+    // autonomous ARU background runner (see aru_runner.dart). If ARU
+    // currently owns it, do not navigate into Live Mode at all — doing so
+    // would let the user pause/finalize an unattended ARU deployment via
+    // ordinary Live Mode interactions (backgrounding, tapping Stop).
+    final aruState = ref.read(aruStateProvider);
+    final aruOwnsController =
+        aruState != AruControllerState.idle &&
+        aruState != AruControllerState.completed &&
+        aruState != AruControllerState.error;
+    if (aruOwnsController) return;
+
     final navigator = appNavigatorKey.currentState;
     if (navigator == null) return;
 
-    // If a session is already active or paused, just bring the user to it
-    // instead of attempting to start a new one.
+    // If a session is already active or paused, don't tear down and
+    // rebuild an already-visible LiveScreen — that discarded its
+    // session-duration-warning timer on every tap. Only navigate if the
+    // user isn't already looking at it (e.g. a paused session while
+    // they're elsewhere in the app).
     final controller = ref.read(liveControllerProvider);
     final alreadyRecording =
         controller.state == LiveState.active ||
         controller.state == LiveState.paused;
+    if (alreadyRecording && LiveScreenPresence.isMounted) return;
+
+    // This PendingIntent uses the same relaunch flags as the ARU
+    // notification's — see RelaunchSignal for why this matters.
+    RelaunchSignal.markExpected();
 
     navigator.pushAndRemoveUntil(
       MaterialPageRoute<void>(
-        builder: (_) => LiveScreen(forceAutoStart: !alreadyRecording),
+        // Always true: LiveScreen's own auto-start guard already requires
+        // LiveState.ready, so this safely no-ops whenever alreadyRecording
+        // is true (active/paused fails that check regardless).
+        builder: (_) => const LiveScreen(forceAutoStart: true),
       ),
       (route) => route.isFirst,
     );

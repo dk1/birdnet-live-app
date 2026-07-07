@@ -22,6 +22,7 @@ import '../history/session_review_screen.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
+import '../../shared/services/relaunch_signal.dart';
 import 'live_controller.dart';
 import 'live_detection_display.dart';
 import 'live_providers.dart';
@@ -44,6 +45,15 @@ import 'widgets/detection_list_widget.dart';
 // The screen is its own route (pushed from HomeScreen) so it has a Scaffold
 // with no AppBar — edge-to-edge with SafeArea only at top/bottom.
 // =============================================================================
+
+/// Tracks whether a [LiveScreen] instance is currently mounted, so other
+/// parts of the app (the Quick Listen widget's launch handler) can tell
+/// "the user is already looking at Live Mode" from "a session is active/
+/// paused but the user is elsewhere" without walking the navigator's route
+/// stack.
+abstract final class LiveScreenPresence {
+  static bool isMounted = false;
+}
 
 /// Live mode screen — real-time species identification.
 class LiveScreen extends ConsumerStatefulWidget {
@@ -79,6 +89,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   @override
   void initState() {
     super.initState();
+    LiveScreenPresence.isMounted = true;
     WidgetsBinding.instance.addObserver(this);
     // Register the state change callback so the controller can trigger
     // rebuilds when detections arrive.
@@ -306,9 +317,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
   @override
   void dispose() {
+    LiveScreenPresence.isMounted = false;
     WidgetsBinding.instance.removeObserver(this);
     _sessionTimer?.cancel();
-    _lifecyclePauseDebounce?.cancel();
 
     // Clear the state-change callback on the long-lived controller to avoid calling
     // updates on a defunct/disposed widget state. Use the cached reference
@@ -332,23 +343,20 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      // App going to background — pause session to stop recording/inference.
-      // Debounced: relaunching via the Quick Listen widget while already in
-      // Live Mode briefly cycles the activity through `inactive` even though
+      // Relaunching via the Quick Listen widget or an ARU notification
+      // action briefly cycles the activity through `inactive` even though
       // the app never really leaves the foreground (Android task-to-front
-      // on an already-topmost activity). Pausing/resuming immediately on
-      // that blip closed and reopened a session segment on every tap,
-      // which made the displayed duration visibly jump. Waiting a beat lets
-      // a same-app blip resolve back to `resumed` before we act on it.
+      // on an already-topmost activity). Those call sites mark that via
+      // [RelaunchSignal] right before navigating; skip pausing for exactly
+      // that one transition instead of guessing from timing — pausing
+      // eagerly on every real backgrounding event still matters (releasing
+      // the mic promptly), so this must not delay the genuine case.
+      if (RelaunchSignal.consumeExpected()) return;
+      // App going to background — pause session to stop recording/inference.
       if (controller.state == LiveState.active) {
-        _lifecyclePauseDebounce?.cancel();
-        _lifecyclePauseDebounce = Timer(const Duration(milliseconds: 400), () {
-          if (mounted) _pauseSessionForBackground();
-        });
+        _pauseSessionForBackground();
       }
     } else if (state == AppLifecycleState.resumed) {
-      _lifecyclePauseDebounce?.cancel();
-      _lifecyclePauseDebounce = null;
       // App returning to foreground — resume if we paused for background.
       if (controller.state == LiveState.paused && _pausedByLifecycle) {
         _resumeSessionFromBackground();
@@ -356,7 +364,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     }
   }
 
-  Timer? _lifecyclePauseDebounce;
   bool _pausedByLifecycle = false;
 
   Future<void> _pauseSessionForBackground() async {
