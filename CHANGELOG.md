@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Tuned the session-mode accent colors for the high-contrast themes so each mode stays legible and distinct against the black-and-white surfaces, and switched the "detected" badges and detection-stats marker to a high-contrast-aware brand-blue/black styling.
 - Apply the Sensitivity setting immediately after audio-model inference, before score pooling and filtering, by offsetting the model's sigmoid probabilities in logit space.
+- Updated project licensing and policy docs so source code remains MIT-licensed, bundled BirdNET model weights are documented under Apache 2.0, and the former terms documentation is replaced by an Acceptable Use Policy.
 
 ### Fixed
 
