@@ -161,19 +161,19 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                 body: l10n.sessionLibraryHelpSearch,
               ),
               AppHelpSection(
-                icon: AppIcons.sort,
-                body: l10n.sessionLibraryHelpSort,
-              ),
-              AppHelpSection(
                 icon: AppIcons.filterList,
                 body: l10n.sessionLibraryHelpFilter,
               ),
               AppHelpSection(
-                icon: AppIcons.gridViewRounded,
+                icon: AppIcons.expandMore,
                 body: l10n.sessionLibraryHelpView,
               ),
               AppHelpSection(
-                icon: AppIcons.touchApp,
+                icon: AppIcons.moreVert,
+                body: l10n.sessionLibraryHelpSort,
+              ),
+              AppHelpSection(
+                icon: AppIcons.arrowDropUpRounded,
                 body: l10n.sessionLibraryHelpOpen,
               ),
             ],

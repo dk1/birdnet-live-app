@@ -4410,23 +4410,23 @@
   "@sessionLibraryHelpTitle": {
     "description": "Title for the Session Library help overlay"
   },
-  "sessionLibraryHelpSearch": "Search filters the library by Session titles, locations, dates, observers, transects, annotations, notes, and species names in any bundled locale.",
+  "sessionLibraryHelpSearch": "The search icon opens library search. It filters by Session titles, locations, dates, observers, transects, annotations, notes, and species names in any bundled locale.",
   "@sessionLibraryHelpSearch": {
     "description": "Explains the search control on the Session Library help overlay"
   },
-  "sessionLibraryHelpView": "View switches between Detailed cards, Compact rows, and By Species. By Species groups detections by species and expands to the Sessions that contain them.",
+  "sessionLibraryHelpView": "The expand arrow opens compact rows and species groups. In By Species, each species expands to the Sessions that contain it.",
   "@sessionLibraryHelpView": {
     "description": "Explains the view mode menu on the Session Library help overlay"
   },
-  "sessionLibraryHelpSort": "Sort orders the current results by newest or oldest date, title A-Z or Z-A, or longest or shortest duration.",
+  "sessionLibraryHelpSort": "The three-dot menu on a Session row opens actions for opening, sharing, or deleting that Session.",
   "@sessionLibraryHelpSort": {
     "description": "Explains the sort menu on the Session Library help overlay"
   },
-  "sessionLibraryHelpFilter": "The options button also filters by one or more Session types. Clear the type chips to return to all saved Sessions.",
+  "sessionLibraryHelpFilter": "The filter/options icon opens sorting, view mode, and Session-type filters. Clear the type chips to return to all saved Sessions.",
   "@sessionLibraryHelpFilter": {
     "description": "Explains the session-type filter on the Session Library help overlay"
   },
-  "sessionLibraryHelpOpen": "Tap a card, row, or Session under a species to open Session Review. Long-press Session rows or cards to select multiple Sessions for sharing or deletion.",
+  "sessionLibraryHelpOpen": "The up arrow on New Session opens the mode picker. Long-press Session rows or cards to select multiple Sessions for sharing or deletion.",
   "@sessionLibraryHelpOpen": {
     "description": "Explains opening a saved session from the Session Library help overlay"
   },
