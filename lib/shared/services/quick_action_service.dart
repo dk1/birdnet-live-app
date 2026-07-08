@@ -36,10 +36,14 @@ abstract final class QuickActionService {
   /// to detach. Android-only; no-op elsewhere.
   static void setNativeActionHandler(void Function(String action)? handler) {
     if (!Platform.isAndroid) return;
+    if (handler == null) {
+      _intentChannel.setMethodCallHandler(null);
+      return;
+    }
     _intentChannel.setMethodCallHandler((call) async {
       if (call.method == 'onQuickAction' && call.arguments is String) {
         final action = call.arguments as String;
-        handler?.call(action);
+        handler(action);
         await _intentChannel.invokeMethod<void>('clearPendingAction', action);
       }
     });
