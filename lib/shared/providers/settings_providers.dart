@@ -271,6 +271,23 @@ final liveAutoStartProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
   return BoolSettingNotifier(prefs, PrefKeys.liveAutoStart, false);
 });
 
+/// When true (default), completed Live and Point Count sessions are saved to
+/// the library automatically as soon as they finish. When false, the session
+/// opens in review as *unsaved*: the floppy-disk save icon is highlighted, the
+/// user must tap it to keep the session, and leaving review without saving
+/// discards the session and its recordings. Survey and ARU deployments always
+/// auto-save regardless of this setting. Default: true (preserves the historic
+/// behavior).
+final saveSessionAutomaticallyProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(
+        prefs,
+        PrefKeys.saveSessionAutomatically,
+        true,
+      );
+    });
+
 // ---------------------------------------------------------------------------
 // Export Settings
 // ---------------------------------------------------------------------------

@@ -315,8 +315,13 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         }
       }
 
-      await repo.save(session);
-      ref.invalidate(sessionListProvider);
+      // Persist the completed session unless the user disabled automatic
+      // saving, in which case review opens unsaved and only writes if saved.
+      final autoSave = ref.read(saveSessionAutomaticallyProvider);
+      if (autoSave) {
+        await repo.save(session);
+        ref.invalidate(sessionListProvider);
+      }
 
       if (mounted) {
         final navigator = Navigator.of(context);
@@ -329,7 +334,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         );
         navigator.push(
           MaterialPageRoute<void>(
-            builder: (_) => SessionReviewScreen(session: session),
+            builder:
+                (_) =>
+                    SessionReviewScreen(session: session, autoSaved: autoSave),
           ),
         );
       }

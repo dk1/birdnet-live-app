@@ -435,9 +435,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         }
       }
 
-      // Persist completed session.
-      await repo.save(session);
-      ref.invalidate(sessionListProvider);
+      // Persist completed session — unless the user turned off automatic
+      // saving, in which case the review screen opens in the "unsaved" state
+      // and only writes the session if the user explicitly saves it.
+      final autoSave = ref.read(saveSessionAutomaticallyProvider);
+      if (autoSave) {
+        await repo.save(session);
+        ref.invalidate(sessionListProvider);
+      }
 
       // Replace the live screen with the session library (instantly,
       // no transition) and then push the review screen on top with the
@@ -454,7 +459,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         );
         navigator.push(
           MaterialPageRoute<void>(
-            builder: (_) => SessionReviewScreen(session: session),
+            builder:
+                (_) =>
+                    SessionReviewScreen(session: session, autoSaved: autoSave),
           ),
         );
       }

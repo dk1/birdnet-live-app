@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a "Save sessions automatically" setting for Live and Point Count. When turned off, a finished session opens in review as unsaved and is only kept in the library if you tap Save; leaving without saving discards it.
 - Bundled offline Wikipedia species snippets for Dutch, Polish, and Russian.
 
 ### Changed

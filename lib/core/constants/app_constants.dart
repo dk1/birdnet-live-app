@@ -133,6 +133,11 @@ abstract final class PrefKeys {
   /// ready (kiosk-style / hands-free use). Default: false.
   static const String liveAutoStart = 'live_auto_start';
 
+  /// When true (default), completed Live and Point Count sessions are saved
+  /// to the library automatically. When false, the session opens in review as
+  /// unsaved and is only kept if the user explicitly saves it.
+  static const String saveSessionAutomatically = 'save_session_automatically';
+
   /// Seconds of audio captured before AND after each detection window.
   /// Total clip length = analysis window (e.g. 3 s) + 2 × clipContext.
   static const String clipContext = 'clip_context';
