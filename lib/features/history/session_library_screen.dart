@@ -22,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/taxonomy_service.dart';
 import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../../shared/utils/session_type_visuals.dart';
@@ -160,16 +161,16 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                 body: l10n.sessionLibraryHelpSearch,
               ),
               AppHelpSection(
-                icon: AppIcons.gridViewRounded,
-                body: l10n.sessionLibraryHelpView,
-              ),
-              AppHelpSection(
                 icon: AppIcons.sort,
                 body: l10n.sessionLibraryHelpSort,
               ),
               AppHelpSection(
                 icon: AppIcons.filterList,
                 body: l10n.sessionLibraryHelpFilter,
+              ),
+              AppHelpSection(
+                icon: AppIcons.gridViewRounded,
+                body: l10n.sessionLibraryHelpView,
               ),
               AppHelpSection(
                 icon: AppIcons.touchApp,
@@ -181,42 +182,83 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
   }
 
   /// Returns `true` if [session] matches the current search query.
-  ///
-  /// Matches against: session name, date string, session type label, location name,
-  /// lat/lon coordinates, and all detection species (common + scientific).
-  bool _matchesQuery(LiveSession session, String query, AppLocalizations l10n) {
-    final q = query.toLowerCase();
+  bool _matchesQuery(
+    LiveSession session,
+    String query,
+    AppLocalizations l10n,
+    TaxonomyService? taxonomy,
+    String speciesLocale,
+  ) {
+    final q = _searchFold(query);
 
-    // Session display name.
-    if (session.displayName.toLowerCase().contains(q)) return true;
-
-    // Date / time.
-    final dateStr =
-        DateFormat.yMMMd()
-            .add_Hm()
-            .format(session.startTime.toLocal())
-            .toLowerCase();
-    if (dateStr.contains(q)) return true;
-
-    // Session type label.
-    if (_sessionTypeLabel(l10n, session.type).toLowerCase().contains(q)) {
-      return true;
+    bool matches(String? value) {
+      if (value == null || value.trim().isEmpty) return false;
+      return _searchFold(value).contains(q);
     }
 
-    // Location name or coordinates.
-    final loc = session.locationName?.toLowerCase();
-    if (loc != null && loc.contains(q)) return true;
+    final localStart = session.startTime.toLocal();
+    final localEnd = session.endTime?.toLocal();
+    final dateFormat = DateFormat.yMMMd(l10n.localeName).add_Hm();
+    final dateOnlyFormat = DateFormat.yMMMd(l10n.localeName);
+
+    final sessionText = <String?>[
+      session.displayName,
+      _sessionCardTitle(l10n, session),
+      session.customName,
+      _sessionTypeLabel(l10n, session.type),
+      dateFormat.format(localStart),
+      dateOnlyFormat.format(localStart),
+      DateFormat('yyyy-MM-dd HH:mm').format(localStart),
+      DateFormat('yyyy-MM-dd').format(localStart),
+      if (localEnd != null) dateFormat.format(localEnd),
+      session.locationName,
+      session.transectId,
+      session.observerName,
+      session.aruMetadata?.deploymentName,
+      session.aruMetadata?.stationId,
+      for (final annotation in session.annotations) annotation.title,
+      for (final annotation in session.annotations) annotation.text,
+    ];
+
     if (session.latitude != null && session.longitude != null) {
-      final coords =
-          '${session.latitude!.toStringAsFixed(4)}, '
-          '${session.longitude!.toStringAsFixed(4)}';
-      if (coords.contains(q)) return true;
+      sessionText.addAll([
+        '${session.latitude!.toStringAsFixed(4)}, '
+            '${session.longitude!.toStringAsFixed(4)}',
+        session.latitude!.toStringAsFixed(4),
+        session.longitude!.toStringAsFixed(4),
+      ]);
     }
 
-    // Species (common and scientific names).
+    if (sessionText.any(matches)) return true;
+
+    for (final cycle
+        in session.aruMetadata?.cycles ?? const <AruCycleMetadata>[]) {
+      if (matches(cycle.note) ||
+          matches(cycle.status.name) ||
+          matches(dateFormat.format(cycle.plannedStart.toLocal())) ||
+          matches(
+            DateFormat('yyyy-MM-dd HH:mm').format(cycle.plannedStart.toLocal()),
+          )) {
+        return true;
+      }
+    }
+
     for (final d in session.detections) {
-      if (d.commonName.toLowerCase().contains(q)) return true;
-      if (d.scientificName.toLowerCase().contains(q)) return true;
+      final taxon = taxonomy?.lookup(d.scientificName);
+      final speciesText = <String?>[
+        d.commonName,
+        d.scientificName,
+        taxon?.displayScientificName,
+        taxon?.commonName,
+        taxon?.commonNameAlt,
+        taxon?.commonNameForLocale(speciesLocale),
+        if (taxon?.commonNames != null) ...taxon!.commonNames!.values,
+        d.note,
+        d.source.name,
+        dateFormat.format(d.timestamp.toLocal()),
+        DateFormat('yyyy-MM-dd HH:mm').format(d.timestamp.toLocal()),
+      ];
+      if (speciesText.any(matches)) return true;
     }
 
     return false;
@@ -413,6 +455,8 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final sessionsAsync = ref.watch(sessionListProvider);
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
+    final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
 
     // Pre-calculate matching/filtered lists so they're accessible to state and appBar
     final sessions = sessionsAsync.value ?? const <LiveSession>[];
@@ -423,7 +467,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
             return false;
           }
           if (query.isEmpty) return true;
-          return _matchesQuery(s, query, l10n);
+          return _matchesQuery(s, query, l10n, taxonomy, speciesLocale);
         }).toList();
     final filtered = _applySorting(matched);
 
@@ -1354,15 +1398,24 @@ class _SpeciesGroupedView extends ConsumerWidget {
             ?.commonNameForLocale(speciesLocale) ??
         g.commonName;
 
-    // Free-text species filter (matches localized common name OR sci name).
+    // Free-text species filter. Match every bundled common-name locale so
+    // typed translated names work even when another display locale is active.
     Iterable<_SpeciesGroup> visible = speciesMap.values;
-    final q = speciesQuery.trim().toLowerCase();
+    final q = _searchFold(speciesQuery);
     if (q.isNotEmpty) {
-      visible = visible.where(
-        (g) =>
-            displayNameOf(g).toLowerCase().contains(q) ||
-            g.scientificName.toLowerCase().contains(q),
-      );
+      visible = visible.where((g) {
+        final taxon = taxonomy?.lookup(g.scientificName);
+        final searchable = <String?>[
+          displayNameOf(g),
+          g.commonName,
+          g.scientificName,
+          taxon?.displayScientificName,
+          taxon?.commonName,
+          taxon?.commonNameAlt,
+          if (taxon?.commonNames != null) ...taxon!.commonNames!.values,
+        ];
+        return searchable.any((value) => _searchFold(value ?? '').contains(q));
+      });
     }
 
     final sorted = visible.toList();
@@ -1416,12 +1469,16 @@ class _SpeciesGroupedView extends ConsumerWidget {
         final displayName =
             taxon?.commonNameForLocale(speciesLocale) ?? group.commonName;
         final sessionCount = group.sessionIds.length;
+        const imageWidth = 88.0;
+        const imageHeight = 58.0;
         return ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          childrenPadding: const EdgeInsets.only(bottom: 6),
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: SizedBox(
-              width: 42,
-              height: 28,
+              width: imageWidth,
+              height: imageHeight,
               child:
                   taxon != null
                       ? Image.asset(
@@ -1432,7 +1489,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
                               color: theme.colorScheme.surfaceContainerHighest,
                               child: Icon(
                                 AppIcons.brokenImage,
-                                size: 18,
+                                size: 24,
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
                             ),
@@ -1441,13 +1498,18 @@ class _SpeciesGroupedView extends ConsumerWidget {
                         color: theme.colorScheme.surfaceContainerHighest,
                         child: Icon(
                           AppIcons.brokenImage,
-                          size: 18,
+                          size: 24,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
             ),
           ),
-          title: Text(displayName, style: theme.textTheme.titleSmall),
+          title: Text(
+            displayName,
+            style: theme.textTheme.titleSmall,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           subtitle: Text(
             showSciNames
                 ? '${taxon?.displayScientificName ?? group.scientificName} · ${l10n.sessionSpeciesSessionCount(sessionCount)}'
@@ -1455,6 +1517,8 @@ class _SpeciesGroupedView extends ConsumerWidget {
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           children: [
             for (final session in sessions.where(
@@ -1487,6 +1551,68 @@ class _SpeciesGroupedView extends ConsumerWidget {
     );
   }
 }
+
+String _searchFold(String value) {
+  final lower = value.toLowerCase();
+  final buffer = StringBuffer();
+  for (final codePoint in lower.runes) {
+    final char = String.fromCharCode(codePoint);
+    buffer.write(_searchCharFold[char] ?? char);
+  }
+  return buffer.toString();
+}
+
+const Map<String, String> _searchCharFold = {
+  '\u00e0': 'a',
+  '\u00e1': 'a',
+  '\u00e2': 'a',
+  '\u00e3': 'a',
+  '\u00e4': 'a',
+  '\u00e5': 'a',
+  '\u0101': 'a',
+  '\u0103': 'a',
+  '\u0105': 'a',
+  '\u00e6': 'ae',
+  '\u0107': 'c',
+  '\u010d': 'c',
+  '\u00e7': 'c',
+  '\u010f': 'd',
+  '\u00e8': 'e',
+  '\u00e9': 'e',
+  '\u00ea': 'e',
+  '\u00eb': 'e',
+  '\u011b': 'e',
+  '\u0119': 'e',
+  '\u00ec': 'i',
+  '\u00ed': 'i',
+  '\u00ee': 'i',
+  '\u00ef': 'i',
+  '\u0142': 'l',
+  '\u00f1': 'n',
+  '\u0144': 'n',
+  '\u0148': 'n',
+  '\u00f2': 'o',
+  '\u00f3': 'o',
+  '\u00f4': 'o',
+  '\u00f5': 'o',
+  '\u00f6': 'o',
+  '\u0153': 'oe',
+  '\u0159': 'r',
+  '\u015b': 's',
+  '\u0161': 's',
+  '\u00df': 'ss',
+  '\u0165': 't',
+  '\u00f9': 'u',
+  '\u00fa': 'u',
+  '\u00fb': 'u',
+  '\u00fc': 'u',
+  '\u016f': 'u',
+  '\u00fd': 'y',
+  '\u00ff': 'y',
+  '\u017a': 'z',
+  '\u017c': 'z',
+  '\u017e': 'z',
+};
 
 class _SpeciesGroup {
   _SpeciesGroup({required this.scientificName, required this.commonName});
