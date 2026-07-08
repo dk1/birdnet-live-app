@@ -540,6 +540,28 @@ class SettingsScreen extends ConsumerWidget {
                   onChanged:
                       (v) => ref.read(recordingFormatProvider.notifier).set(v),
                 ),
+              // Auto-save tile applies to the attended field modes that use
+              // these Recording settings (Live + Point Count). Survey and ARU
+              // deployments always auto-save — losing a long unattended run by
+              // forgetting to save would be costly — so the toggle is hidden
+              // for those contexts.
+              if (settingsContext == SettingsContext.live ||
+                  settingsContext == SettingsContext.pointCount ||
+                  settingsContext == SettingsContext.all)
+                SwitchListTile(
+                  title: _TitleWithHelp(
+                    title: l10n.settingsSaveSessionAutomatically,
+                    helpBody: l10n.settingsHelpSaveSessionAutomatically,
+                  ),
+                  subtitle: Text(
+                    l10n.settingsSaveSessionAutomaticallyDescription,
+                  ),
+                  value: ref.watch(saveSessionAutomaticallyProvider),
+                  onChanged:
+                      (v) => ref
+                          .read(saveSessionAutomaticallyProvider.notifier)
+                          .set(v),
+                ),
               // Auto-start tile is Live-only — the survey / point-count
               // setup wizards already gate session start behind their own
               // multi-step flows where an auto-start would skip required

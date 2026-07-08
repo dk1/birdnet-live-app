@@ -1403,6 +1403,10 @@
   "@sessionUnsavedChanges": {
     "description": "Warning when leaving session review with unsaved changes"
   },
+  "sessionUnsavedSession": "This session hasn't been saved yet. Save or discard it?",
+  "@sessionUnsavedSession": {
+    "description": "Prompt when leaving review of a session that was never saved (automatic saving disabled)"
+  },
   "sessionDetections": "{count} detections",
   "@sessionDetections": {
     "description": "Detection count label within a species row",
@@ -3791,6 +3795,18 @@
   "settingsHelpLiveAutoStart": "When enabled, Live mode skips the manual mic-button tap and starts a session as soon as the model finishes loading. Useful for kiosk-style installations or hands-free use. Disabled by default so accidental taps on the Live tile do not begin recording.",
   "@settingsHelpLiveAutoStart": {
     "description": "Help text for the auto-start setting"
+  },
+  "settingsSaveSessionAutomatically": "Save sessions automatically",
+  "@settingsSaveSessionAutomatically": {
+    "description": "Switch label for automatically saving finished sessions to the library"
+  },
+  "settingsSaveSessionAutomaticallyDescription": "Keep every finished session in the library. When off, review each session first and tap Save to keep it.",
+  "@settingsSaveSessionAutomaticallyDescription": {
+    "description": "Subtitle for the automatic session-saving switch"
+  },
+  "settingsHelpSaveSessionAutomatically": "When enabled, completed Live and Point Count sessions are added to your library automatically as soon as they finish. When disabled, a finished session opens in review marked as unsaved: the save icon is highlighted and you must tap it to keep the session. Leaving review without saving discards the session and its recordings. Survey and ARU deployments always save automatically.",
+  "@settingsHelpSaveSessionAutomatically": {
+    "description": "Help text for the automatic session-saving setting"
   },
 
   "settingsGpsRefresh": "Refresh GPS now",
