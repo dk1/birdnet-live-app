@@ -67,11 +67,11 @@ DEFAULT_WEBP_QUALITY = 70
 DEFAULT_DOWNLOAD_WORKERS = 50
 
 # App interface languages — one gzip description file per locale
-DESCRIPTION_LOCALES = ["en", "de", "fr", "es", "cs", "pt", "it"]
+DESCRIPTION_LOCALES = ["en", "de", "fr", "es", "cs", "pt", "it", "nl", "pl", "ru"]
 
 # Wikipedia URL locales — emitted as wikipedia_url_{locale} columns in
 # taxonomy.csv and consumed by the app (taxonomy_species.dart).
-WIKIPEDIA_URL_LOCALES = ["en", "de", "fr", "es", "cs", "pt", "it"]
+WIKIPEDIA_URL_LOCALES = DESCRIPTION_LOCALES
 
 # Top-20 species-language picker locales.  Must all appear as
 # common_name_{locale} columns in the rebuilt taxonomy.csv.

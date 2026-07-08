@@ -4410,23 +4410,23 @@
   "@sessionLibraryHelpTitle": {
     "description": "Title for the Session Library help overlay"
   },
-  "sessionLibraryHelpSearch": "Use search to filter sessions by names, dates, locations, or species.",
+  "sessionLibraryHelpSearch": "The search icon opens library search. It filters by Session titles, locations, dates, observers, transects, annotations, notes, and species names in any bundled locale.",
   "@sessionLibraryHelpSearch": {
     "description": "Explains the search control on the Session Library help overlay"
   },
-  "sessionLibraryHelpView": "The view mode menu switches between Detailed, Compact, and By Species so you can browse the library in the layout that fits the task.",
+  "sessionLibraryHelpView": "The expand arrow opens compact rows and species groups. In By Species, each species expands to the Sessions that contain it.",
   "@sessionLibraryHelpView": {
     "description": "Explains the view mode menu on the Session Library help overlay"
   },
-  "sessionLibraryHelpSort": "The sort menu changes whether sessions are ordered by date or name.",
+  "sessionLibraryHelpSort": "The three-dot menu on a Session row opens actions for opening, sharing, or deleting that Session.",
   "@sessionLibraryHelpSort": {
     "description": "Explains the sort menu on the Session Library help overlay"
   },
-  "sessionLibraryHelpFilter": "The session-type filter combines selections — pick one or more types (Live, Point Count, Survey, File Upload) to narrow the list.",
+  "sessionLibraryHelpFilter": "The filter/options icon opens sorting, view mode, and Session-type filters. Clear the type chips to return to all saved Sessions.",
   "@sessionLibraryHelpFilter": {
     "description": "Explains the session-type filter on the Session Library help overlay"
   },
-  "sessionLibraryHelpOpen": "Tap any session card or row to open Session Review for playback, editing, export, and mapped context.",
+  "sessionLibraryHelpOpen": "The up arrow on New Session opens the mode picker. Long-press Session rows or cards to select multiple Sessions for sharing or deletion.",
   "@sessionLibraryHelpOpen": {
     "description": "Explains opening a saved session from the Session Library help overlay"
   },

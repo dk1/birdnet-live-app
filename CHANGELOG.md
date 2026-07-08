@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.6] - 2026-07-08
+
+### Added
+
+- Bundled offline Wikipedia species snippets for Dutch, Polish, and Russian.
+
+### Changed
+
+- Revised the Session Library help overlay to reflect the current search, sort, filter, view, open, and multi-select controls.
+- Enlarged species thumbnails in the Session Library's By Species view.
+
+### Fixed
+
+- Fixed Session Library search so localized common names and text metadata such as Session titles, locations, dates, observers, transects, annotations, and notes are searchable across bundled locales.
+
 ## [0.18.5] - 2026-07-07
 
 ### Added
