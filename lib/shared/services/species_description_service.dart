@@ -43,6 +43,9 @@ class SpeciesDescriptionService {
     'cs',
     'pt',
     'it',
+    'nl',
+    'pl',
+    'ru',
   ];
 
   /// Get the description for [scientificName] in [locale].
