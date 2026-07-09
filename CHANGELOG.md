@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed ARU deployment restore so relaunching the app during an active recording window resumes the same recording cycle instead of dropping it and waiting for the next scheduled window.
 - Fixed Session Library search so localized common names and text metadata such as Session titles, locations, dates, observers, transects, annotations, and notes are searchable across bundled locales.
 
 ## [0.18.5] - 2026-07-07
