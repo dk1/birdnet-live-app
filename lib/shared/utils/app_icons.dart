@@ -139,6 +139,7 @@ abstract final class AppIcons {
   static const IconData radioButtonUnchecked = Symbols.radio_button_unchecked;
   static const IconData redo = Symbols.redo;
   static const IconData refresh = Symbols.refresh;
+  static const IconData restartAlt = Symbols.restart_alt;
   static const IconData repeatRounded = Symbols.repeat_rounded;
   static const IconData reportProblem = Symbols.report_problem;
   static const IconData rainy = Symbols.rainy;

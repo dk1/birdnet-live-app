@@ -34,6 +34,7 @@
 
 import 'dart:typed_data';
 
+import 'advanced_pooling_params.dart';
 import 'classifier_model.dart';
 import 'label_parser.dart';
 import 'model_config.dart';
@@ -110,8 +111,69 @@ class InferenceService {
     }
   }
 
-  /// Log-Mean-Exp alpha from the active config.
-  double get poolingAlpha => _config?.inference.temporalPooling.alpha ?? 5.0;
+  /// Log-Mean-Exp alpha. User override (via [applyAdvancedPoolingParams])
+  /// wins; otherwise falls back to the active model config.
+  double get poolingAlpha =>
+      _alphaOverride ?? _config?.inference.temporalPooling.alpha ?? 5.0;
+  double? _alphaOverride;
+
+  /// Number of recent windows required to clear the temporal support gate.
+  /// User override wins; otherwise the active model config. `1` disables the
+  /// gate (see [PostProcessor.hasTemporalSupport]).
+  int get minSupportWindows =>
+      _minSupportWindowsOverride ??
+      _config?.inference.temporalPooling.minSupportWindows ??
+      2;
+  int? _minSupportWindowsOverride;
+
+  /// Fraction of the confidence threshold used as the per-window support
+  /// threshold, before the floor. User override wins; otherwise model config.
+  double get supportThresholdFraction =>
+      _supportThresholdFractionOverride ??
+      _config?.inference.temporalPooling.supportThresholdFraction ??
+      0.6;
+  double? _supportThresholdFractionOverride;
+
+  /// Lower bound on the per-window support threshold. User override wins;
+  /// otherwise model config.
+  double get supportThresholdFloor =>
+      _supportThresholdFloorOverride ??
+      _config?.inference.temporalPooling.supportThresholdFloor ??
+      0.25;
+  double? _supportThresholdFloorOverride;
+
+  /// Raw current-window score that bypasses multi-window support. User
+  /// override wins; otherwise model config.
+  double get veryHighImmediateThreshold =>
+      _veryHighImmediateThresholdOverride ??
+      _config?.inference.temporalPooling.veryHighImmediateThreshold ??
+      0.98;
+  double? _veryHighImmediateThresholdOverride;
+
+  /// Per-window support threshold for [confidenceThreshold], applying the
+  /// overridable fraction + floor. Mirrors
+  /// [TemporalPoolingConfig.supportThresholdFor] but honours the runtime
+  /// overrides above.
+  double _supportThresholdFor(double confidenceThreshold) {
+    final threshold = confidenceThreshold * supportThresholdFraction;
+    final floor = supportThresholdFloor;
+    if (threshold < floor) return floor;
+    if (threshold > 1.0) return 1.0;
+    return threshold;
+  }
+
+  /// Apply the advanced temporal-pooling overrides from a user setting. Each
+  /// `null` field reverts that knob to the model-config default. Takes effect
+  /// on the next inference cycle — the rolling score buffer is preserved
+  /// because these knobs only change how stored windows are pooled/gated, not
+  /// the stored values themselves.
+  void applyAdvancedPoolingParams(AdvancedPoolingParams params) {
+    _alphaOverride = params.alpha;
+    _minSupportWindowsOverride = params.minSupportWindows;
+    _supportThresholdFractionOverride = params.supportThresholdFraction;
+    _supportThresholdFloorOverride = params.supportThresholdFloor;
+    _veryHighImmediateThresholdOverride = params.veryHighImmediateThreshold;
+  }
 
   /// Maximum real-time age, in seconds, for windows included in score pooling.
   double get maxPoolAgeSeconds =>
@@ -131,8 +193,9 @@ class InferenceService {
 
   /// Score-pooling mode driven by the user setting. Recognized values:
   /// `'off'` (no pooling — single-window scores), `'average'`,
-  /// `'max'`, `'lme'`, and `'adaptive_lme_peak'`. Adaptive mode uses
-  /// average pooling at high inference rates and LME at low inference rates.
+  /// `'max'`, `'lme'`, and `'adaptive_lme_peak'`. Adaptive mode currently uses
+  /// LME at all inference rates (with the temporal support gate and time gate),
+  /// plus recent-peak display confidence.
   /// Unknown values fall back to `'adaptive_lme_peak'`.
   String _poolingMode = 'adaptive_lme_peak';
   String get poolingMode => _poolingMode;
@@ -305,14 +368,14 @@ class InferenceService {
 
       switch (_poolingMode) {
         case 'adaptive_lme_peak':
-          final stepSeconds = _estimatedStepSeconds(validRecentTimestamped);
-          finalScores =
-              stepSeconds <= 1.25
-                  ? PostProcessor.average(poolingInputScores)
-                  : PostProcessor.logMeanExp(
-                    poolingInputScores,
-                    alpha: poolingAlpha,
-                  );
+          // Experiment: use LME at ALL inference rates. Previously this mode
+          // switched to average pooling at high inference rates
+          // (stepSeconds <= 1.25) and only used LME for low rates. The support
+          // gate and time gate below still apply.
+          finalScores = PostProcessor.logMeanExp(
+            poolingInputScores,
+            alpha: poolingAlpha,
+          );
           break;
         case 'avg':
         case 'average':
@@ -328,14 +391,10 @@ class InferenceService {
           );
           break;
         default:
-          final stepSeconds = _estimatedStepSeconds(validRecentTimestamped);
-          finalScores =
-              stepSeconds <= 1.25
-                  ? PostProcessor.average(poolingInputScores)
-                  : PostProcessor.logMeanExp(
-                    poolingInputScores,
-                    alpha: poolingAlpha,
-                  );
+          finalScores = PostProcessor.logMeanExp(
+            poolingInputScores,
+            alpha: poolingAlpha,
+          );
       }
     }
 
@@ -354,12 +413,9 @@ class InferenceService {
               windowScores: poolingInputScores,
               confirmedIndexes: _confirmedDetectionIndexes,
               confidenceThreshold: thresh,
-              supportThreshold: cfg.inference.temporalPooling
-                  .supportThresholdFor(thresh),
-              minSupportWindows:
-                  cfg.inference.temporalPooling.minSupportWindows,
-              veryHighImmediateThreshold:
-                  cfg.inference.temporalPooling.veryHighImmediateThreshold,
+              supportThreshold: _supportThresholdFor(thresh),
+              minSupportWindows: minSupportWindows,
+              veryHighImmediateThreshold: veryHighImmediateThreshold,
             )
             : adjusted;
 
@@ -375,7 +431,7 @@ class InferenceService {
       detections = _withEarliestSupportTimestamps(
         detections,
         poolingInput,
-        cfg.inference.temporalPooling.supportThresholdFor(thresh),
+        _supportThresholdFor(thresh),
       );
     }
 
@@ -399,14 +455,6 @@ class InferenceService {
         mode == 'max' ||
         mode == 'lme' ||
         mode == 'adaptive_lme_peak';
-  }
-
-  double _estimatedStepSeconds(List<_TimestampedScores> scores) {
-    if (scores.length < 2) return 1.0;
-    final last = scores[scores.length - 1].timestamp;
-    final previous = scores[scores.length - 2].timestamp;
-    final seconds = last.difference(previous).inMicroseconds / 1000000.0;
-    return seconds > 0 ? seconds : 1.0;
   }
 
   List<Detection> _withRecentPeakConfidence(

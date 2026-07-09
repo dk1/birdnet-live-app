@@ -346,6 +346,17 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       poolingMode: ref.read(scorePoolingProvider),
       poolingWindows: ref.read(scorePoolingWindowsProvider),
       poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
+      poolingAlpha: ref.read(scorePoolingAlphaProvider),
+      poolingMinSupportWindows: ref.read(scorePoolingMinSupportWindowsProvider),
+      poolingSupportThresholdFraction: ref.read(
+        scorePoolingSupportThresholdFractionProvider,
+      ),
+      poolingSupportThresholdFloor: ref.read(
+        scorePoolingSupportThresholdFloorProvider,
+      ),
+      poolingVeryHighImmediateThreshold: ref.read(
+        scorePoolingVeryHighImmediateThresholdProvider,
+      ),
       gainLinear: ref.read(audioGainProvider),
       highPassHz: ref.read(highPassFilterProvider),
       recordingMode: finalRecordingMode.name,

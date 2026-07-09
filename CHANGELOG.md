@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Tuned live score pooling to use Log-Mean-Exp pooling at all inference rates and relaxed the detection support gate slightly, so fainter birds surface a little sooner while still requiring consistent support.
 - Revised the Session Library help overlay to reflect the current search, sort, filter, view, open, and multi-select controls.
 - Enlarged species thumbnails in the Session Library's By Species view.
 

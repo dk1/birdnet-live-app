@@ -331,6 +331,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       poolingMode: poolingMode,
       maxPoolWindows: maxPoolWindows,
       poolingMaxAgeSeconds: poolingMaxAgeSeconds,
+      advancedPooling: ref.read(advancedPoolingParamsProvider),
       geoScores: geoScores,
       geoThreshold: ref.read(geoThresholdProvider),
       geoModelSpeciesNames: geoSpeciesNames,

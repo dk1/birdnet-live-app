@@ -56,6 +56,7 @@ import 'survey_alert_engine.dart';
 import 'survey_controller.dart';
 import 'survey_providers.dart';
 import '../history/global_species_history.dart';
+import '../inference/advanced_pooling_params.dart';
 import '../inference/custom_species_list.dart';
 import 'widgets/survey_map_widget.dart';
 import 'widgets/survey_stats_bar.dart';
@@ -600,6 +601,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         poolingWindows: ref.read(scorePoolingWindowsProvider),
         poolingMode: ref.read(scorePoolingProvider),
         poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
+        advancedPooling: ref.read(advancedPoolingParamsProvider),
         sensitivity: ref.read(sensitivityProvider),
       );
     } else {
@@ -629,6 +631,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         poolingWindows: ref.read(scorePoolingWindowsProvider),
         poolingMode: ref.read(scorePoolingProvider),
         poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
+        advancedPooling: ref.read(advancedPoolingParamsProvider),
         sensitivity: ref.read(sensitivityProvider),
         gainLinear: ref.read(audioGainProvider),
         highPassHz: ref.read(highPassFilterProvider).toDouble(),
@@ -793,6 +796,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     });
     ref.listen<String>(scorePoolingProvider, (_, next) {
       ref.read(surveyControllerProvider).setPoolingMode(next);
+    });
+    ref.listen<AdvancedPoolingParams>(advancedPoolingParamsProvider, (_, next) {
+      ref.read(surveyControllerProvider).setAdvancedPoolingParams(next);
     });
     ref.listen<double>(sensitivityProvider, (_, next) {
       ref.read(surveyControllerProvider).setSensitivity(next);

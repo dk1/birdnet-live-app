@@ -18,6 +18,27 @@ import 'offline_map_download_tile.dart';
 
 bool get _showOfflineMapDownloadSetting => false;
 
+/// Master switch for the experimental "Advanced pooling" block in the
+/// Inference section. Flip to `true` to expose the tuning knobs again; while
+/// `false` the block is hidden but every setting stays wired, persisted, and
+/// recorded in the exported JSON metadata. See [_AdvancedInferenceTuning].
+///
+/// Current shipped default — what runs when the block is hidden and the user
+/// has not overridden anything:
+///
+/// **Score pooling mode `adaptive_lme_peak`** — Log-Mean-Exp pooling at *all*
+/// inference rates (alpha 5.0), displaying the recent per-window peak as the
+/// confidence, guarded by:
+///   * **Temporal support gate** — a new detection needs ≥ 2 recent windows at
+///     or above the per-window support threshold (confidence × 0.6, floored at
+///     0.15), unless a single window hits the 0.98 immediate-bypass score.
+///   * **Pooling window + time gate** — up to 5 recent windows, dropping any
+///     older than 10 s of real time.
+///
+/// These mirror `temporalPooling` in `assets/models/model_config.json` and the
+/// `scorePooling*Provider` defaults in `settings_providers.dart`.
+const bool _showAdvancedInferenceSettings = false;
+
 String _detectedSpeciesSortHelp(AppLocalizations l10n, String sortMode) {
   switch (DetectedSpeciesSortMode.normalize(sortMode)) {
     case DetectedSpeciesSortMode.confidence:
@@ -392,6 +413,8 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged:
                     (v) => ref.read(inferenceRateProvider.notifier).set(v),
               ),
+              if (_showAdvancedInferenceSettings)
+                const _AdvancedInferenceTuning(),
               const Divider(),
             ],
 
@@ -1634,6 +1657,210 @@ class _ChoiceTile<T> extends StatelessWidget {
           if (v != null) onChanged(v);
         },
       ),
+    );
+  }
+}
+
+/// Experimental advanced tuning for temporal score pooling and the LME
+/// support gate. Collapsed by default; gated behind
+/// [_showAdvancedInferenceSettings] so the whole feature can be hidden by
+/// flipping one flag.
+///
+/// Strings here are intentionally hardcoded English rather than localized:
+/// these are developer-facing tuning knobs for an experimental section, not
+/// part of the polished localized settings surface. If this graduates to a
+/// shipped feature, migrate them to ARB entries.
+class _AdvancedInferenceTuning extends ConsumerWidget {
+  const _AdvancedInferenceTuning();
+
+  static const Set<String> _knownModes = {
+    'off',
+    'average',
+    'max',
+    'lme',
+    'adaptive_lme_peak',
+  };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rawMode = ref.watch(scorePoolingProvider);
+    final mode = _knownModes.contains(rawMode) ? rawMode : 'adaptive_lme_peak';
+    final pooling = mode != 'off';
+    // The support gate + LME alpha only affect the LME-family modes.
+    final gated = mode == 'lme' || mode == 'adaptive_lme_peak';
+
+    return ExpansionTile(
+      leading: const Icon(AppIcons.scienceOutlined),
+      title: const Text('Advanced pooling (experimental)'),
+      subtitle: const Text(
+        'Tune temporal score pooling and the LME support gate. Applies to all '
+        'modes; changes take effect on the next inference cycle.',
+      ),
+      childrenPadding: const EdgeInsets.only(bottom: 8),
+      children: [
+        _ChoiceTile<String>(
+          title: 'Pooling mode',
+          helpBody:
+              'How scores from consecutive inference windows are combined. '
+              'off = single window (no pooling); average / max = simple '
+              'pooling; lme = log-mean-exp (peak-preserving); '
+              'adaptive_lme_peak = LME plus recent-peak display confidence. '
+              'The support gate and time gate below apply to the lme and '
+              'adaptive_lme_peak modes only.',
+          value: mode,
+          options: const {
+            'off': 'Off (single window)',
+            'average': 'Average',
+            'max': 'Max',
+            'lme': 'LME',
+            'adaptive_lme_peak': 'Adaptive LME + peak',
+          },
+          onChanged: (v) => ref.read(scorePoolingProvider.notifier).set(v),
+        ),
+        if (pooling) ...[
+          _DiscreteSliderTile<int>(
+            title: 'Pool windows',
+            helpBody:
+                'Number of recent inference windows pooled together. Larger '
+                'values smooth over a longer time horizon.',
+            value: ref.watch(scorePoolingWindowsProvider),
+            values: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            format: (v) => '$v',
+            onChanged:
+                (v) =>
+                    ref.read(scorePoolingWindowsProvider.notifier).set(v),
+          ),
+          _SliderTile(
+            title: 'Time gate',
+            helpBody:
+                'Windows older than this (real-time age) are dropped from '
+                'pooling, so a pause or gap does not pollute the pooled score.',
+            value: ref.watch(scorePoolingMaxAgeSecondsProvider),
+            min: 1,
+            max: 30,
+            divisions: 29,
+            format: (v) => '${v.toStringAsFixed(0)}s',
+            onChanged:
+                (v) => ref
+                    .read(scorePoolingMaxAgeSecondsProvider.notifier)
+                    .set(v),
+          ),
+        ],
+        if (gated) ...[
+          _SliderTile(
+            title: 'LME alpha',
+            helpBody:
+                'Higher alpha weights recent peaks more heavily (closer to '
+                'max pooling); lower alpha is closer to average pooling.',
+            value: ref.watch(scorePoolingAlphaProvider),
+            min: 1,
+            max: 15,
+            divisions: 28,
+            format: (v) => v.toStringAsFixed(1),
+            onChanged:
+                (v) => ref.read(scorePoolingAlphaProvider.notifier).set(v),
+          ),
+          _DiscreteSliderTile<int>(
+            title: 'Support gate — min windows',
+            helpBody:
+                'A new detection must clear the per-window support threshold '
+                'in at least this many recent windows before it appears. Set '
+                'to 1 to disable the gate entirely.',
+            value: ref.watch(scorePoolingMinSupportWindowsProvider),
+            values: const [1, 2, 3, 4, 5],
+            format: (v) => v == 1 ? '1 (off)' : '$v',
+            onChanged:
+                (v) => ref
+                    .read(scorePoolingMinSupportWindowsProvider.notifier)
+                    .set(v),
+          ),
+          _SliderTile(
+            title: 'Support threshold fraction',
+            helpBody:
+                'Per-window support threshold = confidence threshold × this '
+                'fraction, then raised to the floor below.',
+            value: ref.watch(scorePoolingSupportThresholdFractionProvider),
+            min: 0,
+            max: 1,
+            divisions: 20,
+            format: (v) => v.toStringAsFixed(2),
+            onChanged:
+                (v) => ref
+                    .read(
+                      scorePoolingSupportThresholdFractionProvider.notifier,
+                    )
+                    .set(v),
+          ),
+          _SliderTile(
+            title: 'Support threshold floor',
+            helpBody:
+                'Lower bound on the per-window support threshold. Lower lets '
+                'fainter birds clear the gate (more sensitive, more false '
+                'positives).',
+            value: ref.watch(scorePoolingSupportThresholdFloorProvider),
+            min: 0,
+            max: 1,
+            divisions: 20,
+            format: (v) => v.toStringAsFixed(2),
+            onChanged:
+                (v) => ref
+                    .read(scorePoolingSupportThresholdFloorProvider.notifier)
+                    .set(v),
+          ),
+          _SliderTile(
+            title: 'Very-high immediate threshold',
+            helpBody:
+                'A single current window at or above this raw score bypasses '
+                'the multi-window support requirement, so unmistakable calls '
+                'appear instantly.',
+            value: ref.watch(scorePoolingVeryHighImmediateThresholdProvider),
+            min: 0.5,
+            max: 1,
+            divisions: 25,
+            format: (v) => v.toStringAsFixed(2),
+            onChanged:
+                (v) => ref
+                    .read(
+                      scorePoolingVeryHighImmediateThresholdProvider.notifier,
+                    )
+                    .set(v),
+          ),
+        ],
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              icon: const Icon(AppIcons.restartAlt),
+              label: const Text('Reset advanced pooling to defaults'),
+              onPressed: () {
+                ref
+                    .read(scorePoolingProvider.notifier)
+                    .set('adaptive_lme_peak');
+                ref.read(scorePoolingWindowsProvider.notifier).set(5);
+                ref.read(scorePoolingMaxAgeSecondsProvider.notifier).set(10.0);
+                ref.read(scorePoolingAlphaProvider.notifier).set(5.0);
+                ref
+                    .read(scorePoolingMinSupportWindowsProvider.notifier)
+                    .set(2);
+                ref
+                    .read(
+                      scorePoolingSupportThresholdFractionProvider.notifier,
+                    )
+                    .set(0.6);
+                ref
+                    .read(scorePoolingSupportThresholdFloorProvider.notifier)
+                    .set(0.15);
+                ref
+                    .read(
+                      scorePoolingVeryHighImmediateThresholdProvider.notifier,
+                    )
+                    .set(0.98);
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
