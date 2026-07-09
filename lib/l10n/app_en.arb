@@ -389,11 +389,19 @@
   "@aboutGeoModelName": {
     "description": "Geo-model name shown in about screen"
   },
+  "aboutTaxonomy": "Taxonomy",
+  "@aboutTaxonomy": {
+    "description": "Taxonomy section title in about screen"
+  },
+  "aboutTaxonomyName": "BirdNET+ Taxonomy v0.2-jun2026",
+  "@aboutTaxonomyName": {
+    "description": "Taxonomy version name shown in about screen"
+  },
   "aboutCredits": "Developed by",
   "@aboutCredits": {
     "description": "Section title for the team that built BirdNET"
   },
-  "aboutCreditsDescription": "BirdNET is developed by the Cornell K. Lisa Yang Center for Conservation Bioacoustics and Chemnitz University of Technology.",
+  "aboutCreditsDescription": "BirdNET Live is developed by the Cornell K. Lisa Yang Center for Conservation Bioacoustics and Chemnitz University of Technology in partnership with the Museum für Naturkunde Berlin.",
   "@aboutCreditsDescription": {
     "description": "Credits description"
   },

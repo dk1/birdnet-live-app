@@ -109,6 +109,16 @@ class AboutScreen extends ConsumerWidget {
                     Text(l10n.aboutGeoModelName),
                     const SizedBox(height: 12),
                     Text(
+                      l10n.aboutTaxonomy,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(l10n.aboutTaxonomyName),
+                    const SizedBox(height: 12),
+                    Text(
                       () {
                         final base = l10n.aboutSpeciesCount(
                           AppConstants.speciesCount,

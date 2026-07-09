@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added an abundance filter to Explore so you can narrow the species list to specific tiers (Abundant, Common, Frequent, Uncommon, Scarce, or Rare).
 - Added a tappable abundance legend in the Explore location header that jumps the list straight to the first species in a chosen tier.
 - Added a "Scroll to top" button in Explore that appears once you scroll down the species list.
+- Added a "Taxonomy" entry to the model information on the About screen showing the bundled taxonomy version.
+
+### Changed
+
+- Updated the About screen credits to name the Museum für Naturkunde Berlin as a development partner.
 
 ## [0.18.6] - 2026-07-08
 
