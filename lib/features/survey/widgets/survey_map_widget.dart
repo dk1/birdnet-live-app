@@ -113,6 +113,13 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
   int _lastTrackLength = 0;
   bool _initialFitDone = false;
 
+  /// Whether the underlying [FlutterMap] has attached [_mapController] via
+  /// `onMapReady`. Using the controller before this is true throws
+  /// "You need to have the FlutterMap widget rendered at least once before
+  /// using the MapController" — guards `didUpdateWidget` below, which can
+  /// fire before the map has ever built (e.g. map consent just granted).
+  bool _mapReady = false;
+
   /// Tracks the current camera zoom so species markers can degrade to a
   /// solid colored dot when zoomed out (where the bird silhouette is too
   /// small to read), and the cluster layer can be turned off once the user
@@ -137,6 +144,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
   @override
   void didUpdateWidget(covariant SurveyMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (!_mapReady) return;
 
     // Handle highlight change — center on highlighted detection.
     if (widget.highlightedDetection != null &&
@@ -220,6 +228,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
   @override
   Widget build(BuildContext context) {
     if (_hasConsent != true) {
+      _mapReady = false;
       return _buildConsentPlaceholder(context);
     }
     return _buildMap(context);
@@ -441,6 +450,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
         interactionOptions:
             widget.interactionOptions ?? const InteractionOptions(),
         onMapReady: () {
+          _mapReady = true;
           // Initial zoom may have been adjusted by `fitCamera` below; sync
           // the cached value so the species markers pick the right
           // dot/silhouette form on the very first frame.
