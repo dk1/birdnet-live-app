@@ -506,6 +506,16 @@ Map<String, dynamic> _settingsExportMetadata(
       if (s.poolingWindows != null) 'poolingWindows': s.poolingWindows,
       if (s.poolingMaxAgeSeconds != null)
         'poolingMaxAgeSeconds': s.poolingMaxAgeSeconds,
+      if (s.poolingAlpha != null) 'poolingAlpha': s.poolingAlpha,
+      if (s.poolingMinSupportWindows != null)
+        'poolingMinSupportWindows': s.poolingMinSupportWindows,
+      if (s.poolingSupportThresholdFraction != null)
+        'poolingSupportThresholdFraction': s.poolingSupportThresholdFraction,
+      if (s.poolingSupportThresholdFloor != null)
+        'poolingSupportThresholdFloor': s.poolingSupportThresholdFloor,
+      if (s.poolingVeryHighImmediateThreshold != null)
+        'poolingVeryHighImmediateThreshold':
+            s.poolingVeryHighImmediateThreshold,
     };
 
     final audio = <String, dynamic>{

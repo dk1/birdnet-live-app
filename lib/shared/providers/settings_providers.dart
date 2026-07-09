@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../features/inference/advanced_pooling_params.dart';
 import '../../l10n/app_localizations.dart';
 import 'app_providers.dart';
 
@@ -145,6 +146,84 @@ final scorePoolingMaxAgeSecondsProvider =
         10.0,
       );
     });
+
+// ── Advanced temporal-pooling knobs (LME alpha + support gate) ─────────────
+//
+// Normally baked into `temporalPooling` in the model config; exposed here as
+// overridable settings so they can be tuned live from the Advanced section of
+// the Inference settings. Defaults mirror the model-config defaults, so with
+// factory settings these providers are behaviourally transparent. Bundled for
+// transport via [advancedPoolingParamsProvider].
+
+/// LME alpha — higher weights recent peaks more heavily (default 5.0).
+final scorePoolingAlphaProvider =
+    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return DoubleSettingNotifier(prefs, PrefKeys.scorePoolingAlpha, 5.0);
+    });
+
+/// Recent windows required to clear the temporal support gate before a new
+/// LME/adaptive detection appears (default 2; `1` disables the gate).
+final scorePoolingMinSupportWindowsProvider =
+    StateNotifierProvider<IntSettingNotifier, int>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return IntSettingNotifier(
+        prefs,
+        PrefKeys.scorePoolingMinSupportWindows,
+        2,
+      );
+    });
+
+/// Fraction of the confidence threshold used as the per-window support
+/// threshold, before the floor (default 0.6).
+final scorePoolingSupportThresholdFractionProvider =
+    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return DoubleSettingNotifier(
+        prefs,
+        PrefKeys.scorePoolingSupportThresholdFraction,
+        0.6,
+      );
+    });
+
+/// Lower bound on the per-window support threshold (default 0.15).
+final scorePoolingSupportThresholdFloorProvider =
+    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return DoubleSettingNotifier(
+        prefs,
+        PrefKeys.scorePoolingSupportThresholdFloor,
+        0.15,
+      );
+    });
+
+/// Raw current-window score that bypasses multi-window support (default 0.98).
+final scorePoolingVeryHighImmediateThresholdProvider =
+    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return DoubleSettingNotifier(
+        prefs,
+        PrefKeys.scorePoolingVeryHighImmediateThreshold,
+        0.98,
+      );
+    });
+
+/// Composed snapshot of the advanced temporal-pooling overrides, rebuilt
+/// whenever any of the underlying providers changes. Threaded through the mode
+/// controllers into the inference isolate.
+final advancedPoolingParamsProvider = Provider<AdvancedPoolingParams>((ref) {
+  return AdvancedPoolingParams(
+    alpha: ref.watch(scorePoolingAlphaProvider),
+    minSupportWindows: ref.watch(scorePoolingMinSupportWindowsProvider),
+    supportThresholdFraction: ref.watch(
+      scorePoolingSupportThresholdFractionProvider,
+    ),
+    supportThresholdFloor: ref.watch(scorePoolingSupportThresholdFloorProvider),
+    veryHighImmediateThreshold: ref.watch(
+      scorePoolingVeryHighImmediateThresholdProvider,
+    ),
+  );
+});
 
 /// Species filter mode ('off', 'geoExclude', 'geoMerge', 'customList').
 final speciesFilterModeProvider =

@@ -18,6 +18,7 @@ import '../audio/ring_buffer.dart';
 import '../explore/explore_providers.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
+import '../inference/advanced_pooling_params.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../live/widgets/detection_list_widget.dart';
@@ -208,6 +209,9 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     });
     ref.listen<String>(scorePoolingProvider, (_, next) {
       ref.read(liveControllerProvider).setPoolingMode(next);
+    });
+    ref.listen<AdvancedPoolingParams>(advancedPoolingParamsProvider, (_, next) {
+      ref.read(liveControllerProvider).setAdvancedPoolingParams(next);
     });
     ref.listen<double>(sensitivityProvider, (_, next) {
       ref.read(liveControllerProvider).setSensitivity(next);

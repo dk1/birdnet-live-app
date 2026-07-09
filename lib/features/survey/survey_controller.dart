@@ -44,6 +44,7 @@ import '../announcements/announcements_controller.dart'
     show AnnouncementDetection;
 import '../audio/ring_buffer.dart';
 import '../history/session_path_codec.dart';
+import '../inference/advanced_pooling_params.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
 import '../inference/species_filter.dart';
@@ -373,6 +374,7 @@ class SurveyController {
     int? poolingWindows,
     String poolingMode = 'adaptive_lme_peak',
     double? poolingMaxAgeSeconds,
+    AdvancedPoolingParams advancedPooling = AdvancedPoolingParams.none,
     double sensitivity = 1.0,
     double? gainLinear,
     double? highPassHz,
@@ -406,6 +408,14 @@ class SurveyController {
               poolingMode: poolingMode,
               poolingWindows: poolingWindows,
               poolingMaxAgeSeconds: poolingMaxAgeSeconds,
+              poolingAlpha: advancedPooling.alpha,
+              poolingMinSupportWindows: advancedPooling.minSupportWindows,
+              poolingSupportThresholdFraction:
+                  advancedPooling.supportThresholdFraction,
+              poolingSupportThresholdFloor:
+                  advancedPooling.supportThresholdFloor,
+              poolingVeryHighImmediateThreshold:
+                  advancedPooling.veryHighImmediateThreshold,
               gainLinear: gainLinear,
               highPassHz: highPassHz,
               recordingMode: recordingMode.name,
@@ -436,6 +446,7 @@ class SurveyController {
       _isolate.setMaxPoolWindows(poolingWindows);
       _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
       _isolate.setPoolingMode(poolingMode);
+      _isolate.applyAdvancedPoolingParams(advancedPooling);
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
       ringBuffer.clear();
@@ -560,6 +571,7 @@ class SurveyController {
     int? poolingWindows,
     String poolingMode = 'adaptive_lme_peak',
     double? poolingMaxAgeSeconds,
+    AdvancedPoolingParams advancedPooling = AdvancedPoolingParams.none,
     double sensitivity = 1.0,
   }) async {
     if (_state == SurveyState.active) return;
@@ -586,6 +598,7 @@ class SurveyController {
       _isolate.setMaxPoolWindows(poolingWindows);
       _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
       _isolate.setPoolingMode(poolingMode);
+      _isolate.applyAdvancedPoolingParams(advancedPooling);
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
       ringBuffer.clear();
@@ -930,6 +943,12 @@ class SurveyController {
   /// Recognized values: `'off' | 'average' | 'max' | 'lme'`.
   void setPoolingMode(String value) {
     _isolate.setPoolingMode(value);
+  }
+
+  /// Update the advanced temporal-pooling overrides (LME alpha + support gate)
+  /// and forward to the inference isolate. Takes effect on the next cycle.
+  void setAdvancedPoolingParams(AdvancedPoolingParams params) {
+    _isolate.applyAdvancedPoolingParams(params);
   }
 
   /// Dispose of all resources.

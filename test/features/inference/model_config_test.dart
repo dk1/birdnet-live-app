@@ -316,7 +316,10 @@ void main() {
       expect(config.inference.temporalPooling.peakRetention, 0.0);
       expect(config.inference.temporalPooling.maxAgeSeconds, 10.0);
       expect(config.inference.temporalPooling.supportThresholdFraction, 0.6);
-      expect(config.inference.temporalPooling.supportThresholdFloor, 0.25);
+      // Relaxed from the 0.25 code default so faint birds (0.15–0.24) can
+      // clear the LME support gate; also mirrored by the default of
+      // scorePoolingSupportThresholdFloorProvider.
+      expect(config.inference.temporalPooling.supportThresholdFloor, 0.15);
       expect(config.inference.temporalPooling.veryHighImmediateThreshold, 0.98);
     });
   });

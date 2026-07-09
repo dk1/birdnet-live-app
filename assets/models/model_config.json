@@ -48,7 +48,7 @@
         "maxAgeSeconds": 10.0,
         "minSupportWindows": 2,
         "supportThresholdFraction": 0.6,
-        "supportThresholdFloor": 0.25,
+        "supportThresholdFloor": 0.15,
         "veryHighImmediateThreshold": 0.98
       }
     }
