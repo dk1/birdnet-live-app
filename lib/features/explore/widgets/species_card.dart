@@ -15,9 +15,11 @@ import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/score_colors.dart';
 import '../../../shared/utils/app_icons.dart';
 import '../../inference/geo_model.dart';
 import '../explore_providers.dart';
+import '../explore_tier.dart';
 
 /// A compact species card with a 3:2 thumbnail.
 class SpeciesCard extends StatelessWidget {
@@ -30,6 +32,7 @@ class SpeciesCard extends StatelessWidget {
     this.assetImagePath,
     this.geoScore,
     this.confidence,
+    this.tier,
     this.weeklyScores,
     this.onTap,
   });
@@ -54,6 +57,10 @@ class SpeciesCard extends StatelessWidget {
 
   /// Optional audio confidence (0–1) shown when used in detections.
   final double? confidence;
+
+  /// Optional distribution-adaptive abundance tier. When provided, the compact
+  /// tier chip (fill circle + letter) is shown instead of a percentage.
+  final ExploreTier? tier;
 
   /// Optional 48-week probability array for drawing a mini chart.
   final List<double>? weeklyScores;
@@ -126,7 +133,11 @@ class SpeciesCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (confidence != null || geoScore != null) ...[
+                          if (tier != null) ...[
+                            const SizedBox(width: 8),
+                            ExploreTierChip(tier: tier!),
+                          ] else if (confidence != null ||
+                              geoScore != null) ...[
                             const SizedBox(width: 8),
                             Semantics(
                               label:
@@ -214,6 +225,128 @@ class SpeciesCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Compact abundance-tier chip: a fill circle (1/6 ... 6/6) plus the tier's first
+/// letter, tinted by the tier's color from the shared [ScoreColors] ramp. The
+/// full localized tier name is exposed only to screen readers, not on screen.
+///
+/// Set [showFullLabel] to render the full localized tier name next to the
+/// circle instead of the single letter - used by the Explore help legend.
+class ExploreTierChip extends StatelessWidget {
+  const ExploreTierChip({
+    super.key,
+    required this.tier,
+    this.showFullLabel = false,
+  });
+
+  final ExploreTier tier;
+  final bool showFullLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final color = exploreTierColor(ScoreColors.of(context), tier);
+    final label = exploreTierLabel(l10n, tier);
+    final letter = exploreTierLetter(l10n, tier);
+
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withAlpha(30),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withAlpha(120)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CustomPaint(
+            size: const Size(11, 11),
+            painter: _TierFillPainter(
+              fraction: tier.fillFraction,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            showFullLabel ? label : letter,
+            style: theme.textTheme.labelSmall?.copyWith(
+              fontSize: 10,
+              color: color,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // The legend already shows the full label, so no tooltip/semantics dupe.
+    if (showFullLabel) return chip;
+
+    return Semantics(
+      label: label,
+      excludeSemantics: true,
+      child: Tooltip(message: label, child: chip),
+    );
+  }
+}
+
+/// Paints a circular gauge: a faint full-circle track with a [fraction]-filled
+/// pie wedge sweeping clockwise from the top, encoding the abundance tier
+/// ordinally so it reads without relying on color.
+class _TierFillPainter extends CustomPainter {
+  const _TierFillPainter({required this.fraction, required this.color});
+
+  final double fraction;
+  final Color color;
+
+  static const double _pi = 3.141592653589793;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+
+    final track =
+        Paint()
+          ..style = PaintingStyle.fill
+          ..color = color.withAlpha(38);
+    canvas.drawCircle(center, radius, track);
+
+    if (fraction > 0) {
+      final wedge =
+          Paint()
+            ..style = PaintingStyle.fill
+            ..color = color;
+      if (fraction >= 1.0) {
+        // A full 360 degree arc is degenerate (start and end coincide) and would
+        // paint nothing, so draw a solid disc for the top tier.
+        canvas.drawCircle(center, radius, wedge);
+      } else {
+        final rect = Rect.fromCircle(center: center, radius: radius);
+        const startAngle = -_pi / 2; // top
+        final sweep = fraction.clamp(0.0, 1.0).toDouble() * 2 * _pi;
+        final path =
+            Path()
+              ..moveTo(center.dx, center.dy)
+              ..arcTo(rect, startAngle, sweep, false)
+              ..close();
+        canvas.drawPath(path, wedge);
+      }
+    }
+
+    final outline =
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0
+          ..color = color;
+    canvas.drawCircle(center, radius - 0.5, outline);
+  }
+
+  @override
+  bool shouldRepaint(_TierFillPainter oldDelegate) =>
+      oldDelegate.fraction != fraction || oldDelegate.color != color;
 }
 
 /// Species thumbnail loaded from bundled assets.

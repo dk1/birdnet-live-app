@@ -34,6 +34,7 @@ import '../../shared/widgets/error_view.dart';
 import '../../shared/widgets/loading_view.dart';
 import '../history/global_species_history.dart';
 import 'explore_providers.dart';
+import 'explore_tier.dart';
 import 'widgets/species_card.dart';
 import 'widgets/species_info_overlay.dart';
 
@@ -620,6 +621,7 @@ class _GeoList extends ConsumerWidget {
                     detected: detected.contains(s.scientificName),
                     assetImagePath: s.taxonomy?.assetImagePath,
                     geoScore: s.geoScore,
+                    tier: s.tier,
                     weeklyScores: s.weeklyScores,
                     onTap:
                         () => SpeciesInfoOverlay.show(
@@ -817,6 +819,7 @@ class _SearchResults extends ConsumerWidget {
             detected: detected.contains(hit.species.scientificName),
             assetImagePath: hit.species.assetImagePath,
             geoScore: hit.local?.geoScore,
+            tier: hit.local?.tier,
             weeklyScores: hit.local?.weeklyScores,
             onTap:
                 () => SpeciesInfoOverlay.show(
@@ -1020,6 +1023,11 @@ class _ExploreHelpSheet extends StatelessWidget {
       initialChildSize: 0.62,
       sections: [
         AppHelpSection(icon: AppIcons.infoOutline, body: l10n.exploreHelpBody),
+        AppHelpSection(
+          icon: AppIcons.scienceOutlined,
+          body: l10n.exploreHelpTiers,
+          child: const _ExploreTierLegend(),
+        ),
         AppHelpSection(icon: AppIcons.refresh, body: l10n.exploreHelpRefresh),
         AppHelpSection(
           icon: AppIcons.helpOutlineRounded,
@@ -1031,6 +1039,26 @@ class _ExploreHelpSheet extends StatelessWidget {
         ),
       ],
       footer: _ExploreHelpLink(label: l10n.exploreHelpLearnMore),
+    );
+  }
+}
+
+/// Legend showing every abundance tier chip with its full localized name,
+/// ordered most to least abundant so the color ramp and fill progression read
+/// top to bottom.
+class _ExploreTierLegend extends StatelessWidget {
+  const _ExploreTierLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    final tiers = ExploreTier.values.reversed.toList();
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final tier in tiers)
+          ExploreTierChip(tier: tier, showFullLabel: true),
+      ],
     );
   }
 }

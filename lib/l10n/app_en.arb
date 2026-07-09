@@ -4288,9 +4288,17 @@
   "@speciesFrequencyCommon": {
     "description": "High frequency category label for geo-model probability"
   },
+  "speciesFrequencyFrequent": "Frequent",
+  "@speciesFrequencyFrequent": {
+    "description": "Fairly-common frequency category label for geo-model probability"
+  },
   "speciesFrequencyUncommon": "Uncommon",
   "@speciesFrequencyUncommon": {
     "description": "Medium frequency category label for geo-model probability"
+  },
+  "speciesFrequencyScarce": "Scarce",
+  "@speciesFrequencyScarce": {
+    "description": "Low frequency category label for geo-model probability, below Uncommon"
   },
   "speciesFrequencyOccasional": "Occasional",
   "@speciesFrequencyOccasional": {
@@ -4480,6 +4488,10 @@
   "exploreHelpCards": "Each species card shows the current geo-model ranking for that species. Tap a card to open images, description text, external links, and the seasonal chart.",
   "@exploreHelpCards": {
     "description": "Explains species cards on the Explore help overlay"
+  },
+  "exploreHelpTiers": "Each card shows an abundance tier for the current place and season. The circle fills up and its color shifts along the score scale from red to green as a species becomes more likely. Tiers are relative to this location: they adapt to how strongly the model predicts species here, so the same score can land in different tiers in different areas.",
+  "@exploreHelpTiers": {
+    "description": "Explains the abundance tier chips (colors, tiers, pie fill) on the Explore help overlay"
   },
   "surveyLiveHelpTopBar": "The top row combines stop, elapsed timer, help, and settings. Stop ends the survey and saves the session; settings opens the Survey settings subset.",
   "@surveyLiveHelpTopBar": {
