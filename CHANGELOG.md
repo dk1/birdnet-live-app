@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated the About screen credits to name the Museum für Naturkunde Berlin as a development partner.
+- Update default confidence threshold and support floor values
 
 ## [0.18.6] - 2026-07-08
 
