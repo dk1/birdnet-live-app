@@ -1690,7 +1690,7 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
     final gated = mode == 'lme' || mode == 'adaptive_lme_peak';
 
     return ExpansionTile(
-      leading: const Icon(Icons.science_outlined),
+      leading: const Icon(AppIcons.scienceOutlined),
       title: const Text('Advanced pooling (experimental)'),
       subtitle: const Text(
         'Tune temporal score pooling and the LME support gate. Applies to all '
@@ -1831,7 +1831,7 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
           child: Align(
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
-              icon: const Icon(Icons.restart_alt),
+              icon: const Icon(AppIcons.restartAlt),
               label: const Text('Reset advanced pooling to defaults'),
               onPressed: () {
                 ref
