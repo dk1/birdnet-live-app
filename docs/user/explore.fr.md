@@ -27,9 +27,31 @@ Chaque fiche d'espèce peut comprendre :
 - l'image fournie de l'espèce
 - le nom commun
 - le nom scientifique (facultatif)
-- le badge de score du géo-modèle
+- la pastille de niveau d'abondance
 
 Appuyez sur une fiche pour ouvrir le panneau de détails de l'espèce.
+
+### Niveaux d'abondance
+
+Au lieu d'un pourcentage brut, chaque fiche affiche un **niveau d'abondance** pour le lieu et la saison actuels. La pastille de niveau combine deux indices :
+
+- un **cercle** qui se remplit de ⅙ à plein à mesure que l'espèce devient plus probable
+- la **première lettre** du nom du niveau (le nom complet est lu par les lecteurs d'écran et affiché dans les détails de l'espèce)
+
+La couleur de la pastille suit l'échelle de score partagée de l'application, passant du rouge (moins probable) au vert (plus probable) à mesure que le niveau augmente.
+
+Il existe six niveaux, du plus au moins probable :
+
+| Niveau | Signification |
+| --- | --- |
+| **Abondante** | Parmi les prédictions les plus fortes ici |
+| **Commune** | Très probable |
+| **Fréquente** | Probable |
+| **Inhabituelle** | Possible |
+| **Sporadique** | Peu probable |
+| **Rare** | Parmi les prédictions les plus faibles ici |
+
+Les niveaux sont **relatifs au lieu actuel**. Ils s'adaptent à la force avec laquelle le géo-modèle prédit les espèces dans cette zone, de sorte que les limites se déplacent selon la distribution locale des scores : dans un lieu avec de nombreuses prédictions sûres, une espèce a besoin d'un score très élevé pour être *Abondante*, tandis que dans une zone aux prédictions plus faibles le même niveau est atteint à un score plus bas. Un même score peut donc correspondre à des niveaux différents selon les endroits, ce qui garde le classement pertinent partout.
 
 ## Panneau de détails de l'espèce
 
