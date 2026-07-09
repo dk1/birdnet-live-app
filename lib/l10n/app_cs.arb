@@ -985,7 +985,7 @@
   "surveyNotificationTitle": "Nahrávání Survey",
   "surveyNotificationStats": "⏱ {elapsed}   🐦 {detections} det. · {species} druhů   📍 {distanceKm} km",
   "liveStatusNow": "{count} nyní",
-  "liveStatusSpecies": "{count} druhů",
+  "liveStatusSpecies": "{count, plural, =1{1 druh} few{{count} druhy} other{{count} druhů}}",
   "liveStatusDetections": "{count} det.",
   "notificationStop": "Zastavit",
   "notificationOpen": "Otevřít",

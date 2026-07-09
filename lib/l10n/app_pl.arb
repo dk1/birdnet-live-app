@@ -1013,7 +1013,7 @@
   "liveScreenHelpControls": "Użyj Wstecz, aby opuścić ekran, Pomoc, aby ponownie otworzyć to okno, i Ustawienia dla opcji trybu Live. Duży środkowy przycisk przełącza się między mikrofonem, odtwarzaniem i zatrzymaniem zależnie od bieżącego stanu.",
   "liveScreenHelpInfoBar": "Pasek informacyjny pod spektrogramem podsumowuje bieżącą sesję: widoczne wykrycia, unikalne gatunki, łączną liczbę wykryć, upływający czas oraz rozmiar nagrania, gdy nagrywanie jest włączone.",
   "liveStatusNow": "{count} teraz",
-  "liveStatusSpecies": "{count} spp",
+  "liveStatusSpecies": "{count, plural, =1{1 sp} other{{count} spp}}",
   "liveStatusDetections": "{count} det",
   "liveScreenHelpDetections": "Dotknij wiersza gatunku, aby otworzyć panel szczegółów. Gdy zatrzymasz sesję, BirdNET Live zapisze ją i otworzy przegląd sesji.",
   "pointCountSetupHelpTitle": "Point Count Pomoc dotycząca konfiguracji",

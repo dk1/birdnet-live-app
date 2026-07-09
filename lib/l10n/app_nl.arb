@@ -1013,7 +1013,7 @@
   "liveScreenHelpControls": "Gebruik Terug om het scherm te verlaten, Help om deze uitleg opnieuw te openen en Instellingen voor de Live-specifieke opties. De grote knop in het midden wisselt tussen microfoon, afspelen en stoppen, afhankelijk van de status.",
   "liveScreenHelpInfoBar": "De infobalk onder het spectrogram vat de huidige sessie samen: zichtbare detecties, unieke soorten, totaal aantal detecties, verstreken tijd en, als je opneemt, de grootte van de opname.",
   "liveStatusNow": "{count} nu",
-  "liveStatusSpecies": "{count} spp",
+  "liveStatusSpecies": "{count, plural, =1{1 sp} other{{count} spp}}",
   "liveStatusDetections": "{count} det",
   "liveScreenHelpDetections": "Tik op een soortregel om het detailvenster van de soort te openen. Stop je de sessie, dan slaat BirdNET Live hem op en opent het sessieoverzicht.",
   "pointCountSetupHelpTitle": "Point Count Hulp bij installatie",

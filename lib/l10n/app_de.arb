@@ -985,7 +985,7 @@
   "surveyNotificationTitle": "Survey-Aufnahme",
   "surveyNotificationStats": "⏱ {elapsed}   🐦 {detections} Det. · {species} Arten   📍 {distanceKm} km",
   "liveStatusNow": "{count} gerade",
-  "liveStatusSpecies": "{count} Arten",
+  "liveStatusSpecies": "{count, plural, =1{1 Art} other{{count} Arten}}",
   "liveStatusDetections": "{count} Det.",
   "notificationStop": "Stopp",
   "notificationOpen": "Öffnen",

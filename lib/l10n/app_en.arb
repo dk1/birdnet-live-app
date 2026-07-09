@@ -4373,9 +4373,9 @@
       }
     }
   },
-  "liveStatusSpecies": "{count} spp",
+  "liveStatusSpecies": "{count, plural, =1{1 sp} other{{count} spp}}",
   "@liveStatusSpecies": {
-    "description": "Compact status token under the spectrogram: cumulative unique species count. 'spp' is the abbreviation for species (plural); translate to the locale's short form for species.",
+    "description": "Compact status token under the spectrogram: cumulative unique species count. 'sp' / 'spp' are the singular/plural abbreviations for species; translate to the locale's short form and use its plural rules.",
     "placeholders": {
       "count": {
         "type": "int"
