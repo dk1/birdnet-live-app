@@ -33,7 +33,7 @@ bool get _showOfflineMapDownloadSetting => false;
 /// confidence, guarded by:
 ///   * **Temporal support gate** — a new detection needs ≥ 2 recent windows at
 ///     or above the per-window support threshold (confidence × 0.6, floored at
-///     0.15), unless a single window hits the 0.98 immediate-bypass score.
+///     0.25), unless a single window hits the 0.98 immediate-bypass score.
 ///   * **Pooling window + time gate** — up to 5 recent windows, dropping any
 ///     older than 10 s of real time.
 ///
@@ -1878,7 +1878,7 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
                     .set(0.6);
                 ref
                     .read(scorePoolingSupportThresholdFloorProvider.notifier)
-                    .set(0.15);
+                    .set(0.25);
                 ref
                     .read(
                       scorePoolingVeryHighImmediateThresholdProvider.notifier,
