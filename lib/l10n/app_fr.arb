@@ -586,6 +586,7 @@
   "surveyLatitude": "Latitude",
   "surveyLongitude": "Longitude",
   "surveyPickOnMap": "Choisir sur la carte",
+  "settingsPickOnMap": "Choisir sur la carte",
   "surveyLocationSkipNote": "Aucun tracé GPS ne sera enregistré.",
   "surveyParametersTitle": "Paramètres",
   "surveyInferenceRate": "Fréquence d'inférence",

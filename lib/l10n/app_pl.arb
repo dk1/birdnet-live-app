@@ -600,6 +600,7 @@
   "surveyLatitude": "Szerokość",
   "surveyLongitude": "Długość geograficzna",
   "surveyPickOnMap": "Wybierz na mapie",
+  "settingsPickOnMap": "Wybierz na mapie",
   "surveyLocationSkipNote": "Żaden ślad GPS nie zostanie zarejestrowany.",
   "surveyParametersTitle": "Parametry",
   "surveyInferenceRate": "Współczynnik wnioskowania",

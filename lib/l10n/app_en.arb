@@ -2557,6 +2557,10 @@
   "@surveyPickOnMap": {
     "description": "Button to pick location on map"
   },
+  "settingsPickOnMap": "Pick on map",
+  "@settingsPickOnMap": {
+    "description": "Button to pick the manual location on a map in settings"
+  },
   "surveyLocationSkipNote": "No GPS track will be recorded.",
   "@surveyLocationSkipNote": {
     "description": "Note when skipping location"

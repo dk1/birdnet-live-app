@@ -3,12 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/services/app_data_clear_service.dart';
 import '../../shared/providers/app_providers.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/content_width_constraint.dart';
+import '../../shared/widgets/map_picker_screen.dart';
 import '../about/about_screen.dart';
 import '../announcements/widgets/announcements_settings_section.dart';
 import '../audio/audio_providers.dart';
@@ -1437,6 +1439,23 @@ class _ManualCoordinatesTileState
     });
   }
 
+  /// Opens the shared full-screen map picker seeded with the current manual
+  /// coordinates, then applies the tapped location to both fields/providers.
+  Future<void> _pickOnMap(AppLocalizations l10n) async {
+    final result = await Navigator.of(context).push<LatLng>(
+      MaterialPageRoute<LatLng>(
+        builder:
+            (_) => MapPickerScreen(
+              initialLat: ref.read(manualLatitudeProvider),
+              initialLon: ref.read(manualLongitudeProvider),
+            ),
+      ),
+    );
+    if (result != null && mounted) {
+      _applyPair(result.latitude, result.longitude, l10n);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -1512,6 +1531,15 @@ class _ManualCoordinatesTileState
             l10n.settingsCoordinatesHint,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: () => _pickOnMap(l10n),
+              icon: const Icon(AppIcons.map, size: 18),
+              label: Text(l10n.settingsPickOnMap),
             ),
           ),
         ],

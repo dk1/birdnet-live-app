@@ -586,6 +586,7 @@
   "surveyLatitude": "Zeměpisná šířka",
   "surveyLongitude": "Zeměpisná délka",
   "surveyPickOnMap": "Vybrat na mapě",
+  "settingsPickOnMap": "Vybrat na mapě",
   "surveyLocationSkipNote": "Nebude zaznamenána žádná GPS trasa.",
   "surveyParametersTitle": "Parametry",
   "surveyInferenceRate": "Rychlost inference",

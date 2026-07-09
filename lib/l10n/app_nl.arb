@@ -600,6 +600,7 @@
   "surveyLatitude": "Breedte",
   "surveyLongitude": "Lengte",
   "surveyPickOnMap": "Kies op de kaart",
+  "settingsPickOnMap": "Kies op de kaart",
   "surveyLocationSkipNote": "Er wordt geen GPS-track geregistreerd.",
   "surveyParametersTitle": "Parameters",
   "surveyInferenceRate": "Inferentiepercentage",

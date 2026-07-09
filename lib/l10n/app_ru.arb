@@ -600,6 +600,7 @@
   "surveyLatitude": "Широта",
   "surveyLongitude": "Долгота",
   "surveyPickOnMap": "Выбрать на карте",
+  "settingsPickOnMap": "Выбрать на карте",
   "surveyLocationSkipNote": "GPS-трек не будет записан.",
   "surveyParametersTitle": "Параметры",
   "surveyInferenceRate": "Скорость вывода",

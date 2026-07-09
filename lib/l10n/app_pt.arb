@@ -586,6 +586,7 @@
   "surveyLatitude": "Latitude",
   "surveyLongitude": "Longitude",
   "surveyPickOnMap": "Escolher no mapa",
+  "settingsPickOnMap": "Escolher no mapa",
   "surveyLocationSkipNote": "Nenhum rastro GPS será registrado.",
   "surveyParametersTitle": "Parâmetros",
   "surveyInferenceRate": "Taxa de inferência",
