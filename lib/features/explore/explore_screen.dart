@@ -94,6 +94,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   /// session library's filter sheet semantics.
   final Set<_TaxonGroup> _groups = <_TaxonGroup>{};
 
+  /// Selected abundance tiers. Empty set means all tiers.
+  final Set<ExploreTier> _tiers = <ExploreTier>{};
+
   /// Active sort mode; defaults to geo probability so the most likely
   /// species in your area surface at the top.
   _SortMode _sortMode = _SortMode.geo;
@@ -135,6 +138,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   /// dot on the AppBar filter button.
   bool get _filterActive =>
       _groups.isNotEmpty ||
+      _tiers.isNotEmpty ||
       _sortMode != _SortMode.geo ||
       _detectionFilter != _DetectionFilter.all;
 
@@ -216,6 +220,27 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 ? null
                                 : () {
                                   _groups.clear();
+                                  update(() {});
+                                },
+                        clearLabel: l10n.exploreFilterAll,
+                      ),
+                      const SizedBox(height: 16),
+                      _ExploreSheetHeader(label: l10n.exploreAbundanceFilter),
+                      _ExploreSheetMultiChips<ExploreTier>(
+                        current: _tiers,
+                        options: [
+                          for (final tier in ExploreTier.values.reversed)
+                            (tier, exploreTierLabel(l10n, tier)),
+                        ],
+                        onToggle: (tier) {
+                          if (!_tiers.add(tier)) _tiers.remove(tier);
+                          update(() {});
+                        },
+                        onClear:
+                            _tiers.isEmpty
+                                ? null
+                                : () {
+                                  _tiers.clear();
                                   update(() {});
                                 },
                         clearLabel: l10n.exploreFilterAll,
@@ -386,6 +411,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         ? _GeoList(
                           species: localSpecies,
                           groups: _groups,
+                          tiers: _tiers,
                           sortMode: _sortMode,
                           detectionFilter: _detectionFilter,
                           locationAvailable: locationAsync.value != null,
@@ -395,6 +421,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         : _SearchResults(
                           query: _query,
                           groups: _groups,
+                          tiers: _tiers,
                           sortMode: _sortMode,
                           detectionFilter: _detectionFilter,
                           localSpecies: localSpecies,
@@ -524,10 +551,11 @@ class _ExploreSheetMultiChips<T> extends StatelessWidget {
 // Geo list (no active search)
 // ---------------------------------------------------------------------------
 
-class _GeoList extends ConsumerWidget {
+class _GeoList extends ConsumerStatefulWidget {
   const _GeoList({
     required this.species,
     required this.groups,
+    required this.tiers,
     required this.sortMode,
     required this.detectionFilter,
     required this.locationAvailable,
@@ -537,6 +565,7 @@ class _GeoList extends ConsumerWidget {
 
   final List<ExploreSpecies> species;
   final Set<_TaxonGroup> groups;
+  final Set<ExploreTier> tiers;
   final _SortMode sortMode;
   final _DetectionFilter detectionFilter;
   final bool locationAvailable;
@@ -544,20 +573,80 @@ class _GeoList extends ConsumerWidget {
   final bool isEmbedded;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_GeoList> createState() => _GeoListState();
+}
+
+class _GeoListState extends ConsumerState<_GeoList> {
+  final _scrollController = ScrollController();
+  final _locationHeaderKey = GlobalKey();
+  bool _showScrollToTop = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_updateScrollToTopVisibility);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_updateScrollToTopVisibility);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _updateScrollToTopVisibility() {
+    final show = _scrollController.hasClients && _scrollController.offset > 480;
+    if (show != _showScrollToTop) {
+      setState(() => _showScrollToTop = show);
+    }
+  }
+
+  void _scrollToTop() {
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _scrollToTier(
+    ExploreTier tier,
+    List<ExploreSpecies> filtered,
+    double cardHeight,
+    double gap,
+  ) {
+    final index = filtered.indexWhere((s) => s.tier == tier);
+    if (index < 0 || !_scrollController.hasClients) return;
+
+    final headerHeight =
+        (_locationHeaderKey.currentContext?.findRenderObject() as RenderBox?)
+            ?.size
+            .height ??
+        0.0;
+    final offset = headerHeight + 1 + 8 + index * (cardHeight + gap);
+    _scrollController.animateTo(
+      offset.clamp(0.0, _scrollController.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final detected = ref.watch(detectedSpeciesSetProvider);
     final showScientificName = ref.watch(showSciNamesProvider);
 
     final filtered =
-        species.where((s) {
-          if (groups.isNotEmpty) {
+        widget.species.where((s) {
+          if (widget.groups.isNotEmpty) {
             final g = s.taxonomy?.taxonGroup;
-            if (g == null || !groups.any((tg) => tg.csvValue == g)) {
+            if (g == null || !widget.groups.any((tg) => tg.csvValue == g)) {
               return false;
             }
           }
-          switch (detectionFilter) {
+          switch (widget.detectionFilter) {
             case _DetectionFilter.all:
               break;
             case _DetectionFilter.detected:
@@ -565,10 +654,13 @@ class _GeoList extends ConsumerWidget {
             case _DetectionFilter.undetected:
               if (detected.contains(s.scientificName)) return false;
           }
+          if (widget.tiers.isNotEmpty && !widget.tiers.contains(s.tier)) {
+            return false;
+          }
           return true;
         }).toList();
 
-    switch (sortMode) {
+    switch (widget.sortMode) {
       case _SortMode.geo:
         filtered.sort((a, b) => b.geoScore.compareTo(a.geoScore));
       case _SortMode.nameAsc:
@@ -585,9 +677,14 @@ class _GeoList extends ConsumerWidget {
 
     if (filtered.isEmpty) {
       return EmptyView(
-        icon: locationAvailable ? AppIcons.searchOff : AppIcons.locationOff,
+        icon:
+            widget.locationAvailable
+                ? AppIcons.searchOff
+                : AppIcons.locationOff,
         title:
-            locationAvailable ? l10n.exploreNoSpecies : l10n.exploreNoLocation,
+            widget.locationAvailable
+                ? l10n.exploreNoSpecies
+                : l10n.exploreNoLocation,
       );
     }
 
@@ -597,47 +694,67 @@ class _GeoList extends ConsumerWidget {
     // win when scrolling thousands of species.
     final cardHeight = showScientificName ? 96.0 : 88.0;
     const gap = 6.0;
-    return CustomScrollView(
-      slivers: [
-        if (!isEmbedded) ...[
-          SliverToBoxAdapter(child: _LocationHeader(onRefresh: onRefresh)),
-          const SliverToBoxAdapter(child: Divider(height: 1)),
-        ],
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          sliver: SliverFixedExtentList(
-            itemExtent: cardHeight + gap,
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final s = filtered[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: gap),
-                  child: SpeciesCard(
-                    key: ValueKey(s.scientificName),
-                    scientificName:
-                        s.taxonomy?.displayScientificName ?? s.scientificName,
-                    commonName: s.commonName,
-                    showScientificName: showScientificName,
-                    detected: detected.contains(s.scientificName),
-                    assetImagePath: s.taxonomy?.assetImagePath,
-                    geoScore: s.geoScore,
-                    tier: s.tier,
-                    weeklyScores: s.weeklyScores,
-                    onTap:
-                        () => SpeciesInfoOverlay.show(
-                          context,
-                          ref,
-                          scientificName: s.scientificName,
-                          commonName: s.commonName,
-                        ),
-                  ),
-                );
-              },
-              childCount: filtered.length,
-              addAutomaticKeepAlives: false,
-              addSemanticIndexes: false,
+    return Stack(
+      children: [
+        CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            if (!widget.isEmbedded) ...[
+              SliverToBoxAdapter(
+                child: _LocationHeader(
+                  key: _locationHeaderKey,
+                  onRefresh: widget.onRefresh,
+                ),
+              ),
+              _ExploreTierHeaderSliver(
+                speciesCount: widget.species.length,
+                onTierSelected:
+                    (tier) => _scrollToTier(tier, filtered, cardHeight, gap),
+              ),
+              const SliverToBoxAdapter(child: Divider(height: 1)),
+            ],
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              sliver: SliverFixedExtentList(
+                itemExtent: cardHeight + gap,
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final s = filtered[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: gap),
+                      child: SpeciesCard(
+                        key: ValueKey(s.scientificName),
+                        scientificName:
+                            s.taxonomy?.displayScientificName ??
+                            s.scientificName,
+                        commonName: s.commonName,
+                        showScientificName: showScientificName,
+                        detected: detected.contains(s.scientificName),
+                        assetImagePath: s.taxonomy?.assetImagePath,
+                        geoScore: s.geoScore,
+                        tier: s.tier,
+                        weeklyScores: s.weeklyScores,
+                        onTap:
+                            () => SpeciesInfoOverlay.show(
+                              context,
+                              ref,
+                              scientificName: s.scientificName,
+                              commonName: s.commonName,
+                            ),
+                      ),
+                    );
+                  },
+                  childCount: filtered.length,
+                  addAutomaticKeepAlives: false,
+                  addSemanticIndexes: false,
+                ),
+              ),
             ),
-          ),
+          ],
+        ),
+        _ExploreScrollToTopButton(
+          visible: _showScrollToTop,
+          onPressed: _scrollToTop,
         ),
       ],
     );
@@ -648,10 +765,11 @@ class _GeoList extends ConsumerWidget {
 // Search results — runs over the full taxonomy, partitions by location
 // ---------------------------------------------------------------------------
 
-class _SearchResults extends ConsumerWidget {
+class _SearchResults extends ConsumerStatefulWidget {
   const _SearchResults({
     required this.query,
     required this.groups,
+    required this.tiers,
     required this.sortMode,
     required this.detectionFilter,
     required this.localSpecies,
@@ -661,6 +779,7 @@ class _SearchResults extends ConsumerWidget {
 
   final String query;
   final Set<_TaxonGroup> groups;
+  final Set<ExploreTier> tiers;
   final _SortMode sortMode;
   final _DetectionFilter detectionFilter;
   final List<ExploreSpecies> localSpecies;
@@ -668,7 +787,74 @@ class _SearchResults extends ConsumerWidget {
   final bool isEmbedded;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_SearchResults> createState() => _SearchResultsState();
+}
+
+class _SearchResultsState extends ConsumerState<_SearchResults> {
+  final _scrollController = ScrollController();
+  final _locationHeaderKey = GlobalKey();
+  bool _showScrollToTop = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_updateScrollToTopVisibility);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_updateScrollToTopVisibility);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _updateScrollToTopVisibility() {
+    final show = _scrollController.hasClients && _scrollController.offset > 480;
+    if (show != _showScrollToTop) {
+      setState(() => _showScrollToTop = show);
+    }
+  }
+
+  void _scrollToTop() {
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _scrollToTier(
+    ExploreTier tier,
+    List<_ListEntry> items,
+    bool showScientificName,
+  ) {
+    final itemIndex = items.indexWhere(
+      (entry) => entry.hit?.local?.tier == tier,
+    );
+    if (itemIndex < 0 || !_scrollController.hasClients) return;
+
+    final headerHeight =
+        (_locationHeaderKey.currentContext?.findRenderObject() as RenderBox?)
+            ?.size
+            .height ??
+        0.0;
+    final cardHeight = showScientificName ? 96.0 : 88.0;
+    var offset = headerHeight + 1 + 8;
+    for (var i = 0; i < itemIndex; i++) {
+      offset += items[i].isHeader ? 32.0 : cardHeight;
+      offset += 6.0;
+    }
+
+    _scrollController.animateTo(
+      offset.clamp(0.0, _scrollController.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
     final audioLabelsAsync = ref.watch(audioLabelsSetProvider);
@@ -684,7 +870,7 @@ class _SearchResults extends ConsumerWidget {
 
     // Index local species by scientific name for fast lookup.
     final localByName = <String, ExploreSpecies>{
-      for (final s in localSpecies) s.scientificName: s,
+      for (final s in widget.localSpecies) s.scientificName: s,
     };
 
     // Search across the entire taxonomy, then keep only species the audio
@@ -692,15 +878,15 @@ class _SearchResults extends ConsumerWidget {
     // taxonomic-group + detection-state filters.
     final hits =
         taxonomy
-            .search(query, limit: 200)
+            .search(widget.query, limit: 200)
             .where((sp) => audioLabels.contains(sp.scientificName))
             .where(
               (sp) =>
-                  groups.isEmpty ||
-                  groups.any((g) => g.csvValue == sp.taxonGroup),
+                  widget.groups.isEmpty ||
+                  widget.groups.any((g) => g.csvValue == sp.taxonGroup),
             )
             .where((sp) {
-              switch (detectionFilter) {
+              switch (widget.detectionFilter) {
                 case _DetectionFilter.all:
                   return true;
                 case _DetectionFilter.detected:
@@ -709,6 +895,11 @@ class _SearchResults extends ConsumerWidget {
                   return !detected.contains(sp.scientificName);
               }
             })
+            .where((sp) {
+              if (widget.tiers.isEmpty) return true;
+              final local = localByName[sp.scientificName];
+              return local != null && widget.tiers.contains(local.tier);
+            })
             .toList();
 
     if (hits.isEmpty) {
@@ -716,7 +907,7 @@ class _SearchResults extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Text(
-            l10n.exploreNoResultsFor(query),
+            l10n.exploreNoResultsFor(widget.query),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -750,7 +941,7 @@ class _SearchResults extends ConsumerWidget {
         a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
     int byNameDesc(_SearchHit a, _SearchHit b) =>
         b.displayName.toLowerCase().compareTo(a.displayName.toLowerCase());
-    switch (sortMode) {
+    switch (widget.sortMode) {
       case _SortMode.geo:
         atLocation.sort(
           (a, b) => (b.local?.geoScore ?? 0).compareTo(a.local?.geoScore ?? 0),
@@ -783,64 +974,79 @@ class _SearchResults extends ConsumerWidget {
       items.addAll(elsewhere.map(_ListEntry.hit));
     }
 
-    return ListView.separated(
-      padding: EdgeInsets.zero,
-      itemCount: items.length + (isEmbedded ? 0 : 2),
-      addAutomaticKeepAlives: false,
-      addSemanticIndexes: false,
-      separatorBuilder:
-          (context, index) => switch (isEmbedded ? index + 2 : index) {
-            0 => const SizedBox.shrink(),
-            1 => const SizedBox(height: 8),
-            _ => const SizedBox(height: 6),
-          },
-      itemBuilder: (context, index) {
-        if (!isEmbedded) {
-          if (index == 0) {
-            return _LocationHeader(onRefresh: onRefresh);
-          }
-          if (index == 1) {
-            return const Divider(height: 1);
-          }
-        }
-
-        final itemIndex = isEmbedded ? index : index - 2;
-        final entry = items[itemIndex];
-        Widget child;
-        if (entry.isHeader) {
-          child = _SectionHeader(label: entry.label!, icon: entry.icon!);
-        } else {
-          final hit = entry.hit!;
-          child = SpeciesCard(
-            key: ValueKey(hit.species.scientificName),
-            scientificName: hit.species.displayScientificName,
-            commonName: hit.displayName,
-            showScientificName: showScientificName,
-            detected: detected.contains(hit.species.scientificName),
-            assetImagePath: hit.species.assetImagePath,
-            geoScore: hit.local?.geoScore,
-            tier: hit.local?.tier,
-            weeklyScores: hit.local?.weeklyScores,
-            onTap:
-                () => SpeciesInfoOverlay.show(
-                  context,
-                  ref,
-                  scientificName: hit.species.scientificName,
-                  commonName: hit.species.commonName,
+    return Stack(
+      children: [
+        CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            if (!widget.isEmbedded) ...[
+              SliverToBoxAdapter(
+                child: _LocationHeader(
+                  key: _locationHeaderKey,
+                  onRefresh: widget.onRefresh,
                 ),
-          );
-        }
+              ),
+              _ExploreTierHeaderSliver(
+                speciesCount: widget.localSpecies.length,
+                onTierSelected:
+                    (tier) => _scrollToTier(tier, items, showScientificName),
+              ),
+              const SliverToBoxAdapter(child: Divider(height: 1)),
+            ],
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, itemIndex) {
+                  final entry = items[itemIndex];
+                  Widget child;
+                  if (entry.isHeader) {
+                    child = _SectionHeader(
+                      label: entry.label!,
+                      icon: entry.icon!,
+                    );
+                  } else {
+                    final hit = entry.hit!;
+                    child = SpeciesCard(
+                      key: ValueKey(hit.species.scientificName),
+                      scientificName: hit.species.displayScientificName,
+                      commonName: hit.displayName,
+                      showScientificName: showScientificName,
+                      detected: detected.contains(hit.species.scientificName),
+                      assetImagePath: hit.species.assetImagePath,
+                      geoScore: hit.local?.geoScore,
+                      tier: hit.local?.tier,
+                      weeklyScores: hit.local?.weeklyScores,
+                      onTap:
+                          () => SpeciesInfoOverlay.show(
+                            context,
+                            ref,
+                            scientificName: hit.species.scientificName,
+                            commonName: hit.species.commonName,
+                          ),
+                    );
+                  }
 
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            12,
-            0,
-            12,
-            itemIndex == items.length - 1 ? 8 : 0,
-          ),
-          child: child,
-        );
-      },
+                  return Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      12,
+                      itemIndex == 0 ? 8 : 6,
+                      12,
+                      itemIndex == items.length - 1 ? 8 : 0,
+                    ),
+                    child: child,
+                  );
+                },
+                childCount: items.length,
+                addAutomaticKeepAlives: false,
+                addSemanticIndexes: false,
+              ),
+            ),
+          ],
+        ),
+        _ExploreScrollToTopButton(
+          visible: _showScrollToTop,
+          onPressed: _scrollToTop,
+        ),
+      ],
     );
   }
 }
@@ -902,7 +1108,7 @@ class _SectionHeader extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _LocationHeader extends ConsumerStatefulWidget {
-  const _LocationHeader({required this.onRefresh});
+  const _LocationHeader({super.key, required this.onRefresh});
 
   final VoidCallback onRefresh;
 
@@ -943,20 +1149,18 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.fromLTRB(16, 6, 8, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             l10n.explorePredictionSummary,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+            style: theme.textTheme.labelMedium?.copyWith(
               color: theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 2),
-          Text(l10n.exploreTapHint, style: subtleStyle),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Row(
             children: [
               Icon(
@@ -992,6 +1196,11 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
               ),
               IconButton(
                 onPressed: widget.onRefresh,
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints.tightFor(
+                  width: 36,
+                  height: 36,
+                ),
                 icon: Icon(
                   AppIcons.refresh,
                   size: 22,
@@ -1002,6 +1211,173 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ExploreTierHeaderSliver extends StatelessWidget {
+  const _ExploreTierHeaderSliver({
+    required this.speciesCount,
+    required this.onTierSelected,
+  });
+
+  final int speciesCount;
+  final ValueChanged<ExploreTier> onTierSelected;
+
+  static const double height = 62;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SliverPersistentHeader(
+      pinned: true,
+      delegate: _FixedHeightHeaderDelegate(
+        height: height,
+        child: _ExploreTierHeaderLegend(
+          label: l10n.exploreAbundanceLegend(speciesCount),
+          onTierSelected: onTierSelected,
+        ),
+      ),
+    );
+  }
+}
+
+class _FixedHeightHeaderDelegate extends SliverPersistentHeaderDelegate {
+  const _FixedHeightHeaderDelegate({required this.height, required this.child});
+
+  final double height;
+  final Widget child;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    final theme = Theme.of(context);
+    return Material(
+      color: theme.colorScheme.surface,
+      elevation: overlapsContent ? 1 : 0,
+      child: child,
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _FixedHeightHeaderDelegate oldDelegate) =>
+      height != oldDelegate.height || child != oldDelegate.child;
+}
+
+class _ExploreTierHeaderLegend extends StatelessWidget {
+  const _ExploreTierHeaderLegend({
+    required this.label,
+    required this.onTierSelected,
+  });
+
+  final String label;
+  final ValueChanged<ExploreTier> onTierSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final tier in ExploreTier.values.reversed)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Semantics(
+                      button: true,
+                      label: exploreTierLabel(l10n, tier),
+                      excludeSemantics: true,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(6),
+                        onTap: () => onTierSelected(tier),
+                        child: ExploreTierChip(tier: tier, showFullLabel: true),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExploreScrollToTopButton extends StatelessWidget {
+  const _ExploreScrollToTopButton({
+    required this.visible,
+    required this.onPressed,
+  });
+
+  final bool visible;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    return Positioned(
+      right: 16,
+      bottom: bottomInset + 28,
+      child: ExcludeSemantics(
+        excluding: !visible,
+        child: IgnorePointer(
+          ignoring: !visible,
+          child: AnimatedScale(
+            scale: visible ? 1 : 0,
+            duration: const Duration(milliseconds: 160),
+            curve: Curves.easeOut,
+            child: AnimatedOpacity(
+              opacity: visible ? 1 : 0,
+              duration: const Duration(milliseconds: 160),
+              child: Semantics(
+                button: true,
+                label: l10n.exploreScrollToTop,
+                excludeSemantics: true,
+                child: SizedBox.square(
+                  dimension: 48,
+                  child: FloatingActionButton(
+                    heroTag: null,
+                    mini: true,
+                    backgroundColor: theme.colorScheme.primaryContainer,
+                    foregroundColor: theme.colorScheme.onPrimaryContainer,
+                    elevation: 3,
+                    onPressed: onPressed,
+                    tooltip: l10n.exploreScrollToTop,
+                    child: const Icon(AppIcons.expandLess),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

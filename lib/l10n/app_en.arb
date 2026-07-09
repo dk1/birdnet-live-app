@@ -4280,6 +4280,23 @@
   "@speciesExpectedFrequencySubtitle": {
     "description": "Subtitle explaining the weekly geo-model probability chart"
   },
+  "exploreAbundanceLegend": "Abundance ({count} species total)",
+  "@exploreAbundanceLegend": {
+    "description": "Short label preceding the abundance tier chips in the Explore location header",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreAbundanceFilter": "Abundance",
+  "@exploreAbundanceFilter": {
+    "description": "Filter section label for Explore abundance tiers"
+  },
+  "exploreScrollToTop": "Scroll to top",
+  "@exploreScrollToTop": {
+    "description": "Tooltip for the Explore floating button that scrolls the species list back to the top"
+  },
   "speciesFrequencyAbundant": "Abundant",
   "@speciesFrequencyAbundant": {
     "description": "Highest frequency category label for geo-model probability"
