@@ -115,7 +115,7 @@ void main() {
       expect(config.scoreBlacklistFile, isNull);
       expect(config.inference.defaultWindowSeconds, 3);
       expect(config.inference.defaultSensitivity, 1.0);
-      expect(config.inference.defaultConfidenceThreshold, 0.15);
+      expect(config.inference.defaultConfidenceThreshold, 0.35);
       expect(config.inference.defaultTopK, 10);
       expect(config.inference.temporalPooling.maxWindows, 5);
       expect(config.inference.temporalPooling.alpha, 5.0);
@@ -237,7 +237,7 @@ void main() {
       expect(config.supportedWindowSeconds, [3]);
       expect(config.defaultWindowSeconds, 3);
       expect(config.defaultSensitivity, 1.0);
-      expect(config.defaultConfidenceThreshold, 0.15);
+      expect(config.defaultConfidenceThreshold, 0.35);
       expect(config.defaultTopK, 10);
       expect(config.temporalPooling.maxWindows, 5);
       expect(config.temporalPooling.alpha, 5.0);
@@ -311,15 +311,15 @@ void main() {
       expect(config.scoreBlacklistFile, contains('ScoreBlacklist.json'));
       expect(config.labels.delimiter, ';');
       expect(config.inference.supportedWindowSeconds, contains(3));
-      expect(config.inference.defaultConfidenceThreshold, 0.15);
+      expect(config.inference.defaultConfidenceThreshold, 0.35);
       expect(config.inference.temporalPooling.minSupportWindows, 2);
       expect(config.inference.temporalPooling.peakRetention, 0.0);
       expect(config.inference.temporalPooling.maxAgeSeconds, 10.0);
       expect(config.inference.temporalPooling.supportThresholdFraction, 0.6);
-      // Relaxed from the 0.25 code default so faint birds (0.15–0.24) can
-      // clear the LME support gate; also mirrored by the default of
-      // scorePoolingSupportThresholdFloorProvider.
-      expect(config.inference.temporalPooling.supportThresholdFloor, 0.15);
+      // Mirrors the 0.25 code default and the default of
+      // scorePoolingSupportThresholdFloorProvider; a supporting window must
+      // reach 0.25 before it counts toward the LME support gate.
+      expect(config.inference.temporalPooling.supportThresholdFloor, 0.25);
       expect(config.inference.temporalPooling.veryHighImmediateThreshold, 0.98);
     });
   });

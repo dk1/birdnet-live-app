@@ -186,14 +186,14 @@ final scorePoolingSupportThresholdFractionProvider =
       );
     });
 
-/// Lower bound on the per-window support threshold (default 0.15).
+/// Lower bound on the per-window support threshold (default 0.25).
 final scorePoolingSupportThresholdFloorProvider =
     StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
       return DoubleSettingNotifier(
         prefs,
         PrefKeys.scorePoolingSupportThresholdFloor,
-        0.15,
+        0.25,
       );
     });
 

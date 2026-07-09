@@ -672,6 +672,11 @@ class AruController {
 
     for (final cycle in cycles.toList()) {
       if (cycle.status != AruCycleStatus.recording) continue;
+      // If the recording window is still active, leave the cycle marked as
+      // recording so evaluate() resumes capture in the same cycle instead of
+      // abandoning it and waiting for the next window. Only cycles whose window
+      // already elapsed while the app was down are finalized as partial.
+      if (now.isBefore(cycle.plannedEnd)) continue;
       final end = now.isAfter(cycle.plannedEnd) ? cycle.plannedEnd : now;
       _upsertCycle(
         AruCycleMetadata(

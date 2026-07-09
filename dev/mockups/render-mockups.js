@@ -12,7 +12,8 @@
      node render-mockups.js --lang en
      node render-mockups.js --lang de --slide live
      node render-mockups.js --all-languages
-    node render-mockups.js --device-screenshots
+     node render-mockups.js --device-screenshots
+     node render-mockups.js --feature-graphic --all-languages
    ============================================================================= */
 
 const fs = require('fs');
@@ -39,11 +40,18 @@ const languages = args.deviceScreenshots
   : args.allLanguages
   ? Object.keys(config.languages)
   : [args.lang || 'en'];
-const slides = config.slides
-  .map((slide, index) => ({ slide, index }))
-  .filter((entry) => !args.slide || entry.slide.id === args.slide);
+const slides = args.featureGraphic
+  ? []
+  : config.slides
+    .map((slide, index) => ({ slide, index }))
+    .filter((entry) => !args.slide || entry.slide.id === args.slide);
 
-if (slides.length === 0) {
+if (args.featureGraphic && args.deviceScreenshots) {
+  console.error('--feature-graphic cannot be combined with --device-screenshots.');
+  process.exit(1);
+}
+
+if (!args.featureGraphic && slides.length === 0) {
   console.error(`Unknown slide: ${args.slide}`);
   process.exit(1);
 }
@@ -73,8 +81,20 @@ for (const lang of languages) {
     : path.join(outputRoot, lang);
   fs.mkdirSync(langDir, { recursive: true });
 
-  if (!args.deviceScreenshots && !args.slide) {
+  if (!args.deviceScreenshots && !args.slide && !args.featureGraphic) {
     cleanGeneratedFiles(langDir, null, args.ipad);
+  }
+
+  if (args.featureGraphic) {
+    const outputPath = path.join(langDir, `${lang}-feature-graphic.png`);
+    const url = fileUrl(previewPath, {
+      export: '1',
+      feature: '1',
+      lang,
+    });
+    render(url, outputPath);
+    console.log(`Wrote ${path.relative(root, outputPath)}`);
+    continue;
   }
 
   for (const { slide, index } of slides) {
@@ -140,6 +160,7 @@ function parseArgs(argv) {
     slide: null,
     allLanguages: false,
     deviceScreenshots: false,
+    featureGraphic: false,
     ipad: false,
     browser: process.env.BROWSER || process.env.CHROME_PATH || process.env.EDGE_PATH || null,
   };
@@ -150,6 +171,8 @@ function parseArgs(argv) {
       parsed.allLanguages = true;
     } else if (arg === '--device-screenshots') {
       parsed.deviceScreenshots = true;
+    } else if (arg === '--feature-graphic') {
+      parsed.featureGraphic = true;
     } else if (arg === '--ipad') {
       parsed.ipad = true;
     } else if (arg === '--lang') {
@@ -186,6 +209,7 @@ Options:
   --all-languages      Render every language in mockups.config.js
   --slide <id>         Render one slide only
   --device-screenshots Render clean device screenshots once to output/screenshots
+  --feature-graphic   Render the Google Play feature graphic to locale folders
   --ipad               Render iPad portrait mockups instead of iPhone
   --browser <path>     Path to Chrome, Edge, or Chromium
   --help               Show this help
@@ -234,6 +258,8 @@ function findBrowser(explicitPath) {
 function render(url, outputPath) {
   const canvas = args.deviceScreenshots
     ? config.deviceScreenshot
+    : args.featureGraphic
+    ? config.featureGraphicCanvas
     : args.ipad
     ? config.ipadCanvas
     : config.canvas;

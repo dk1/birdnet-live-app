@@ -39,7 +39,7 @@
       ],
       "defaultWindowSeconds": 3,
       "defaultSensitivity": 1.0,
-      "defaultConfidenceThreshold": 0.15,
+      "defaultConfidenceThreshold": 0.35,
       "defaultTopK": 10,
       "temporalPooling": {
         "maxWindows": 5,
@@ -48,7 +48,7 @@
         "maxAgeSeconds": 10.0,
         "minSupportWindows": 2,
         "supportThresholdFraction": 0.6,
-        "supportThresholdFloor": 0.15,
+        "supportThresholdFloor": 0.25,
         "veryHighImmediateThreshold": 0.98
       }
     }
