@@ -65,6 +65,9 @@ class AnnouncementsAlertSink {
   RoutingService? _routing;
   Future<AnnouncementsController>? _initFuture;
   String? _configuredLanguageTag;
+  String? _configuredVoiceName;
+  double? _configuredVoiceRate;
+  double? _configuredVoicePitch;
   bool _submitInFlight = false;
 
   /// Submit a batch of detections for possible announcement. Returns
@@ -83,7 +86,7 @@ class AnnouncementsAlertSink {
         return AnnounceOutcome.disabled;
       }
       final controller = _controller ?? await _ensureController();
-      await _reconfigureIfLanguageChanged();
+      await _reconfigureIfVoiceSettingsChanged();
       final localized = _localizeNames(batch);
       final enriched = _enrichWithCommonness(localized);
       return await controller.announce(enriched, _readConfig());
@@ -192,10 +195,14 @@ class AnnouncementsAlertSink {
     final routing = AudioSessionRoutingService();
     await routing.init();
     final languageTag = _resolveLanguageTag();
+    final voiceName = _ref.read(announcementsVoiceNameProvider);
+    final voiceRate = _ref.read(announcementsVoiceRateProvider);
+    final voicePitch = _ref.read(announcementsVoicePitchProvider);
     await tts.configure(
       languageTag: languageTag,
-      rate: _ref.read(announcementsVoiceRateProvider),
-      pitch: _ref.read(announcementsVoicePitchProvider),
+      rate: voiceRate,
+      pitch: voicePitch,
+      voiceName: voiceName,
     );
     final library = TemplateLibrary();
     final bundle = await library.load(languageTag);
@@ -210,30 +217,50 @@ class AnnouncementsAlertSink {
     _routing = routing;
     _controller = controller;
     _configuredLanguageTag = languageTag;
+    _configuredVoiceName = voiceName;
+    _configuredVoiceRate = voiceRate;
+    _configuredVoicePitch = voicePitch;
     return controller;
   }
 
-  /// Reconfigure the TTS voice + template bundle when the user
-  /// changes their voice override or species name language at
-  /// runtime. Per-session throttling state is preserved.
-  Future<void> _reconfigureIfLanguageChanged() async {
+  /// Reconfigure the TTS voice + template bundle when the user changes
+  /// their voice override, pitch/rate, or species-name language at
+  /// runtime. Per-session throttling state is preserved. The template
+  /// bundle is only reloaded when the *language* changes (rate/pitch/
+  /// voice don't affect phrasing).
+  Future<void> _reconfigureIfVoiceSettingsChanged() async {
     final controller = _controller;
     final tts = _tts;
     if (controller == null || tts == null) return;
     final tag = _resolveLanguageTag();
-    if (tag == _configuredLanguageTag) return;
+    final voiceName = _ref.read(announcementsVoiceNameProvider);
+    final voiceRate = _ref.read(announcementsVoiceRateProvider);
+    final voicePitch = _ref.read(announcementsVoicePitchProvider);
+    final languageChanged = tag != _configuredLanguageTag;
+    final voiceChanged = voiceName != _configuredVoiceName;
+    final rateChanged = voiceRate != _configuredVoiceRate;
+    final pitchChanged = voicePitch != _configuredVoicePitch;
+    if (!languageChanged && !voiceChanged && !rateChanged && !pitchChanged) {
+      return;
+    }
     try {
       await tts.configure(
         languageTag: tag,
-        rate: _ref.read(announcementsVoiceRateProvider),
-        pitch: _ref.read(announcementsVoicePitchProvider),
+        rate: voiceRate,
+        pitch: voicePitch,
+        voiceName: voiceName,
       );
-      final bundle = await TemplateLibrary().load(tag);
-      controller.replaceEngine(PhrasingEngine(bundle: bundle));
+      if (languageChanged) {
+        final bundle = await TemplateLibrary().load(tag);
+        controller.replaceEngine(PhrasingEngine(bundle: bundle));
+      }
       _configuredLanguageTag = tag;
+      _configuredVoiceName = voiceName;
+      _configuredVoiceRate = voiceRate;
+      _configuredVoicePitch = voicePitch;
     } catch (_) {
-      // Failure to reconfigure leaves the previous language in
-      // place — the controller stays functional in the old voice.
+      // Failure to reconfigure leaves the previous voice in place — the
+      // controller stays functional in the old configuration.
     }
   }
 

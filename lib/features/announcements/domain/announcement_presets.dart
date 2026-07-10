@@ -95,11 +95,15 @@ class FrequencyProfile {
 ///   • [constant] — demo / accessibility — almost every detection cycle
 ///                  is allowed to speak.
 ///
-/// All presets share a 5-second startup grace so the audio session has
-/// time to settle before the first utterance.
+/// Startup grace is deliberately short (≤ 3 s) so the *first* solid
+/// detection of a session gets voiced promptly instead of being
+/// swallowed. The first inference window doesn't complete until ~3 s in
+/// anyway, so a longer grace mostly just suppressed the opening bird.
+/// `constant` uses none (demo / accessibility), `frequent` a single
+/// beat, the rest a brief settle.
 const Map<AnnouncementFrequency, FrequencyProfile> kFrequencyProfiles = {
   AnnouncementFrequency.rare: FrequencyProfile(
-    startupGraceSeconds: 5,
+    startupGraceSeconds: 3,
     minIntervalSeconds: 60,
     minIntervalSecondsSpeaker: 90,
     maxPerMinute: 1,
@@ -110,7 +114,7 @@ const Map<AnnouncementFrequency, FrequencyProfile> kFrequencyProfiles = {
     coalesceWindowSeconds: 8,
   ),
   AnnouncementFrequency.sparse: FrequencyProfile(
-    startupGraceSeconds: 5,
+    startupGraceSeconds: 3,
     minIntervalSeconds: 30,
     minIntervalSecondsSpeaker: 45,
     maxPerMinute: 2,
@@ -121,7 +125,7 @@ const Map<AnnouncementFrequency, FrequencyProfile> kFrequencyProfiles = {
     coalesceWindowSeconds: 5,
   ),
   AnnouncementFrequency.normal: FrequencyProfile(
-    startupGraceSeconds: 5,
+    startupGraceSeconds: 3,
     minIntervalSeconds: 8,
     minIntervalSecondsSpeaker: 12,
     maxPerMinute: 6,
@@ -132,7 +136,7 @@ const Map<AnnouncementFrequency, FrequencyProfile> kFrequencyProfiles = {
     coalesceWindowSeconds: 3,
   ),
   AnnouncementFrequency.frequent: FrequencyProfile(
-    startupGraceSeconds: 5,
+    startupGraceSeconds: 2,
     minIntervalSeconds: 4,
     minIntervalSecondsSpeaker: 8,
     maxPerMinute: 12,
@@ -142,13 +146,12 @@ const Map<AnnouncementFrequency, FrequencyProfile> kFrequencyProfiles = {
     sessionResetSeconds: 600,
     coalesceWindowSeconds: 2,
   ),
-  // [constant] keeps the same 5-second startup grace as every other
-  // preset (just enough for the audio session to settle) but allows
-  // the highest cadence; the per-species streak silence still
-  // prevents the same bird from being announced over and over while
-  // it keeps singing.
+  // [constant] uses no startup grace at all (demo / accessibility — speak
+  // as soon as there's something to say) and allows the highest cadence;
+  // the per-species streak silence still prevents the same bird from being
+  // announced over and over while it keeps singing.
   AnnouncementFrequency.constant: FrequencyProfile(
-    startupGraceSeconds: 5,
+    startupGraceSeconds: 0,
     minIntervalSeconds: 2,
     minIntervalSecondsSpeaker: 4,
     maxPerMinute: 20,

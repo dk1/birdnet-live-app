@@ -30,6 +30,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../explore/explore_providers.dart';
+import '../explore/explore_tier.dart';
 import '../inference/geo_model.dart';
 import 'domain/announcement_signals.dart';
 
@@ -65,15 +66,18 @@ class GeoCommonnessEntry {
 /// geo-model isn't ready or no location is available, so callers can
 /// distinguish "skip the addendum" from "every species is rare".
 ///
-/// The commonness bin compares current-week probability against the
-/// *top-scoring species at this location for the current week*. That
-/// rank-relative anchor makes the same thresholds work across regions
-/// of wildly different absolute geo-scores (tropics vs. Arctic).
+/// The commonness bin is the species' abundance tier under the same
+/// distribution-adaptive scale the Explore screen uses ([ExploreTierScale]),
+/// built over the same audio-detectable population, so the spoken hint and
+/// the Explore card agree. The rank-relative scale keeps it meaningful
+/// across regions of wildly different absolute geo-scores (tropics vs.
+/// Arctic).
 final geoCommonnessProvider = FutureProvider<Map<String, GeoCommonnessEntry>?>((
   ref,
 ) async {
   final location = await ref.watch(currentLocationProvider.future);
   final geoModel = await ref.watch(geoModelProvider.future);
+  final audioLabels = await ref.watch(audioLabelsSetProvider.future);
   if (location == null) return null;
 
   final week = GeoModel.dateTimeToWeek(DateTime.now());
@@ -82,27 +86,35 @@ final geoCommonnessProvider = FutureProvider<Map<String, GeoCommonnessEntry>?>((
     longitude: location.longitude,
   );
 
-  // Find the top current-week score across *all* species at this
-  // location. Used as the denominator for the commonness ratio so
-  // bins are rank-relative (see file header).
-  double topCurrent = 0.0;
-  for (final scores in allWeeks.values) {
-    final s = scores[week - 1];
-    if (s > topCurrent) topCurrent = s;
+  // Build the *same* distribution-adaptive abundance scale the Explore
+  // screen uses, from the *same* population: audio-detectable species
+  // scoring above Explore's inclusion threshold for the current week (see
+  // `exploreSpeciesProvider`). Matching the population is what makes a
+  // spoken commonness hint agree with the tier shown on that bird's
+  // Explore card, rather than drifting from it.
+  const kExploreInclusionThreshold = 0.03;
+  final scaleScores = <double>[];
+  for (final entry in allWeeks.entries) {
+    if (!audioLabels.contains(entry.key)) continue;
+    final current = entry.value[week - 1];
+    if (current < kExploreInclusionThreshold) continue;
+    scaleScores.add(current);
   }
-  if (topCurrent <= 0) return const {};
+  if (scaleScores.isEmpty) return const {};
+  final tierScale = ExploreTierScale.fromScores(scaleScores);
 
   final out = <String, GeoCommonnessEntry>{};
   for (final entry in allWeeks.entries) {
+    // Only species the audio model can detect can ever be announced, so
+    // there's no point classifying the geo-only remainder.
+    if (!audioLabels.contains(entry.key)) continue;
     final scores = entry.value;
     final current = scores[week - 1];
     var annualMax = 0.0;
     for (final s in scores) {
       if (s > annualMax) annualMax = s;
     }
-    final ratio = current / topCurrent;
-    final bin = commonnessBinForRatio(ratio);
-    if (bin == null) continue;
+    final bin = _commonnessBinForTier(tierScale.tierFor(current));
     // Out of season: well below annual peak, and the peak is high
     // enough to be a meaningful comparison. Skip the seasonal
     // signal entirely for species whose annual maximum at this
@@ -119,3 +131,23 @@ final geoCommonnessProvider = FutureProvider<Map<String, GeoCommonnessEntry>?>((
   }
   return out;
 });
+
+/// 1:1 map from an Explore abundance tier to the announcement's
+/// [CommonnessBin]. They share the same six semantic levels; keeping the
+/// enums separate lets the phrasing engine stay a pure-Dart library.
+CommonnessBin _commonnessBinForTier(ExploreTier tier) {
+  switch (tier) {
+    case ExploreTier.abundant:
+      return CommonnessBin.abundant;
+    case ExploreTier.common:
+      return CommonnessBin.common;
+    case ExploreTier.frequent:
+      return CommonnessBin.frequent;
+    case ExploreTier.uncommon:
+      return CommonnessBin.uncommon;
+    case ExploreTier.scarce:
+      return CommonnessBin.scarce;
+    case ExploreTier.rare:
+      return CommonnessBin.rare;
+  }
+}

@@ -199,25 +199,6 @@ void main() {
     });
   });
 
-  group('commonnessBinForRatio', () {
-    test('null / NaN / Inf / negative → null', () {
-      expect(commonnessBinForRatio(null), isNull);
-      expect(commonnessBinForRatio(double.nan), isNull);
-      expect(commonnessBinForRatio(double.infinity), isNull);
-      expect(commonnessBinForRatio(-0.1), isNull);
-    });
-    test('threshold mapping', () {
-      expect(commonnessBinForRatio(1.0), CommonnessBin.abundant);
-      expect(commonnessBinForRatio(0.50), CommonnessBin.abundant);
-      expect(commonnessBinForRatio(0.49), CommonnessBin.common);
-      expect(commonnessBinForRatio(0.20), CommonnessBin.common);
-      expect(commonnessBinForRatio(0.19), CommonnessBin.uncommon);
-      expect(commonnessBinForRatio(0.05), CommonnessBin.uncommon);
-      expect(commonnessBinForRatio(0.049), CommonnessBin.rare);
-      expect(commonnessBinForRatio(0.0), CommonnessBin.rare);
-    });
-  });
-
   group('Chatty commonness addendum', () {
     TemplateBundle bundleWithCommonness() {
       final json = {

@@ -20,6 +20,7 @@ class _FakeTts implements TtsEngine {
     required String languageTag,
     required double rate,
     required double pitch,
+    String? voiceName,
   }) async {}
   @override
   Future<void> speak(String text) async {
@@ -155,7 +156,8 @@ void main() {
     });
 
     test('startup grace blocks early utterances', () async {
-      now = now.add(const Duration(seconds: 3));
+      // Normal profile grace is 3 s; 1 s in is still inside it.
+      now = now.add(const Duration(seconds: 1));
       final out = await ctrl.announce([
         det('Robin', 0.9),
       ], _cfg(kFrequencyProfiles[AnnouncementFrequency.normal]!));

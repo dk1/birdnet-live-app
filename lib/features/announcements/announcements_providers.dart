@@ -83,6 +83,14 @@ final announcementsVoiceLanguageProvider =
       );
     });
 
+/// Pinned voice identifier. Empty string ⇒ platform default voice for
+/// the resolved language. Set from the Settings voice picker.
+final announcementsVoiceNameProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return StringSettingNotifier(prefs, PrefKeys.announcementsVoiceName, '');
+    });
+
 /// TTS rate multiplier (0.5–1.5).
 final announcementsVoiceRateProvider =
     StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
