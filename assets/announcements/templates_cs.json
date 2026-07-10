@@ -1,6 +1,6 @@
 {
   "locale": "cs",
-  "version": 3,
+  "version": 4,
   "_comment": [
     "Vzory frází pro funkci Announcements. Viz dev/announcements.md §3.",
     "Každý bucket má seznam `balanced` (vždy přítomen) a volitelně seznam",
@@ -9,35 +9,39 @@
     "nikoli doslovné.",
     "",
     "POZNÁMKA — pasti rodu / pádu:",
-    "  Čeština nemá členy, ale jména druhů přicházejí v 1. pádě a vlastně",
-    "  neznáme jejich rod. Bezpečné jsou:",
+    "  Čeština nemá členy, ale jména druhů přicházejí v 1. pádě a jejich rod",
+    "  neznáme. Bezpečné jsou:",
     "    - dvojtečka: 'Rozpoznáno: {name}.'",
     "    - {name} na začátku věty: '{name}, jasně.'",
-    "    - vazby bez ukazovacího zájmena: 'Zní to jako {name}.'",
-    "  Před {name}, {name1}, {name2}, {name3} radši nedávat 'ten/ta/to' —",
-    "  rod druhu neznáme."
+    "    - srovnání se spojkou 'jako' (1. pád): 'Zní jako {name}.'",
+    "    - příslovce + jmenný přísudek: 'Nejspíš {name}.'",
+    "  Před {name} radši nedávat 'ten/ta/to' ani sloveso, které by vynutilo",
+    "  jiný pád (rod druhu neznáme).",
+    "  Tón (revize v4): jako průvodce v terénu, ne klasifikátor. Bez technického",
+    "  žargonu ('čistý signál', 'dobrá shoda'). Chatty smí přidat krátký vřelý",
+    "  komentář, nikdy kýčovitý."
   ],
   "buckets": {
     "A": {
       "balanced": [
+        "Tady {name}.",
         "Rozpoznáno: {name}.",
         "{name}, jasně.",
-        "Slyším: {name}.",
         "Bezpochyby {name}.",
         "Zachyceno: {name}.",
         "{name}, bez pochyb.",
-        "Ozvalo se: {name}."
+        "Ozvalo se: {name}.",
+        "Jasně slyšet: {name}."
       ],
       "chatty": [
-        "Rozpoznáno: {name}, signál čistý.",
         "{name}, naprosto jasně.",
         "Bez nejmenších pochyb: {name}.",
-        "Čistý signál: {name}.",
-        "{name}, jako z učebnice.",
-        "Hlasitě a jasně: {name}.",
-        "{name} se hlásí — pěkný signál.",
-        "Dobrá identifikace: {name}.",
-        "{name}, dobře slyšitelný hlas."
+        "Jasně a zřetelně: {name}.",
+        "Ozývá se: {name}.",
+        "Krásně slyšet: {name}.",
+        "{name}, hlasitě a zřetelně.",
+        "{name} — čitelné jako nic.",
+        "Zřetelně: {name}."
       ]
     },
     "B": {
@@ -46,100 +50,100 @@
         "Opět {name}.",
         "{name}, znovu.",
         "Vrací se: {name}.",
-        "{name}, podruhé."
+        "Ještě jednou: {name}."
       ],
       "chatty": [
         "Znovu {name}, drží se.",
-        "Opět {name}, jasně slyšitelný.",
-        "{name} se vrací — zjevně se tu drží.",
-        "Druhé kolo pro {name}.",
-        "{name} už zase — má tu zřejmě svůj revír."
+        "Opět {name}, jasně slyšitelné.",
+        "Vrací se: {name} — zjevně se tu drží.",
+        "Zase {name}, neodchází daleko.",
+        "{name} znovu — má tu zřejmě svůj revír."
       ]
     },
     "C": {
       "balanced": [
-        "{name} pokračuje.",
+        "Pokračuje: {name}.",
         "Stále {name}.",
         "{name}, dál a dál.",
         "{name} nepřestává.",
-        "Další od {name}."
+        "{name} pokračuje."
       ],
       "chatty": [
         "{name} jen tak nepřestane.",
-        "Pořád pokračuje: {name}.",
-        "{name} drží tempo.",
         "{name} je dnes hodně aktivní.",
-        "Trvalá aktivita: {name}.",
-        "{name} se pořád ozyvá.",
-        "{name} stále v záběru.",
-        "{name} nepolevuje."
+        "{name} drží tempo.",
+        "{name} pořád zpívá.",
+        "{name} se pořád ozývá.",
+        "Pořád {name}, ve skvělé formě.",
+        "{name} nepolevuje.",
+        "{name} si vesele pokračuje."
       ]
     },
     "D": {
       "balanced": [
-        "Pravděpodobně {name}.",
+        "Nejspíš {name}.",
         "Zní jako {name}.",
         "Asi {name}.",
-        "Tipuju {name}.",
-        "Docela jistě: {name}.",
-        "Hodí se na {name}.",
-        "{name}, dost pravděpodobně."
+        "Nejspíš to bude {name}.",
+        "Docela jistě {name}.",
+        "Dost pravděpodobně {name}.",
+        "{name}, dost možná."
       ],
       "chatty": [
-        "Docela jistě: {name}.",
-        "Zní to jako {name}, slušný signál.",
-        "Tipuju {name}, docela jistě.",
-        "Vede to k {name}.",
-        "Pěkně sedí na {name}.",
-        "Vše ukazuje na {name}."
+        "Zní to jako {name}, docela jistě.",
+        "Řekl bych, že {name}.",
+        "Docela jistě {name}.",
+        "Nejspíš to bude {name}.",
+        "Zní to jasně jako {name}.",
+        "Dost možná {name}, řekl bych."
       ]
     },
     "E": {
       "balanced": [
         "Možná zase {name}.",
-        "Mohlo by to být znovu {name}.",
-        "Zřejmě opět {name}.",
+        "Zase {name}, nejspíš.",
+        "Nejspíš znovu {name}.",
         "{name}, nejspíš podruhé."
       ],
       "chatty": [
-        "Možná {name} znovu, těžko říct.",
         "Možná se vrací {name}.",
-        "Vypadá to na {name} podruhé.",
-        "Pravděpodobně {name}, druhé kolo."
+        "Nejspíš zase {name}.",
+        "Vypadá to na návrat: {name}.",
+        "Zase {name}, řekl bych."
       ]
     },
     "F": {
       "balanced": [
         "Možná {name}.",
         "Mohlo by to být {name}.",
-        "Zní trochu jako {name}.",
+        "Zní to trochu jako {name}.",
         "Snad {name}.",
         "{name}, snad.",
-        "Slabá shoda: {name}.",
-        "Stojí za pozornost — možná {name}."
+        "Těžko říct — možná {name}.",
+        "Za pozornost stojí: možná {name}."
       ],
       "chatty": [
-        "Klidně to může být {name}, signál je trochu slabší.",
-        "Zní to trochu jako {name} — stojí za druhé poslechnutí.",
-        "Možná {name} v záběru — natáhněte uši.",
-        "Spíš {name}, ale je to hraniční.",
-        "Snad {name} — sedí to jen zhruba, ale možné to je.",
-        "{name} je můj nejlepší tip tady."
+        "Klidně to může být {name}, ale těžko říct.",
+        "Zní to trochu jako {name} — chce to druhé poslechnutí.",
+        "Možná {name} — natáhněte uši.",
+        "Řekl bych {name}, ale bez jistoty.",
+        "Snad {name}, není to jednoznačné.",
+        "{name} — ber s rezervou."
       ]
     },
     "G": {
       "balanced": [
-        "Možná zase {name}.",
+        "Možná zase {name}?",
         "Mohlo by to být znovu {name}.",
         "Slabě, ale snad {name}.",
-        "Možná se vrací {name}.",
-        "Hraniční — snad {name}."
+        "Těžko říct — možná zase {name}.",
+        "Nejspíš znovu {name}."
       ],
       "chatty": [
-        "Možná {name} znovu, signál je tenký.",
-        "Možná je to zase {name} — stojí za sledování.",
-        "Slabá shoda, ale snad {name} podruhé.",
-        "Spíš znovu {name}, jistota žádná."
+        "Možná zase {name} — jisté to není.",
+        "Mohl by se vracet {name}, těžko říct.",
+        "Snad {name} znovu, bez záruky.",
+        "Nejspíš zase {name}, ale bez jistoty."
       ]
     },
     "H_two": {
@@ -168,7 +172,7 @@
       "chatty": [
         "Pěkný sbor — {name1}, {name2} a {name3} naráz.",
         "Tři druhy najednou: {name1}, {name2} a {name3} — živé místo.",
-        "{name1}, {name2} a {name3} si dávají duo, či spíš trio.",
+        "{name1}, {name2} a {name3} zpívají spolu.",
         "Trojprogram právě teď: {name1}, {name2} a {name3}.",
         "Pěkná směsice: {name1}, {name2} a {name3}."
       ]
@@ -209,6 +213,20 @@
       "Stojí za zaznamenání — neslyšíme každý den.",
       "Příjemné zpestření — tady moc nelítá.",
       "Není to tu běžný hlas."
+    ],
+    "frequent": [
+      "Pravidelný host ve vaší oblasti.",
+      "Ozývá se tu docela pravidelně.",
+      "Objevuje se tu poměrně často.",
+      "Ve vaší oblasti docela běžně k slyšení.",
+      "Tady celkem pravidelný host."
+    ],
+    "scarce": [
+      "Spíše řídký host ve vaší oblasti.",
+      "Není tu k slyšení příliš často.",
+      "Ve vaší oblasti dost řídce.",
+      "Tady se moc neozývá.",
+      "Nepříliš častý host v této oblasti."
     ],
     "rare": [
       "Vzácnost pro tuhle oblast — pěkný úlovek!",

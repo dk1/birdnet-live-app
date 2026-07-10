@@ -39,7 +39,7 @@
       ],
       "defaultWindowSeconds": 3,
       "defaultSensitivity": 1.0,
-      "defaultConfidenceThreshold": 0.15,
+      "defaultConfidenceThreshold": 0.35,
       "defaultTopK": 10,
       "temporalPooling": {
         "maxWindows": 5,

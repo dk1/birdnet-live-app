@@ -268,7 +268,7 @@ class InferenceDefaults {
     this.supportedWindowSeconds = const [3],
     this.defaultWindowSeconds = 3,
     this.defaultSensitivity = 1.0,
-    this.defaultConfidenceThreshold = 0.15,
+    this.defaultConfidenceThreshold = 0.35,
     this.defaultTopK = 10,
     this.temporalPooling = const TemporalPoolingConfig(),
   });
@@ -311,7 +311,7 @@ class InferenceDefaults {
       defaultSensitivity:
           (json['defaultSensitivity'] as num?)?.toDouble() ?? 1.0,
       defaultConfidenceThreshold:
-          (json['defaultConfidenceThreshold'] as num?)?.toDouble() ?? 0.15,
+          (json['defaultConfidenceThreshold'] as num?)?.toDouble() ?? 0.35,
       defaultTopK: (json['defaultTopK'] as num?)?.toInt() ?? 10,
       temporalPooling: pooling,
     );

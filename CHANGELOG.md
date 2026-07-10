@@ -5,21 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.8] - 2026-07-10
+
+### Added
+
+- Added a voice picker to Settings → Announcements so you can choose a specific installed text-to-speech voice instead of the device default — useful when the default voice sounds robotic or uses the wrong accent. Announcement templates are now provided in all app languages, including Dutch, Polish, and Russian.
+
+### Changed
+
+- Reworked the Settings → Announcements layout so it no longer breaks on languages with longer labels, and grouped the voice controls (voice, speed, pitch, sample) together.
+- Rewrote the spoken announcement phrasing across all languages to sound more like a birding companion and less stiff.
+- Announcements now start speaking sooner after a session begins, so the first solid detection is voiced promptly instead of being held back by an over-long startup delay.
+- The chatty "how common is this bird here" hint now uses the same six abundance tiers shown on the Explore screen, so what you hear about a species lines up with the tier on its Explore card.
+
+### Fixed
+
+- Fixed announcements going silent partway through a session on some devices: the app no longer waits forever for a text-to-speech engine that never reports completion, and it now falls back sensibly when no voice is installed for the chosen language.
+- Fixed survey map flicker when map tile loading is deactivated
+
+## [0.18.7] - 2026-07-09
+
+### Added
+
+- Added an abundance filter to Explore so you can narrow the species list to specific tiers (Abundant, Common, Frequent, Uncommon, Scarce, or Rare).
+- Added a tappable abundance legend in the Explore location header that jumps the list straight to the first species in a chosen tier.
+- Added a "Scroll to top" button in Explore that appears once you scroll down the species list.
+- Added a "Taxonomy" entry to the model information on the About screen showing the bundled taxonomy version.
+
+### Changed
+
+- Updated the About screen credits to name the Museum für Naturkunde Berlin as a development partner.
+- Update default confidence threshold and support floor values
+
 ## [0.18.6] - 2026-07-08
 
 ### Added
 
+- Added a "Pick on map" button to the manual coordinates setting, so you can tap a location on the map (the same picker used in the setup screens) instead of typing latitude and longitude.
 - Added a "Save sessions automatically" setting for Live and Point Count. When turned off, a finished session opens in review as unsaved and is only kept in the library if you tap Save; leaving without saving discards it.
 - Bundled offline Wikipedia species snippets for Dutch, Polish, and Russian.
 - Added eBird Life List import: flag species you hear that aren't on your imported eBird life list yet with a star badge on Live detections and in Session Review, plus a new Survey "Lifer" alert mode.
 
 ### Changed
 
+- Explore now shows an abundance tier (Abundant, Common, Frequent, Uncommon, Scarce, or Rare) on each species card instead of a raw percentage. Each tier is a small fill circle plus the tier's initial, colored along the red-to-green score scale. Tiers adapt to the local prediction strength, so the same score can map to different tiers in different places. The Explore help sheet now explains the tiers, colors, and fill circles.
+- Tuned live score pooling to use Log-Mean-Exp pooling at all inference rates and relaxed the detection support gate slightly, so fainter birds surface a little sooner while still requiring consistent support.
 - Revised the Session Library help overlay to reflect the current search, sort, filter, view, open, and multi-select controls.
 - Enlarged species thumbnails in the Session Library's By Species view.
 
 ### Fixed
 
+- Fixed ARU deployment restore so relaunching the app during an active recording window resumes the same recording cycle instead of dropping it and waiting for the next scheduled window.
 - Fixed Session Library search so localized common names and text metadata such as Session titles, locations, dates, observers, transects, annotations, and notes are searchable across bundled locales.
 
 ## [0.18.5] - 2026-07-07

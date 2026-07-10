@@ -115,6 +115,19 @@ abstract final class PrefKeys {
   static const String scorePoolingDefaultMigration =
       'score_pooling_default_migration_v1';
 
+  // Advanced temporal-pooling knobs (LME alpha + support gate). Normally
+  // baked into the model config; exposed as overridable settings so they can
+  // be tuned live. Defaults mirror `temporalPooling` in model_config.json.
+  static const String scorePoolingAlpha = 'score_pooling_alpha';
+  static const String scorePoolingMinSupportWindows =
+      'score_pooling_min_support_windows';
+  static const String scorePoolingSupportThresholdFraction =
+      'score_pooling_support_threshold_fraction';
+  static const String scorePoolingSupportThresholdFloor =
+      'score_pooling_support_threshold_floor';
+  static const String scorePoolingVeryHighImmediateThreshold =
+      'score_pooling_very_high_immediate_threshold';
+
   // Spectrogram settings
   static const String fftSize = 'fft_size';
   static const String colorMap = 'color_map';
@@ -335,6 +348,11 @@ abstract final class PrefKeys {
   /// the active UI locale.
   static const String announcementsVoiceLanguage =
       'announcements_voice_language';
+
+  /// Engine-specific identifier of a pinned voice (as reported by
+  /// `flutter_tts.getVoices`). Empty string ⇒ the platform default voice
+  /// for the resolved language. Lets users escape a poor default voice.
+  static const String announcementsVoiceName = 'announcements_voice_name';
 
   /// TTS rate multiplier (0.5–1.5, default 1.0).
   static const String announcementsVoiceRate = 'announcements_voice_rate';

@@ -42,6 +42,11 @@ class SessionSettings {
     this.poolingMode,
     this.poolingWindows,
     this.poolingMaxAgeSeconds,
+    this.poolingAlpha,
+    this.poolingMinSupportWindows,
+    this.poolingSupportThresholdFraction,
+    this.poolingSupportThresholdFloor,
+    this.poolingVeryHighImmediateThreshold,
     this.gainLinear,
     this.highPassHz,
     this.recordingMode,
@@ -132,6 +137,28 @@ class SessionSettings {
   /// Maximum real-time age in seconds for windows included in score pooling.
   final double? poolingMaxAgeSeconds;
 
+  // ── Advanced temporal-pooling knobs (LME alpha + support gate) ──────
+  // Snapshot of the applied overrides so exports record exactly how the
+  // temporal support gate was configured. All nullable so legacy sessions
+  // round-trip and factory-default sessions can stay silent if desired.
+
+  /// LME alpha applied to temporal pooling (higher weights recent peaks).
+  final double? poolingAlpha;
+
+  /// Recent windows required to clear the temporal support gate (`1` = gate
+  /// disabled).
+  final int? poolingMinSupportWindows;
+
+  /// Fraction of the confidence threshold used as the per-window support
+  /// threshold, before the floor.
+  final double? poolingSupportThresholdFraction;
+
+  /// Lower bound on the per-window support threshold.
+  final double? poolingSupportThresholdFloor;
+
+  /// Raw current-window score that bypasses multi-window support.
+  final double? poolingVeryHighImmediateThreshold;
+
   /// Linear input gain applied before model inference (1.0 = unity).
   final double? gainLinear;
 
@@ -187,6 +214,15 @@ class SessionSettings {
       poolingMode: json['poolingMode'] as String?,
       poolingWindows: (json['poolingWindows'] as num?)?.toInt(),
       poolingMaxAgeSeconds: (json['poolingMaxAgeSeconds'] as num?)?.toDouble(),
+      poolingAlpha: (json['poolingAlpha'] as num?)?.toDouble(),
+      poolingMinSupportWindows:
+          (json['poolingMinSupportWindows'] as num?)?.toInt(),
+      poolingSupportThresholdFraction:
+          (json['poolingSupportThresholdFraction'] as num?)?.toDouble(),
+      poolingSupportThresholdFloor:
+          (json['poolingSupportThresholdFloor'] as num?)?.toDouble(),
+      poolingVeryHighImmediateThreshold:
+          (json['poolingVeryHighImmediateThreshold'] as num?)?.toDouble(),
       gainLinear: (json['gainLinear'] as num?)?.toDouble(),
       highPassHz: (json['highPassHz'] as num?)?.toDouble(),
       recordingMode: json['recordingMode'] as String?,
@@ -221,6 +257,15 @@ class SessionSettings {
     if (poolingWindows != null) 'poolingWindows': poolingWindows,
     if (poolingMaxAgeSeconds != null)
       'poolingMaxAgeSeconds': poolingMaxAgeSeconds,
+    if (poolingAlpha != null) 'poolingAlpha': poolingAlpha,
+    if (poolingMinSupportWindows != null)
+      'poolingMinSupportWindows': poolingMinSupportWindows,
+    if (poolingSupportThresholdFraction != null)
+      'poolingSupportThresholdFraction': poolingSupportThresholdFraction,
+    if (poolingSupportThresholdFloor != null)
+      'poolingSupportThresholdFloor': poolingSupportThresholdFloor,
+    if (poolingVeryHighImmediateThreshold != null)
+      'poolingVeryHighImmediateThreshold': poolingVeryHighImmediateThreshold,
     if (gainLinear != null) 'gainLinear': gainLinear,
     if (highPassHz != null) 'highPassHz': highPassHz,
     if (recordingMode != null) 'recordingMode': recordingMode,

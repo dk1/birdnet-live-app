@@ -126,9 +126,16 @@ void main() {
       expect(html, contains('BirdNET Test Audio | v3.0 | 5250 species'));
       expect(html, contains('32000 Hz'));
       expect(html, contains('BirdNET Test Geo | v3.0.1 | 5250 species'));
-      expect(html, contains('3s window | 25% min confidence | 1 Hz'));
-      expect(html, contains('species filter geoMerge'));
-      expect(html, contains('gain 1.5x | high-pass 200 Hz'));
+      expect(
+        html,
+        contains('3s window | 25% min confidence | 1 Hz | sensitivity 1.2'),
+      );
+      // The report deliberately omits pooling, species filter, and audio
+      // preprocessing — those live only in the exported JSON metadata.
+      expect(html, isNot(contains('species filter')));
+      expect(html, isNot(contains('pooling avg')));
+      expect(html, isNot(contains('Audio preprocessing')));
+      expect(html, isNot(contains('high-pass 200 Hz')));
     });
 
     test(
