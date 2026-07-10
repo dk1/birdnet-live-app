@@ -1420,6 +1420,12 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
 
     final displayName = _resolveDisplayName(taxonomyAsync.value, speciesLocale);
 
+    final lifeList = ref.watch(ebirdLifeListProvider);
+    final isLifer =
+        widget.group.scientificName != DetectionRecord.unknownSpeciesName &&
+        !lifeList.isEmpty &&
+        !lifeList.contains(widget.group.scientificName);
+
     // Render the per-cluster time using the user's selected mode.
     // Relative mode subtracts the current clip offset so that the
     // displayed offset stays aligned with the spectrogram playhead
@@ -1588,6 +1594,18 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
+                              if (isLifer)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: Tooltip(
+                                    message: l10n.ebirdLifeListBadgeTooltip,
+                                    child: Icon(
+                                      AppIcons.starRounded,
+                                      size: 16,
+                                      color: Colors.amber.shade700,
+                                    ),
+                                  ),
+                                ),
                               if (widget.group.allRecords.any(
                                 (r) => r.isConfirmed,
                               ))

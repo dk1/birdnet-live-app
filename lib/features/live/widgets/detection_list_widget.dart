@@ -21,6 +21,7 @@ import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/score_colors.dart';
 import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/services/taxonomy_service.dart';
+import '../../ebird/ebird_life_list.dart';
 import '../../explore/explore_providers.dart';
 import '../../history/widgets/detection_actions.dart';
 import '../live_session.dart';
@@ -196,6 +197,12 @@ class DetectionTile extends ConsumerWidget {
             ?.commonNameForLocale(speciesLocale) ??
         detection.commonName;
 
+    final lifeList = ref.watch(ebirdLifeListProvider);
+    final isLifer =
+        !detection.isUnknown &&
+        !lifeList.isEmpty &&
+        !lifeList.contains(detection.scientificName);
+
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -236,6 +243,18 @@ class DetectionTile extends ConsumerWidget {
                             ),
                           ),
                         ),
+                        if (isLifer)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 6),
+                            child: Tooltip(
+                              message: l10n.ebirdLifeListBadgeTooltip,
+                              child: Icon(
+                                AppIcons.starRounded,
+                                size: 18,
+                                color: Colors.amber.shade700,
+                              ),
+                            ),
+                          ),
                         if (detectionCount != null && detectionCount! > 1)
                           Padding(
                             padding: const EdgeInsets.only(left: 6),
