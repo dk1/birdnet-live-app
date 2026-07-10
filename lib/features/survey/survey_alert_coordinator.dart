@@ -130,10 +130,11 @@ class SurveyAlertCoordinator {
   void onDetection(DetectionRecord record) {
     if (mode == AlertMode.off) return;
     final name = record.scientificName;
+    final isFirstEverThisSession = _sessionSpeciesSeen.add(name);
     final firstInSession =
         mode == AlertMode.lifer
             ? _liferEligibleToFire(name)
-            : _sessionSpeciesSeen.add(name);
+            : isFirstEverThisSession;
     final candidate = _engine.evaluate(record, firstInSession: firstInSession);
     if (candidate == null) return;
 
@@ -144,6 +145,14 @@ class SurveyAlertCoordinator {
       // Fire-and-forget: we've already added it to the in-memory set
       // inside [SurveyAlertEngine] via `globalHistory.add`.
       unawaited(globalHistory.add(name));
+    }
+
+    // Local-only, throwaway: a lifer re-alert (same species, heard again
+    // after the cooldown) pushes to ntfy only — no local notification, no
+    // throttle/coalesce. Not part of the upstream eBird PR.
+    if (mode == AlertMode.lifer && !isFirstEverThisSession) {
+      _pushLiferIfNeeded(candidate);
+      return;
     }
 
     final decision = _throttler.admit(candidate);
