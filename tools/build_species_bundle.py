@@ -47,6 +47,7 @@ TOOLS_DIR = ROOT / "tools"
 DEFAULT_TAXONOMY_JSON = TOOLS_DIR / "data" / "birdnet_taxonomy_0.2-Jun2026.json"
 LEGACY_TAXONOMY_JSON = ROOT / "dev" / "birdnet_taxonomy_0.2-Jun2026.json"
 TAXONOMY_DOWNLOAD_URL = "https://birdnet.cornell.edu/taxonomy/api/download/json"
+TAXONOMY_JSON_GLOB = "birdnet_taxonomy*.json"
 
 
 def _audio_labels_from_config() -> Path:
@@ -67,11 +68,11 @@ DEFAULT_WEBP_QUALITY = 70
 DEFAULT_DOWNLOAD_WORKERS = 50
 
 # App interface languages — one gzip description file per locale
-DESCRIPTION_LOCALES = ["en", "de", "fr", "es", "cs", "pt", "it"]
+DESCRIPTION_LOCALES = ["en", "de", "fr", "es", "cs", "pt", "it", "nl", "pl", "ru"]
 
 # Wikipedia URL locales — emitted as wikipedia_url_{locale} columns in
 # taxonomy.csv and consumed by the app (taxonomy_species.dart).
-WIKIPEDIA_URL_LOCALES = ["en", "de", "fr", "es", "cs", "pt", "it"]
+WIKIPEDIA_URL_LOCALES = DESCRIPTION_LOCALES
 
 # Top-20 species-language picker locales.  Must all appear as
 # common_name_{locale} columns in the rebuilt taxonomy.csv.
@@ -208,9 +209,20 @@ def cache_key(scientific_name: str) -> str:
 
 
 def resolve_taxonomy_json(taxonomy_json: Path) -> Path:
-    """Resolve the taxonomy JSON path, supporting the legacy dev/ location."""
+    """Resolve the taxonomy JSON path, supporting downloaded API versions."""
     if taxonomy_json.exists():
         return taxonomy_json
+
+    if taxonomy_json == DEFAULT_TAXONOMY_JSON:
+        downloaded_exports = sorted(
+            (TOOLS_DIR / "data").glob(TAXONOMY_JSON_GLOB),
+            key=lambda path: (path.stat().st_mtime, path.name),
+            reverse=True,
+        )
+        if downloaded_exports:
+            selected = downloaded_exports[0]
+            print(f"Using downloaded taxonomy JSON at {selected} ...")
+            return selected
 
     if taxonomy_json == DEFAULT_TAXONOMY_JSON and LEGACY_TAXONOMY_JSON.exists():
         print(f"Using legacy taxonomy JSON at {LEGACY_TAXONOMY_JSON} ...")
@@ -219,7 +231,9 @@ def resolve_taxonomy_json(taxonomy_json: Path) -> Path:
     sys.exit(
         "Taxonomy JSON not found. Download it first with\n"
         f"  python tools/download_taxonomy_json.py\n"
-        f"or pass --taxonomy-json PATH explicitly. Source URL: {TAXONOMY_DOWNLOAD_URL}"
+        f"or pass --taxonomy-json PATH explicitly. Looked for {taxonomy_json} "
+        f"or {TOOLS_DIR / 'data' / TAXONOMY_JSON_GLOB}. "
+        f"Source URL: {TAXONOMY_DOWNLOAD_URL}"
     )
 
 

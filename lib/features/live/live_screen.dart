@@ -19,6 +19,7 @@ import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
+import '../inference/advanced_pooling_params.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
@@ -288,6 +289,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         poolingWindows: poolingWindows,
         poolingMode: ref.read(scorePoolingProvider),
         poolingMaxAgeSeconds: poolingMaxAgeSeconds,
+        advancedPooling: ref.read(advancedPoolingParamsProvider),
         sensitivity: sensitivity,
         gainLinear: ref.read(audioGainProvider),
         highPassHz: ref.read(highPassFilterProvider).toDouble(),
@@ -464,9 +466,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         }
       }
 
-      // Persist completed session.
-      await repo.save(session);
-      ref.invalidate(sessionListProvider);
+      // Persist completed session — unless the user turned off automatic
+      // saving, in which case the review screen opens in the "unsaved" state
+      // and only writes the session if the user explicitly saves it.
+      final autoSave = ref.read(saveSessionAutomaticallyProvider);
+      if (autoSave) {
+        await repo.save(session);
+        ref.invalidate(sessionListProvider);
+      }
 
       // Replace the live screen with the session library (instantly,
       // no transition) and then push the review screen on top with the
@@ -483,7 +490,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         );
         navigator.push(
           MaterialPageRoute<void>(
-            builder: (_) => SessionReviewScreen(session: session),
+            builder:
+                (_) =>
+                    SessionReviewScreen(session: session, autoSaved: autoSave),
           ),
         );
       }
@@ -552,6 +561,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     });
     ref.listen<String>(scorePoolingProvider, (_, next) {
       ref.read(liveControllerProvider).setPoolingMode(next);
+    });
+    ref.listen<AdvancedPoolingParams>(advancedPoolingParamsProvider, (_, next) {
+      ref.read(liveControllerProvider).setAdvancedPoolingParams(next);
     });
     ref.listen<double>(sensitivityProvider, (_, next) {
       ref.read(liveControllerProvider).setSensitivity(next);

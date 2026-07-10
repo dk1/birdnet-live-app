@@ -389,11 +389,19 @@
   "@aboutGeoModelName": {
     "description": "Geo-model name shown in about screen"
   },
+  "aboutTaxonomy": "Taxonomy",
+  "@aboutTaxonomy": {
+    "description": "Taxonomy section title in about screen"
+  },
+  "aboutTaxonomyName": "BirdNET+ Taxonomy v0.2-jun2026",
+  "@aboutTaxonomyName": {
+    "description": "Taxonomy version name shown in about screen"
+  },
   "aboutCredits": "Developed by",
   "@aboutCredits": {
     "description": "Section title for the team that built BirdNET"
   },
-  "aboutCreditsDescription": "BirdNET is developed by the Cornell K. Lisa Yang Center for Conservation Bioacoustics and Chemnitz University of Technology.",
+  "aboutCreditsDescription": "BirdNET Live is developed by the Cornell K. Lisa Yang Center for Conservation Bioacoustics and Chemnitz University of Technology in partnership with the Museum für Naturkunde Berlin.",
   "@aboutCreditsDescription": {
     "description": "Credits description"
   },
@@ -1402,6 +1410,10 @@
   "sessionUnsavedChanges": "You have unsaved changes. Save or discard?",
   "@sessionUnsavedChanges": {
     "description": "Warning when leaving session review with unsaved changes"
+  },
+  "sessionUnsavedSession": "This session hasn't been saved yet. Save or discard it?",
+  "@sessionUnsavedSession": {
+    "description": "Prompt when leaving review of a session that was never saved (automatic saving disabled)"
   },
   "sessionDetections": "{count} detections",
   "@sessionDetections": {
@@ -2552,6 +2564,10 @@
   "surveyPickOnMap": "Pick on map",
   "@surveyPickOnMap": {
     "description": "Button to pick location on map"
+  },
+  "settingsPickOnMap": "Pick on map",
+  "@settingsPickOnMap": {
+    "description": "Button to pick the manual location on a map in settings"
   },
   "surveyLocationSkipNote": "No GPS track will be recorded.",
   "@surveyLocationSkipNote": {
@@ -3792,6 +3808,18 @@
   "@settingsHelpLiveAutoStart": {
     "description": "Help text for the auto-start setting"
   },
+  "settingsSaveSessionAutomatically": "Save sessions automatically",
+  "@settingsSaveSessionAutomatically": {
+    "description": "Switch label for automatically saving finished sessions to the library"
+  },
+  "settingsSaveSessionAutomaticallyDescription": "Keep every finished session in the library. When off, review each session first and tap Save to keep it.",
+  "@settingsSaveSessionAutomaticallyDescription": {
+    "description": "Subtitle for the automatic session-saving switch"
+  },
+  "settingsHelpSaveSessionAutomatically": "When enabled, completed Live and Point Count sessions are added to your library automatically as soon as they finish. When disabled, a finished session opens in review marked as unsaved: the save icon is highlighted and you must tap it to keep the session. Leaving review without saving discards the session and its recordings. Survey and ARU deployments always save automatically.",
+  "@settingsHelpSaveSessionAutomatically": {
+    "description": "Help text for the automatic session-saving setting"
+  },
 
   "settingsGpsRefresh": "Refresh GPS now",
   "@settingsGpsRefresh": {
@@ -4260,6 +4288,23 @@
   "@speciesExpectedFrequencySubtitle": {
     "description": "Subtitle explaining the weekly geo-model probability chart"
   },
+  "exploreAbundanceLegend": "Abundance ({count} species total)",
+  "@exploreAbundanceLegend": {
+    "description": "Short label preceding the abundance tier chips in the Explore location header",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreAbundanceFilter": "Abundance",
+  "@exploreAbundanceFilter": {
+    "description": "Filter section label for Explore abundance tiers"
+  },
+  "exploreScrollToTop": "Scroll to top",
+  "@exploreScrollToTop": {
+    "description": "Tooltip for the Explore floating button that scrolls the species list back to the top"
+  },
   "speciesFrequencyAbundant": "Abundant",
   "@speciesFrequencyAbundant": {
     "description": "Highest frequency category label for geo-model probability"
@@ -4268,9 +4313,17 @@
   "@speciesFrequencyCommon": {
     "description": "High frequency category label for geo-model probability"
   },
+  "speciesFrequencyFrequent": "Frequent",
+  "@speciesFrequencyFrequent": {
+    "description": "Fairly-common frequency category label for geo-model probability"
+  },
   "speciesFrequencyUncommon": "Uncommon",
   "@speciesFrequencyUncommon": {
     "description": "Medium frequency category label for geo-model probability"
+  },
+  "speciesFrequencyScarce": "Scarce",
+  "@speciesFrequencyScarce": {
+    "description": "Low frequency category label for geo-model probability, below Uncommon"
   },
   "speciesFrequencyOccasional": "Occasional",
   "@speciesFrequencyOccasional": {
@@ -4320,9 +4373,9 @@
       }
     }
   },
-  "liveStatusSpecies": "{count} spp",
+  "liveStatusSpecies": "{count, plural, =1{1 sp} other{{count} spp}}",
   "@liveStatusSpecies": {
-    "description": "Compact status token under the spectrogram: cumulative unique species count. 'spp' is the abbreviation for species (plural); translate to the locale's short form for species.",
+    "description": "Compact status token under the spectrogram: cumulative unique species count. 'sp' / 'spp' are the singular/plural abbreviations for species; translate to the locale's short form and use its plural rules.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -4410,23 +4463,23 @@
   "@sessionLibraryHelpTitle": {
     "description": "Title for the Session Library help overlay"
   },
-  "sessionLibraryHelpSearch": "Use search to filter sessions by names, dates, locations, or species.",
+  "sessionLibraryHelpSearch": "The search icon opens library search. It filters by Session titles, locations, dates, observers, transects, annotations, notes, and species names in any bundled locale.",
   "@sessionLibraryHelpSearch": {
     "description": "Explains the search control on the Session Library help overlay"
   },
-  "sessionLibraryHelpView": "The view mode menu switches between Detailed, Compact, and By Species so you can browse the library in the layout that fits the task.",
+  "sessionLibraryHelpView": "The expand arrow opens compact rows and species groups. In By Species, each species expands to the Sessions that contain it.",
   "@sessionLibraryHelpView": {
     "description": "Explains the view mode menu on the Session Library help overlay"
   },
-  "sessionLibraryHelpSort": "The sort menu changes whether sessions are ordered by date or name.",
+  "sessionLibraryHelpSort": "The three-dot menu on a Session row opens actions for opening, sharing, or deleting that Session.",
   "@sessionLibraryHelpSort": {
     "description": "Explains the sort menu on the Session Library help overlay"
   },
-  "sessionLibraryHelpFilter": "The session-type filter combines selections — pick one or more types (Live, Point Count, Survey, File Upload) to narrow the list.",
+  "sessionLibraryHelpFilter": "The filter/options icon opens sorting, view mode, and Session-type filters. Clear the type chips to return to all saved Sessions.",
   "@sessionLibraryHelpFilter": {
     "description": "Explains the session-type filter on the Session Library help overlay"
   },
-  "sessionLibraryHelpOpen": "Tap any session card or row to open Session Review for playback, editing, export, and mapped context.",
+  "sessionLibraryHelpOpen": "The up arrow on New Session opens the mode picker. Long-press Session rows or cards to select multiple Sessions for sharing or deletion.",
   "@sessionLibraryHelpOpen": {
     "description": "Explains opening a saved session from the Session Library help overlay"
   },
@@ -4460,6 +4513,10 @@
   "exploreHelpCards": "Each species card shows the current geo-model ranking for that species. Tap a card to open images, description text, external links, and the seasonal chart.",
   "@exploreHelpCards": {
     "description": "Explains species cards on the Explore help overlay"
+  },
+  "exploreHelpTiers": "Each card shows an abundance tier for the current place and season. The circle fills up and its color shifts along the score scale from red to green as a species becomes more likely. Tiers are relative to this location: they adapt to how strongly the model predicts species here, so the same score can land in different tiers in different areas.",
+  "@exploreHelpTiers": {
+    "description": "Explains the abundance tier chips (colors, tiers, pie fill) on the Explore help overlay"
   },
   "surveyLiveHelpTopBar": "The top row combines stop, elapsed timer, help, and settings. Stop ends the survey and saves the session; settings opens the Survey settings subset.",
   "@surveyLiveHelpTopBar": {

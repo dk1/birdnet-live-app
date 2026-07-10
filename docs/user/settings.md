@@ -189,6 +189,10 @@ This setting applies to audio recorded by BirdNET Live. **File Analysis** keeps 
 
 When enabled, Live mode begins recording as soon as the screen opens and the model finishes loading — no need to tap the microphone button. Useful for kiosk-style deployments, hands-free use (e.g. mounting the device in the field), or any workflow where the user already knows that opening Live always means "start now". Disabled by default so an accidental tap on the Live tile from the home screen does not silently begin a session. The auto-start fires only once per screen visit, so stopping a session and tapping the mic again still works as a manual restart.
 
+### Save sessions automatically (Live and Point Count)
+
+When enabled (the default), a completed Live or Point Count session is added to your library automatically the moment it finishes. When disabled, a finished session opens in review marked as **unsaved**: the save icon is highlighted and you must tap it to keep the session. Leaving review without saving discards the session and its recordings. This suits quick listening sessions where you only want to keep the occasional noteworthy result instead of accumulating every short recording. Survey and ARU deployments always save automatically — a long unattended run is too costly to lose by forgetting to tap Save — so this toggle does not apply there.
+
 ## Location
 
 ### Use GPS
@@ -197,7 +201,7 @@ Use device GPS instead of manual coordinates.
 
 ### Manual coordinates
 
-The coordinates used when **Use GPS** is off. Both Latitude and Longitude are editable text fields, so you can **type** an exact value or **paste** one copied from another app — far more precise than dragging a slider on a touch screen. Enter decimal degrees (e.g. `52.5200` and `13.4050`). You can also paste a combined `latitude, longitude` string (comma-, semicolon-, or space-separated) into *either* field and both fields fill at once, which matches what most maps and websites put on the clipboard. Out-of-range or non-numeric input is flagged inline and not saved; valid values persist as you type. The intuition: the most common reason to set a manual location is to ID a sound recorded somewhere other than where you are now, and that location usually comes as text from elsewhere — typing and pasting make that a single accurate step.
+The coordinates used when **Use GPS** is off. Both Latitude and Longitude are editable text fields, so you can **type** an exact value or **paste** one copied from another app — far more precise than dragging a slider on a touch screen. Enter decimal degrees (e.g. `52.5200` and `13.4050`). You can also paste a combined `latitude, longitude` string (comma-, semicolon-, or space-separated) into *either* field and both fields fill at once, which matches what most maps and websites put on the clipboard. Out-of-range or non-numeric input is flagged inline and not saved; valid values persist as you type. The intuition: the most common reason to set a manual location is to ID a sound recorded somewhere other than where you are now, and that location usually comes as text from elsewhere — typing and pasting make that a single accurate step. If you would rather point at a spot than type numbers, **Pick on map** opens the same full-screen map picker used in the setup screens, seeded with the current coordinates, and fills both fields with the location you tap.
 
 ### Refresh GPS now
 

@@ -38,6 +38,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/services/asset_pack_service.dart';
+import '../inference/advanced_pooling_params.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
 import '../inference/species_filter.dart';
@@ -323,6 +324,7 @@ class FileAnalysisController {
     String poolingMode = 'adaptive_lme_peak',
     int maxPoolWindows = 5,
     double? poolingMaxAgeSeconds,
+    AdvancedPoolingParams advancedPooling = AdvancedPoolingParams.none,
     Map<String, double>? geoScores,
     double geoThreshold = 0.03,
     Set<String>? geoModelSpeciesNames,
@@ -428,6 +430,13 @@ class FileAnalysisController {
           poolingMode: poolingMode,
           poolingWindows: maxPoolWindows,
           poolingMaxAgeSeconds: poolingMaxAgeSeconds,
+          poolingAlpha: advancedPooling.alpha,
+          poolingMinSupportWindows: advancedPooling.minSupportWindows,
+          poolingSupportThresholdFraction:
+              advancedPooling.supportThresholdFraction,
+          poolingSupportThresholdFloor: advancedPooling.supportThresholdFloor,
+          poolingVeryHighImmediateThreshold:
+              advancedPooling.veryHighImmediateThreshold,
         ),
         latitude: latitude,
         longitude: longitude,
@@ -446,6 +455,7 @@ class FileAnalysisController {
       _isolate.setPoolingMode(poolingMode);
       _isolate.setMaxPoolWindows(maxPoolWindows);
       _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
+      _isolate.applyAdvancedPoolingParams(advancedPooling);
       _isolate.resetPooling();
 
       final allDetections = <DetectionRecord>[];

@@ -115,6 +115,19 @@ abstract final class PrefKeys {
   static const String scorePoolingDefaultMigration =
       'score_pooling_default_migration_v1';
 
+  // Advanced temporal-pooling knobs (LME alpha + support gate). Normally
+  // baked into the model config; exposed as overridable settings so they can
+  // be tuned live. Defaults mirror `temporalPooling` in model_config.json.
+  static const String scorePoolingAlpha = 'score_pooling_alpha';
+  static const String scorePoolingMinSupportWindows =
+      'score_pooling_min_support_windows';
+  static const String scorePoolingSupportThresholdFraction =
+      'score_pooling_support_threshold_fraction';
+  static const String scorePoolingSupportThresholdFloor =
+      'score_pooling_support_threshold_floor';
+  static const String scorePoolingVeryHighImmediateThreshold =
+      'score_pooling_very_high_immediate_threshold';
+
   // Spectrogram settings
   static const String fftSize = 'fft_size';
   static const String colorMap = 'color_map';
@@ -132,6 +145,11 @@ abstract final class PrefKeys {
   /// When true, Live mode auto-starts recording as soon as the model is
   /// ready (kiosk-style / hands-free use). Default: false.
   static const String liveAutoStart = 'live_auto_start';
+
+  /// When true (default), completed Live and Point Count sessions are saved
+  /// to the library automatically. When false, the session opens in review as
+  /// unsaved and is only kept if the user explicitly saves it.
+  static const String saveSessionAutomatically = 'save_session_automatically';
 
   /// Seconds of audio captured before AND after each detection window.
   /// Total clip length = analysis window (e.g. 3 s) + 2 × clipContext.

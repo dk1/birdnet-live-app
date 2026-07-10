@@ -1342,11 +1342,6 @@ String _buildFooterContextHtml(
 
   items.add(('Analysis settings', _analysisSettingsSummary(session, metadata)));
 
-  final audioSettingsText = _audioSettingsSummary(session, metadata);
-  if (audioSettingsText != null) {
-    items.add(('Audio preprocessing', audioSettingsText));
-  }
-
   if (items.isEmpty) return '';
   final rows =
       items
@@ -1397,50 +1392,18 @@ String _analysisSettingsSummary(
       s.confidenceThreshold;
   final inferenceRate =
       _numAt(analysis, 'inferenceRateHz')?.toDouble() ?? s.inferenceRate;
-  final speciesFilter =
-      _stringAt(analysis, 'speciesFilterMode') ?? s.speciesFilterMode;
   final sensitivity =
       _numAt(analysis, 'sensitivity')?.toDouble() ?? s.sensitivity;
-  final poolingMode = _stringAt(analysis, 'poolingMode') ?? s.poolingMode;
-  final poolingWindows =
-      _numAt(analysis, 'poolingWindows')?.round() ?? s.poolingWindows;
-  final poolingMaxAgeSeconds =
-      _numAt(analysis, 'poolingMaxAgeSeconds')?.toDouble() ??
-      s.poolingMaxAgeSeconds;
 
+  // The HTML report deliberately surfaces only the core analysis parameters.
+  // Pooling / support-gate / audio-preprocessing details live in the exported
+  // JSON metadata side-file instead of cluttering the human-readable report.
   return [
     '${windowSeconds}s window',
     '$confidenceThreshold% min confidence',
     '${_fmtNumber(inferenceRate)} Hz',
     if (sensitivity != null) 'sensitivity ${_fmtNumber(sensitivity)}',
-    if (poolingMode != null && poolingMode.isNotEmpty)
-      poolingWindows == null
-          ? 'pooling $poolingMode'
-          : poolingMaxAgeSeconds == null
-          ? 'pooling $poolingMode/$poolingWindows'
-          : 'pooling $poolingMode/$poolingWindows/${_fmtNumber(poolingMaxAgeSeconds)}s',
-    if (speciesFilter.isNotEmpty && speciesFilter != 'off')
-      'species filter $speciesFilter',
   ].join(' | ');
-}
-
-String? _audioSettingsSummary(
-  LiveSession session,
-  Map<String, dynamic>? metadata,
-) {
-  final audio = _mapAt(_mapAt(metadata, 'settings'), 'audio');
-  final s = session.settings;
-  final gain = _numAt(audio, 'gainLinear')?.toDouble() ?? s.gainLinear;
-  final highPass = _numAt(audio, 'highPassHz')?.toDouble() ?? s.highPassHz;
-  final clipContext =
-      _numAt(audio, 'clipContextSeconds')?.round() ?? s.clipContextSeconds;
-
-  final parts = [
-    if (gain != null) 'gain ${_fmtNumber(gain)}x',
-    if (highPass != null && highPass > 0) 'high-pass ${highPass.round()} Hz',
-    if (clipContext > 0) 'clip context +/-${clipContext}s',
-  ];
-  return parts.isEmpty ? null : parts.join(' | ');
 }
 
 // -- Metadata rows ------------------------------------------------------------
@@ -1507,31 +1470,15 @@ String _buildMetadataRows(LiveSession session) {
 
 String _buildSettingsRows(LiveSession session) {
   final s = session.settings;
+  // Only the core analysis parameters are shown in the report. The full set
+  // (pooling mode + support-gate knobs, gain, high-pass, clip context, species
+  // filter, …) is preserved in the exported JSON metadata side-file.
   final rows = <(String, String)>[];
   rows.add(('Window', '${s.windowDuration} s'));
   rows.add(('Min confidence', '${s.confidenceThreshold}%'));
   rows.add(('Inference rate', '${s.inferenceRate}x'));
-  if (s.speciesFilterMode != 'off' && s.speciesFilterMode.isNotEmpty) {
-    rows.add(('Species filter', s.speciesFilterMode));
-  }
   if (s.sensitivity != null) {
     rows.add(('Sensitivity', s.sensitivity!.toStringAsFixed(2)));
-  }
-  if (s.poolingMode != null && s.poolingWindows != null) {
-    final gate =
-        s.poolingMaxAgeSeconds == null
-            ? ''
-            : ', ${_fmtNumber(s.poolingMaxAgeSeconds!)}s gate';
-    rows.add(('Pooling', '${s.poolingMode} (${s.poolingWindows}x$gate)'));
-  }
-  if (s.gainLinear != null) {
-    rows.add(('Gain', '${s.gainLinear!.toStringAsFixed(2)}x'));
-  }
-  if (s.highPassHz != null && s.highPassHz! > 0) {
-    rows.add(('High-pass', '${s.highPassHz!.round()} Hz'));
-  }
-  if (s.clipContextSeconds > 0) {
-    rows.add(('Clip context', '+/-${s.clipContextSeconds} s'));
   }
   return _renderMetaRows(rows);
 }

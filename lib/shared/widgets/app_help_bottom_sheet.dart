@@ -10,10 +10,13 @@
 import 'package:flutter/material.dart';
 
 class AppHelpSection {
-  const AppHelpSection({required this.icon, required this.body});
+  const AppHelpSection({required this.icon, required this.body, this.child});
 
   final IconData icon;
   final String body;
+
+  /// Optional widget rendered under [body] (e.g. a small legend or example).
+  final Widget? child;
 }
 
 class AppHelpBottomSheet extends StatelessWidget {
@@ -84,11 +87,20 @@ class AppHelpBottomSheet extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(
-                          section.body,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            height: 1.45,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              section.body,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                height: 1.45,
+                              ),
+                            ),
+                            if (section.child != null) ...[
+                              const SizedBox(height: 12),
+                              section.child!,
+                            ],
+                          ],
                         ),
                       ),
                     ],

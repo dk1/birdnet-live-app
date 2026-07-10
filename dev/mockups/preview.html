@@ -28,6 +28,7 @@
         <button id="renderButton" class="button-link action-button" type="button">Render</button>
         <button id="renderAllButton" class="button-link action-button secondary" type="button">Render all</button>
         <button id="renderDevicesButton" class="button-link action-button secondary" type="button">Render devices</button>
+        <button id="renderFeatureButton" class="button-link action-button secondary" type="button">Render feature</button>
         <div id="languageLinks" class="language-links" aria-label="Language shortcuts"></div>
       </div>
       <p id="renderStatus" class="render-status" aria-live="polite"></p>
@@ -58,6 +59,21 @@
     </article>
   </template>
 
+  <template id="featureGraphicTemplate">
+    <article class="preview-card feature-card">
+      <div class="feature-preview-viewport">
+        <section class="feature-graphic">
+          <img class="feature-background" data-field="feature-background" alt="">
+          <div class="feature-shade" aria-hidden="true"></div>
+          <div class="feature-copy">
+            <h2 class="feature-title" data-field="feature-title"></h2>
+            <p class="feature-tagline" data-field="feature-tagline"></p>
+          </div>
+        </section>
+      </div>
+    </article>
+  </template>
+
   <script src="mockups.config.js"></script>
   <script src="mockups.copy.generated.js"></script>
   <script>
@@ -69,14 +85,17 @@
     const renderButton = document.getElementById('renderButton');
     const renderAllButton = document.getElementById('renderAllButton');
     const renderDevicesButton = document.getElementById('renderDevicesButton');
+    const renderFeatureButton = document.getElementById('renderFeatureButton');
     const renderStatus = document.getElementById('renderStatus');
     const grid = document.getElementById('previewGrid');
     const template = document.getElementById('mockupTemplate');
+    const featureGraphicTemplate = document.getElementById('featureGraphicTemplate');
     const requestedLang = params.get('lang') || localStorage.getItem('mockupLang') || 'en';
     const requestedDevice = params.get('device_type') || localStorage.getItem('mockupDeviceType') || 'phone';
     const isIpad = params.get('ipad') === '1' || requestedDevice === 'ipad';
     const exportMode = params.get('export') === '1';
     const deviceExportMode = params.get('device') === '1';
+    const featureGraphicMode = params.get('feature') === '1';
     const exportSlide = params.get('slide');
     const lang = config.languages[requestedLang] ? requestedLang : 'en';
 
@@ -89,6 +108,9 @@
     if (deviceExportMode) {
       document.documentElement.classList.add('device-export-root');
       document.body.classList.add('device-export');
+    }
+    if (featureGraphicMode) {
+      document.body.classList.add('feature-graphic-export');
     }
 
     function fillLanguageSelect() {
@@ -128,6 +150,7 @@
       renderButton.addEventListener('click', () => renderFromPreview(false));
       renderAllButton.addEventListener('click', () => renderFromPreview(true));
       renderDevicesButton.addEventListener('click', () => renderFromPreview(true, true));
+      renderFeatureButton.addEventListener('click', () => renderFeatureFromPreview());
 
       if (window.location.protocol === 'file:') {
         renderStatus.textContent = 'Render button needs the local server: node server.js';
@@ -177,6 +200,30 @@
       }
     }
 
+    async function renderFeatureFromPreview() {
+      const command = 'node render-mockups.js --feature-graphic --all-languages';
+      if (window.location.protocol === 'file:') {
+        await navigator.clipboard?.writeText(command).catch(() => {});
+        renderStatus.textContent = `Open this folder in a terminal and run: ${command}`;
+        return;
+      }
+
+      renderFeatureButton.disabled = true;
+      renderStatus.textContent = 'Rendering Play feature graphics...';
+      try {
+        const response = await fetch('/render?feature=1&all=1', { cache: 'no-store' });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.stderr || result.stdout || `Render failed with ${response.status}`);
+        }
+        renderStatus.textContent = 'Rendered Play feature graphics to each output locale folder.';
+      } catch (error) {
+        renderStatus.textContent = error.message;
+      } finally {
+        renderFeatureButton.disabled = false;
+      }
+    }
+
     function copyFor(slide) {
       const language = config.languages[lang] || config.languages.en;
       const fallback = config.languages.en;
@@ -187,6 +234,15 @@
     }
 
     function render() {
+      if (featureGraphicMode) {
+        renderFeatureGraphic(true);
+        return;
+      }
+
+      if (!deviceExportMode) {
+        renderFeatureGraphic(false);
+      }
+
       const slides = exportSlide
         ? config.slides.filter((slide) => slide.id === exportSlide)
         : config.slides;
@@ -225,6 +281,23 @@
         }
         grid.appendChild(node);
       });
+    }
+
+    function renderFeatureGraphic(exportTarget) {
+      const featureGraphic = config.featureGraphic;
+      const node = featureGraphicTemplate.content.firstElementChild.cloneNode(true);
+      const background = node.querySelector('[data-field="feature-background"]');
+      background.src = featureGraphic.background;
+      background.alt = `${featureGraphic.title} feature graphic`;
+      node.querySelector('[data-field="feature-title"]').textContent = featureGraphic.title;
+      node.querySelector('[data-field="feature-tagline"]').textContent =
+        config.featureGraphicHomeSubtitles?.[lang] ||
+        config.featureGraphicHomeSubtitles?.en ||
+        featureGraphic.taglines?.[lang] ||
+        featureGraphic.taglines?.en ||
+        '';
+      if (exportTarget) node.classList.add('export-target');
+      grid.appendChild(node);
     }
 
     function notifyReady() {

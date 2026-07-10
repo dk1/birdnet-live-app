@@ -9667,8 +9667,8 @@ yelthr1	Turdus flavipes	Yellow-legged Thrush
 yeltin1	Crypturellus noctivagus	Yellow-legged Tinamou
 yeltit2	Machlolophus holsti	Yellow Tit
 yeltyr1	Capsiempis flaveola	Yellow Tyrannulet
-yelwar	Setophaga petechia	Mangrove Yellow Warbler
 yelwar1	Setophaga aestiva	American Yellow Warbler
+yelwar	Setophaga petechia	Mangrove Yellow Warbler
 yelwat1	Anthochaera paradoxa	Yellow Wattlebird
 yelwhe1	Zosterops nigrorum	Yellowish White-eye
 yemfly1	Tolmomyias assimilis	Yellow-margined Flatbill

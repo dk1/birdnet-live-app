@@ -571,10 +571,25 @@ class _VoiceMemoPlaybackEvent {
 
 /// Review screen displayed after a live session ends.
 class SessionReviewScreen extends ConsumerStatefulWidget {
-  const SessionReviewScreen({super.key, required this.session});
+  const SessionReviewScreen({
+    super.key,
+    required this.session,
+    this.autoSaved = true,
+  });
 
   /// The completed session to review.
   final LiveSession session;
+
+  /// Whether the session was already persisted to the library before this
+  /// screen opened. Reopening an existing session (library, file analysis,
+  /// ARU, survey) always passes `true`.
+  ///
+  /// When `false` — the user disabled *Save sessions automatically* and just
+  /// finished a Live / Point Count session — the session is treated as
+  /// **unsaved**: the save icon is highlighted, best-effort metadata writes
+  /// (location / weather) are held back, and leaving review without saving
+  /// deletes the session and its recordings. See [_isUnsaved].
+  final bool autoSaved;
 
   @override
   ConsumerState<SessionReviewScreen> createState() =>
@@ -631,6 +646,20 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// tap-to-seek, completion).
   Duration? _autoStopPosition;
   bool _isDirty = false;
+
+  /// True when this session has never been written to the library yet (the
+  /// user disabled automatic saving). Unlike [_isDirty] — which tracks
+  /// *edits* to an already-saved session — an unsaved session has no
+  /// persisted copy to fall back to, so discarding it deletes the recordings
+  /// outright. Set once from `widget.autoSaved` in [initState]; cleared by
+  /// [_save].
+  bool _isUnsaved = false;
+
+  /// Whether there is work that would be lost on leaving without saving:
+  /// either pending edits ([_isDirty]) or a never-saved session
+  /// ([_isUnsaved]). Drives the save-icon highlight and the leave prompt.
+  bool get _hasUnsavedWork => _isDirty || _isUnsaved;
+
   bool _trimMode = false;
   double? _trimStartSec;
   double? _trimEndSec;
@@ -845,6 +874,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   @override
   void initState() {
     super.initState();
+    _isUnsaved = !widget.autoSaved;
     _detections = List.of(widget.session.detections);
     _annotations = List.of(widget.session.annotations);
     _trimStartSec = widget.session.trimStartSec;
@@ -1136,10 +1166,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final name = await reverseGeocode(latitude: lat, longitude: lon);
     if (name != null && mounted) {
       setState(() => _locationName = name);
-      // Persist so we don't re-fetch next time.
+      // Keep the resolved name in memory so a later explicit save includes it.
       widget.session.locationName = name;
-      final repo = ref.read(sessionRepositoryProvider);
-      await repo.save(widget.session);
+      // Don't silently persist a session the user hasn't chosen to keep yet;
+      // it would be saved on their explicit Save instead.
+      if (!_isUnsaved) {
+        final repo = ref.read(sessionRepositoryProvider);
+        await repo.save(widget.session);
+      }
     }
   }
 
@@ -1173,8 +1207,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           // and triggering rebuild is enough.
         });
         widget.session.weather = snap;
-        final repo = ref.read(sessionRepositoryProvider);
-        await repo.save(widget.session);
+        // As with location, hold back persistence for a not-yet-saved session.
+        if (!_isUnsaved) {
+          final repo = ref.read(sessionRepositoryProvider);
+          await repo.save(widget.session);
+        }
       }
     } catch (_) {
       // Best-effort retry — silently give up; we'll try again next open.
@@ -1807,14 +1844,20 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   // ── Actions ─────────────────────────────────────────────────────────
 
   Future<bool> _onWillPop() async {
-    if (!_isDirty) return true;
+    if (!_hasUnsavedWork) return true;
     final l10n = AppLocalizations.of(context)!;
     final result = await showDialog<String>(
       context: context,
       builder:
           (ctx) => AlertDialog(
             title: Text(l10n.sessionReviewTitle),
-            content: Text(l10n.sessionUnsavedChanges),
+            // A never-saved session prompts to keep or discard the whole
+            // session; an edited-but-saved session prompts about the edits.
+            content: Text(
+              _isUnsaved
+                  ? l10n.sessionUnsavedSession
+                  : l10n.sessionUnsavedChanges,
+            ),
             actions: [
               TextButton(
                 style: TextButton.styleFrom(
@@ -1834,7 +1877,16 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       await _save();
       return true;
     }
-    if (result == 'discard') return true;
+    if (result == 'discard') {
+      // For a never-saved session there is no persisted copy to revert to, so
+      // discarding must remove the session and its on-disk recordings.
+      if (_isUnsaved) {
+        final repo = ref.read(sessionRepositoryProvider);
+        await repo.delete(widget.session.id);
+        ref.invalidate(sessionListProvider);
+      }
+      return true;
+    }
     return false; // Dialog dismissed.
   }
 
@@ -1890,6 +1942,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     ref.invalidate(sessionListProvider);
     setState(() {
       _isDirty = false;
+      _isUnsaved = false;
       _undoStack.clear();
       _redoStack.clear();
     });
@@ -1959,8 +2012,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   }
 
   Future<void> _share() async {
-    // Save pending changes before sharing so the export is up to date.
-    if (_isDirty) await _save();
+    // Save pending changes before sharing so the export is up to date. This
+    // also persists a not-yet-saved session — exporting implies keeping it.
+    if (_hasUnsavedWork) await _save();
 
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
@@ -3406,7 +3460,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     });
 
     return PopScope(
-      canPop: !_isDirty,
+      canPop: !_hasUnsavedWork,
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop) {
           final nav = Navigator.of(context);
@@ -3451,7 +3505,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             icon: const Icon(AppIcons.close),
             tooltip: l10n.tooltipClose,
             onPressed: () async {
-              if (_isDirty) {
+              if (_hasUnsavedWork) {
                 final canPop = await _onWillPop();
                 if (canPop && mounted) _done();
               } else {
@@ -3590,12 +3644,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             icon: Icon(
               AppIcons.save,
               color:
-                  _isDirty
+                  _hasUnsavedWork
                       ? theme.colorScheme.primary
                       : theme.colorScheme.onSurface.withAlpha(80),
             ),
             tooltip: l10n.sessionSave,
-            onPressed: _isDirty ? _save : null,
+            onPressed: _hasUnsavedWork ? _save : null,
           ),
           IconButton(
             icon: const Icon(AppIcons.share),
