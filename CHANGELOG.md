@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added a "Listen to this species on eBird" link in the species view that opens the eBird / Macaulay Library audio catalog (sorted best-quality first) in the browser.
+- Added a "Quick Listen" home-screen widget (Android), in 2x1 and 1x1 sizes, that jumps straight into Live Mode and starts listening.
 
 ### Changed
 
