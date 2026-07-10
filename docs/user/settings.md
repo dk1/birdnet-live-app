@@ -153,9 +153,11 @@ How much the app says about each detection. **Minimal** speaks just the species 
 
 How often the app is allowed to speak at all. Five steps from quietest to most talkative. **Rare** and **Sparse** wait a long time between announcements and cap the rate — well-suited to multi-hour surveys where you want a sense of activity without a running commentary. **Normal** is the default conversational cadence. **Frequent** shortens the gaps and lifts the cap; appropriate for short Live sessions or when you want closer-to-real-time feedback. **Constant** removes the startup delay entirely and lets the app speak on almost every detection cycle — useful for demos, accessibility, or whenever the gap before the first announcement on *Frequent* feels too long. **Custom** appears when you change the timing fields in Advanced. The intuition: this is the one knob that decides whether the app stays in the background or becomes a presence — tap a different preset and you'll hear the new cadence within the next detection cycle, no save button required.
 
-### Voice (speed and pitch)
+### Voice
 
-Two sliders that adjust the platform TTS voice. **Speed** ranges 0.5×–1.5×; the default 1.0× is the platform "normal" pace. **Pitch** ranges 0.7×–1.3×. The intuition: a small reduction in pitch and a slight slowdown can make announcements much easier to parse outdoors with wind or moving water in the background; the *Speak a sample* button below previews three common bird names with the current settings so you can iterate without leaving the screen.
+Tap the voice row to choose among the text-to-speech voices installed for the announcement language, or leave **Default voice** selected to let the device choose. Voice availability and quality depend on the operating system and installed speech packages; additional voices can be installed from the device's text-to-speech settings.
+
+**Speed** ranges 0.5×–1.5×; the default 1.0× is the platform "normal" pace. **Pitch** ranges 0.7×–1.3×. A small reduction in pitch and a slight slowdown can make announcements easier to parse outdoors with wind or moving water in the background. *Speak a sample* previews the selected voice, current phrasing style, speed, and pitch without leaving Settings. Changes apply to the next announcement.
 
 ### Advanced
 

@@ -1,0 +1,246 @@
+{
+  "locale": "pl",
+  "version": 4,
+  "_comment": [
+    "Szablony fraz dla funkcji Announcements. Zobacz dev/announcements.md §3.",
+    "Każdy bucket ma listę `balanced` (zawsze obecną) i opcjonalnie listę",
+    "`chatty` (dłuższe, bardziej rozmowne warianty). Przy Verbosity = Minimal",
+    "szablony są pomijane i wypowiadane jest tylko `{name}.`. Tłumaczenia to",
+    "naturalne przeformułowania, nie dosłowne.",
+    "",
+    "UWAGA — pułapki rodzaju / przypadka:",
+    "  Polski nie ma rodzajników, ale nazwy gatunków są w mianowniku, a ich",
+    "  rodzaju NIE znamy. Dlatego:",
+    "    - nie rządzić słowem {name} tak, by wymusić inny przypadek",
+    "      (używaj dwukropka: 'Wykryto: {name}.', albo 'brzmi jak {name}.'),",
+    "    - {name} na początku: '{name}, wyraźnie.',",
+    "    - używaj czasu teraźniejszego (nie ma rodzaju w 3. os.): '{name} śpiewa.'",
+    "      Unikaj czasu przeszłego z {name} jako podmiotem (rodzaj by się nie",
+    "      zgadzał) oraz przymiotników orzekających o {name}.",
+    "  Ton (rewizja v4): jak towarzysz w terenie, nie klasyfikator. Bez żargonu",
+    "  ('czysty sygnał', 'dobre dopasowanie'). W chatty krótki, ciepły komentarz,",
+    "  nigdy ckliwy."
+  ],
+  "buckets": {
+    "A": {
+      "balanced": [
+        "Jest {name}.",
+        "Wykryto: {name}.",
+        "{name}, wyraźnie.",
+        "Bez wątpienia {name}.",
+        "Słychać: {name}.",
+        "{name}, na pewno.",
+        "Wyraźnie {name}.",
+        "{name} się odzywa."
+      ],
+      "chatty": [
+        "{name} się odzywa, całkiem blisko.",
+        "To zdecydowanie {name}.",
+        "Bez wątpienia {name}.",
+        "{name} odzywa się wyraźnie.",
+        "Wyraźnie i głośno: {name}.",
+        "To na pewno {name}.",
+        "{name} właśnie się odzywa.",
+        "Krystalicznie czysto: {name}."
+      ]
+    },
+    "B": {
+      "balanced": [
+        "Znowu: {name}.",
+        "Jeszcze raz: {name}.",
+        "{name}, znowu.",
+        "Ponownie {name}.",
+        "Znów {name}."
+      ],
+      "chatty": [
+        "Znowu {name}, nie odpuszcza.",
+        "Znów {name} — najwyraźniej zostaje.",
+        "Jeszcze raz {name}, wyraźnie.",
+        "{name} znów się odzywa — chyba tu zostaje.",
+        "Znowu {name} — pewnie ma tu rewir."
+      ]
+    },
+    "C": {
+      "balanced": [
+        "{name} nie przestaje.",
+        "Wciąż {name}.",
+        "{name}, dalej i dalej.",
+        "{name} trzyma się mocno.",
+        "Dalej: {name}."
+      ],
+      "chatty": [
+        "{name} wcale nie przestaje.",
+        "{name} dziś sporo śpiewa.",
+        "{name} trzyma tempo.",
+        "{name} wciąż śpiewa.",
+        "{name} wciąż się odzywa.",
+        "Wciąż {name}, w świetnej formie.",
+        "{name} ani na chwilę nie ustaje.",
+        "{name} wesoło ciągnie dalej."
+      ]
+    },
+    "D": {
+      "balanced": [
+        "Pewnie {name}.",
+        "Brzmi jak {name}.",
+        "Prawdopodobnie {name}.",
+        "Chyba {name}.",
+        "Całkiem pewnie: {name}.",
+        "Zdaje się: {name}.",
+        "{name}, całkiem możliwe."
+      ],
+      "chatty": [
+        "Brzmi jak {name}, całkiem pewnie.",
+        "Chyba {name}, dość pewnie.",
+        "Zdaje się, że {name}.",
+        "Całkiem pewnie: {name}.",
+        "Brzmi całkiem wyraźnie jak {name}.",
+        "Stawiam, że {name}."
+      ]
+    },
+    "E": {
+      "balanced": [
+        "Może znowu {name}.",
+        "Może znów {name}.",
+        "Chyba znowu {name}.",
+        "{name}, pewnie kolejny raz."
+      ],
+      "chatty": [
+        "Chyba wraca {name}.",
+        "Znów chyba {name}.",
+        "Może {name} wraca.",
+        "Pewnie znowu {name}."
+      ]
+    },
+    "F": {
+      "balanced": [
+        "Może {name}?",
+        "To może być {name}.",
+        "Brzmi trochę jak {name}.",
+        "Chyba {name}.",
+        "{name}, może.",
+        "Trudno powiedzieć — może {name}.",
+        "Uwaga — może {name}."
+      ],
+      "chatty": [
+        "To może być {name} — trudno powiedzieć.",
+        "Brzmi trochę jak {name} — posłuchaj jeszcze raz.",
+        "Może {name} gdzieś tam — nadstaw ucha.",
+        "Może {name}, ale bez pewności.",
+        "Może {name}, niełatwo ocenić.",
+        "{name}, ale z przymrużeniem oka."
+      ]
+    },
+    "G": {
+      "balanced": [
+        "Może znowu {name}?",
+        "To może być znów {name}.",
+        "Słabo, ale może {name}.",
+        "Trudno powiedzieć — może znowu {name}.",
+        "Pewnie znowu {name}."
+      ],
+      "chatty": [
+        "Może znowu {name} — pewności brak.",
+        "Może {name} wraca, trudno powiedzieć.",
+        "Może {name} jeszcze raz, bez gwarancji.",
+        "Pewnie znów {name}, ale bez pewności."
+      ]
+    },
+    "H_two": {
+      "balanced": [
+        "Dwa naraz: {name1} i {name2}.",
+        "Słychać: {name1} i {name2}.",
+        "{name1} i {name2}, razem.",
+        "Dwa ptaki: {name1} i {name2}.",
+        "Duet: {name1} i {name2}."
+      ],
+      "chatty": [
+        "Ładny duet — {name1} i {name2} naraz.",
+        "Dwa głosy teraz: {name1} i {name2}.",
+        "{name1} i {name2} śpiewają razem.",
+        "Ciekawa para: {name1} i {name2}.",
+        "Dwa naraz — {name1} i {name2} odpowiadają sobie."
+      ]
+    },
+    "H_three": {
+      "balanced": [
+        "Więcej naraz: {name1}, {name2}, {name3}.",
+        "Trzy naraz: {name1}, {name2}, {name3}.",
+        "Trzy gatunki razem: {name1}, {name2}, {name3}.",
+        "{name1}, {name2} i {name3}, wszystkie naraz."
+      ],
+      "chatty": [
+        "Ładny chór — {name1}, {name2} i {name3} naraz.",
+        "Trzy gatunki jednocześnie: {name1}, {name2} i {name3} — żywe miejsce.",
+        "{name1}, {name2} i {name3} śpiewają razem.",
+        "Potrójny występ: {name1}, {name2} i {name3}.",
+        "Ładna mieszanka: {name1}, {name2} i {name3}."
+      ]
+    },
+    "H_many": {
+      "balanced": [
+        "Dużo się dzieje: {name1}, {name2}, {name3} i więcej.",
+        "Kilka naraz: {name1}, {name2}, {name3} i inne.",
+        "Żywe miejsce: {name1}, {name2}, {name3} i więcej."
+      ],
+      "chatty": [
+        "Teraz sporo się dzieje — {name1}, {name2}, {name3} i kilka innych.",
+        "Sporo ruchu: {name1}, {name2}, {name3} i więcej.",
+        "Cały chór w akcji — {name1}, {name2}, {name3} i inne.",
+        "Dużo życia — {name1}, {name2}, {name3} i jeszcze kilka, które rozróżniam.",
+        "Ładne tło dźwiękowe — {name1}, {name2}, {name3} i inne dołączają."
+      ]
+    }
+  },
+  "commonness": {
+    "abundant": [
+      "Bardzo pospolity gatunek w Twojej okolicy.",
+      "W Twojej okolicy bardzo częsty gość.",
+      "Bardzo rozpowszechniony gatunek o tej porze roku.",
+      "Należy tu do stałego repertuaru.",
+      "Jeden ze stałych bywalców w Twojej okolicy."
+    ],
+    "common": [
+      "Pospolity ptak w tej okolicy.",
+      "Częsty gość w Twojej okolicy o tej porze.",
+      "Regularny gość w okolicy.",
+      "Gatunek dość typowy dla Twojej okolicy.",
+      "Jesteś na dobrym terenie dla tego gatunku."
+    ],
+    "uncommon": [
+      "Niezbyt pospolity gatunek w tej okolicy.",
+      "W Twojej okolicy raczej rzadszy gość.",
+      "Warto odnotować — nieczęsty tu gość.",
+      "Miła odmiana — u Ciebie niezbyt częsty gatunek.",
+      "Nie jest to tutejszy codzienny głos."
+    ],
+    "frequent": [
+      "Regularny gość w Twojej okolicy.",
+      "Odzywa się tu dość regularnie.",
+      "Pojawia się tu dość często.",
+      "W Twojej okolicy całkiem regularny gość.",
+      "Tutaj częsty gość."
+    ],
+    "scarce": [
+      "Raczej nieliczny gość w Twojej okolicy.",
+      "Niezbyt często tu słychać ten głos.",
+      "W Twojej okolicy nieczęsty gość.",
+      "Nieczęsty gość w tej okolicy.",
+      "Tu niezbyt często obecny gatunek."
+    ],
+    "rare": [
+      "Prawdziwa rzadkość w tej okolicy — nieźle!",
+      "Nietypowy gatunek dla tej okolicy.",
+      "W Twojej okolicy dość rzadki gość.",
+      "Warto zapamiętać — tu bywa rzadko.",
+      "Wyróżniająca się obserwacja dla Twojej okolicy."
+    ],
+    "seasonalAddendum": [
+      "Choć zwykle nie występuje o tej porze roku.",
+      "I do tego trochę poza sezonem.",
+      "Trochę wcześnie albo późno jak na tę porę.",
+      "Poza zwykłym okresem tutaj, w dodatku.",
+      "Zwykle słychać tu ten głos o innej porze."
+    ]
+  }
+}

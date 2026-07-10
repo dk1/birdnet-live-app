@@ -1,6 +1,6 @@
 {
   "locale": "it",
-  "version": 3,
+  "version": 4,
   "_comment": [
     "Modelli di frasi per la funzione Announcements. Vedi dev/announcements.md §3.",
     "Ogni bucket ha una lista `balanced` (sempre presente) e opzionalmente",
@@ -15,29 +15,32 @@
     "  davanti a {name}, {name1}, {name2}, {name3}. Sicuro:",
     "    - due punti: 'Rilevato: {name}.'",
     "    - {name} a inizio frase: '{name}, senza dubbio.'",
-    "    - costruzioni senza articolo: 'Suona come {name}.'"
+    "    - costruzioni senza articolo: 'Suona come {name}.'",
+    "  Tono (rivisto v4): come un compagno di osservazione, non un classificatore.",
+    "  Evitare il gergo tecnico ('segnale pulito', 'buona corrispondenza'). In",
+    "  chatty è ammesso un commento breve e caloroso, mai sdolcinato."
   ],
   "buckets": {
     "A": {
       "balanced": [
+        "Ecco {name}.",
+        "È {name}.",
         "Rilevato: {name}.",
         "{name}, senza dubbio.",
-        "Identificato: {name}.",
-        "È {name}.",
+        "Si sente {name}.",
         "Chiaramente {name}.",
-        "{name}, sicuramente.",
-        "Si sente {name}."
+        "{name}, qui vicino.",
+        "{name}, che canta."
       ],
       "chatty": [
-        "Rilevato: {name}, segnale molto chiaro.",
-        "{name}, senza alcun dubbio.",
-        "Inconfondibile: {name}.",
-        "Segnale pulito: {name}.",
-        "{name}, da manuale.",
-        "Arriva forte e chiaro: {name}.",
-        "{name} si fa sentire — segnale ottimo.",
-        "Buona identificazione: {name}.",
-        "{name}, perfettamente udibile."
+        "Si sente {name}, qui vicino.",
+        "È {name} — un piacere sentirlo.",
+        "Nessun dubbio, è {name}.",
+        "{name} si fa sentire, ben chiaro.",
+        "Ecco {name} in piena voce.",
+        "Non c'è da sbagliarsi — {name}.",
+        "{name} ha appena iniziato.",
+        "È {name}, limpido."
       ]
     },
     "B": {
@@ -46,14 +49,14 @@
         "Ancora {name}.",
         "{name}, di nuovo.",
         "Ritorna {name}.",
-        "{name}, secondo passaggio."
+        "Ancora una volta, {name}."
       ],
       "chatty": [
-        "Ancora {name}, non si ferma.",
+        "Ancora {name}, non molla.",
+        "Ritorna {name} — sembra fermarsi qui.",
         "Di nuovo {name}, ben chiaro.",
-        "Ritorna {name}, sembra essersi sistemato.",
-        "Secondo passaggio per {name}.",
-        "{name} di nuovo — ormai è di casa."
+        "{name} ritorna, non va lontano.",
+        "Ancora {name}, si tiene la zona."
       ]
     },
     "C": {
@@ -62,17 +65,17 @@
         "Sempre {name}.",
         "{name}, ancora attivo.",
         "{name} non smette.",
-        "Altro da {name}."
+        "{name} va avanti."
       ],
       "chatty": [
         "{name} non si ferma.",
-        "Continua: {name}.",
+        "{name} resta molto attivo oggi.",
         "{name} mantiene il ritmo.",
-        "{name} resta molto presente oggi.",
-        "Attività costante da {name}.",
-        "{name} continua a farsi sentire.",
-        "{name} è ancora ben presente nel mix.",
-        "{name} non molla la presa."
+        "{name} continua a cantare.",
+        "{name} resta bello presente.",
+        "Sempre {name}, in gran forma.",
+        "{name} non ha ripreso fiato.",
+        "{name} continua imperterrito."
       ]
     },
     "D": {
@@ -82,64 +85,64 @@
         "Forse {name}.",
         "Direi {name}.",
         "Abbastanza sicuro: {name}.",
-        "Plausibile: {name}.",
-        "Tendenza a {name}."
+        "Propendo per {name}.",
+        "{name}, direi."
       ],
       "chatty": [
-        "Abbastanza sicuro: {name}.",
-        "Suona chiaramente come {name}.",
+        "Suona come {name}, direi.",
         "Direi {name}, con discreta sicurezza.",
-        "Punta a {name}, segnale buono.",
-        "Buona corrispondenza con {name}.",
-        "Tutto fa pensare a {name}."
+        "Ha un'aria di {name}.",
+        "Abbastanza sicuro: {name}.",
+        "Propendo per {name}.",
+        "Tutto porta a {name}."
       ]
     },
     "E": {
       "balanced": [
         "Forse di nuovo {name}.",
         "Potrebbe essere {name} ancora.",
-        "Probabilmente di nuovo {name}.",
-        "{name}, forse ancora una volta."
+        "Di nuovo {name}, forse.",
+        "Probabilmente ancora {name}."
       ],
       "chatty": [
-        "Forse {name} di nuovo, difficile dirlo.",
-        "Potrebbe essere {name} ancora una volta.",
-        "Sembra che {name} sia tornato.",
-        "Probabilmente {name}, secondo passaggio."
+        "Sembra che ritorni {name}.",
+        "Credo sia di nuovo {name}.",
+        "Forse {name} di ritorno.",
+        "Probabilmente {name}, ancora una volta."
       ]
     },
     "F": {
       "balanced": [
-        "Forse {name}.",
+        "Forse {name}?",
         "Potrebbe essere {name}.",
         "Suona un po' come {name}.",
         "Magari {name}.",
         "{name}, forse.",
-        "Corrispondenza debole: {name}.",
-        "Da verificare — forse {name}."
+        "Difficile dirlo — forse {name}.",
+        "Da tenere d'occhio — forse {name}."
       ],
       "chatty": [
-        "Potrebbe essere {name}, segnale un po' debole.",
-        "Suona un po' come {name} — vale un secondo ascolto.",
-        "Forse {name}, tieni le orecchie tese.",
-        "Pendo per {name}, ma è un caso limite.",
-        "Magari {name} — non perfetto ma plausibile.",
-        "{name} è la mia ipotesi migliore qui."
+        "Potrebbe essere {name} — difficile dirlo.",
+        "Suona un po' come {name} — da riascoltare.",
+        "Magari {name} lì — orecchie tese.",
+        "Direi {name}, senza certezza.",
+        "Forse {name}, non facile da dire.",
+        "{name}, con le dovute cautele."
       ]
     },
     "G": {
       "balanced": [
-        "Forse di nuovo {name}.",
+        "Forse di nuovo {name}?",
         "Potrebbe essere {name} ancora.",
-        "Debole ma forse {name}.",
-        "Forse {name} di ritorno.",
-        "Marginale — magari {name}."
+        "Debole, ma forse {name}.",
+        "Difficile dirlo — forse ancora {name}.",
+        "Probabilmente ancora {name}."
       ],
       "chatty": [
-        "Forse {name} ancora, segnale flebile.",
-        "Potrebbe essere {name} di nuovo — vale la pena seguire.",
-        "Corrispondenza debole, ma magari {name} di nuovo.",
-        "Pendo ancora per {name}, senza certezza."
+        "Forse {name} ancora — non è sicuro.",
+        "Potrebbe essere {name} che ritorna, difficile dirlo.",
+        "Magari {name} di nuovo, senza garanzie.",
+        "Probabilmente ancora {name}, ma senza certezza."
       ]
     },
     "H_two": {
@@ -209,6 +212,20 @@
       "Da segnalare — non si sente tutti i giorni.",
       "Piccola sorpresa — non così frequente nella tua zona.",
       "Non è una presenza quotidiana da queste parti."
+    ],
+    "frequent": [
+      "Un habitué della zona.",
+      "Si sente abbastanza regolarmente nella tua zona.",
+      "Compare spesso da queste parti.",
+      "Un visitatore regolare della tua zona.",
+      "Lo senti con regolarità da queste parti."
+    ],
+    "scarce": [
+      "Piuttosto scarso da queste parti.",
+      "Non si sente molto spesso nella tua zona.",
+      "Poco frequente nella tua zona.",
+      "Non lo senti spesso da queste parti.",
+      "Poco presente in questa zona."
     ],
     "rare": [
       "Una vera rarità da queste parti.",

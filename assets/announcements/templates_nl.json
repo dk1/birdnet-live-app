@@ -1,0 +1,244 @@
+{
+  "locale": "nl",
+  "version": 4,
+  "_comment": [
+    "Zinsjablonen voor de Announcements-functie. Zie dev/announcements.md §3.",
+    "Elk bucket heeft een `balanced`-lijst (altijd aanwezig) en optioneel een",
+    "`chatty`-lijst (langere, spraakzamere varianten). Bij Verbosity = Minimal",
+    "worden de sjablonen overgeslagen en wordt alleen `{name}.` uitgesproken.",
+    "Vertalingen zijn natuurlijke herformuleringen, niet letterlijk.",
+    "",
+    "LET OP — geslachtsval:",
+    "  Vogelnamen hebben een grammaticaal geslacht (de roodborst, het roodborstje)",
+    "  dat we tijdens runtime NIET kennen. Zet daarom nooit een lidwoord",
+    "  ('de', 'het', 'een') direct voor {name}, {name1}, {name2}, {name3}. Veilig:",
+    "    - dubbele punt: 'Herkend: {name}.'",
+    "    - {name} vooraan: '{name}, duidelijk.'",
+    "    - zonder lidwoord: 'Klinkt als {name}.'",
+    "  Toon (herzien v4): als een metgezel in het veld, geen classifier. Vermijd",
+    "  technisch jargon ('schoon signaal', 'goede overeenkomst'). Chatty mag een",
+    "  korte, warme opmerking toevoegen, nooit zoetsappig. Aanspreekvorm: 'je'."
+  ],
+  "buckets": {
+    "A": {
+      "balanced": [
+        "Daar: {name}.",
+        "Herkend: {name}.",
+        "Ik hoor {name}.",
+        "{name}, duidelijk.",
+        "Daar zit {name}.",
+        "Duidelijk {name}.",
+        "{name}, zonder twijfel.",
+        "{name} laat zich horen."
+      ],
+      "chatty": [
+        "Ik hoor {name}, vlakbij.",
+        "Dat is {name} — mooi om te horen.",
+        "Zonder twijfel {name}.",
+        "{name} laat zich duidelijk horen.",
+        "Daar is {name}, in volle zang.",
+        "Onmiskenbaar — {name}.",
+        "{name} begint net.",
+        "Glashelder: {name}."
+      ]
+    },
+    "B": {
+      "balanced": [
+        "Weer: {name}.",
+        "Nog een keer: {name}.",
+        "{name}, alweer.",
+        "Opnieuw {name}.",
+        "Daar is {name} weer."
+      ],
+      "chatty": [
+        "Weer {name}, laat niet los.",
+        "Alweer {name} — blijft in de buurt.",
+        "Nog een keer {name}, duidelijk.",
+        "{name} meldt zich weer — lijkt te blijven.",
+        "Daar is {name} weer — vaste gast blijkbaar."
+      ]
+    },
+    "C": {
+      "balanced": [
+        "{name} gaat door.",
+        "Nog steeds {name}.",
+        "{name}, blijft doorgaan.",
+        "{name} houdt vol.",
+        "Verder: {name}."
+      ],
+      "chatty": [
+        "{name} blijft maar doorgaan.",
+        "{name} is vandaag flink actief.",
+        "{name} houdt het tempo vast.",
+        "{name} blijft zingen.",
+        "{name} laat zich steeds horen.",
+        "Nog steeds {name}, in topvorm.",
+        "{name} pauzeert geen moment.",
+        "{name} gaat vrolijk verder."
+      ]
+    },
+    "D": {
+      "balanced": [
+        "Waarschijnlijk {name}.",
+        "Klinkt als {name}.",
+        "Vermoedelijk {name}.",
+        "Ik zou zeggen {name}.",
+        "Wellicht {name}.",
+        "Redelijk zeker: {name}.",
+        "{name}, denk ik."
+      ],
+      "chatty": [
+        "Klinkt voor mij als {name}, redelijk zeker.",
+        "Ik zou zeggen {name}, vrij zeker.",
+        "Heeft wel iets van {name}.",
+        "Redelijk zeker: {name}.",
+        "Ik neig naar {name}.",
+        "Alles wijst op {name}."
+      ]
+    },
+    "E": {
+      "balanced": [
+        "Misschien weer {name}.",
+        "Zou weer {name} kunnen zijn.",
+        "Opnieuw {name}, misschien.",
+        "Waarschijnlijk weer {name}."
+      ],
+      "chatty": [
+        "Klinkt als {name} die terugkomt.",
+        "Volgens mij weer {name}.",
+        "Misschien {name} terug.",
+        "Waarschijnlijk {name}, nog een keer."
+      ]
+    },
+    "F": {
+      "balanced": [
+        "Misschien {name}?",
+        "Zou {name} kunnen zijn.",
+        "Klinkt een beetje als {name}.",
+        "Mogelijk {name}.",
+        "{name}, misschien.",
+        "Lastig te zeggen — misschien {name}.",
+        "Let op — misschien {name}."
+      ],
+      "chatty": [
+        "Zou {name} kunnen zijn — lastig te zeggen.",
+        "Klinkt een beetje als {name} — luister nog eens.",
+        "Misschien {name} daar — spits je oren.",
+        "Ik gok op {name}, maar zeker ben ik niet.",
+        "Misschien {name}, lastig te bepalen.",
+        "{name}, met een slag om de arm."
+      ]
+    },
+    "G": {
+      "balanced": [
+        "Misschien weer {name}?",
+        "Zou weer {name} kunnen zijn.",
+        "Zwak, maar misschien {name}.",
+        "Lastig te zeggen — misschien weer {name}.",
+        "Waarschijnlijk weer {name}."
+      ],
+      "chatty": [
+        "Misschien weer {name} — niet zeker.",
+        "Zou {name} kunnen zijn die terugkomt, lastig te zeggen.",
+        "Misschien {name} nog eens, zonder garantie.",
+        "Waarschijnlijk weer {name}, maar niet zeker."
+      ]
+    },
+    "H_two": {
+      "balanced": [
+        "Twee tegelijk: {name1} en {name2}.",
+        "Ik hoor {name1} en {name2}.",
+        "{name1} en {name2}, samen.",
+        "Twee vogels: {name1} en {name2}.",
+        "Duo: {name1} en {name2}."
+      ],
+      "chatty": [
+        "Mooi duo — {name1} en {name2} tegelijk.",
+        "Twee stemmen nu: {name1} en {name2}.",
+        "{name1} en {name2} zingen samen.",
+        "Interessant paar: {name1} en {name2}.",
+        "Twee tegelijk — {name1} en {name2} beantwoorden elkaar."
+      ]
+    },
+    "H_three": {
+      "balanced": [
+        "Meerdere tegelijk: {name1}, {name2}, {name3}.",
+        "Drie tegelijk: {name1}, {name2}, {name3}.",
+        "Drie soorten samen: {name1}, {name2}, {name3}.",
+        "{name1}, {name2} en {name3}, allemaal tegelijk."
+      ],
+      "chatty": [
+        "Mooi koor — {name1}, {name2} en {name3} tegelijk.",
+        "Drie soorten tegelijk: {name1}, {name2} en {name3} — levendige plek.",
+        "{name1}, {name2} en {name3} zingen samen.",
+        "Drieluik nu: {name1}, {name2} en {name3}.",
+        "Mooie mix: {name1}, {name2} en {name3}."
+      ]
+    },
+    "H_many": {
+      "balanced": [
+        "Veel activiteit: {name1}, {name2}, {name3} en nog meer.",
+        "Meerdere samen: {name1}, {name2}, {name3} en anderen.",
+        "Levendige plek: {name1}, {name2}, {name3} en meer."
+      ],
+      "chatty": [
+        "Nu veel te doen — {name1}, {name2}, {name3} en nog een paar.",
+        "Flink wat activiteit: {name1}, {name2}, {name3} en meer.",
+        "Heel koor actief — {name1}, {name2}, {name3} en nog meer.",
+        "Veel leven hier — {name1}, {name2}, {name3} en nog een paar die ik hoor.",
+        "Mooi klanklandschap — {name1}, {name2}, {name3} en anderen sluiten aan."
+      ]
+    }
+  },
+  "commonness": {
+    "abundant": [
+      "Een heel algemene soort in jouw omgeving.",
+      "Deze hoor je hier heel vaak.",
+      "Erg algemeen bij jou in dit seizoen.",
+      "Hoort hier echt bij het vaste repertoire.",
+      "Een van de vaste gasten bij jou."
+    ],
+    "common": [
+      "Een algemene vogel hier.",
+      "Redelijk aanwezig in jouw omgeving in dit seizoen.",
+      "Vaste gast in de omgeving.",
+      "Vrij typisch voor jouw omgeving.",
+      "Je zit hier goed voor deze soort."
+    ],
+    "uncommon": [
+      "Niet zo algemeen hier.",
+      "Wat minder gewoon in jouw omgeving.",
+      "Het vermelden waard — hoor je hier niet elke dag.",
+      "Een kleine traktatie — niet zo vaak bij jou.",
+      "Niet de dagelijkse zang hier."
+    ],
+    "frequent": [
+      "Een vaste gast in jouw omgeving.",
+      "Vrij regelmatig te horen bij jou.",
+      "Duikt hier geregeld op.",
+      "Een regelmatige bezoeker in jouw omgeving.",
+      "Je hoort deze hier geregeld."
+    ],
+    "scarce": [
+      "Aan de schaarse kant hier.",
+      "Niet zo vaak te horen in jouw omgeving.",
+      "Vrij schaars in jouw omgeving.",
+      "Deze hoor je hier niet vaak.",
+      "Weinig aanwezig in jouw omgeving."
+    ],
+    "rare": [
+      "Een echte zeldzaamheid hier — mooi gehoord!",
+      "Ongewone soort voor deze omgeving.",
+      "Behoorlijk zeldzaam bij jou.",
+      "Om te onthouden — komt hier nauwelijks voor.",
+      "Een opvallende waarneming voor jouw omgeving."
+    ],
+    "seasonalAddendum": [
+      "En ook nog een beetje buiten het seizoen.",
+      "Normaal niet rond deze tijd van het jaar.",
+      "Eigenlijk wat vroeg of laat ervoor.",
+      "Buiten de gebruikelijke periode hier, bovendien.",
+      "Meestal in een ander seizoen hier te horen."
+    ]
+  }
+}

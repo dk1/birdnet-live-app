@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.8] - 2026-07-10
+
+### Added
+
+- Added a voice picker to Settings → Announcements so you can choose a specific installed text-to-speech voice instead of the device default — useful when the default voice sounds robotic or uses the wrong accent. Announcement templates are now provided in all app languages, including Dutch, Polish, and Russian.
+
+### Changed
+
+- Reworked the Settings → Announcements layout so it no longer breaks on languages with longer labels, and grouped the voice controls (voice, speed, pitch, sample) together.
+- Rewrote the spoken announcement phrasing across all languages to sound more like a birding companion and less stiff.
+- Announcements now start speaking sooner after a session begins, so the first solid detection is voiced promptly instead of being held back by an over-long startup delay.
+- The chatty "how common is this bird here" hint now uses the same six abundance tiers shown on the Explore screen, so what you hear about a species lines up with the tier on its Explore card.
+
+### Fixed
+
+- Fixed announcements going silent partway through a session on some devices: the app no longer waits forever for a text-to-speech engine that never reports completion, and it now falls back sensibly when no voice is installed for the chosen language.
+- Fixed survey map flicker when map tile loading is deactivated
+
 ## [0.18.7] - 2026-07-09
 
 ### Added

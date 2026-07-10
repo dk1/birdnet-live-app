@@ -30,33 +30,23 @@ ConfidenceBin confidenceBinFor(double score) {
   return ConfidenceBin.low;
 }
 
-/// How common a species is at the user's location *right now*, derived
-/// from the geo-model's current-week probability normalised against the
-/// top-scoring species at the same location/week. Used by Chatty
-/// verbosity to add a single first-announcement phrase like
+/// How common a species is at the user's location *right now*. Used by
+/// Chatty verbosity to add a single first-announcement phrase like
 /// *"A common bird in your area"* / *"A bit of a rarity around here."*
 ///
-/// Bins are intentionally coarse — the goal is a one-line nudge, not a
-/// precise abundance estimate. The mapping (see [commonnessBinForRatio])
-/// is rank-relative so the same thresholds work in tropical hotspots
-/// (where absolute geo-scores are crowded) and in low-diversity regions
-/// (where a single species can dominate the top of the list).
-enum CommonnessBin { abundant, common, uncommon, rare }
-
-/// Map a normalised current-week ratio (this species's geo-model score
-/// divided by the *top* current-week score at the same location) to a
-/// [CommonnessBin]. Returns null when [ratio] is non-finite or
-/// negative — the caller should then skip the commonness phrase
-/// entirely rather than guess.
-CommonnessBin? commonnessBinForRatio(double? ratio) {
-  if (ratio == null || ratio.isNaN || ratio.isInfinite || ratio < 0) {
-    return null;
-  }
-  if (ratio >= 0.50) return CommonnessBin.abundant;
-  if (ratio >= 0.20) return CommonnessBin.common;
-  if (ratio >= 0.05) return CommonnessBin.uncommon;
-  return CommonnessBin.rare;
-}
+/// These six bins mirror the Explore screen's abundance tiers exactly
+/// (`ExploreTier` / `ExploreTierScale`) so the spoken hint matches the
+/// tier the user sees on the Explore card for the same bird — a species
+/// shown as *Frequent* in Explore gets a "regular around here" nudge, not
+/// an "uncommon" one. The classification is done in
+/// `geo_commonness_provider.dart` from the *same* distribution-adaptive
+/// scale Explore builds (over the same audio-detectable population); this
+/// enum stays Flutter-free so the phrasing engine remains a pure-Dart
+/// library and doesn't import the Explore widget layer.
+///
+/// Ordered ascending by abundance so `.index` is an ordinal rank
+/// (0 = rare … 5 = abundant), matching `ExploreTier`.
+enum CommonnessBin { rare, scarce, uncommon, frequent, common, abundant }
 
 /// Everything the phrasing engine needs to pick a bucket for a single
 /// detection.
@@ -105,8 +95,8 @@ class AnnouncementSignals {
   /// `true` when the species is currently outside its annual peak at
   /// this location — specifically, when `currentWeekScore /
   /// annualMaxScore < 0.4` *and* the current score is high enough for
-  /// the comparison to be meaningful (commonness is at least
-  /// [CommonnessBin.uncommon]). Used by the Chatty engine to optionally
+  /// the comparison to be meaningful (commonness is not
+  /// [CommonnessBin.rare]). Used by the Chatty engine to optionally
   /// append a "...not usually here this time of year" tail for migrant
   /// birds caught outside their normal window.
   final bool isOutOfSeason;
