@@ -34,6 +34,7 @@ import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../audio/ring_buffer.dart';
+import '../ebird/ebird_life_list.dart';
 import '../explore/explore_providers.dart';
 import '../explore/explore_screen.dart';
 import '../explore/widgets/species_info_overlay.dart';
@@ -412,6 +413,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       // template through.
       rareBody: l10n.surveyAlertBodyRare('{pct}'),
       watchlistBody: l10n.surveyAlertBodyWatchlist,
+      liferBody: l10n.surveyAlertBodyLifer,
       summaryTitle: l10n.surveyAlertSummaryTitle(0).replaceAll('0', '{count}'),
       summaryBody: l10n
           .surveyAlertSummaryBody(0, '{names}')
@@ -433,6 +435,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       }
     }
 
+    Set<String>? lifeList;
+    if (mode == AlertMode.lifer) {
+      lifeList = ref.read(ebirdLifeListProvider).all;
+    }
+
     final coord = SurveyAlertCoordinator(
       mode: mode,
       notifier: notifier,
@@ -440,6 +447,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       globalHistory: history,
       geoScores: geoScores,
       watchlist: watchlist,
+      lifeList: lifeList,
       minConfidence: ref.read(surveyAlertMinConfidenceProvider),
       rareThreshold: ref.read(surveyAlertRareThresholdProvider),
       startupGraceSeconds: ref.read(surveyAlertStartupGraceSecondsProvider),

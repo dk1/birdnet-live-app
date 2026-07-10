@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a "Save sessions automatically" setting for Live and Point Count. When turned off, a finished session opens in review as unsaved and is only kept in the library if you tap Save; leaving without saving discards it.
 - Bundled offline Wikipedia species snippets for Dutch, Polish, and Russian.
+- Added eBird Life List import: flag species you hear that aren't on your imported eBird life list yet with a star badge on Live detections and in Session Review, plus a new Survey "Lifer" alert mode.
 
 ### Changed
 
