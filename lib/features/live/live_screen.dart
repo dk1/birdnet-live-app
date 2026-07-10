@@ -19,6 +19,7 @@ import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
+import '../inference/advanced_pooling_params.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
@@ -269,6 +270,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         poolingWindows: poolingWindows,
         poolingMode: ref.read(scorePoolingProvider),
         poolingMaxAgeSeconds: poolingMaxAgeSeconds,
+        advancedPooling: ref.read(advancedPoolingParamsProvider),
         sensitivity: sensitivity,
         gainLinear: ref.read(audioGainProvider),
         highPassHz: ref.read(highPassFilterProvider).toDouble(),
@@ -530,6 +532,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     });
     ref.listen<String>(scorePoolingProvider, (_, next) {
       ref.read(liveControllerProvider).setPoolingMode(next);
+    });
+    ref.listen<AdvancedPoolingParams>(advancedPoolingParamsProvider, (_, next) {
+      ref.read(liveControllerProvider).setAdvancedPoolingParams(next);
     });
     ref.listen<double>(sensitivityProvider, (_, next) {
       ref.read(liveControllerProvider).setSensitivity(next);

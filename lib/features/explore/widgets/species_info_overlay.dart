@@ -21,11 +21,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/score_colors.dart';
 import '../../../shared/models/taxonomy_species.dart';
 import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/services/link_launcher.dart';
 import '../../../shared/utils/app_icons.dart';
 import '../explore_providers.dart';
+import '../explore_tier.dart';
 import '../../inference/geo_model.dart';
 import '../../history/global_species_history.dart';
 import '../../live/live_providers.dart';
@@ -513,8 +515,17 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
 
         final currentWeekIndex = GeoModel.dateTimeToWeek(DateTime.now()) - 1;
         final currentScore = probs[currentWeekIndex];
-        final category = _localizedProbabilityCategory(l10n, currentScore);
-        final categoryColor = probabilityCategoryColor(context, currentScore);
+        // Use the distribution-adaptive tier from the explore list so the
+        // overlay label and color match the compact card chip.
+        final tier = match.isNotEmpty ? match.first.tier : null;
+        final category =
+            tier != null
+                ? exploreTierLabel(l10n, tier)
+                : _localizedProbabilityCategory(l10n, currentScore);
+        final categoryColor =
+            tier != null
+                ? exploreTierColor(ScoreColors.of(context), tier)
+                : probabilityCategoryColor(context, currentScore);
 
         // Normalize to 100 (= the #1 species peak from the provider).
         const maxProb = 100.0;

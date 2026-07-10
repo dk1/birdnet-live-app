@@ -42,6 +42,7 @@ import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
+import '../inference/advanced_pooling_params.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
@@ -215,6 +216,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       poolingWindows: ref.read(scorePoolingWindowsProvider),
       poolingMode: ref.read(scorePoolingProvider),
       poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
+      advancedPooling: ref.read(advancedPoolingParamsProvider),
       sensitivity: sensitivity,
       targetDurationSeconds: widget.durationMinutes * 60,
       latitude: startLat,
@@ -450,6 +452,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     });
     ref.listen<String>(scorePoolingProvider, (_, next) {
       ref.read(liveControllerProvider).setPoolingMode(next);
+    });
+    ref.listen<AdvancedPoolingParams>(advancedPoolingParamsProvider, (_, next) {
+      ref.read(liveControllerProvider).setAdvancedPoolingParams(next);
     });
     ref.listen<double>(sensitivityProvider, (_, next) {
       ref.read(liveControllerProvider).setSensitivity(next);

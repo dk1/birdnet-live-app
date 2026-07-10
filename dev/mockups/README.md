@@ -92,6 +92,12 @@ Render clean standalone device screenshots with transparent backgrounds:
 node render-mockups.js --device-screenshots
 ```
 
+Render Google Play feature graphics for every locale:
+
+```powershell
+node render-mockups.js --feature-graphic --all-languages
+```
+
 If Chrome or Edge is not found automatically, pass the browser path:
 
 ```powershell
@@ -109,6 +115,7 @@ output/<language>/<language>-03-review.png
 output/<language>/<language>-04-explore.png
 output/<language>/<language>-05-species.png
 output/<language>/<language>-06-files.png
+output/<language>/<language>-feature-graphic.png
 ```
 
 Clean device screenshots are written to:
@@ -122,4 +129,4 @@ output/screenshots/05-species.png
 output/screenshots/06-files.png
 ```
 
-Current store mockup canvas size is `1290 x 2796 px`; clean device screenshots are `1592 x 3546 px`. Both are configured in `mockups.config.js`.
+Current store mockup canvas size is `1290 x 2796 px`; clean device screenshots are `1592 x 3546 px`; Google Play feature graphics are `1024 x 500 px`. All are configured in `mockups.config.js`.

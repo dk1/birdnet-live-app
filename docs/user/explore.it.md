@@ -27,9 +27,31 @@ Ogni scheda di specie può includere:
 - immagine della specie inclusa nell'app
 - nome comune
 - nome scientifico facoltativo
-- badge del punteggio del geo-modello
+- chip del livello di abbondanza
 
 Tocca una scheda per aprire il pannello dei dettagli della specie.
+
+### Livelli di abbondanza
+
+Invece di una percentuale grezza, ogni scheda mostra un **livello di abbondanza** per il luogo e la stagione attuali. Il chip del livello combina due indizi:
+
+- un **cerchio** che si riempie da ⅙ a pieno man mano che la specie diventa più probabile
+- la **prima lettera** del nome del livello (il nome completo viene letto dagli screen reader e mostrato nei dettagli della specie)
+
+Il colore del chip segue la scala di punteggio condivisa dell'app, passando dal rosso (meno probabile) al verde (più probabile) man mano che il livello sale.
+
+Ci sono sei livelli, dal più al meno probabile:
+
+| Livello | Significato |
+| --- | --- |
+| **Abbondante** | Tra le previsioni più forti qui |
+| **Comune** | Molto probabile |
+| **Frequente** | Probabile |
+| **Insolita** | Possibile |
+| **Scarsa** | Improbabile |
+| **Rara** | Tra le previsioni più deboli qui |
+
+I livelli sono **relativi alla posizione attuale**. Si adattano a quanto fortemente il geo-modello prevede le specie in quest'area, quindi i limiti si spostano con la distribuzione locale dei punteggi: in un luogo con molte previsioni sicure una specie ha bisogno di un punteggio molto alto per essere *Abbondante*, mentre in un'area con previsioni più deboli lo stesso livello si raggiunge con un punteggio inferiore. Lo stesso punteggio può quindi ricadere in livelli diversi in luoghi diversi, mantenendo la classifica significativa ovunque.
 
 ## Pannello dei dettagli della specie
 

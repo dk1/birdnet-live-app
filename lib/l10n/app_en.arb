@@ -389,11 +389,19 @@
   "@aboutGeoModelName": {
     "description": "Geo-model name shown in about screen"
   },
+  "aboutTaxonomy": "Taxonomy",
+  "@aboutTaxonomy": {
+    "description": "Taxonomy section title in about screen"
+  },
+  "aboutTaxonomyName": "BirdNET+ Taxonomy v0.2-jun2026",
+  "@aboutTaxonomyName": {
+    "description": "Taxonomy version name shown in about screen"
+  },
   "aboutCredits": "Developed by",
   "@aboutCredits": {
     "description": "Section title for the team that built BirdNET"
   },
-  "aboutCreditsDescription": "BirdNET is developed by the Cornell K. Lisa Yang Center for Conservation Bioacoustics and Chemnitz University of Technology.",
+  "aboutCreditsDescription": "BirdNET Live is developed by the Cornell K. Lisa Yang Center for Conservation Bioacoustics and Chemnitz University of Technology in partnership with the Museum für Naturkunde Berlin.",
   "@aboutCreditsDescription": {
     "description": "Credits description"
   },
@@ -2557,6 +2565,10 @@
   "@surveyPickOnMap": {
     "description": "Button to pick location on map"
   },
+  "settingsPickOnMap": "Pick on map",
+  "@settingsPickOnMap": {
+    "description": "Button to pick the manual location on a map in settings"
+  },
   "surveyLocationSkipNote": "No GPS track will be recorded.",
   "@surveyLocationSkipNote": {
     "description": "Note when skipping location"
@@ -4276,6 +4288,23 @@
   "@speciesExpectedFrequencySubtitle": {
     "description": "Subtitle explaining the weekly geo-model probability chart"
   },
+  "exploreAbundanceLegend": "Abundance ({count} species total)",
+  "@exploreAbundanceLegend": {
+    "description": "Short label preceding the abundance tier chips in the Explore location header",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exploreAbundanceFilter": "Abundance",
+  "@exploreAbundanceFilter": {
+    "description": "Filter section label for Explore abundance tiers"
+  },
+  "exploreScrollToTop": "Scroll to top",
+  "@exploreScrollToTop": {
+    "description": "Tooltip for the Explore floating button that scrolls the species list back to the top"
+  },
   "speciesFrequencyAbundant": "Abundant",
   "@speciesFrequencyAbundant": {
     "description": "Highest frequency category label for geo-model probability"
@@ -4284,9 +4313,17 @@
   "@speciesFrequencyCommon": {
     "description": "High frequency category label for geo-model probability"
   },
+  "speciesFrequencyFrequent": "Frequent",
+  "@speciesFrequencyFrequent": {
+    "description": "Fairly-common frequency category label for geo-model probability"
+  },
   "speciesFrequencyUncommon": "Uncommon",
   "@speciesFrequencyUncommon": {
     "description": "Medium frequency category label for geo-model probability"
+  },
+  "speciesFrequencyScarce": "Scarce",
+  "@speciesFrequencyScarce": {
+    "description": "Low frequency category label for geo-model probability, below Uncommon"
   },
   "speciesFrequencyOccasional": "Occasional",
   "@speciesFrequencyOccasional": {
@@ -4336,9 +4373,9 @@
       }
     }
   },
-  "liveStatusSpecies": "{count} spp",
+  "liveStatusSpecies": "{count, plural, =1{1 sp} other{{count} spp}}",
   "@liveStatusSpecies": {
-    "description": "Compact status token under the spectrogram: cumulative unique species count. 'spp' is the abbreviation for species (plural); translate to the locale's short form for species.",
+    "description": "Compact status token under the spectrogram: cumulative unique species count. 'sp' / 'spp' are the singular/plural abbreviations for species; translate to the locale's short form and use its plural rules.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -4476,6 +4513,10 @@
   "exploreHelpCards": "Each species card shows the current geo-model ranking for that species. Tap a card to open images, description text, external links, and the seasonal chart.",
   "@exploreHelpCards": {
     "description": "Explains species cards on the Explore help overlay"
+  },
+  "exploreHelpTiers": "Each card shows an abundance tier for the current place and season. The circle fills up and its color shifts along the score scale from red to green as a species becomes more likely. Tiers are relative to this location: they adapt to how strongly the model predicts species here, so the same score can land in different tiers in different areas.",
+  "@exploreHelpTiers": {
+    "description": "Explains the abundance tier chips (colors, tiers, pie fill) on the Explore help overlay"
   },
   "surveyLiveHelpTopBar": "The top row combines stop, elapsed timer, help, and settings. Stop ends the survey and saves the session; settings opens the Survey settings subset.",
   "@surveyLiveHelpTopBar": {

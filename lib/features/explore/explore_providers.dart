@@ -41,6 +41,7 @@ import '../../shared/services/species_description_service.dart';
 import '../../shared/services/taxonomy_service.dart';
 import '../../core/services/location_service.dart';
 import '../inference/geo_model.dart';
+import 'explore_tier.dart';
 
 // ---------------------------------------------------------------------------
 // Audio labels intersection set
@@ -203,13 +204,26 @@ class ExploreSpecies {
     required this.scientificName,
     required this.commonName,
     required this.geoScore,
+    required this.rawGeoScore,
+    required this.tier,
     this.taxonomy,
     this.weeklyScores,
   });
 
   final String scientificName;
   final String commonName;
+
+  /// Current-week score normalized so the top species in the list is 100.
+  /// Kept for the mini bar chart and legacy displays.
   final double geoScore;
+
+  /// Raw current-week geo-model probability (0-1) before list normalization.
+  /// Feeds the distribution-adaptive [tier].
+  final double rawGeoScore;
+
+  /// Distribution-adaptive abundance tier for this species within the list.
+  final ExploreTier tier;
+
   final TaxonomySpecies? taxonomy;
 
   /// 48-week probability curve (index 0 = week 1, etc.). Null until loaded.
@@ -269,6 +283,8 @@ final exploreSpeciesProvider = FutureProvider<List<ExploreSpecies>>((
         scientificName: sciName,
         commonName: commonName,
         geoScore: currentScore,
+        rawGeoScore: currentScore,
+        tier: ExploreTier.rare,
         taxonomy: taxonomy,
         weeklyScores: weeklyScores,
       ),
@@ -278,22 +294,31 @@ final exploreSpeciesProvider = FutureProvider<List<ExploreSpecies>>((
   // Sort by current-week probability (descending).
   results.sort((a, b) => b.geoScore.compareTo(a.geoScore));
 
-  // Normalize scores against the top species (max score = 100.0).
-  if (results.isNotEmpty) {
-    final maxScore = results.first.geoScore;
-    if (maxScore > 0) {
-      for (var i = 0; i < results.length; i++) {
-        final r = results[i];
-        results[i] = ExploreSpecies(
-          scientificName: r.scientificName,
-          commonName: r.commonName,
-          geoScore: (r.geoScore / maxScore) * 100.0,
-          taxonomy: r.taxonomy,
-          weeklyScores:
-              r.weeklyScores?.map((s) => (s / maxScore) * 100.0).toList(),
-        );
-      }
-    }
+  // Distribution-adaptive abundance tiers, calibrated from the raw scores of
+  // this location/week so the tier boundaries reflect how many species are
+  // high-scoring here (see [ExploreTierScale]).
+  final tierScale = ExploreTierScale.fromScores(
+    results.map((r) => r.rawGeoScore),
+  );
+
+  // Normalize scores against the top species (max score = 100.0) for the mini
+  // bar chart, while preserving the raw score and assigning the adaptive tier.
+  final maxScore = results.isNotEmpty ? results.first.geoScore : 0.0;
+  for (var i = 0; i < results.length; i++) {
+    final r = results[i];
+    final normalize = maxScore > 0;
+    results[i] = ExploreSpecies(
+      scientificName: r.scientificName,
+      commonName: r.commonName,
+      geoScore: normalize ? (r.geoScore / maxScore) * 100.0 : r.geoScore,
+      rawGeoScore: r.rawGeoScore,
+      tier: tierScale.tierFor(r.rawGeoScore),
+      taxonomy: r.taxonomy,
+      weeklyScores:
+          normalize
+              ? r.weeklyScores?.map((s) => (s / maxScore) * 100.0).toList()
+              : r.weeklyScores,
+    );
   }
 
   return results;

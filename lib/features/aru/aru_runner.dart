@@ -26,6 +26,7 @@ import '../../l10n/app_localizations.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../explore/explore_providers.dart';
+import '../inference/advanced_pooling_params.dart';
 import '../live/live_controller.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
@@ -306,6 +307,15 @@ class AruRunner {
         poolingWindows: session.settings.poolingWindows,
         poolingMode: session.settings.poolingMode ?? 'adaptive_lme_peak',
         poolingMaxAgeSeconds: session.settings.poolingMaxAgeSeconds,
+        advancedPooling: AdvancedPoolingParams(
+          alpha: session.settings.poolingAlpha,
+          minSupportWindows: session.settings.poolingMinSupportWindows,
+          supportThresholdFraction:
+              session.settings.poolingSupportThresholdFraction,
+          supportThresholdFloor: session.settings.poolingSupportThresholdFloor,
+          veryHighImmediateThreshold:
+              session.settings.poolingVeryHighImmediateThreshold,
+        ),
         sensitivity: session.settings.sensitivity ?? 1.0,
         gainLinear: session.settings.gainLinear,
         highPassHz: session.settings.highPassHz,

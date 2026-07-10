@@ -24,6 +24,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
+import 'advanced_pooling_params.dart';
 import 'inference_service.dart';
 import 'model_config.dart';
 import 'models/detection.dart';
@@ -156,5 +157,12 @@ class InferenceIsolate {
   /// Safe to call before [start] — silently dropped if not ready.
   void setPoolingMode(String? mode) {
     _service?.setPoolingMode(mode);
+  }
+
+  /// Apply the advanced temporal-pooling overrides (LME alpha + support gate).
+  /// Pass [AdvancedPoolingParams.none] to revert every knob to the model-config
+  /// default. Safe to call before [start] — silently dropped if not ready.
+  void applyAdvancedPoolingParams(AdvancedPoolingParams params) {
+    _service?.applyAdvancedPoolingParams(params);
   }
 }
