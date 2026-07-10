@@ -114,6 +114,13 @@ class SurveyAlertCoordinator {
   final DateTime Function() _clock;
   final Set<String> _sessionSpeciesSeen = <String>{};
 
+  /// Local-only, throwaway: lets [AlertMode.lifer] re-fire for a species
+  /// already alerted this session, once [_liferReAlertCooldown] has passed
+  /// since its last alert — unlike every other mode, which alerts a given
+  /// species at most once per survey. Not part of the upstream eBird PR.
+  final Map<String, DateTime> _lastLiferAlertAt = <String, DateTime>{};
+  static const Duration _liferReAlertCooldown = Duration(minutes: 10);
+
   /// Whether a future user-visible alert is even theoretically possible.
   bool get isActive => mode != AlertMode.off && _tickTimer != null;
 
@@ -123,7 +130,10 @@ class SurveyAlertCoordinator {
   void onDetection(DetectionRecord record) {
     if (mode == AlertMode.off) return;
     final name = record.scientificName;
-    final firstInSession = _sessionSpeciesSeen.add(name);
+    final firstInSession =
+        mode == AlertMode.lifer
+            ? _liferEligibleToFire(name)
+            : _sessionSpeciesSeen.add(name);
     final candidate = _engine.evaluate(record, firstInSession: firstInSession);
     if (candidate == null) return;
 
@@ -162,6 +172,18 @@ class SurveyAlertCoordinator {
   }
 
   // ── Internals ───────────────────────────────────────────────────────────
+
+  /// Local-only, throwaway: true the first time [name] is heard, or again
+  /// once [_liferReAlertCooldown] has elapsed since its last alert.
+  bool _liferEligibleToFire(String name) {
+    final now = _clock();
+    final lastAlert = _lastLiferAlertAt[name];
+    if (lastAlert != null && now.difference(lastAlert) < _liferReAlertCooldown) {
+      return false;
+    }
+    _lastLiferAlertAt[name] = now;
+    return true;
+  }
 
   void _tick() {
     final summary = _throttler.tick();
