@@ -19,6 +19,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../../shared/services/ntfy_service.dart';
 import '../history/global_species_history.dart';
 import '../live/live_session.dart' show DetectionRecord;
 import 'alert_throttler.dart';
@@ -39,6 +40,7 @@ class SurveyAlertCoordinator {
     required this.geoScores,
     required this.watchlist,
     this.lifeList,
+    this.ntfyTopic,
     this.minConfidence = 0.5,
     this.rareThreshold = 0.05,
     this.startupGraceSeconds = 60,
@@ -86,6 +88,11 @@ class SurveyAlertCoordinator {
   /// Scientific names on the user's imported eBird life list, used by
   /// [AlertMode.lifer].
   final Set<String>? lifeList;
+
+  /// ntfy.sh topic to push lifer alerts to, in addition to the local
+  /// notification (local-only, throwaway — not part of the upstream eBird
+  /// PR). Null or empty disables the push.
+  final String? ntfyTopic;
 
   final double minConfidence;
   final double rareThreshold;
@@ -170,6 +177,7 @@ class SurveyAlertCoordinator {
     } catch (e) {
       debugPrint('[SurveyAlertCoordinator] notifyOne failed: $e');
     }
+    _pushLiferIfNeeded(localized);
     if (inAppToast) {
       onDelivered?.call(localized, null);
     }
@@ -187,6 +195,9 @@ class SurveyAlertCoordinator {
     } catch (e) {
       debugPrint('[SurveyAlertCoordinator] notifySummary failed: $e');
     }
+    for (final alert in localized.alerts) {
+      _pushLiferIfNeeded(alert);
+    }
     if (inAppToast) {
       onDelivered?.call(null, localized);
     }
@@ -197,5 +208,21 @@ class SurveyAlertCoordinator {
     final name = nameLocalizer!(a.scientificName, a.commonName);
     if (name == a.commonName) return a;
     return a.copyWith(commonName: name);
+  }
+
+  /// Fires an ntfy.sh push for lifer alerts, in addition to the local
+  /// notification (local-only, throwaway — not part of the upstream eBird
+  /// PR).
+  void _pushLiferIfNeeded(AlertCandidate alert) {
+    if (alert.reason != AlertReason.lifer) return;
+    final topic = ntfyTopic;
+    if (topic == null || topic.trim().isEmpty) return;
+    unawaited(
+      NtfyService.send(
+        topic: topic,
+        title: 'New Lifer',
+        message: '${alert.commonName} detected',
+      ),
+    );
   }
 }

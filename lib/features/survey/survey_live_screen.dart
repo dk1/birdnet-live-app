@@ -437,8 +437,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     }
 
     Set<String>? lifeList;
+    String? ntfyTopic;
     if (mode == AlertMode.lifer) {
       lifeList = ref.read(ebirdLifeListProvider).all;
+      ntfyTopic = ref.read(ntfyTopicProvider);
     }
 
     final coord = SurveyAlertCoordinator(
@@ -449,6 +451,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       geoScores: geoScores,
       watchlist: watchlist,
       lifeList: lifeList,
+      ntfyTopic: ntfyTopic,
       minConfidence: ref.read(surveyAlertMinConfidenceProvider),
       rareThreshold: ref.read(surveyAlertRareThresholdProvider),
       startupGraceSeconds: ref.read(surveyAlertStartupGraceSecondsProvider),

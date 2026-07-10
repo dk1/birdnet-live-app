@@ -288,6 +288,10 @@ abstract final class PrefKeys {
   /// so they know how stale their imported list is.
   static const String ebirdLifeListImportedAt = 'ebird_life_list_imported_at';
 
+  /// ntfy.sh topic to push lifer alerts to (local-only, throwaway — not
+  /// part of the upstream eBird PR).
+  static const String ntfyTopic = 'ntfy_topic';
+
   /// Persisted view mode for the Session Library screen
   /// (one of `_ViewMode.name`: detailed, compact, bySpecies).
   static const String sessionLibraryViewMode = 'session_library_view_mode';

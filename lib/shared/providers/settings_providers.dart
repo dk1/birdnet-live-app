@@ -864,6 +864,14 @@ final surveyAlertWatchlistNameProvider =
       );
     });
 
+/// ntfy.sh topic to push lifer alerts to (local-only, throwaway — not part
+/// of the upstream eBird PR). Empty disables the push.
+final ntfyTopicProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return StringSettingNotifier(prefs, PrefKeys.ntfyTopic, '');
+    });
+
 /// Whether alert notifications play a sound.
 final surveyAlertSoundProvider =
     StateNotifierProvider<BoolSettingNotifier, bool>((ref) {

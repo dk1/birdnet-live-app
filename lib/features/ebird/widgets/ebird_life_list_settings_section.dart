@@ -15,6 +15,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/services/link_launcher.dart';
 import '../../../shared/utils/app_icons.dart';
 import '../ebird_life_list.dart';
@@ -34,6 +35,19 @@ class _EbirdLifeListSettingsSectionState
     extends ConsumerState<EbirdLifeListSettingsSection> {
   bool _busy = false;
   String? _error;
+  late final TextEditingController _ntfyController;
+
+  @override
+  void initState() {
+    super.initState();
+    _ntfyController = TextEditingController(text: ref.read(ntfyTopicProvider));
+  }
+
+  @override
+  void dispose() {
+    _ntfyController.dispose();
+    super.dispose();
+  }
 
   Future<void> _importCsv() async {
     final l10n = AppLocalizations.of(context)!;
@@ -156,6 +170,33 @@ class _EbirdLifeListSettingsSectionState
               ),
             ),
           ],
+          // Local-only, throwaway: not part of the upstream eBird PR.
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 8),
+          Text(
+            'ntfy.sh topic (local test build only)',
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Pushes Survey lifer alerts to this ntfy.sh topic in addition to '
+            'the local notification. Leave blank to disable.',
+            style: theme.textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _ntfyController,
+            decoration: const InputDecoration(
+              labelText: 'Topic',
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            onChanged: (v) => ref.read(ntfyTopicProvider.notifier).set(v),
+          ),
         ],
       ),
     );
