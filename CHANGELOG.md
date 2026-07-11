@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.18.9] - 2026-07-11
+
+### Added
+
+- Settings → Microphone is now **Audio source**, and on Android adds a **Processing** control offering **Unprocessed** or **Voice recognition** alongside the phone default. Phones apply speech-tuned noise reduction and automatic gain to microphone audio by default, which smears bird song; both new options turn that processing off. Unprocessed is the ideal, but is only honoured by phones whose manufacturer declares support — Voice recognition works on virtually every device, so try that if Unprocessed makes no audible difference. Expect unprocessed audio to sound quieter, since the automatic gain is gone; raise Gain to compensate.
+- Microphone and processing are independent, so you can record from a USB or wireless mic *and* ask for unprocessed audio. The microphone list now also includes each built-in mic the phone exposes separately (e.g. bottom and back).
+- The audio source picker now also appears on the Point Count setup screen, alongside the existing Survey and ARU ones.
+
+### Changed
+
+- Changing the audio source now takes effect immediately, including mid-recording — the app swaps the microphone under the running session instead of waiting for the next one to start.
+- German UI text now consistently uses the formal *Sie*; a few strings had slipped into the informal *du*.
+
 ## [0.18.8] - 2026-07-10
 
 ### Added

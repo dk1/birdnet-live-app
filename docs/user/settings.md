@@ -80,9 +80,25 @@ Linear amplifier applied to incoming audio before it reaches the spectrogram and
 
 Cuts low-frequency content before inference using a 24 dB/octave Butterworth filter — the slider value is the −3 dB cutoff. **0 Hz disables it.** A 100–200 Hz cutoff strips wind, traffic rumble, and handling noise without touching most species; pushing toward 500–1000 Hz starts removing low whoots, owls, grouse, and bittern booms, so only go that high if you are deliberately ignoring those species in exchange for a much cleaner spectrogram in a noisy urban environment. The cutoff you pick should be visible as a sharp horizontal line on the live spectrogram.
 
-### Microphone
+### Audio source
 
-Lets you choose a specific input device or keep the **System default**. Your selection is remembered across app launches, so if you regularly use a USB or Bluetooth mic in the field you only need to pick it once. The same picker appears on the Survey setup screen.
+One sheet with two independent controls: **Microphone** — which input to record from — and **Processing** — how much the phone is allowed to alter the signal on the way in. They combine freely, so a USB microphone recorded *unprocessed* is a perfectly valid setup. Your selection is remembered across app launches, and the same picker appears on the Survey, Point Count, and ARU setup screens. Changes take effect immediately — even mid-recording, the app swaps the microphone under the running session rather than waiting for the next one.
+
+**Microphone** lists every input the phone exposes, by name: USB, wired and Bluetooth mics, and on many phones the individual built-in mics too (e.g. *bottom* and *back*). Wireless mic kits like the Rode Wireless GO or DJI Mic connect through a USB-C receiver, so they show up here as ordinary USB audio devices at full quality.
+
+**Processing** is the part that matters most, and it is **Android only**. Phones apply a speech-tuned DSP to microphone audio by default — noise reduction, spectral shaping and automatic gain — because the mic is overwhelmingly used for phone calls. That processing treats bird song as noise to be suppressed, and no ordinary setting turns it off. The only way around it is to ask Android for a different *audio source*:
+
+| Option | What it does |
+|---|---|
+| **Phone default** | Whatever your phone does normally, voice processing included. The original behaviour, and still the default so nothing changes under existing users. |
+| **Unprocessed** | The raw microphone signal — no noise reduction, no automatic gain. Usually the best choice for birds. |
+| **Voice recognition** | Also turns off noise reduction and automatic gain, and works on nearly every phone. |
+
+**Try them and compare.** Which one wins genuinely depends on the handset. *Unprocessed* is the ideal, but Android only honours it on phones whose manufacturer declares support — on the rest it silently falls back and sounds identical to *System default*. That is what *Voice recognition* is for: Android's compatibility rules **require** automatic gain and noise suppression to be off for it, so it reliably delivers unprocessed audio even on phones that ignore *Unprocessed*. If switching to *Unprocessed* changes nothing, switch to *Voice recognition*.
+
+Expect the unprocessed options to sound **quieter** — that is the automatic gain being gone, not a fault. Raise **Gain** to compensate if the level meter looks low.
+
+**On iOS** the Processing control is hidden and the sheet is simply a microphone list. iOS already hands the app essentially unprocessed audio, so there is nothing equivalent to choose.
 
 ## Inference
 

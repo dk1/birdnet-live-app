@@ -64,9 +64,25 @@ Amplificador lineal aplicado al audio entrante antes de que llegue al espectrogr
 
 Elimina el contenido de baja frecuencia antes de la inferencia mediante un filtro Butterworth de 24 dB/octava: el valor del control deslizante es el corte de −3 dB. **0 Hz lo desactiva.** Un corte de 100–200 Hz elimina viento, ruido sordo del tráfico y ruido de manipulación sin afectar a la mayoría de las especies; acercarse a 500–1000 Hz empieza a eliminar reclamos graves, búhos, urogallos y los bramidos del avetoro, así que sube tanto solo si ignoras deliberadamente esas especies a cambio de un espectrograma mucho más limpio en un entorno urbano ruidoso. El corte que elijas debería verse como una línea horizontal nítida en el espectrograma en vivo.
 
-### Micrófono
+### Fuente de audio
 
-Te permite elegir un dispositivo de entrada concreto o mantener el **Predeterminado del sistema**. Tu selección se recuerda entre inicios de la app, así que si usas con frecuencia un micrófono USB o Bluetooth en el campo solo tienes que elegirlo una vez. El mismo selector aparece en la pantalla de configuración del Survey.
+Una sola hoja con dos controles independientes: **Micrófono** —qué entrada graba— y **Procesamiento** —cuánto puede alterar el móvil la señal de entrada—. Se combinan libremente, así que grabar con un micrófono USB *sin procesar* es una configuración perfectamente válida. Tu selección se recuerda entre inicios de la app, y el mismo selector aparece en las pantallas de configuración de Survey, Point Count y ARU. Los cambios surten efecto de inmediato: incluso a mitad de una grabación, la app sustituye el micrófono en la sesión en curso en vez de esperar a la siguiente.
+
+**Micrófono** lista por su nombre todas las entradas que expone el móvil: micrófonos USB, con cable y Bluetooth, y en muchos móviles también los micrófonos integrados por separado (por ejemplo *inferior* y *trasero*). Los kits de micrófono inalámbrico como el Rode Wireless GO o el DJI Mic se conectan por un receptor USB-C, así que aquí aparecen como dispositivos de audio USB normales, con toda su calidad.
+
+**Procesamiento** es la parte que más importa, y solo existe **en Android**. Los móviles aplican por defecto al audio del micrófono un procesado pensado para la voz —reducción de ruido, modelado espectral y ganancia automática— porque el micrófono se usa sobre todo para llamadas. Ese procesado trata el canto de las aves como ruido que hay que suprimir, y ningún ajuste normal lo desactiva. La única salida es pedirle a Android una *fuente de audio* distinta:
+
+| Opción | Qué hace |
+|---|---|
+| **Predet. del móvil** | Lo que hace tu móvil habitualmente, procesamiento de voz incluido. El comportamiento original y todavía la opción por defecto, para que nada cambie a los usuarios existentes. |
+| **Sin procesar** | La señal en bruto del micrófono: sin reducción de ruido ni ganancia automática. Suele ser la mejor opción para las aves. |
+| **Reconocimiento de voz** | También desactiva la reducción de ruido y la ganancia automática, y funciona en casi cualquier móvil. |
+
+**Pruébalas y compara.** Cuál gana depende realmente del modelo. *Sin procesar* es lo ideal, pero Android solo la respeta en móviles cuyo fabricante declara compatibilidad; en el resto recurre en silencio a una alternativa y suena igual que *Predeterminado del sistema*. Para eso está *Reconocimiento de voz*: las reglas de compatibilidad de Android **exigen** que la ganancia automática y la supresión de ruido estén desactivadas para esta fuente, así que entrega audio sin procesar incluso en móviles que ignoran *Sin procesar*. Si cambiar a *Sin procesar* no cambia nada, cambia a *Reconocimiento de voz*.
+
+Espera que las opciones sin procesar suenen **más flojas**: es la ausencia de ganancia automática, no un fallo. Sube la **Ganancia** para compensar si el medidor de nivel se ve bajo.
+
+**En iOS** el control de Procesamiento se oculta y la hoja es simplemente una lista de micrófonos. iOS ya entrega a la app audio prácticamente sin procesar, así que no hay nada equivalente que elegir.
 
 ## Inferencia
 

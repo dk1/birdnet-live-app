@@ -52,9 +52,25 @@ Regola il guadagno in ingresso mostrato nell'app. Utilizzatelo solo quando è ne
 
 Riduce il rimbombo a bassa frequenza prima dell'inferenza.
 
-### Microfono
+### Sorgente audio
 
-Consente di scegliere un dispositivo di input specifico o di mantenere l'**impostazione predefinita del sistema**.
+Un unico pannello con due controlli indipendenti: **Microfono** — quale ingresso registra — ed **Elaborazione** — quanto il telefono può alterare il segnale in entrata. Si combinano liberamente: registrare da un microfono USB in modalità *non elaborata* è una configurazione del tutto valida. La selezione viene ricordata tra un avvio e l'altro e lo stesso selettore compare nelle schermate di configurazione di Survey, Point Count e ARU. Le modifiche hanno effetto immediato: anche a registrazione in corso l'app sostituisce il microfono nella sessione attiva, invece di aspettare quella successiva.
+
+**Microfono** elenca per nome ogni ingresso che il telefono espone: microfoni USB, cablati e Bluetooth e, su molti telefoni, anche i singoli microfoni integrati (ad esempio *inferiore* e *posteriore*). I kit microfonici wireless come Rode Wireless GO o DJI Mic passano da un ricevitore USB-C, quindi compaiono qui come normali dispositivi audio USB, a piena qualità.
+
+**Elaborazione** è la parte che conta di più ed esiste **solo su Android**. I telefoni applicano di default all'audio del microfono un DSP tarato sulla voce — riduzione del rumore, sagomatura spettrale e guadagno automatico — perché il microfono serve soprattutto per le chiamate. Questa elaborazione tratta il canto degli uccelli come rumore da sopprimere e nessuna impostazione normale la disattiva. L'unica via d'uscita è chiedere ad Android una *sorgente audio* diversa:
+
+| Opzione | Cosa fa |
+|---|---|
+| **Predef. del telefono** | Quello che il telefono fa normalmente, elaborazione vocale compresa. Il comportamento originale e tuttora il predefinito, così nulla cambia per chi già usa l'app. |
+| **Non elaborata** | Il segnale grezzo del microfono: niente riduzione del rumore né guadagno automatico. Di solito la scelta migliore per gli uccelli. |
+| **Riconoscimento vocale** | Disattiva anch'essa riduzione del rumore e guadagno automatico, e funziona su quasi tutti i telefoni. |
+
+**Provale e confronta.** Quale vinca dipende davvero dal dispositivo. *Non elaborata* è l'ideale, ma Android la rispetta solo sui telefoni il cui produttore ne dichiara il supporto; sugli altri ripiega in silenzio e suona come *Predefinito di sistema*. È a questo che serve *Riconoscimento vocale*: le regole di compatibilità di Android **impongono** che guadagno automatico e soppressione del rumore siano disattivati per questa sorgente, quindi fornisce audio non elaborato anche sui telefoni che ignorano *Non elaborata*. Se passare a *Non elaborata* non cambia nulla, passa a *Riconoscimento vocale*.
+
+Aspettati che le opzioni non elaborate suonino **più basse**: è il guadagno automatico che non c'è più, non un difetto. Alza il **Guadagno** per compensare se l'indicatore di livello sembra basso.
+
+**Su iOS** il controllo Elaborazione è nascosto e il pannello si riduce a un elenco di microfoni. iOS consegna già all'app audio praticamente non elaborato, quindi non c'è nulla di equivalente da scegliere.
 
 ## Inferenza
 

@@ -64,9 +64,25 @@ Linearer Verstärker, der auf das eingehende Audio angewendet wird, bevor es das
 
 Schneidet niederfrequente Anteile vor der Inferenz mit einem Butterworth-Filter mit 24 dB/Oktave ab – der Schiebereglerwert ist die −3-dB-Grenzfrequenz. **0 Hz deaktiviert ihn.** Eine Grenzfrequenz von 100–200 Hz entfernt Wind, Verkehrsrauschen und Handhabungsgeräusche, ohne die meisten Arten zu berühren; bei 500–1000 Hz beginnen tiefe Rufe, Eulen, Raufußhühner und das Dröhnen der Rohrdommel verloren zu gehen. Gehen Sie also nur so hoch, wenn Sie diese Arten bewusst zugunsten eines deutlich saubereren Spektrogramms in einer lauten städtischen Umgebung ausblenden. Die gewählte Grenzfrequenz sollte als scharfe waagerechte Linie im Live-Spektrogramm sichtbar sein.
 
-### Mikrofon
+### Audioquelle
 
-Hier können Sie ein bestimmtes Eingabegerät auswählen oder den **Systemstandard** beibehalten. Ihre Auswahl bleibt über App-Starts hinweg erhalten, sodass Sie ein USB- oder Bluetooth-Mikrofon, das Sie regelmäßig im Feld verwenden, nur einmal auswählen müssen. Dasselbe Auswahlfeld erscheint auch im Einrichtungsbildschirm des Surveys.
+Ein Auswahlfeld mit zwei unabhängigen Steuerungen: **Mikrofon** – welcher Eingang aufnimmt – und **Verarbeitung** – wie stark das Handy das Signal beim Aufnehmen verändern darf. Beide lassen sich frei kombinieren, ein USB-Mikrofon *unbearbeitet* aufzunehmen ist also völlig zulässig. Ihre Auswahl bleibt über App-Starts hinweg erhalten, und dasselbe Auswahlfeld erscheint in den Einrichtungsbildschirmen von Survey, Point Count und ARU. Änderungen wirken sofort – auch mitten in einer Aufnahme tauscht die App das Mikrofon in der laufenden Sitzung aus, statt bis zur nächsten zu warten.
+
+**Mikrofon** listet namentlich jeden Eingang auf, den das Handy bereitstellt: USB-, Kabel- und Bluetooth-Mikrofone und auf vielen Handys auch die einzelnen eingebauten Mikrofone (z. B. *unten* und *hinten*). Funkmikrofon-Sets wie Rode Wireless GO oder DJI Mic laufen über einen USB-C-Empfänger und erscheinen hier daher als gewöhnliche USB-Audiogeräte in voller Qualität.
+
+**Verarbeitung** ist der entscheidende Teil – und es gibt sie **nur unter Android**. Handys bearbeiten Mikrofonaufnahmen standardmäßig mit einem auf Sprache abgestimmten DSP – Rauschunterdrückung, spektrale Formung und automatische Aussteuerung –, weil das Mikrofon überwiegend zum Telefonieren dient. Diese Bearbeitung behandelt Vogelgesang als zu unterdrückendes Rauschen und lässt sich mit keiner normalen Einstellung abschalten. Der einzige Ausweg ist, Android nach einer anderen *Audioquelle* zu fragen:
+
+| Option | Wirkung |
+|---|---|
+| **Handy-Standard** | Das, was Ihr Handy normalerweise tut, samt Sprachbearbeitung. Das bisherige Verhalten und weiterhin die Voreinstellung, damit sich für bestehende Nutzer nichts ändert. |
+| **Unbearbeitet** | Das rohe Mikrofonsignal – keine Rauschunterdrückung, keine automatische Aussteuerung. Meist die beste Wahl für Vögel. |
+| **Spracherkennung** | Schaltet Rauschunterdrückung und automatische Aussteuerung ebenfalls ab und funktioniert auf fast jedem Handy. |
+
+**Probieren und vergleichen Sie.** Welche Option gewinnt, hängt tatsächlich vom Gerät ab. *Unbearbeitet* ist das Ideal, aber Android setzt es nur auf Handys um, deren Hersteller die Unterstützung meldet – auf allen anderen greift stillschweigend ein Rückfall, und es klingt wie *Systemstandard*. Dafür gibt es *Spracherkennung*: Androids Kompatibilitätsvorgaben **verlangen**, dass automatische Aussteuerung und Rauschunterdrückung dabei aus sind. Sie liefert also auch auf Handys unbearbeitetes Audio, die *Unbearbeitet* ignorieren. Wenn *Unbearbeitet* nichts ändert, wechseln Sie zu *Spracherkennung*.
+
+Rechnen Sie damit, dass die unbearbeiteten Optionen **leiser** klingen – das ist die fehlende automatische Aussteuerung, kein Fehler. Erhöhen Sie bei zu niedriger Pegelanzeige die **Verstärkung**.
+
+**Unter iOS** ist die Steuerung „Verarbeitung“ ausgeblendet und das Auswahlfeld ist schlicht eine Mikrofonliste. iOS liefert der App bereits weitgehend unbearbeitetes Audio, es gibt also nichts Vergleichbares zu wählen.
 
 ## Inferenz
 

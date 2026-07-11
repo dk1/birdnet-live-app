@@ -152,14 +152,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     if (_isStarting) return;
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
-    final deviceId = ref.read(selectedDeviceProvider);
+    final audioSource = ref.read(audioSourceProvider);
 
     if (controller.state == LiveState.active) {
       // ── Stop session → confirm, then go to review ────────────
       await _confirmStop();
     } else if (controller.state == LiveState.paused) {
       // ── Resume the same session ──────────────────────────────────
-      await captureNotifier.start(deviceId: deviceId);
+      await captureNotifier.start(source: audioSource);
       await controller.resumeSession();
       _onControllerStateChanged();
     } else if (controller.state == LiveState.ready ||
@@ -192,7 +192,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       captureService.setHighPassCutoff(ref.read(highPassFilterProvider));
 
       // Start audio capture.
-      await captureNotifier.start(deviceId: deviceId);
+      await captureNotifier.start(source: audioSource);
 
       // Read settings.
       final windowDuration = ref.read(windowDurationProvider);
@@ -353,8 +353,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     _pausedByLifecycle = false;
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
-    final deviceId = ref.read(selectedDeviceProvider);
-    await captureNotifier.start(deviceId: deviceId);
+    final audioSource = ref.read(audioSourceProvider);
+    await captureNotifier.start(source: audioSource);
     await controller.resumeSession();
     _onControllerStateChanged();
     _startSessionTimer();

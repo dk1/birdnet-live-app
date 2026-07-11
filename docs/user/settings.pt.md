@@ -64,9 +64,25 @@ Amplificador linear aplicado ao áudio recebido antes de ele chegar ao espectrog
 
 Corta o conteúdo de baixa frequência antes da inferência usando um filtro Butterworth de 24 dB/oitava — o valor do controle deslizante é o corte de −3 dB. **0 Hz o desativa.** Um corte de 100–200 Hz remove vento, ruído de tráfego e ruído de manuseio sem afetar a maioria das espécies; avançar para 500–1000 Hz começa a remover pios graves, corujas, tetrazes e os estrondos do socó-boi, então só vá tão alto se estiver deliberadamente ignorando essas espécies em troca de um espectrograma muito mais limpo em um ambiente urbano ruidoso. O corte escolhido deve ficar visível como uma linha horizontal nítida no espectrograma ao vivo.
 
-### Microfone
+### Fonte de áudio
 
-Permite escolher um dispositivo de entrada específico ou manter o **Padrão do sistema**. Sua seleção é lembrada entre as inicializações do app, então, se você usa regularmente um microfone USB ou Bluetooth em campo, só precisa escolhê-lo uma vez. O mesmo seletor aparece na tela de configuração do Survey.
+Uma única folha com dois controlos independentes: **Microfone** — que entrada grava — e **Processamento** — quanto o telefone pode alterar o sinal à entrada. Combinam-se livremente, por isso gravar com um microfone USB *sem processamento* é uma configuração perfeitamente válida. A sua seleção é lembrada entre as inicializações do app, e o mesmo seletor aparece nas telas de configuração do Survey, do Point Count e do ARU. As mudanças têm efeito imediato: mesmo no meio de uma gravação, o app troca o microfone na sessão em curso em vez de esperar pela próxima.
+
+**Microfone** lista pelo nome todas as entradas que o telefone expõe: microfones USB, com fio e Bluetooth e, em muitos telefones, também os microfones embutidos individualmente (por exemplo *inferior* e *traseiro*). Kits de microfone sem fios como o Rode Wireless GO ou o DJI Mic ligam-se por um recetor USB-C, pelo que aparecem aqui como dispositivos de áudio USB normais, com toda a qualidade.
+
+**Processamento** é a parte que mais importa, e existe **apenas no Android**. Os telefones aplicam por padrão ao áudio do microfone um processamento pensado para a voz — redução de ruído, modelagem espectral e ganho automático — porque o microfone serve sobretudo para chamadas. Esse processamento trata o canto das aves como ruído a suprimir, e nenhum ajuste comum o desliga. A única saída é pedir ao Android uma *fonte de áudio* diferente:
+
+| Opção | O que faz |
+|---|---|
+| **Padrão do telemóvel** | O que o seu telefone faz normalmente, processamento de voz incluído. O comportamento original e ainda o padrão, para que nada mude para quem já usa o app. |
+| **Sem processamento** | O sinal bruto do microfone — sem redução de ruído nem ganho automático. Costuma ser a melhor escolha para aves. |
+| **Reconhecimento de voz** | Também desliga a redução de ruído e o ganho automático, e funciona em quase todos os telefones. |
+
+**Experimente e compare.** Qual delas vence depende mesmo do aparelho. *Sem processamento* é o ideal, mas o Android só a respeita em telefones cujo fabricante declara suporte; nos demais ele recorre silenciosamente a uma alternativa e soa igual a *Padrão do sistema*. É para isso que existe *Reconhecimento de voz*: as regras de compatibilidade do Android **exigem** que o ganho automático e a supressão de ruído estejam desligados para essa fonte, de modo que ela entrega áudio sem processamento mesmo em telefones que ignoram *Sem processamento*. Se mudar para *Sem processamento* não alterar nada, mude para *Reconhecimento de voz*.
+
+Espere que as opções sem processamento soem **mais baixas** — é a ausência do ganho automático, não um defeito. Aumente o **Ganho** para compensar se o medidor de nível parecer baixo.
+
+**No iOS**, o controlo Processamento fica oculto e a folha é apenas uma lista de microfones. O iOS já entrega ao app áudio praticamente sem processamento, portanto não há nada equivalente a escolher.
 
 ## Inferência
 

@@ -250,6 +250,10 @@ abstract final class PrefKeys {
   static const String surveyDetectionSampling = 'survey_detection_sampling';
   static const String surveyTopNPerSpecies = 'survey_top_n_per_species';
   static const String micDeviceId = 'mic_device_id';
+
+  /// Name of the selected [AudioSourceProfile] (Android capture source).
+  /// Absent / unknown means the system default.
+  static const String audioSourceProfile = 'audio_source_profile';
   static const String surveyLastTransectId = 'survey_last_transect_id';
 
   // Survey species alerts (v0.7.0+)

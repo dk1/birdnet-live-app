@@ -33,6 +33,7 @@ import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/site_context_card.dart';
 import '../../shared/widgets/weather_setup_card.dart';
 import '../../shared/widgets/wizard_scaffold.dart';
+import '../audio/widgets/audio_source_tile.dart';
 import '../explore/explore_providers.dart';
 import '../settings/settings_screen.dart';
 import 'point_count_live_screen.dart';
@@ -747,6 +748,16 @@ class _ParametersStep extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
+
+          // ── Audio source ─────────────────────────────────────
+          // Same picker as Settings / Survey / ARU: which mic, and how much
+          // processing the OS is allowed to apply on the way in.
+          const AudioSourceTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(AppIcons.micRounded),
+            placement: AudioSourceValuePlacement.subtitle,
+          ),
+          const SizedBox(height: 12),
 
           // ── Inference rate ───────────────────────────────────
           _ParamTile(

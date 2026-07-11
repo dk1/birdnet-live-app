@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:record/record.dart';
 
 import '../../core/constants/app_constants.dart';
+import 'audio_source.dart';
 import 'ring_buffer.dart';
 
 // =============================================================================
@@ -106,7 +107,7 @@ class AudioCaptureService {
   Timer? _watchdogTimer;
 
   bool _shouldBeCapturing = false;
-  String? _currentDeviceId;
+  AudioSourceSelection _currentSource = AudioSourceSelection.systemDefault;
   DateTime _lastDataTime = DateTime.now();
 
   bool _isRestarting = false;
@@ -285,11 +286,34 @@ class AudioCaptureService {
     try {
       await stop();
       _shouldBeCapturing = true; // stop sets this to false
-      await start(deviceId: _currentDeviceId);
+      await start(source: _currentSource);
     } catch (_) {
     } finally {
       _isRestarting = false;
     }
+  }
+
+  /// Switch to a different [source] without ending the session.
+  ///
+  /// The recorder has to be torn down and rebuilt — neither Android nor iOS
+  /// can change the capture source on a live `AudioRecord` — so there is a
+  /// sub-second gap in the audio. Everything downstream survives it: [stop]
+  /// leaves the ring buffer, gain and high-pass settings alone, so the
+  /// inference loop and spectrogram read straight through the seam.
+  ///
+  /// When capture isn't running this only records the choice; the next [start]
+  /// picks it up.
+  Future<void> switchSource(AudioSourceSelection source) async {
+    if (source == _currentSource) return;
+
+    if (_state != CaptureState.capturing) {
+      _currentSource = source;
+      return;
+    }
+
+    debugPrint('Switching audio source to $source');
+    _currentSource = source;
+    await _restart();
   }
 
   // ---------------------------------------------------------------------------
@@ -306,19 +330,44 @@ class AudioCaptureService {
     }
   }
 
+  /// Translate a profile into the Android capture source it selects.
+  ///
+  /// Inert on other platforms: `record` ignores `androidConfig` there, and the
+  /// picker never offers anything but [AudioSourceProfile.systemDefault].
+  static AndroidAudioSource _androidAudioSource(AudioSourceProfile profile) {
+    switch (profile) {
+      case AudioSourceProfile.systemDefault:
+        return AndroidAudioSource.defaultSource;
+      case AudioSourceProfile.unprocessed:
+        return AndroidAudioSource.unprocessed;
+      case AudioSourceProfile.voiceRecognition:
+        return AndroidAudioSource.voiceRecognition;
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Capture lifecycle
   // ---------------------------------------------------------------------------
 
   /// Start capturing audio.
   ///
-  /// [deviceId] — optional specific input device.
-  Future<void> start({String? deviceId}) async {
+  /// [source] — which input device to record from and how much OS processing
+  /// to allow. Omit it to reuse the last source, which is what makes a
+  /// [switchSource] performed while stopped survive until the next start.
+  Future<void> start({AudioSourceSelection? source}) async {
     _shouldBeCapturing = true;
-    _currentDeviceId = deviceId;
     _lastDataTime = DateTime.now();
 
-    if (_state == CaptureState.capturing) return;
+    // Callers may race with another mode that has already started the shared
+    // recorder. Keep the active recorder and the requested selection aligned;
+    // merely updating `_currentSource` here would make the UI claim a source
+    // that the running AudioRecord was not actually using.
+    if (_state == CaptureState.capturing) {
+      if (source != null) await switchSource(source);
+      return;
+    }
+
+    if (source != null) _currentSource = source;
 
     try {
       final hasPermission = await _rec.hasPermission();
@@ -329,6 +378,12 @@ class AudioCaptureService {
       }
 
       // Configure for raw PCM streaming at 32 kHz mono 16-bit.
+      //
+      // The autoGain / echoCancel / noiseSuppress flags only disable the
+      // software AudioEffect modules. The OEM voice DSP lives further down, in
+      // the capture path of the audio source itself — `androidConfig` is what
+      // steers around it.
+      final deviceId = _currentSource.deviceId;
       final config = RecordConfig(
         encoder: AudioEncoder.pcm16bits,
         sampleRate: AppConstants.sampleRate,
@@ -337,6 +392,9 @@ class AudioCaptureService {
         echoCancel: false,
         noiseSuppress: false,
         device: deviceId != null ? InputDevice(id: deviceId, label: '') : null,
+        androidConfig: AndroidRecordConfig(
+          audioSource: _androidAudioSource(_currentSource.profile),
+        ),
       );
 
       final stream = await _rec.startStream(config);

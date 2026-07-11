@@ -105,7 +105,7 @@ final aruControllerProvider = Provider<AruController>((ref) {
         ringBuffer: ringBuffer,
         captureState: capture.state,
         startCapture: () async {
-          await captureState.start(deviceId: ref.read(selectedDeviceProvider));
+          await captureState.start(source: ref.read(audioSourceProvider));
         },
         setGain: capture.setGain,
         setHighPassCutoff: capture.setHighPassCutoff,
