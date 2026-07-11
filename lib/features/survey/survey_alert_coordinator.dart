@@ -248,11 +248,12 @@ class SurveyAlertCoordinator {
     if (alert.reason != AlertReason.lifer) return;
     final topic = ntfyTopic;
     if (topic == null || topic.trim().isEmpty) return;
+    final pct = (alert.confidence * 100).toStringAsFixed(0);
     unawaited(
       NtfyService.send(
         topic: topic,
         title: 'New Lifer',
-        message: '${alert.commonName} detected',
+        message: '${alert.commonName} detected ($pct% confidence)',
       ),
     );
   }
