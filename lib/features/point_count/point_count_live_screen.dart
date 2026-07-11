@@ -154,7 +154,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     if (_started) return;
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
-    final deviceId = ref.read(selectedDeviceProvider);
+    final audioSource = ref.read(audioSourceProvider);
 
     // Load model if not ready.
     if (controller.state == LiveState.idle) {
@@ -170,7 +170,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     captureService.setGain(ref.read(audioGainProvider));
     captureService.setHighPassCutoff(ref.read(highPassFilterProvider));
 
-    await captureNotifier.start(deviceId: deviceId);
+    await captureNotifier.start(source: audioSource);
 
     // Read inference settings (use wizard overrides when provided).
     final int windowDuration =

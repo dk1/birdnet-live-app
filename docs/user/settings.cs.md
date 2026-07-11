@@ -64,9 +64,25 @@ Lineární zesílení aplikované na příchozí zvuk dříve, než dorazí ke s
 
 Odřízne nízkofrekvenční obsah před inferencí pomocí Butterworthova filtru 24 dB/oktávu — hodnota posuvníku je mez −3 dB. **0 Hz jej vypne.** Mez 100–200 Hz odstraní vítr, dunění dopravy a manipulační hluk, aniž by zasáhla většinu druhů; posun k 500–1000 Hz začne odstraňovat nízké houkání, sovy, tetřevy a dunění bukačů, takže tak vysoko jděte jen tehdy, když tyto druhy záměrně ignorujete výměnou za mnohem čistší spektrogram v hlučném městském prostředí. Zvolená mez by měla být na živém spektrogramu vidět jako ostrá vodorovná čára.
 
-### Mikrofon
+### Zdroj zvuku
 
-Umožňuje vybrat konkrétní vstupní zařízení nebo ponechat **Výchozí nastavení systému**. Vaše volba se pamatuje napříč spuštěními aplikace, takže pokud v terénu pravidelně používáte USB nebo Bluetooth mikrofon, stačí jej vybrat jen jednou. Stejný výběr se objevuje i na obrazovce přípravy Survey.
+Jediný panel se dvěma nezávislými ovladači: **Mikrofon** – který vstup nahrává – a **Zpracování** – nakolik smí telefon vstupní signál upravit. Lze je libovolně kombinovat, takže nahrávat z USB mikrofonu *nezpracovaně* je zcela platné nastavení. Vaše volba se pamatuje napříč spuštěními aplikace a stejný výběr se objevuje na obrazovkách přípravy Survey, Point Count i ARU. Změny se projeví okamžitě – i uprostřed nahrávání aplikace vymění mikrofon v běžící relaci, místo aby čekala na další.
+
+**Mikrofon** jmenovitě uvádí každý vstup, který telefon nabízí: USB, kabelové i Bluetooth mikrofony a na řadě telefonů také jednotlivé vestavěné mikrofony (například *spodní* a *zadní*). Bezdrátové mikrofonní sady jako Rode Wireless GO nebo DJI Mic se připojují přes přijímač USB-C, takže se zde objeví jako běžná zvuková zařízení USB v plné kvalitě.
+
+**Zpracování** je ta podstatná část a existuje **jen na Androidu**. Telefony ve výchozím stavu zpracovávají zvuk z mikrofonu DSP laděným na řeč – potlačení šumu, spektrální tvarování a automatické řízení zisku –, protože mikrofon slouží především k telefonování. Toto zpracování považuje ptačí zpěv za šum, který je třeba potlačit, a žádné běžné nastavení jej nevypne. Jediná cesta ven je požádat Android o jiný *zdroj zvuku*:
+
+| Volba | Co dělá |
+|---|---|
+| **Výchozí telefonu** | To, co telefon dělá běžně, včetně hlasového zpracování. Původní chování a stále výchozí volba, aby se stávajícím uživatelům nic nezměnilo. |
+| **Nezpracovaný** | Surový signál z mikrofonu – bez potlačení šumu a bez automatického řízení zisku. Pro ptáky obvykle nejlepší volba. |
+| **Rozpoznávání řeči** | Rovněž vypíná potlačení šumu a automatické řízení zisku a funguje téměř na každém telefonu. |
+
+**Vyzkoušejte je a porovnejte.** Která zvítězí, skutečně závisí na konkrétním přístroji. *Nezpracovaný* je ideál, ale Android jej respektuje jen na telefonech, jejichž výrobce podporu deklaruje – na ostatních tiše přepne na náhradu a zní stejně jako *Výchozí systému*. Právě proto existuje *Rozpoznávání řeči*: pravidla kompatibility Androidu **vyžadují**, aby u tohoto zdroje bylo automatické řízení zisku i potlačení šumu vypnuté, takže dodá nezpracovaný zvuk i na telefonech, které volbu *Nezpracovaný* ignorují. Pokud přepnutí na *Nezpracovaný* nic nezmění, přepněte na *Rozpoznávání řeči*.
+
+Počítejte s tím, že nezpracované volby budou znít **tišeji** – to chybí automatické řízení zisku, není to závada. Pokud je ukazatel úrovně nízko, zvyšte **Zisk**.
+
+**Na iOS** je ovladač Zpracování skrytý a panel je prostě seznam mikrofonů. iOS aplikaci předává v podstatě nezpracovaný zvuk, takže není z čeho obdobného vybírat.
 
 ## Inference
 

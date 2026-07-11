@@ -2645,18 +2645,6 @@
   "@surveyTopNPerSpecies": {
     "description": "Label for top N slider"
   },
-  "surveyMicrophone": "Microphone",
-  "@surveyMicrophone": {
-    "description": "Label for microphone selector in survey setup"
-  },
-  "surveyMicSystemDefault": "System default",
-  "@surveyMicSystemDefault": {
-    "description": "Default microphone option"
-  },
-  "surveyMicSelect": "Select microphone",
-  "@surveyMicSelect": {
-    "description": "Title for microphone picker bottom sheet"
-  },
   "surveyReadyTitle": "Ready",
   "@surveyReadyTitle": {
     "description": "Title for the ready step"
@@ -3771,17 +3759,53 @@
   "@sessionWeatherTapToLoad": {
     "description": "Brief label next to the cloud-off icon suggesting the user tap to authorize and fetch weather data"
   },
-  "settingsMicrophone": "Microphone",
-  "@settingsMicrophone": {
-    "description": "Microphone input device setting label"
+  "settingsAudioSource": "Audio source",
+  "@settingsAudioSource": {
+    "description": "Label for the setting that picks the microphone and how much processing the OS applies to it"
   },
-  "settingsSelectMicrophone": "Select microphone",
-  "@settingsSelectMicrophone": {
-    "description": "Title for microphone picker bottom sheet"
+  "settingsSelectAudioSource": "Select audio source",
+  "@settingsSelectAudioSource": {
+    "description": "Title of the audio source picker bottom sheet"
+  },
+  "audioSourcePickerHint": "Phones process microphone audio for speech, which can blur bird sounds. If detections seem poor, try another source — support varies by phone.",
+  "@audioSourcePickerHint": {
+    "description": "Explanatory text under the audio source picker title. Android only, where the processing options are offered."
+  },
+  "audioSourceProcessing": "Processing",
+  "@audioSourceProcessing": {
+    "description": "Section header above the processing selector in the audio source picker"
+  },
+  "audioSourceMicrophone": "Microphone",
+  "@audioSourceMicrophone": {
+    "description": "Section header above the microphone device list in the audio source picker"
+  },
+  "audioSourceProcessingDefault": "Phone default",
+  "@audioSourceProcessingDefault": {
+    "description": "Label for the default (unchanged) processing option. Kept distinct from settingsSystemDefault, which names the default microphone in the same sheet."
   },
   "settingsSystemDefault": "System default",
   "@settingsSystemDefault": {
     "description": "Label for system default microphone option"
+  },
+  "audioSourceSystemDefaultDescription": "Whatever your phone uses normally, including its noise reduction.",
+  "@audioSourceSystemDefaultDescription": {
+    "description": "Description of the system default audio source option in the picker"
+  },
+  "audioSourceUnprocessed": "Unprocessed",
+  "@audioSourceUnprocessed": {
+    "description": "Label for the Android UNPROCESSED audio source option"
+  },
+  "audioSourceUnprocessedDescription": "Raw microphone signal with no noise reduction or automatic gain. Usually the best choice — but not every phone supports it.",
+  "@audioSourceUnprocessedDescription": {
+    "description": "Description of the Unprocessed audio source option in the picker"
+  },
+  "audioSourceVoiceRecognition": "Voice recognition",
+  "@audioSourceVoiceRecognition": {
+    "description": "Label for the Android VOICE_RECOGNITION audio source option"
+  },
+  "audioSourceVoiceRecognitionDescription": "Also turns off noise reduction and automatic gain, and works on nearly every phone. Try this if Unprocessed makes no difference.",
+  "@audioSourceVoiceRecognitionDescription": {
+    "description": "Description of the Voice recognition audio source option in the picker"
   },
   "settingsRecordingFormat": "Format",
   "@settingsRecordingFormat": {

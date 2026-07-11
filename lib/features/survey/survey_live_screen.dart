@@ -508,7 +508,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final controller = ref.read(surveyControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
     final captureService = ref.read(audioCaptureServiceProvider);
-    final deviceId = ref.read(selectedDeviceProvider);
+    final audioSource = ref.read(audioSourceProvider);
     // Capture localizations now — the rest of this method awaits multiple
     // futures and we want to wire foreground-notification strings without
     // crossing BuildContext async gaps.
@@ -519,7 +519,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     captureService.setHighPassCutoff(ref.read(highPassFilterProvider));
 
     // Start audio capture.
-    await captureNotifier.start(deviceId: deviceId);
+    await captureNotifier.start(source: audioSource);
     if (captureService.state != CaptureState.capturing) {
       _showStartError(
         captureService.lastError == 'Microphone permission not granted'

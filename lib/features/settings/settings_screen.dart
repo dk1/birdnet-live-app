@@ -13,7 +13,7 @@ import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../about/about_screen.dart';
 import '../announcements/widgets/announcements_settings_section.dart';
-import '../audio/audio_providers.dart';
+import '../audio/widgets/audio_source_tile.dart';
 import '../explore/explore_providers.dart';
 import '../spectrogram/color_maps.dart';
 import 'offline_map_download_tile.dart';
@@ -364,7 +364,7 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged:
                     (v) => ref.read(highPassFilterProvider.notifier).set(v),
               ),
-              _MicInputTile(),
+              const AudioSourceTile(),
               const Divider(),
             ],
 
@@ -1960,108 +1960,6 @@ class _ColorMapChoiceTile extends StatelessWidget {
           if (v != null) onChanged(v);
         },
       ),
-    );
-  }
-}
-
-/// Dropdown that lists available audio input devices.
-///
-/// Uses [inputDevicesProvider] (async) to fetch the device list and
-/// [selectedDeviceProvider] to track the current selection.
-class _MicInputTile extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final devicesAsync = ref.watch(inputDevicesProvider);
-    final selected = ref.watch(selectedDeviceProvider);
-
-    final l10n = AppLocalizations.of(context)!;
-
-    return devicesAsync.when(
-      loading:
-          () => ListTile(
-            title: Text(l10n.settingsMicrophone),
-            trailing: const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
-      error:
-          (a, b) => ListTile(
-            title: Text(l10n.settingsMicrophone),
-            trailing: Text(l10n.statusError),
-          ),
-      data: (devices) {
-        // Find the label for the currently selected device.
-        final selectedLabel =
-            selected == null
-                ? l10n.settingsSystemDefault
-                : devices
-                        .where((d) => d.id == selected)
-                        .map((d) => d.label.isEmpty ? d.id : d.label)
-                        .firstOrNull ??
-                    selected;
-
-        return ListTile(
-          title: Text(l10n.settingsMicrophone),
-          trailing: Text(
-            selectedLabel,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          onTap: () => _showDevicePicker(context, ref, devices, selected),
-        );
-      },
-    );
-  }
-
-  void _showDevicePicker(
-    BuildContext context,
-    WidgetRef ref,
-    List<InputDeviceInfo> devices,
-    String? selected,
-  ) {
-    showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      builder: (context) {
-        return SafeArea(
-          child: RadioGroup<String?>(
-            groupValue: selected,
-            onChanged: (v) {
-              ref.read(selectedDeviceProvider.notifier).state = v;
-              Navigator.of(context).pop();
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(
-                    AppLocalizations.of(context)!.settingsSelectMicrophone,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                RadioListTile<String?>(
-                  title: Text(
-                    AppLocalizations.of(context)!.settingsSystemDefault,
-                  ),
-                  value: null,
-                ),
-                ...devices.map(
-                  (d) => RadioListTile<String?>(
-                    title: Text(d.label.isEmpty ? d.id : d.label),
-                    value: d.id,
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }
