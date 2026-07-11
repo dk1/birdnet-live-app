@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated the About credits to identify the Cornell Lab of Ornithology and clarify the Museum für Naturkunde Berlin's support.
+- Removed obsolete score-pooling references from the user-facing inference and sensitivity descriptions in Settings.
+- Moved the playback overlay toggle from General to the Playback section in Settings.
+- Moved Audio source to the top of the Audio section in Settings.
+- Added a help button to Audio source explaining microphone selection and Android processing profiles.
+- Added help buttons for Dynamic Color and High Contrast Theme, kept section summaries informative, and moved the High Contrast, scientific-name, and log-amplitude explanations into their help overlays only.
+
 ## [0.18.9] - 2026-07-11
 
 ### Added
