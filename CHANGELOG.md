@@ -17,8 +17,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Added upside-down portrait support, so the phone can be inverted to aim its bottom microphone upward while the app stays usable. Android phones leave the upside-down position out of their normal rotation, so this had to be requested explicitly; it still follows your auto-rotate setting, and does nothing while rotation is locked.
+- The main menu now starts loading the taxonomy, inference, and location dependencies after its first frame, so going from launch to a running Live session is faster. The menu stays fully interactive while this happens, and opening Live or Explore before the warm-up has finished waits for it rather than starting the work over. Location is only warmed up when permission has already been granted — the menu never raises a permission prompt of its own.
 - Changing the audio source now takes effect immediately, including mid-recording — the app swaps the microphone under the running session instead of waiting for the next one to start.
 - German UI text now consistently uses the formal *Sie*; a few strings had slipped into the informal *du*.
+- Updated the About credits to identify the Cornell Lab of Ornithology and clarify the Museum für Naturkunde Berlin's support.
+- Removed obsolete score-pooling references from the user-facing inference and sensitivity descriptions in Settings.
+- Moved the playback overlay toggle from General to the Playback section in Settings.
+- Moved Audio source to the top of the Audio section in Settings.
+- Added a help button to Audio source explaining microphone selection and Android processing profiles.
+- Added help buttons for Dynamic Color and High Contrast Theme, kept section summaries informative, and moved the High Contrast, scientific-name, and log-amplitude explanations into their help overlays only.
 
 ## [0.18.8] - 2026-07-10
 

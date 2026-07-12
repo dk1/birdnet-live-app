@@ -72,7 +72,7 @@ class AudioSourceTile extends ConsumerWidget {
           () => ListTile(
             leading: leading,
             contentPadding: contentPadding,
-            title: Text(l10n.settingsAudioSource),
+            title: _AudioSourceTitle(l10n: l10n),
             trailing: const SizedBox(
               width: 20,
               height: 20,
@@ -86,7 +86,7 @@ class AudioSourceTile extends ConsumerWidget {
           (_, _) => ListTile(
             leading: leading,
             contentPadding: contentPadding,
-            title: Text(l10n.settingsAudioSource),
+            title: _AudioSourceTitle(l10n: l10n),
             subtitle: Text(audioSourceLabel(l10n, const [], selection)),
           ),
       data: (devices) {
@@ -96,7 +96,7 @@ class AudioSourceTile extends ConsumerWidget {
         return ListTile(
           leading: leading,
           contentPadding: contentPadding,
-          title: Text(l10n.settingsAudioSource),
+          title: _AudioSourceTitle(l10n: l10n),
           subtitle: isSubtitle ? Text(label) : null,
           // Always end the row with a chevron. Without it the row reads as a
           // static "label: value" line and nobody discovers it is tappable —
@@ -132,6 +132,55 @@ class AudioSourceTile extends ConsumerWidget {
           onTap: () => showAudioSourcePicker(context, ref, devices),
         );
       },
+    );
+  }
+}
+
+class _AudioSourceTitle extends StatelessWidget {
+  const _AudioSourceTitle({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Flexible(child: Text(l10n.settingsAudioSource)),
+        const SizedBox(width: 4),
+        IconButton(
+          icon: const Icon(AppIcons.helpOutline, size: 18),
+          visualDensity: VisualDensity.compact,
+          tooltip: l10n.settingsHelpTooltip,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          onPressed:
+              () => showModalBottomSheet<void>(
+                context: context,
+                showDragHandle: true,
+                useSafeArea: true,
+                builder:
+                    (context) => Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.settingsAudioSource,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            l10n.settingsHelpAudioSource,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+              ),
+        ),
+      ],
     );
   }
 }

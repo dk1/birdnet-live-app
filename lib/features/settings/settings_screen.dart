@@ -198,15 +198,20 @@ class SettingsScreen extends ConsumerWidget {
               ),
               _ThemeTile(l10n: l10n),
               SwitchListTile(
-                title: Text(l10n.settingsDynamicColor),
+                title: _TitleWithHelp(
+                  title: l10n.settingsDynamicColor,
+                  helpBody: l10n.settingsHelpDynamicColor,
+                ),
                 subtitle: Text(l10n.settingsDynamicColorDescription),
                 value: ref.watch(dynamicColorProvider),
                 onChanged:
                     (v) => ref.read(dynamicColorProvider.notifier).set(v),
               ),
               SwitchListTile(
-                title: Text(l10n.settingsHighContrastTheme),
-                subtitle: Text(l10n.settingsHighContrastThemeDescription),
+                title: _TitleWithHelp(
+                  title: l10n.settingsHighContrastTheme,
+                  helpBody: l10n.settingsHelpHighContrastTheme,
+                ),
                 value: ref.watch(highContrastThemeProvider),
                 onChanged:
                     (v) => ref.read(highContrastThemeProvider.notifier).set(v),
@@ -218,7 +223,6 @@ class SettingsScreen extends ConsumerWidget {
                   title: l10n.settingsShowSciNames,
                   helpBody: l10n.settingsHelpShowSciNames,
                 ),
-                subtitle: Text(l10n.settingsShowSciNamesDescription),
                 value: ref.watch(showSciNamesProvider),
                 onChanged:
                     (v) => ref.read(showSciNamesProvider.notifier).set(v),
@@ -268,18 +272,6 @@ class SettingsScreen extends ConsumerWidget {
                             .set(v),
                   ),
               ],
-              SwitchListTile(
-                title: _TitleWithHelp(
-                  title: l10n.settingsPlaybackOverlay,
-                  helpBody: l10n.settingsHelpPlaybackOverlay,
-                ),
-                subtitle: Text(l10n.settingsPlaybackOverlayDescription),
-                value: ref.watch(sessionReviewPlaybackOverlayProvider),
-                onChanged:
-                    (v) => ref
-                        .read(sessionReviewPlaybackOverlayProvider.notifier)
-                        .set(v),
-              ),
               ListTile(
                 title: _TitleWithHelp(
                   title: l10n.settingsTimestampDisplayMode,
@@ -343,6 +335,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: l10n.settingsAudio,
                 subtitle: l10n.settingsAudioDescription,
               ),
+              const AudioSourceTile(),
               _SliderTile(
                 title: l10n.settingsGain,
                 helpBody: l10n.settingsHelpGain,
@@ -364,7 +357,6 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged:
                     (v) => ref.read(highPassFilterProvider.notifier).set(v),
               ),
-              const AudioSourceTile(),
               const Divider(),
             ],
 
@@ -489,7 +481,6 @@ class SettingsScreen extends ConsumerWidget {
                   title: l10n.settingsLogAmplitude,
                   helpBody: l10n.settingsHelpLogAmplitude,
                 ),
-                subtitle: Text(l10n.settingsLogAmplitudeDescription),
                 value: ref.watch(logAmplitudeProvider),
                 onChanged:
                     (v) => ref.read(logAmplitudeProvider.notifier).set(v),
@@ -611,6 +602,18 @@ class SettingsScreen extends ConsumerWidget {
               _SectionHeader(
                 title: l10n.settingsPlayback,
                 subtitle: l10n.settingsPlaybackDescription,
+              ),
+              SwitchListTile(
+                title: _TitleWithHelp(
+                  title: l10n.settingsPlaybackOverlay,
+                  helpBody: l10n.settingsHelpPlaybackOverlay,
+                ),
+                subtitle: Text(l10n.settingsPlaybackOverlayDescription),
+                value: ref.watch(sessionReviewPlaybackOverlayProvider),
+                onChanged:
+                    (v) => ref
+                        .read(sessionReviewPlaybackOverlayProvider.notifier)
+                        .set(v),
               ),
               SwitchListTile(
                 title: _TitleWithHelp(
@@ -1755,8 +1758,7 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             values: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
             format: (v) => '$v',
             onChanged:
-                (v) =>
-                    ref.read(scorePoolingWindowsProvider.notifier).set(v),
+                (v) => ref.read(scorePoolingWindowsProvider.notifier).set(v),
           ),
           _SliderTile(
             title: 'Time gate',
@@ -1769,9 +1771,8 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             divisions: 29,
             format: (v) => '${v.toStringAsFixed(0)}s',
             onChanged:
-                (v) => ref
-                    .read(scorePoolingMaxAgeSecondsProvider.notifier)
-                    .set(v),
+                (v) =>
+                    ref.read(scorePoolingMaxAgeSecondsProvider.notifier).set(v),
           ),
         ],
         if (gated) ...[
@@ -1814,9 +1815,7 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             format: (v) => v.toStringAsFixed(2),
             onChanged:
                 (v) => ref
-                    .read(
-                      scorePoolingSupportThresholdFractionProvider.notifier,
-                    )
+                    .read(scorePoolingSupportThresholdFractionProvider.notifier)
                     .set(v),
           ),
           _SliderTile(
@@ -1868,13 +1867,9 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
                 ref.read(scorePoolingWindowsProvider.notifier).set(5);
                 ref.read(scorePoolingMaxAgeSecondsProvider.notifier).set(10.0);
                 ref.read(scorePoolingAlphaProvider.notifier).set(5.0);
+                ref.read(scorePoolingMinSupportWindowsProvider.notifier).set(2);
                 ref
-                    .read(scorePoolingMinSupportWindowsProvider.notifier)
-                    .set(2);
-                ref
-                    .read(
-                      scorePoolingSupportThresholdFractionProvider.notifier,
-                    )
+                    .read(scorePoolingSupportThresholdFractionProvider.notifier)
                     .set(0.6);
                 ref
                     .read(scorePoolingSupportThresholdFloorProvider.notifier)

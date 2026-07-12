@@ -79,7 +79,7 @@ jobs:
       - name: Build species bundle assets
         run: python tools/build_species_bundle.py
 
-      - name: Check signing secrets availability
+      - name: Require Android signing secrets
         shell: bash
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -87,14 +87,18 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          if [[ -n "$ANDROID_KEYSTORE_BASE64" && -n "$ANDROID_STORE_PASSWORD" && -n "$ANDROID_KEY_ALIAS" && -n "$ANDROID_KEY_PASSWORD" ]]; then
-            echo "HAVE_SIGNING_SECRETS=true" >> "$GITHUB_ENV"
-          else
-            echo "HAVE_SIGNING_SECRETS=false" >> "$GITHUB_ENV"
+          missing=()
+          [[ -n "$ANDROID_KEYSTORE_BASE64" ]] || missing+=(ANDROID_KEYSTORE_BASE64)
+          [[ -n "$ANDROID_STORE_PASSWORD" ]] || missing+=(ANDROID_STORE_PASSWORD)
+          [[ -n "$ANDROID_KEY_ALIAS" ]] || missing+=(ANDROID_KEY_ALIAS)
+          [[ -n "$ANDROID_KEY_PASSWORD" ]] || missing+=(ANDROID_KEY_PASSWORD)
+
+          if (( ${#missing[@]} > 0 )); then
+            echo "::error::Missing required Android signing secrets: ${missing[*]}"
+            exit 1
           fi
 
       - name: Decode Android keystore
-        if: ${{ env.HAVE_SIGNING_SECRETS == 'true' }}
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         shell: bash
@@ -102,7 +106,6 @@ jobs:
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
 
       - name: Create Android key.properties
-        if: ${{ env.HAVE_SIGNING_SECRETS == 'true' }}
         shell: bash
         run: |
           cat > android/key.properties <<EOF

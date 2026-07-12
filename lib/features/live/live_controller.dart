@@ -105,6 +105,11 @@ class LiveController {
   LiveState _state = LiveState.idle;
   String? _errorMessage;
 
+  /// The load currently in flight, or null when none is.  Shared by every
+  /// concurrent [loadModel] caller so the main-menu warm-up and the Live
+  /// screen can never start two loads of the same model.  See [loadModel].
+  Future<void>? _loadFuture;
+
   /// When the current recording segment started.
   DateTime? _segmentStart;
 
@@ -240,14 +245,54 @@ class LiveController {
   /// Only the file *path* is passed to the inference isolate — this avoids
   /// serializing ~259 MB through the isolate port, which would
   /// triple peak memory usage.
-  Future<void> loadModel() async {
-    if (_state == LiveState.loading || _state == LiveState.ready) return;
+  ///
+  /// Safe to call concurrently and repeatedly.  The main menu warms the model
+  /// up in the background, so by the time the Live screen opens a load may
+  /// already be in flight, already done, or already failed — and the retry
+  /// button can land on top of any of those.  All of them are handled here so
+  /// that callers never have to inspect [state] first:
+  ///
+  ///   * a load already running  → join it; never start a second one
+  ///   * already `ready`         → return immediately
+  ///   * `active` / `paused`     → return immediately; reloading the model out
+  ///                               from under a running session would tear
+  ///                               down the isolate it is inferring on
+  ///   * `idle` / `error`        → load (or retry) now
+  ///
+  /// The returned future always completes *after* the model has settled into
+  /// [LiveState.ready] or [LiveState.error] — awaiting it is enough to know
+  /// the load is over, so callers can `await loadModel()` and then check
+  /// [state] rather than racing it.
+  Future<void> loadModel() {
+    // A load is already running — hand every caller the *same* future so they
+    // all resume together when it settles.
+    final inFlight = _loadFuture;
+    if (inFlight != null) return inFlight;
 
-    _state = LiveState.loading;
-    _errorMessage = null;
-    _notifyListeners();
+    // Nothing to do: the model is loaded, or a session is using it.
+    if (_state == LiveState.ready ||
+        _state == LiveState.active ||
+        _state == LiveState.paused) {
+      return Future.value();
+    }
 
+    // Publish the future *before* running any of the load body, so a listener
+    // woken by the `loading` notification below re-enters into the branch
+    // above instead of kicking off a duplicate load.
+    final completer = Completer<void>();
+    _loadFuture = completer.future;
+    unawaited(_runLoadModel(completer));
+    return completer.future;
+  }
+
+  /// The actual load.  Always completes [completer] — never leaves an awaiter
+  /// of [loadModel] stranded, even if a listener throws.
+  Future<void> _runLoadModel(Completer<void> completer) async {
     try {
+      _state = LiveState.loading;
+      _errorMessage = null;
+      _notifyListeners();
+
       // Load config JSON.
       debugPrint('[LiveController] loading model config …');
       final configJson = await rootBundle.loadString(
@@ -295,6 +340,21 @@ class LiveController {
       debugPrint('[LiveController] loadModel error: $e\n$st');
       _state = LiveState.error;
       _errorMessage = e.toString();
+    } finally {
+      // Settle in a `finally` so the controller can never wedge: if anything
+      // escaped the block above — a listener throwing out of the `loading`
+      // notification, say — an uncompleted completer would leave every future
+      // loadModel() caller joining a future that never resolves.
+      if (_state == LiveState.loading) {
+        _state = LiveState.error;
+        _errorMessage ??= 'Model load interrupted';
+      }
+      // Clear before notifying: a listener that reacts to `error` by calling
+      // loadModel() again must be able to start a fresh attempt, and complete
+      // before notifying so an awaiter is never stranded by a throwing
+      // listener.
+      _loadFuture = null;
+      if (!completer.isCompleted) completer.complete();
     }
 
     _notifyListeners();
