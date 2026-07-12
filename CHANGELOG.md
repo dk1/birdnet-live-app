@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Added upside-down portrait support, so the phone can be inverted to aim its bottom microphone upward while the app stays usable. Android phones leave the upside-down position out of their normal rotation, so this had to be requested explicitly; it still follows your auto-rotate setting, and does nothing while rotation is locked.
+- The main menu now starts loading the taxonomy, inference, and location dependencies after its first frame, so going from launch to a running Live session is faster. The menu stays fully interactive while this happens, and opening Live or Explore before the warm-up has finished waits for it rather than starting the work over. Location is only warmed up when permission has already been granted — the menu never raises a permission prompt of its own.
 - Changing the audio source now takes effect immediately, including mid-recording — the app swaps the microphone under the running session instead of waiting for the next one to start.
 - German UI text now consistently uses the formal *Sie*; a few strings had slipped into the informal *du*.
 
