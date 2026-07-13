@@ -438,9 +438,18 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
     Set<String>? lifeList;
     String? ntfyTopic;
+    bool Function(String)? isBirdSpecies;
     if (mode == AlertMode.lifer) {
       lifeList = ref.read(ebirdLifeListProvider).all;
       ntfyTopic = ref.read(ntfyTopicProvider);
+      final taxonomy = ref.read(taxonomyServiceProvider).value;
+      if (taxonomy != null) {
+        isBirdSpecies = (name) {
+          final entry = taxonomy.lookup(name);
+          return entry == null || entry.taxonGroup.isEmpty ||
+              entry.taxonGroup == 'Aves';
+        };
+      }
     }
 
     final coord = SurveyAlertCoordinator(
@@ -452,6 +461,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       watchlist: watchlist,
       lifeList: lifeList,
       ntfyTopic: ntfyTopic,
+      isBirdSpecies: isBirdSpecies,
       minConfidence: ref.read(surveyAlertMinConfidenceProvider),
       rareThreshold: ref.read(surveyAlertRareThresholdProvider),
       startupGraceSeconds: ref.read(surveyAlertStartupGraceSecondsProvider),

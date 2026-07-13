@@ -41,6 +41,7 @@ class SurveyAlertCoordinator {
     required this.watchlist,
     this.lifeList,
     this.ntfyTopic,
+    this.isBirdSpecies,
     this.minConfidence = 0.5,
     this.rareThreshold = 0.05,
     this.startupGraceSeconds = 60,
@@ -94,6 +95,14 @@ class SurveyAlertCoordinator {
   /// PR). Null or empty disables the push.
   final String? ntfyTopic;
 
+  /// Returns whether [scientificName] is a bird (taxon_group == "Aves").
+  /// Non-bird detections (insects, amphibians, mammals BirdNET also
+  /// classifies) never fire [AlertMode.lifer] — an eBird life list can only
+  /// ever contain bird species, so a cicada would otherwise look like a
+  /// lifer forever. Null (taxonomy not loaded) or an unresolved species
+  /// name means "assume bird" so a real lifer is never silently dropped.
+  final bool Function(String scientificName)? isBirdSpecies;
+
   final double minConfidence;
   final double rareThreshold;
   final int startupGraceSeconds;
@@ -130,6 +139,16 @@ class SurveyAlertCoordinator {
   void onDetection(DetectionRecord record) {
     if (mode == AlertMode.off) return;
     final name = record.scientificName;
+
+    // Local-only, throwaway: never fire a lifer alert for a non-bird
+    // detection — an eBird life list can only contain birds, so a cicada
+    // or frog would otherwise look like an eternal lifer.
+    if (mode == AlertMode.lifer &&
+        isBirdSpecies != null &&
+        !isBirdSpecies!(name)) {
+      return;
+    }
+
     final isFirstEverThisSession = _sessionSpeciesSeen.add(name);
     final firstInSession =
         mode == AlertMode.lifer
