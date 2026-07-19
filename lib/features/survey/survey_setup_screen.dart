@@ -1143,7 +1143,8 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final mode = AlertMode.fromPrefValue(ref.watch(surveyAlertModeProvider));
-    final modes = const [
+    final hasLifeList = !ref.watch(ebirdLifeListProvider).isEmpty;
+    final modes = [
       (AlertMode.off, 'surveyAlertModeOff', 'surveyAlertModeOffDescription'),
       (
         AlertMode.firstInSession,
@@ -1161,18 +1162,21 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
         'surveyAlertModeWatchlist',
         'surveyAlertModeWatchlistDescription',
       ),
-      (
-        AlertMode.lifer,
-        'surveyAlertModeLifer',
-        'surveyAlertModeLiferDescription',
-      ),
+      // Hidden until a life list is imported (or already selected) so
+      // regular users who never touch the eBird integration don't see an
+      // alert mode they can't use — see Settings > eBird Life List.
+      if (hasLifeList || mode == AlertMode.lifer)
+        (
+          AlertMode.lifer,
+          'surveyAlertModeLifer',
+          'surveyAlertModeLiferDescription',
+        ),
     ];
 
     final selectedWatchlist = ref.watch(surveyAlertWatchlistNameProvider);
     final watchlistInvalid =
         mode == AlertMode.watchlist && selectedWatchlist.trim().isEmpty;
-    final liferInvalid =
-        mode == AlertMode.lifer && ref.watch(ebirdLifeListProvider).isEmpty;
+    final liferInvalid = mode == AlertMode.lifer && !hasLifeList;
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
