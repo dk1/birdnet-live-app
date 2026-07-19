@@ -1309,6 +1309,7 @@ class _SurveySummaryTab extends ConsumerWidget {
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final taxonomy = ref.watch(taxonomyServiceProvider).value;
     final showSciNames = ref.watch(showSciNamesProvider);
+    final lifeList = ref.watch(ebirdLifeListProvider);
 
     if (session == null) {
       return Center(
@@ -1413,14 +1414,35 @@ class _SurveySummaryTab extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        taxonomy
-                                ?.lookup(sp.scientificName)
-                                ?.commonNameForLocale(speciesLocale) ??
-                            sp.commonName,
-                        style: theme.textTheme.bodySmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              taxonomy
+                                      ?.lookup(sp.scientificName)
+                                      ?.commonNameForLocale(speciesLocale) ??
+                                  sp.commonName,
+                              style: theme.textTheme.bodySmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (sp.scientificName !=
+                                  DetectionRecord.unknownSpeciesName &&
+                              !lifeList.isEmpty &&
+                              !lifeList.contains(sp.scientificName))
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4),
+                              child: Tooltip(
+                                message: l10n.ebirdLifeListBadgeTooltip,
+                                child: Icon(
+                                  AppIcons.flagRounded,
+                                  size: 14,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       if (showSciNames)
                         Text(
