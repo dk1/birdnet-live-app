@@ -264,7 +264,7 @@
   "@settingsDynamicColor": {
     "description": "Dynamic color toggle label"
   },
-  "settingsDynamicColorDescription": "Use your Android device's color palette when available. No effect on iPhone or iPad.",
+  "settingsDynamicColorDescription": "Use your Android device's color palette when available.",
   "@settingsDynamicColorDescription": {
     "description": "Dynamic color toggle description"
   },
@@ -272,7 +272,15 @@
   "@settingsHighContrastTheme": {
     "description": "High contrast theme toggle label"
   },
-  "settingsHighContrastThemeDescription": "Use a black-and-white UI palette with stronger contrast and heavier text. Danger, warning, validation, mode, score, and spectrogram colors stay unchanged.",
+  "settingsHelpDynamicColor": "Uses your Android device's color palette when available. This has no effect on iPhone or iPad.",
+  "@settingsHelpDynamicColor": {
+    "description": "Help text for the Dynamic Color setting"
+  },
+  "settingsHighContrastThemeDescription": "Use a black-and-white UI palette with stronger contrast and heavier text.",
+  "settingsHelpHighContrastTheme": "Uses a black-and-white UI palette with stronger contrast and heavier text. Danger, warning, validation, mode, score, and spectrogram colors stay unchanged.",
+  "@settingsHelpHighContrastTheme": {
+    "description": "Help text for the High Contrast Theme setting"
+  },
   "@settingsHighContrastThemeDescription": {
     "description": "High contrast theme toggle description"
   },
@@ -401,7 +409,7 @@
   "@aboutCredits": {
     "description": "Section title for the team that built BirdNET"
   },
-  "aboutCreditsDescription": "BirdNET Live is developed by the Cornell K. Lisa Yang Center for Conservation Bioacoustics and Chemnitz University of Technology in partnership with the Museum für Naturkunde Berlin.",
+  "aboutCreditsDescription": "BirdNET Live is developed by the Cornell K. Lisa Yang Center for Conservation Bioacoustics at the Cornell Lab of Ornithology and Chemnitz University of Technology with support from the Museum für Naturkunde Berlin.",
   "@aboutCreditsDescription": {
     "description": "Credits description"
   },
@@ -1898,7 +1906,7 @@
   "@settingsAudioDescription": {
     "description": "Subtitle for Audio settings section"
   },
-  "settingsInferenceDescription": "Controls how the neural network analyzes audio. Sensitivity shifts the detection curve \u2014 higher values catch faint calls but may increase false positives. Score pooling determines how overlapping windows are combined.",
+  "settingsInferenceDescription": "Controls how the neural network analyzes audio. Sensitivity shifts the detection curve — higher values catch faint calls but may increase false positives.",
   "@settingsInferenceDescription": {
     "description": "Subtitle for Inference settings section"
   },
@@ -1914,7 +1922,7 @@
   "@settingsLocationDescription": {
     "description": "Subtitle for Location settings section"
   },
-  "settingsExportDescription": "File format and content for session exports. Raven tables are compatible with Cornell's Raven Pro software.",
+  "settingsExportDescription": "File format and content for session exports. Raven tables are compatible with Cornell\u0027s Raven Pro software.",
   "@settingsExportDescription": {
     "description": "Subtitle for Export settings section"
   },
@@ -2201,7 +2209,7 @@
   "@settingsHelpConfidenceThreshold": {
     "description": "Help text for confidence threshold setting"
   },
-  "settingsHelpSensitivity": "X-axis offset applied to raw model probabilities before score pooling and filtering. The app converts probabilities back to logit space, adds the sensitivity bias, then converts them back. Higher values catch fainter calls but can increase false positives.",
+  "settingsHelpSensitivity": "X-axis offset applied to raw model probabilities before filtering. The app converts probabilities back to logit space, adds the sensitivity bias, then converts them back. Higher values catch fainter calls but can increase false positives.",
   "@settingsHelpSensitivity": {
     "description": "Help text for sensitivity setting"
   },
@@ -2644,18 +2652,6 @@
   "surveyTopNPerSpecies": "Top N per Species",
   "@surveyTopNPerSpecies": {
     "description": "Label for top N slider"
-  },
-  "surveyMicrophone": "Microphone",
-  "@surveyMicrophone": {
-    "description": "Label for microphone selector in survey setup"
-  },
-  "surveyMicSystemDefault": "System default",
-  "@surveyMicSystemDefault": {
-    "description": "Default microphone option"
-  },
-  "surveyMicSelect": "Select microphone",
-  "@surveyMicSelect": {
-    "description": "Title for microphone picker bottom sheet"
   },
   "surveyReadyTitle": "Ready",
   "@surveyReadyTitle": {
@@ -3831,17 +3827,57 @@
   "@sessionWeatherTapToLoad": {
     "description": "Brief label next to the cloud-off icon suggesting the user tap to authorize and fetch weather data"
   },
-  "settingsMicrophone": "Microphone",
-  "@settingsMicrophone": {
-    "description": "Microphone input device setting label"
+  "settingsAudioSource": "Audio source",
+  "@settingsAudioSource": {
+    "description": "Label for the setting that picks the microphone and how much processing the OS applies to it"
   },
-  "settingsSelectMicrophone": "Select microphone",
-  "@settingsSelectMicrophone": {
-    "description": "Title for microphone picker bottom sheet"
+  "settingsHelpAudioSource": "Choose which microphone records audio. On Android, Processing also controls how much speech-oriented noise reduction and automatic gain the phone applies. Unprocessed preserves the original signal when supported; Voice recognition is a widely supported fallback.",
+  "@settingsHelpAudioSource": {
+    "description": "Help text for the audio source setting"
+  },
+  "settingsSelectAudioSource": "Select audio source",
+  "@settingsSelectAudioSource": {
+    "description": "Title of the audio source picker bottom sheet"
+  },
+  "audioSourcePickerHint": "Phones process microphone audio for speech, which can blur bird sounds. If detections seem poor, try another source — support varies by phone.",
+  "@audioSourcePickerHint": {
+    "description": "Explanatory text under the audio source picker title. Android only, where the processing options are offered."
+  },
+  "audioSourceProcessing": "Processing",
+  "@audioSourceProcessing": {
+    "description": "Section header above the processing selector in the audio source picker"
+  },
+  "audioSourceMicrophone": "Microphone",
+  "@audioSourceMicrophone": {
+    "description": "Section header above the microphone device list in the audio source picker"
+  },
+  "audioSourceProcessingDefault": "Phone default",
+  "@audioSourceProcessingDefault": {
+    "description": "Label for the default (unchanged) processing option. Kept distinct from settingsSystemDefault, which names the default microphone in the same sheet."
   },
   "settingsSystemDefault": "System default",
   "@settingsSystemDefault": {
     "description": "Label for system default microphone option"
+  },
+  "audioSourceSystemDefaultDescription": "Whatever your phone uses normally, including its noise reduction.",
+  "@audioSourceSystemDefaultDescription": {
+    "description": "Description of the system default audio source option in the picker"
+  },
+  "audioSourceUnprocessed": "Unprocessed",
+  "@audioSourceUnprocessed": {
+    "description": "Label for the Android UNPROCESSED audio source option"
+  },
+  "audioSourceUnprocessedDescription": "Raw microphone signal with no noise reduction or automatic gain. Usually the best choice — but not every phone supports it.",
+  "@audioSourceUnprocessedDescription": {
+    "description": "Description of the Unprocessed audio source option in the picker"
+  },
+  "audioSourceVoiceRecognition": "Voice recognition",
+  "@audioSourceVoiceRecognition": {
+    "description": "Label for the Android VOICE_RECOGNITION audio source option"
+  },
+  "audioSourceVoiceRecognitionDescription": "Also turns off noise reduction and automatic gain, and works on nearly every phone. Try this if Unprocessed makes no difference.",
+  "@audioSourceVoiceRecognitionDescription": {
+    "description": "Description of the Voice recognition audio source option in the picker"
   },
   "settingsRecordingFormat": "Format",
   "@settingsRecordingFormat": {
@@ -3880,7 +3916,7 @@
   "@settingsSaveSessionAutomatically": {
     "description": "Switch label for automatically saving finished sessions to the library"
   },
-  "settingsSaveSessionAutomaticallyDescription": "Keep every finished session in the library. When off, review each session first and tap Save to keep it.",
+  "settingsSaveSessionAutomaticallyDescription": "Keep every finished session in the library.",
   "@settingsSaveSessionAutomaticallyDescription": {
     "description": "Subtitle for the automatic session-saving switch"
   },

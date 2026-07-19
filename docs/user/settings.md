@@ -35,18 +35,6 @@ Live Mode and Point Count only. Off by default, so these screens continue to sho
 
 When this is enabled, **Species list sorting** appears. **Newest first** shows currently vocalizing species first, sorted by their current confidence, then retained species by their most recent detection. **Confidence** sorts by each species' highest confidence reached during the session, **Alphabetically** sorts by the localized common name, and **Occurrences** sorts by detection count. In every sorting mode, the confidence percentage and bar appear only while that species is currently vocalizing (retained rows that stopped vocalizing are dimmed), and repeated detections show a count chip at the end of the common-name row.
 
-### Playback overlay in review
-
-When enabled (which is the default), reviewing an audio clip in a clips-only Session Review (where no full audio recording/spectrogram is available) triggers a dedicated modal player overlay with transport controls and a spectrogram preview, rather than playing the clip in the background. If a session has full audio, this setting is bypassed and the playback overlay is never shown.
-
-### Auto-play voice memos
-
-Off by default. When enabled, a voice memo attached to a timed annotation plays automatically during Session Review the moment the playhead crosses its recorded position. The memo is mixed on top of the recording rather than pausing it, so you hear your spoken note in context alongside the original audio. Leave it off if you prefer to trigger memos manually by tapping their annotation chip.
-
-### Voice memo ducking
-
-Shown only when **Auto-play voice memos** is enabled. Controls how much the main recording is lowered while an automatic voice memo plays. Higher values make spoken memos easier to hear; lower values keep more of the original recording audible underneath the memo.
-
 ### Observer name
 
 Survey, Point Count, and ARU setup remember the latest non-empty observer name entered in any of those modes and prefill it the next time you set up a field session. This keeps repeat use quick on a personal field phone while still letting you edit or clear the observer before starting a session.
@@ -80,9 +68,25 @@ Linear amplifier applied to incoming audio before it reaches the spectrogram and
 
 Cuts low-frequency content before inference using a 24 dB/octave Butterworth filter — the slider value is the −3 dB cutoff. **0 Hz disables it.** A 100–200 Hz cutoff strips wind, traffic rumble, and handling noise without touching most species; pushing toward 500–1000 Hz starts removing low whoots, owls, grouse, and bittern booms, so only go that high if you are deliberately ignoring those species in exchange for a much cleaner spectrogram in a noisy urban environment. The cutoff you pick should be visible as a sharp horizontal line on the live spectrogram.
 
-### Microphone
+### Audio source
 
-Lets you choose a specific input device or keep the **System default**. Your selection is remembered across app launches, so if you regularly use a USB or Bluetooth mic in the field you only need to pick it once. The same picker appears on the Survey setup screen.
+One sheet with two independent controls: **Microphone** — which input to record from — and **Processing** — how much the phone is allowed to alter the signal on the way in. They combine freely, so a USB microphone recorded *unprocessed* is a perfectly valid setup. Your selection is remembered across app launches, and the same picker appears on the Survey, Point Count, and ARU setup screens. Changes take effect immediately — even mid-recording, the app swaps the microphone under the running session rather than waiting for the next one.
+
+**Microphone** lists every input the phone exposes, by name: USB, wired and Bluetooth mics, and on many phones the individual built-in mics too (e.g. *bottom* and *back*). Wireless mic kits like the Rode Wireless GO or DJI Mic connect through a USB-C receiver, so they show up here as ordinary USB audio devices at full quality.
+
+**Processing** is the part that matters most, and it is **Android only**. Phones apply a speech-tuned DSP to microphone audio by default — noise reduction, spectral shaping and automatic gain — because the mic is overwhelmingly used for phone calls. That processing treats bird song as noise to be suppressed, and no ordinary setting turns it off. The only way around it is to ask Android for a different *audio source*:
+
+| Option | What it does |
+|---|---|
+| **Phone default** | Whatever your phone does normally, voice processing included. The original behaviour, and still the default so nothing changes under existing users. |
+| **Unprocessed** | The raw microphone signal — no noise reduction, no automatic gain. Usually the best choice for birds. |
+| **Voice recognition** | Also turns off noise reduction and automatic gain, and works on nearly every phone. |
+
+**Try them and compare.** Which one wins genuinely depends on the handset. *Unprocessed* is the ideal, but Android only honours it on phones whose manufacturer declares support — on the rest it silently falls back and sounds identical to *System default*. That is what *Voice recognition* is for: Android's compatibility rules **require** automatic gain and noise suppression to be off for it, so it reliably delivers unprocessed audio even on phones that ignore *Unprocessed*. If switching to *Unprocessed* changes nothing, switch to *Voice recognition*.
+
+Expect the unprocessed options to sound **quieter** — that is the automatic gain being gone, not a fault. Raise **Gain** to compensate if the level meter looks low.
+
+**On iOS** the Processing control is hidden and the sheet is simply a microphone list. iOS already hands the app essentially unprocessed audio, so there is nothing equivalent to choose.
 
 ## Inference
 
@@ -194,6 +198,20 @@ When enabled, Live mode begins recording as soon as the screen opens and the mod
 ### Save sessions automatically (Live and Point Count)
 
 When enabled (the default), a completed Live or Point Count session is added to your library automatically the moment it finishes. When disabled, a finished session opens in review marked as **unsaved**: the save icon is highlighted and you must tap it to keep the session. Leaving review without saving discards the session and its recordings. This suits quick listening sessions where you only want to keep the occasional noteworthy result instead of accumulating every short recording. Survey and ARU deployments always save automatically — a long unattended run is too costly to lose by forgetting to tap Save — so this toggle does not apply there.
+
+## Playback
+
+### Playback overlay in review
+
+When enabled (which is the default), reviewing an audio clip in a clips-only Session Review (where no full audio recording/spectrogram is available) triggers a dedicated modal player overlay with transport controls and a spectrogram preview, rather than playing the clip in the background. If a session has full audio, this setting is bypassed and the playback overlay is never shown.
+
+### Auto-play voice memos
+
+Off by default. When enabled, a voice memo attached to a timed annotation plays automatically during Session Review the moment the playhead crosses its recorded position. The memo is mixed on top of the recording rather than pausing it, so you hear your spoken note in context alongside the original audio. Leave it off if you prefer to trigger memos manually by tapping their annotation chip.
+
+### Voice memo ducking
+
+Shown only when **Auto-play voice memos** is enabled. Controls how much the main recording is lowered while an automatic voice memo plays. Higher values make spoken memos easier to hear; lower values keep more of the original recording audible underneath the memo.
 
 ## Location
 

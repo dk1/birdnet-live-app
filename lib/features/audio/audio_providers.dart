@@ -7,7 +7,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/app_providers.dart';
 import 'audio_capture_service.dart';
+import 'audio_source.dart';
 import 'ring_buffer.dart';
+
+export 'audio_source.dart';
 
 // =============================================================================
 // Audio Providers — Riverpod wiring for the capture pipeline
@@ -21,8 +24,8 @@ import 'ring_buffer.dart';
 //   [audioCaptureServiceProvider]
 //       ↓  (exposes state / streams)
 //   [captureStateProvider]    ← UI watches for start/stop/error
-//   [inputDevicesProvider]    ← UI watches for device dropdown
-//   [selectedDeviceProvider]  ← UI writes selected device ID
+//   [inputDevicesProvider]    ← UI watches for the device list
+//   [audioSourceProvider]     ← UI writes the picked device + profile
 //
 // ### Disposal
 //
@@ -69,7 +72,17 @@ final audioCaptureServiceProvider = Provider<AudioCaptureService>((ref) {
 final captureStateProvider =
     StateNotifierProvider<CaptureStateNotifier, CaptureState>((ref) {
       final service = ref.watch(audioCaptureServiceProvider);
-      return CaptureStateNotifier(service);
+      final notifier = CaptureStateNotifier(service);
+
+      // Apply an audio source change to a *running* session, so switching mics
+      // from Settings mid-recording takes effect straight away instead of at
+      // the next session. Harmless when nothing is capturing.
+      ref.listen<AudioSourceSelection>(audioSourceProvider, (previous, next) {
+        if (previous == next) return;
+        notifier.switchSource(next);
+      });
+
+      return notifier;
     });
 
 /// Notifier that mirrors [AudioCaptureService.state] and exposes
@@ -81,8 +94,8 @@ class CaptureStateNotifier extends StateNotifier<CaptureState> {
   StreamSubscription<int>? _dataSub;
 
   /// Start audio capture.
-  Future<void> start({String? deviceId}) async {
-    await _service.start(deviceId: deviceId);
+  Future<void> start({AudioSourceSelection? source}) async {
+    await _service.start(source: source);
     state = _service.state;
 
     // Keep state in sync in case the stream ends or errors.
@@ -102,6 +115,12 @@ class CaptureStateNotifier extends StateNotifier<CaptureState> {
     );
   }
 
+  /// Switch the audio source, applying it live if capture is running.
+  Future<void> switchSource(AudioSourceSelection source) async {
+    await _service.switchSource(source);
+    state = _service.state;
+  }
+
   /// Stop audio capture.
   Future<void> stop() async {
     _dataSub?.cancel();
@@ -111,11 +130,11 @@ class CaptureStateNotifier extends StateNotifier<CaptureState> {
   }
 
   /// Toggle capture on/off.
-  Future<void> toggle({String? deviceId}) async {
+  Future<void> toggle({AudioSourceSelection? source}) async {
     if (state == CaptureState.capturing) {
       await stop();
     } else {
-      await start(deviceId: deviceId);
+      await start(source: source);
     }
   }
 
@@ -137,31 +156,47 @@ final inputDevicesProvider = FutureProvider<List<InputDeviceInfo>>((ref) async {
   return devices.map((d) => InputDeviceInfo(id: d.id, label: d.label)).toList();
 });
 
-/// Currently selected input device ID (null = system default).
+/// Currently selected audio source — which device to record from, and how
+/// much OS processing to allow (see [AudioSourceSelection]).
 ///
-/// Persisted across launches via [SharedPreferences] so the user's
-/// preferred microphone is remembered. Empty string in storage maps
-/// to `null` (system default) at runtime.
-final selectedDeviceProvider =
-    StateNotifierProvider<_SelectedDeviceNotifier, String?>((ref) {
+/// Persisted across launches via [SharedPreferences] so a field setup only
+/// has to be dialled in once. The device and the profile live in separate
+/// keys, so an existing install that had picked a USB mic keeps it.
+final audioSourceProvider =
+    StateNotifierProvider<_AudioSourceNotifier, AudioSourceSelection>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return _SelectedDeviceNotifier(prefs);
+      return _AudioSourceNotifier(prefs);
     });
 
-class _SelectedDeviceNotifier extends StateNotifier<String?> {
-  _SelectedDeviceNotifier(this._prefs) : super(_read(_prefs));
+class _AudioSourceNotifier extends StateNotifier<AudioSourceSelection> {
+  _AudioSourceNotifier(this._prefs) : super(_read(_prefs));
 
   final SharedPreferences _prefs;
 
-  static String? _read(SharedPreferences prefs) {
-    final raw = prefs.getString(PrefKeys.micDeviceId) ?? '';
-    return raw.isEmpty ? null : raw;
+  static AudioSourceSelection _read(SharedPreferences prefs) {
+    final deviceId = prefs.getString(PrefKeys.micDeviceId) ?? '';
+    // Coerce the profile away on platforms that can't honour it. Prefs outlive
+    // the platform they were written on (a restored backup, a shared codebase),
+    // and a profile we silently ignore would still show up on the tile — the
+    // app would claim "Unprocessed" while changing nothing.
+    final profile =
+        audioSourceProfilesSupported
+            ? AudioSourceProfile.fromName(
+              prefs.getString(PrefKeys.audioSourceProfile),
+            )
+            : AudioSourceProfile.systemDefault;
+
+    return AudioSourceSelection(
+      deviceId: deviceId.isEmpty ? null : deviceId,
+      profile: profile,
+    );
   }
 
   @override
-  set state(String? value) {
+  set state(AudioSourceSelection value) {
     super.state = value;
-    _prefs.setString(PrefKeys.micDeviceId, value ?? '');
+    _prefs.setString(PrefKeys.micDeviceId, value.deviceId ?? '');
+    _prefs.setString(PrefKeys.audioSourceProfile, value.profile.name);
   }
 }
 

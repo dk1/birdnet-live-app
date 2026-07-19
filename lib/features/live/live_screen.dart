@@ -62,6 +62,11 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   bool _durationWarningShown = false;
   bool _autoStartAttempted = false;
 
+  /// Whether [_initLiveScreen] has finished clearing the previous session's
+  /// state.  The controller's load may settle — and notify — before that, so
+  /// auto-start stays disarmed until this is true.
+  bool _initialised = false;
+
   /// Cached reference to the long-lived controller so [dispose] can detach
   /// its callback without touching [ref] after the widget is unmounted.
   LiveController? _liveController;
@@ -79,41 +84,58 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     _liveController = controller;
     controller.onStateChanged = _onControllerStateChanged;
 
-    // Eagerly load the model on first mount.
     // Deferred to post-frame so provider updates don't fire during build.
-    if (controller.state == LiveState.idle) {
-      SchedulerBinding.instance.addPostFrameCallback((_) async {
-        if (mounted) {
-          controller.clearSessionState();
-          ref.read(sessionDetectionsProvider.notifier).state = const [];
-          ref.read(allSessionDetectionsProvider.notifier).state = const [];
-          ref.read(latestLiveDetectionsProvider.notifier).state = const [];
-          ref.read(currentSessionProvider.notifier).state = null;
+    SchedulerBinding.instance.addPostFrameCallback((_) => _initLiveScreen());
+  }
 
-          await controller.loadModel();
-        }
-      });
-    } else {
-      // Model was already loaded on a previous visit, so the controller is
-      // sitting in [LiveState.ready] (or paused/active from a backgrounded
-      // session). The state-change callback won't fire on its own because
-      // nothing actually changes — but we still need to evaluate the
-      // auto-start path for the second/third/Nth Live screen visit. Defer
-      // to post-frame so provider updates don't fire during build.
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          if (controller.state != LiveState.active &&
-              controller.state != LiveState.paused) {
-            controller.clearSessionState();
-            ref.read(sessionDetectionsProvider.notifier).state = const [];
-            ref.read(allSessionDetectionsProvider.notifier).state = const [];
-            ref.read(latestLiveDetectionsProvider.notifier).state = const [];
-            ref.read(currentSessionProvider.notifier).state = null;
-          }
-          _onControllerStateChanged();
-        }
-      });
+  /// Bring the screen in sync with the controller, whatever state it is in.
+  ///
+  /// The main menu warms the model up in the background, so this screen can be
+  /// entered at any point of that load.  Every entry state is handled here, in
+  /// one path, rather than being split across branches that each assume a
+  /// different starting point:
+  ///
+  ///   * `active` / `paused` — a session survived backgrounding.  Adopt it
+  ///     untouched: do not wipe its detections, do not reload its model.
+  ///   * `ready` — the warm-up (or a previous visit) already finished.  Start
+  ///     straight away; this is the fast path the warm-up exists to produce.
+  ///   * `loading` — the warm-up is still running.  [LiveController.loadModel]
+  ///     joins the in-flight load instead of starting a second one, so the
+  ///     background work is never thrown away and restarted.
+  ///   * `idle` — no warm-up ran (or it was skipped).  Load now.
+  ///   * `error` — the warm-up failed, somewhere the user never saw.  Retry
+  ///     rather than dropping them onto an error banner for a failure that
+  ///     happened off-screen.
+  Future<void> _initLiveScreen() async {
+    if (!mounted) return;
+    final controller = ref.read(liveControllerProvider);
+
+    final hasRunningSession =
+        controller.state == LiveState.active ||
+        controller.state == LiveState.paused;
+
+    if (!hasRunningSession) {
+      controller.clearSessionState();
+      ref.read(sessionDetectionsProvider.notifier).state = const [];
+      ref.read(allSessionDetectionsProvider.notifier).state = const [];
+      ref.read(latestLiveDetectionsProvider.notifier).state = const [];
+      ref.read(currentSessionProvider.notifier).state = null;
     }
+
+    // Session state is clean, so it is now safe for the auto-start to fire.
+    // Until this point it must not: the load can settle (and notify) while
+    // this callback is still running, and auto-starting a session that we
+    // then cleared out from under would lose its first detections.
+    _initialised = true;
+
+    if (!hasRunningSession && controller.state != LiveState.ready) {
+      // Joins the warm-up's load if one is in flight; starts or retries one
+      // otherwise. Completes only once the model has settled.
+      await controller.loadModel();
+      if (!mounted) return;
+    }
+
+    _onControllerStateChanged();
   }
 
   void _onControllerStateChanged() {
@@ -136,7 +158,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     // [_autoStartAttempted] so a single screen visit only ever auto-starts
     // once — leaving the user free to stop and manually restart without
     // the screen re-arming itself.
-    if (!_autoStartAttempted &&
+    if (_initialised &&
+        !_autoStartAttempted &&
         !_isStarting &&
         controller.state == LiveState.ready &&
         ref.read(liveAutoStartProvider)) {
@@ -152,31 +175,41 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     if (_isStarting) return;
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
-    final deviceId = ref.read(selectedDeviceProvider);
+    final audioSource = ref.read(audioSourceProvider);
 
     if (controller.state == LiveState.active) {
       // ── Stop session → confirm, then go to review ────────────
       await _confirmStop();
     } else if (controller.state == LiveState.paused) {
       // ── Resume the same session ──────────────────────────────────
-      await captureNotifier.start(deviceId: deviceId);
+      await captureNotifier.start(source: audioSource);
       await controller.resumeSession();
       _onControllerStateChanged();
-    } else if (controller.state == LiveState.ready ||
-        controller.state == LiveState.idle) {
+    } else {
       // ── Start a brand-new session ────────────────────────────────
+      // Every non-session state lands here — `ready`, but also `idle`,
+      // `loading` (the menu's warm-up is still running) and `error` (it
+      // failed). The model is brought up first, so the user can press start
+      // at any point of the warm-up and simply have it take effect when the
+      // load lands, instead of the press being silently dropped.
       _isStarting = true;
       _durationWarningShown = false;
       _pausedByLifecycle = false;
       setState(() {});
 
-      // Ensure model is loaded.
-      if (controller.state == LiveState.idle) {
+      // No-op when already ready; otherwise joins the in-flight load, or
+      // starts/retries one. Returns only once the model has settled.
+      if (controller.state != LiveState.ready) {
         await controller.loadModel();
+        if (!mounted) {
+          _isStarting = false;
+          return;
+        }
         _onControllerStateChanged();
       }
 
-      if (controller.state == LiveState.error) {
+      // Still not ready → the load failed. Leave the error banner up.
+      if (controller.state != LiveState.ready) {
         _isStarting = false;
         setState(() {});
         return;
@@ -192,7 +225,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       captureService.setHighPassCutoff(ref.read(highPassFilterProvider));
 
       // Start audio capture.
-      await captureNotifier.start(deviceId: deviceId);
+      await captureNotifier.start(source: audioSource);
 
       // Read settings.
       final windowDuration = ref.read(windowDurationProvider);
@@ -353,8 +386,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     _pausedByLifecycle = false;
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
-    final deviceId = ref.read(selectedDeviceProvider);
-    await captureNotifier.start(deviceId: deviceId);
+    final audioSource = ref.read(audioSourceProvider);
+    await captureNotifier.start(source: audioSource);
     await controller.resumeSession();
     _onControllerStateChanged();
     _startSessionTimer();

@@ -13,7 +13,7 @@ import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../about/about_screen.dart';
 import '../announcements/widgets/announcements_settings_section.dart';
-import '../audio/audio_providers.dart';
+import '../audio/widgets/audio_source_tile.dart';
 import '../ebird/ebird_life_list.dart';
 import '../ebird/widgets/ebird_life_list_settings_section.dart';
 import '../explore/explore_providers.dart';
@@ -205,15 +205,20 @@ class SettingsScreen extends ConsumerWidget {
               ),
               _ThemeTile(l10n: l10n),
               SwitchListTile(
-                title: Text(l10n.settingsDynamicColor),
+                title: _TitleWithHelp(
+                  title: l10n.settingsDynamicColor,
+                  helpBody: l10n.settingsHelpDynamicColor,
+                ),
                 subtitle: Text(l10n.settingsDynamicColorDescription),
                 value: ref.watch(dynamicColorProvider),
                 onChanged:
                     (v) => ref.read(dynamicColorProvider.notifier).set(v),
               ),
               SwitchListTile(
-                title: Text(l10n.settingsHighContrastTheme),
-                subtitle: Text(l10n.settingsHighContrastThemeDescription),
+                title: _TitleWithHelp(
+                  title: l10n.settingsHighContrastTheme,
+                  helpBody: l10n.settingsHelpHighContrastTheme,
+                ),
                 value: ref.watch(highContrastThemeProvider),
                 onChanged:
                     (v) => ref.read(highContrastThemeProvider.notifier).set(v),
@@ -225,7 +230,6 @@ class SettingsScreen extends ConsumerWidget {
                   title: l10n.settingsShowSciNames,
                   helpBody: l10n.settingsHelpShowSciNames,
                 ),
-                subtitle: Text(l10n.settingsShowSciNamesDescription),
                 value: ref.watch(showSciNamesProvider),
                 onChanged:
                     (v) => ref.read(showSciNamesProvider.notifier).set(v),
@@ -275,18 +279,6 @@ class SettingsScreen extends ConsumerWidget {
                             .set(v),
                   ),
               ],
-              SwitchListTile(
-                title: _TitleWithHelp(
-                  title: l10n.settingsPlaybackOverlay,
-                  helpBody: l10n.settingsHelpPlaybackOverlay,
-                ),
-                subtitle: Text(l10n.settingsPlaybackOverlayDescription),
-                value: ref.watch(sessionReviewPlaybackOverlayProvider),
-                onChanged:
-                    (v) => ref
-                        .read(sessionReviewPlaybackOverlayProvider.notifier)
-                        .set(v),
-              ),
               ListTile(
                 title: _TitleWithHelp(
                   title: l10n.settingsTimestampDisplayMode,
@@ -350,6 +342,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: l10n.settingsAudio,
                 subtitle: l10n.settingsAudioDescription,
               ),
+              const AudioSourceTile(),
               _SliderTile(
                 title: l10n.settingsGain,
                 helpBody: l10n.settingsHelpGain,
@@ -371,7 +364,6 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged:
                     (v) => ref.read(highPassFilterProvider.notifier).set(v),
               ),
-              _MicInputTile(),
               const Divider(),
             ],
 
@@ -496,7 +488,6 @@ class SettingsScreen extends ConsumerWidget {
                   title: l10n.settingsLogAmplitude,
                   helpBody: l10n.settingsHelpLogAmplitude,
                 ),
-                subtitle: Text(l10n.settingsLogAmplitudeDescription),
                 value: ref.watch(logAmplitudeProvider),
                 onChanged:
                     (v) => ref.read(logAmplitudeProvider.notifier).set(v),
@@ -618,6 +609,18 @@ class SettingsScreen extends ConsumerWidget {
               _SectionHeader(
                 title: l10n.settingsPlayback,
                 subtitle: l10n.settingsPlaybackDescription,
+              ),
+              SwitchListTile(
+                title: _TitleWithHelp(
+                  title: l10n.settingsPlaybackOverlay,
+                  helpBody: l10n.settingsHelpPlaybackOverlay,
+                ),
+                subtitle: Text(l10n.settingsPlaybackOverlayDescription),
+                value: ref.watch(sessionReviewPlaybackOverlayProvider),
+                onChanged:
+                    (v) => ref
+                        .read(sessionReviewPlaybackOverlayProvider.notifier)
+                        .set(v),
               ),
               SwitchListTile(
                 title: _TitleWithHelp(
@@ -1783,8 +1786,7 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             values: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
             format: (v) => '$v',
             onChanged:
-                (v) =>
-                    ref.read(scorePoolingWindowsProvider.notifier).set(v),
+                (v) => ref.read(scorePoolingWindowsProvider.notifier).set(v),
           ),
           _SliderTile(
             title: 'Time gate',
@@ -1797,9 +1799,8 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             divisions: 29,
             format: (v) => '${v.toStringAsFixed(0)}s',
             onChanged:
-                (v) => ref
-                    .read(scorePoolingMaxAgeSecondsProvider.notifier)
-                    .set(v),
+                (v) =>
+                    ref.read(scorePoolingMaxAgeSecondsProvider.notifier).set(v),
           ),
         ],
         if (gated) ...[
@@ -1842,9 +1843,7 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             format: (v) => v.toStringAsFixed(2),
             onChanged:
                 (v) => ref
-                    .read(
-                      scorePoolingSupportThresholdFractionProvider.notifier,
-                    )
+                    .read(scorePoolingSupportThresholdFractionProvider.notifier)
                     .set(v),
           ),
           _SliderTile(
@@ -1896,13 +1895,9 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
                 ref.read(scorePoolingWindowsProvider.notifier).set(5);
                 ref.read(scorePoolingMaxAgeSecondsProvider.notifier).set(10.0);
                 ref.read(scorePoolingAlphaProvider.notifier).set(5.0);
+                ref.read(scorePoolingMinSupportWindowsProvider.notifier).set(2);
                 ref
-                    .read(scorePoolingMinSupportWindowsProvider.notifier)
-                    .set(2);
-                ref
-                    .read(
-                      scorePoolingSupportThresholdFractionProvider.notifier,
-                    )
+                    .read(scorePoolingSupportThresholdFractionProvider.notifier)
                     .set(0.6);
                 ref
                     .read(scorePoolingSupportThresholdFloorProvider.notifier)
@@ -1988,108 +1983,6 @@ class _ColorMapChoiceTile extends StatelessWidget {
           if (v != null) onChanged(v);
         },
       ),
-    );
-  }
-}
-
-/// Dropdown that lists available audio input devices.
-///
-/// Uses [inputDevicesProvider] (async) to fetch the device list and
-/// [selectedDeviceProvider] to track the current selection.
-class _MicInputTile extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final devicesAsync = ref.watch(inputDevicesProvider);
-    final selected = ref.watch(selectedDeviceProvider);
-
-    final l10n = AppLocalizations.of(context)!;
-
-    return devicesAsync.when(
-      loading:
-          () => ListTile(
-            title: Text(l10n.settingsMicrophone),
-            trailing: const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
-      error:
-          (a, b) => ListTile(
-            title: Text(l10n.settingsMicrophone),
-            trailing: Text(l10n.statusError),
-          ),
-      data: (devices) {
-        // Find the label for the currently selected device.
-        final selectedLabel =
-            selected == null
-                ? l10n.settingsSystemDefault
-                : devices
-                        .where((d) => d.id == selected)
-                        .map((d) => d.label.isEmpty ? d.id : d.label)
-                        .firstOrNull ??
-                    selected;
-
-        return ListTile(
-          title: Text(l10n.settingsMicrophone),
-          trailing: Text(
-            selectedLabel,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          onTap: () => _showDevicePicker(context, ref, devices, selected),
-        );
-      },
-    );
-  }
-
-  void _showDevicePicker(
-    BuildContext context,
-    WidgetRef ref,
-    List<InputDeviceInfo> devices,
-    String? selected,
-  ) {
-    showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      builder: (context) {
-        return SafeArea(
-          child: RadioGroup<String?>(
-            groupValue: selected,
-            onChanged: (v) {
-              ref.read(selectedDeviceProvider.notifier).state = v;
-              Navigator.of(context).pop();
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(
-                    AppLocalizations.of(context)!.settingsSelectMicrophone,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                RadioListTile<String?>(
-                  title: Text(
-                    AppLocalizations.of(context)!.settingsSystemDefault,
-                  ),
-                  value: null,
-                ),
-                ...devices.map(
-                  (d) => RadioListTile<String?>(
-                    title: Text(d.label.isEmpty ? d.id : d.label),
-                    value: d.id,
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }
