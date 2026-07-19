@@ -126,7 +126,12 @@ class _EbirdLifeListSettingsSectionState
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: GestureDetector(
-              onTap: () => openExternalUrl(context, _ebirdLifeListCsvUrl),
+              onTap:
+                  () => openExternalUrl(
+                    context,
+                    _ebirdLifeListCsvUrl,
+                    inApp: true,
+                  ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
