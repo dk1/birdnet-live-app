@@ -529,7 +529,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final controller = ref.read(surveyControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
     final captureService = ref.read(audioCaptureServiceProvider);
-    final deviceId = ref.read(selectedDeviceProvider);
+    final audioSource = ref.read(audioSourceProvider);
     // Capture localizations now — the rest of this method awaits multiple
     // futures and we want to wire foreground-notification strings without
     // crossing BuildContext async gaps.
@@ -540,7 +540,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     captureService.setHighPassCutoff(ref.read(highPassFilterProvider));
 
     // Start audio capture.
-    await captureNotifier.start(deviceId: deviceId);
+    await captureNotifier.start(source: audioSource);
     if (captureService.state != CaptureState.capturing) {
       _showStartError(
         captureService.lastError == 'Microphone permission not granted'
@@ -1322,6 +1322,7 @@ class _SurveySummaryTab extends ConsumerWidget {
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final taxonomy = ref.watch(taxonomyServiceProvider).value;
     final showSciNames = ref.watch(showSciNamesProvider);
+    final lifeList = ref.watch(ebirdLifeListProvider);
 
     if (session == null) {
       return Center(
@@ -1426,14 +1427,35 @@ class _SurveySummaryTab extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        taxonomy
-                                ?.lookup(sp.scientificName)
-                                ?.commonNameForLocale(speciesLocale) ??
-                            sp.commonName,
-                        style: theme.textTheme.bodySmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              taxonomy
+                                      ?.lookup(sp.scientificName)
+                                      ?.commonNameForLocale(speciesLocale) ??
+                                  sp.commonName,
+                              style: theme.textTheme.bodySmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (sp.scientificName !=
+                                  DetectionRecord.unknownSpeciesName &&
+                              !lifeList.isEmpty &&
+                              !lifeList.contains(sp.scientificName))
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4),
+                              child: Tooltip(
+                                message: l10n.ebirdLifeListBadgeTooltip,
+                                child: Icon(
+                                  AppIcons.flagRounded,
+                                  size: 14,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       if (showSciNames)
                         Text(

@@ -64,9 +64,25 @@ Amplificateur linéaire appliqué à l'audio entrant avant qu'il n'atteigne le s
 
 Coupe le contenu basse fréquence avant l'inférence à l'aide d'un filtre de Butterworth à 24 dB/octave — la valeur du curseur est la fréquence de coupure à −3 dB. **0 Hz le désactive.** Une coupure de 100 à 200 Hz élimine le vent, le grondement de la circulation et les bruits de manipulation sans toucher à la plupart des espèces ; en montant vers 500 à 1000 Hz, vous commencez à supprimer les sons graves, chouettes, tétras et butors, alors n'allez aussi haut que si vous ignorez délibérément ces espèces en échange d'un spectrogramme bien plus net dans un environnement urbain bruyant. La coupure choisie devrait apparaître comme une ligne horizontale nette sur le spectrogramme en direct.
 
-### Microphone
+### Source audio
 
-Vous permet de choisir un périphérique d'entrée spécifique ou de conserver le **Par défaut du système**. Votre choix est conservé d'un lancement à l'autre : si vous utilisez régulièrement un micro USB ou Bluetooth sur le terrain, vous ne le sélectionnez qu'une seule fois. Le même sélecteur apparaît sur l'écran de configuration du Relevé.
+Une seule feuille, deux réglages indépendants : **Microphone** — quelle entrée enregistre — et **Traitement** — dans quelle mesure le téléphone peut modifier le signal en entrée. Ils se combinent librement : enregistrer avec un micro USB en mode *non traité* est parfaitement possible. Votre choix est conservé d'un lancement à l'autre, et le même sélecteur apparaît sur les écrans de configuration du Relevé, du Point Count et de l'ARU. Les changements prennent effet immédiatement : même en pleine session, l'app remplace le micro à la volée au lieu d'attendre la session suivante.
+
+**Microphone** liste nommément toutes les entrées exposées par le téléphone : micros USB, filaires et Bluetooth, et sur de nombreux téléphones les micros intégrés pris individuellement (par exemple *bas* et *arrière*). Les kits micro sans fil comme le Rode Wireless GO ou le DJI Mic passent par un récepteur USB-C : ils apparaissent donc ici comme de simples périphériques audio USB, en pleine qualité.
+
+**Traitement** est la partie décisive, et elle n'existe que **sous Android**. Les téléphones appliquent par défaut au son du micro un traitement conçu pour la voix — réduction de bruit, mise en forme spectrale et gain automatique — car le micro sert avant tout à téléphoner. Ce traitement considère le chant des oiseaux comme un bruit à supprimer, et aucun réglage ordinaire ne le désactive. La seule échappatoire est de demander à Android une *source audio* différente :
+
+| Option | Effet |
+|---|---|
+| **Défaut du téléphone** | Ce que fait habituellement votre téléphone, traitement vocal compris. Le comportement d'origine, et toujours la valeur par défaut afin de ne rien changer pour les utilisateurs existants. |
+| **Non traitée** | Le signal brut du micro — ni réduction de bruit, ni gain automatique. Généralement le meilleur choix pour les oiseaux. |
+| **Reconnaissance vocale** | Désactive elle aussi la réduction de bruit et le gain automatique, et fonctionne sur presque tous les téléphones. |
+
+**Essayez-les et comparez.** Le gagnant dépend réellement du modèle. *Non traitée* est l'idéal, mais Android ne l'honore que sur les téléphones dont le fabricant déclare la prise en charge ; sur les autres, il bascule silencieusement et le rendu est identique à *Par défaut du système*. C'est à cela que sert *Reconnaissance vocale* : les règles de compatibilité d'Android **exigent** que le gain automatique et la réduction de bruit soient désactivés pour cette source. Elle fournit donc un son non traité même sur les téléphones qui ignorent *Non traitée*. Si passer à *Non traitée* ne change rien, passez à *Reconnaissance vocale*.
+
+Attendez-vous à ce que les options non traitées sonnent **plus faiblement** : c'est le gain automatique qui a disparu, pas un défaut. Augmentez le **Gain** si l'indicateur de niveau paraît bas.
+
+**Sous iOS**, le réglage Traitement est masqué et la feuille se réduit à une liste de microphones. iOS fournit déjà à l'app un son pratiquement non traité : il n'y a donc pas d'équivalent à choisir.
 
 ## Inférence
 

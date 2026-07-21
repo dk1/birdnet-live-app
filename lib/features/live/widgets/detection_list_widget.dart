@@ -215,14 +215,7 @@ class DetectionTile extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // ── Thumbnail (3:2, matching the 360×240 bundled photos) ──
-              SizedBox(
-                width: 60,
-                height: 40,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: _buildSpeciesImage(taxonomyAsync),
-                ),
-              ),
+              _buildThumbnail(taxonomyAsync, isLifer, theme, l10n),
 
               const SizedBox(width: 10),
 
@@ -243,18 +236,6 @@ class DetectionTile extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        if (isLifer)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: Tooltip(
-                              message: l10n.ebirdLifeListBadgeTooltip,
-                              child: Icon(
-                                AppIcons.starRounded,
-                                size: 18,
-                                color: Colors.amber.shade700,
-                              ),
-                            ),
-                          ),
                         if (detectionCount != null && detectionCount! > 1)
                           Padding(
                             padding: const EdgeInsets.only(left: 6),
@@ -427,6 +408,62 @@ class DetectionTile extends ConsumerWidget {
   Color _confidenceColor(double confidence, ThemeData theme) {
     final scoreColors = theme.extension<ScoreColors>() ?? ScoreColors.light;
     return scoreColors.forScore(confidence);
+  }
+
+  /// Thumbnail with a small flag badge overlaid on the top-left corner when
+  /// [isLifer] — the species isn't on the user's imported eBird life list.
+  /// Anchored opposite the trailing chrome so it never collides with the
+  /// detection-count chip in the name row. Mirrors the corner-badge style
+  /// used for confirmed detections on the survey map.
+  Widget _buildThumbnail(
+    AsyncValue<TaxonomyService> taxonomyAsync,
+    bool isLifer,
+    ThemeData theme,
+    AppLocalizations l10n,
+  ) {
+    final image = SizedBox(
+      width: 60,
+      height: 40,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: _buildSpeciesImage(taxonomyAsync),
+      ),
+    );
+    if (!isLifer) return image;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        image,
+        Positioned(
+          top: -5,
+          left: -5,
+          child: Tooltip(
+            message: l10n.ebirdLifeListBadgeTooltip,
+            child: Container(
+              width: 17,
+              height: 17,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: theme.colorScheme.surface, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.shadow.withAlpha(80),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: Icon(
+                AppIcons.flagRounded,
+                size: 11,
+                color: theme.colorScheme.onPrimary,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildSpeciesImage(AsyncValue<TaxonomyService> taxonomyAsync) {

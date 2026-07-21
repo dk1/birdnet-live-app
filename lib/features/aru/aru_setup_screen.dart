@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../audio/audio_providers.dart';
+import '../audio/widgets/audio_source_tile.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../explore/explore_providers.dart';
 import '../live/live_providers.dart';
@@ -850,9 +851,6 @@ class _ParametersStep extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final devicesAsync = ref.watch(inputDevicesProvider);
-    final selectedDevice = ref.watch(selectedDeviceProvider);
-
     final confidenceThreshold = ref.watch(confidenceThresholdProvider);
     final sensitivity = ref.watch(sensitivityProvider);
     final recordingFormat = ref.watch(recordingFormatProvider);
@@ -869,48 +867,11 @@ class _ParametersStep extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
 
-        // Microphone input
-        devicesAsync.when(
-          loading:
-              () => ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(AppIcons.micRounded),
-                title: Text(l10n.surveyMicrophone),
-                trailing: const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-          error:
-              (_, _) => ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(AppIcons.micRounded),
-                title: Text(l10n.surveyMicrophone),
-                subtitle: Text(l10n.surveyMicSystemDefault),
-              ),
-          data: (devices) {
-            final label = _selectedDeviceLabel(
-              l10n: l10n,
-              devices: devices,
-              selectedDevice: selectedDevice,
-            );
-            return ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(AppIcons.micRounded),
-              title: Text(l10n.surveyMicrophone),
-              subtitle: Text(label),
-              trailing: const Icon(AppIcons.chevronRight),
-              onTap:
-                  () => _showDevicePicker(
-                    context,
-                    ref,
-                    l10n,
-                    devices,
-                    selectedDevice,
-                  ),
-            );
-          },
+        // Audio source (mic + how much the OS processes it)
+        const AudioSourceTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(AppIcons.micRounded),
+          placement: AudioSourceValuePlacement.subtitle,
         ),
         const Divider(height: 32),
 
@@ -1604,7 +1565,7 @@ class _ReadyStep extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final devices = ref.watch(inputDevicesProvider).asData?.value ?? const [];
-    final selectedDevice = ref.watch(selectedDeviceProvider);
+    final audioSource = ref.watch(audioSourceProvider);
     final recordingFormat = ref.watch(recordingFormatProvider).toUpperCase();
     final effectiveRecordingMode = _effectiveAruRecordingMode(
       eachCycleIsSession: eachCycleIsSession,
@@ -1649,11 +1610,7 @@ class _ReadyStep extends ConsumerWidget {
             clipDurationSeconds: windowDuration + clipContext * 2,
           ),
         );
-    final micLabel = _selectedDeviceLabel(
-      l10n: l10n,
-      devices: devices,
-      selectedDevice: selectedDevice,
-    );
+    final micLabel = audioSourceLabel(l10n, devices, audioSource);
     final primaryStorage =
         estimate.hasFiniteTotal
             ? _formatBytes(estimate.totalBytes ?? 0)
@@ -1738,7 +1695,7 @@ class _ReadyStep extends ConsumerWidget {
           icon: AppIcons.micRounded,
           title: l10n.settingsAudio,
           rows: [
-            (l10n.surveyMicrophone, micLabel),
+            (l10n.settingsAudioSource, micLabel),
             (l10n.settingsRecordingFormat, recordingFormat),
             (
               l10n.surveyRecordingMode,
@@ -1885,70 +1842,6 @@ class _ReviewCard extends StatelessWidget {
       ),
     );
   }
-}
-
-void _showDevicePicker(
-  BuildContext context,
-  WidgetRef ref,
-  AppLocalizations l10n,
-  List<InputDeviceInfo> devices,
-  String? selected,
-) {
-  showModalBottomSheet<void>(
-    context: context,
-    useSafeArea: true,
-    builder:
-        (ctx) => SafeArea(
-          child: RadioGroup<String?>(
-            groupValue: selected,
-            onChanged: (value) {
-              ref.read(selectedDeviceProvider.notifier).state = value;
-              Navigator.of(ctx).pop();
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(
-                    l10n.surveyMicSelect,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                RadioListTile<String?>(
-                  title: Text(l10n.surveyMicSystemDefault),
-                  value: null,
-                ),
-                ...devices.map(
-                  (device) => RadioListTile<String?>(
-                    title: Text(
-                      device.label.isEmpty ? device.id : device.label,
-                    ),
-                    value: device.id,
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
-        ),
-  );
-}
-
-String _selectedDeviceLabel({
-  required AppLocalizations l10n,
-  required List<InputDeviceInfo> devices,
-  required String? selectedDevice,
-}) {
-  if (selectedDevice == null) return l10n.surveyMicSystemDefault;
-  return devices
-          .where((device) => device.id == selectedDevice)
-          .map((device) => device.label.isEmpty ? device.id : device.label)
-          .firstOrNull ??
-      selectedDevice;
 }
 
 String _recordingModeLabel(AppLocalizations l10n, RecordingMode mode) {

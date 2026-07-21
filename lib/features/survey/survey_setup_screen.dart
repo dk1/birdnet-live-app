@@ -34,7 +34,7 @@ import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/site_context_card.dart';
 import '../../shared/widgets/weather_setup_card.dart';
 import '../../shared/widgets/wizard_scaffold.dart';
-import '../audio/audio_providers.dart';
+import '../audio/widgets/audio_source_tile.dart';
 import '../ebird/ebird_life_list.dart';
 import '../explore/explore_providers.dart';
 import '../inference/custom_species_list.dart';
@@ -747,57 +747,14 @@ class _ParametersStep extends ConsumerWidget {
     final clipContext = ref.watch(surveyClipContextProvider);
     final sampling = ref.watch(surveyDetectionSamplingProvider);
     final topN = ref.watch(surveyTopNPerSpeciesProvider);
-    final devicesAsync = ref.watch(inputDevicesProvider);
-    final selectedDevice = ref.watch(selectedDeviceProvider);
-
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       children: [
         Text(l10n.surveyParametersTitle, style: theme.textTheme.titleSmall),
         const SizedBox(height: 16),
 
-        // Microphone input
-        devicesAsync.when(
-          loading:
-              () => ListTile(
-                leading: const Icon(AppIcons.micRounded),
-                title: Text(l10n.surveyMicrophone),
-                trailing: const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-          error:
-              (a, b) => ListTile(
-                leading: const Icon(AppIcons.micRounded),
-                title: Text(l10n.surveyMicrophone),
-                trailing: const Text('—'),
-              ),
-          data: (devices) {
-            final label =
-                selectedDevice == null
-                    ? l10n.surveyMicSystemDefault
-                    : devices
-                            .where((d) => d.id == selectedDevice)
-                            .map((d) => d.label.isEmpty ? d.id : d.label)
-                            .firstOrNull ??
-                        selectedDevice;
-            return ListTile(
-              leading: const Icon(AppIcons.micRounded),
-              title: Text(l10n.surveyMicrophone),
-              trailing: Text(label, style: theme.textTheme.bodySmall),
-              onTap:
-                  () => _showDevicePicker(
-                    context,
-                    ref,
-                    l10n,
-                    devices,
-                    selectedDevice,
-                  ),
-            );
-          },
-        ),
+        // Audio source (mic + how much the OS processes it)
+        const AudioSourceTile(leading: Icon(AppIcons.micRounded)),
 
         const Divider(height: 32),
 
@@ -974,55 +931,6 @@ class _ParametersStep extends ConsumerWidget {
       ],
     );
   }
-
-  void _showDevicePicker(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations l10n,
-    List<InputDeviceInfo> devices,
-    String? selected,
-  ) {
-    showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      builder:
-          (ctx) => SafeArea(
-            child: RadioGroup<String?>(
-              groupValue: selected,
-              onChanged: (v) {
-                ref.read(selectedDeviceProvider.notifier).state = v;
-                Navigator.of(ctx).pop();
-              },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: Text(
-                      l10n.surveyMicSelect,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  RadioListTile<String?>(
-                    title: Text(l10n.surveyMicSystemDefault),
-                    value: null,
-                  ),
-                  ...devices.map(
-                    (d) => RadioListTile<String?>(
-                      title: Text(d.label.isEmpty ? d.id : d.label),
-                      value: d.id,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-          ),
-    );
-  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1143,7 +1051,8 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final mode = AlertMode.fromPrefValue(ref.watch(surveyAlertModeProvider));
-    final modes = const [
+    final hasLifeList = !ref.watch(ebirdLifeListProvider).isEmpty;
+    final modes = [
       (AlertMode.off, 'surveyAlertModeOff', 'surveyAlertModeOffDescription'),
       (
         AlertMode.firstInSession,
@@ -1161,18 +1070,21 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
         'surveyAlertModeWatchlist',
         'surveyAlertModeWatchlistDescription',
       ),
-      (
-        AlertMode.lifer,
-        'surveyAlertModeLifer',
-        'surveyAlertModeLiferDescription',
-      ),
+      // Hidden until a life list is imported (or already selected) so
+      // regular users who never touch the eBird integration don't see an
+      // alert mode they can't use — see Settings > eBird Life List.
+      if (hasLifeList || mode == AlertMode.lifer)
+        (
+          AlertMode.lifer,
+          'surveyAlertModeLifer',
+          'surveyAlertModeLiferDescription',
+        ),
     ];
 
     final selectedWatchlist = ref.watch(surveyAlertWatchlistNameProvider);
     final watchlistInvalid =
         mode == AlertMode.watchlist && selectedWatchlist.trim().isEmpty;
-    final liferInvalid =
-        mode == AlertMode.lifer && ref.watch(ebirdLifeListProvider).isEmpty;
+    final liferInvalid = mode == AlertMode.lifer && !hasLifeList;
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),

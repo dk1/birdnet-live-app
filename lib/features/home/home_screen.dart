@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
@@ -10,13 +13,16 @@ import '../aru/aru_controller.dart';
 import '../aru/aru_providers.dart';
 import '../aru/aru_setup_screen.dart';
 import '../explore/explore_screen.dart';
+import '../explore/explore_providers.dart';
 import '../history/session_library_screen.dart';
 import '../live/live_screen.dart';
+import '../live/live_providers.dart';
 import '../file_analysis/file_analysis_screen.dart';
 import '../live/live_session.dart';
 import '../point_count/point_count_setup_screen.dart';
 import '../settings/settings_screen.dart';
 import '../survey/survey_setup_screen.dart';
+import '../../shared/providers/settings_providers.dart';
 import '../../shared/utils/session_type_visuals.dart';
 import 'help_screen.dart';
 
@@ -34,11 +40,70 @@ import 'help_screen.dart';
 // =============================================================================
 
 /// Main menu screen — entry point after onboarding.
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _warmUpApp();
+    });
+  }
+
+  void _warmUpApp() {
+    // Start the expensive dependencies only after the main menu's first frame.
+    // Riverpod caches these results, so opening Live Mode (or another feature)
+    // reuses work that has already completed instead of redoing it — and
+    // nothing here is awaited, so the menu stays interactive throughout.
+    //
+    // loadModel() decides for itself whether there is anything to do: it joins
+    // a load already in flight, no-ops once the model is ready or a session is
+    // running, and retries after a failure. The menu does not second-guess it.
+    unawaited(ref.read(liveControllerProvider).loadModel());
+
+    _preload(ref.read(taxonomyServiceProvider.future), 'taxonomy');
+    _preload(ref.read(audioLabelsSetProvider.future), 'audio labels');
+    _preload(ref.read(geoModelProvider.future), 'geo model');
+    unawaited(_warmUpLocation());
+  }
+
+  /// Warm the location up only when doing so is free.
+  ///
+  /// With GPS off the provider just echoes the manual coordinates.  With GPS
+  /// on it calls through to `getCurrentLocation()`, which *requests* the
+  /// permission if it has not been granted yet — so without this guard a user
+  /// who skipped the location step during onboarding would be met by the OS
+  /// location prompt on the main menu, out of any context that explains it.
+  /// Leave that first request to the screen that actually needs a fix.
+  Future<void> _warmUpLocation() async {
+    if (ref.read(useGpsProvider)) {
+      final granted = await ref.read(locationServiceProvider).hasPermission();
+      if (!granted || !mounted) return;
+    }
+    _preload(ref.read(currentLocationProvider.future), 'location');
+  }
+
+  /// Let a warm-up run to completion in the background, logging rather than
+  /// surfacing failures — a warm-up is an optimisation, and the screen that
+  /// really needs the value will report the error itself.
+  void _preload<T>(Future<T> future, String label) {
+    unawaited(() async {
+      try {
+        await future;
+      } catch (error) {
+        debugPrint('[HomeScreen] $label warm-up failed: $error');
+      }
+    }());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
