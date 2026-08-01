@@ -1,9 +1,11 @@
 package com.birdnet.birdnet_live
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.widget.RemoteViews
 
 /**
@@ -20,9 +22,12 @@ import android.widget.RemoteViews
  * only) — same click behavior, different layouts/manifest entries since
  * Android widget providers are identified by component class.
  */
-private object QuickListenWidgetHelper {
+internal object QuickListenContract {
     const val ACTION_START_LISTENING = "startListening"
-    private const val QUICK_ACTION_EXTRA = "com.birdnet.quick_action"
+    const val QUICK_ACTION_EXTRA = "com.birdnet.quick_action"
+}
+
+private object QuickListenWidgetHelper {
 
     fun updateWidget(
         context: Context,
@@ -41,21 +46,24 @@ private object QuickListenWidgetHelper {
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP
             )
-            putExtra(QUICK_ACTION_EXTRA, ACTION_START_LISTENING)
+            putExtra(
+                QuickListenContract.QUICK_ACTION_EXTRA,
+                QuickListenContract.ACTION_START_LISTENING
+            )
         }
 
-        var flags = android.app.PendingIntent.FLAG_UPDATE_CURRENT
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            flags = flags or android.app.PendingIntent.FLAG_IMMUTABLE
+        var flags = PendingIntent.FLAG_UPDATE_CURRENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags = flags or PendingIntent.FLAG_IMMUTABLE
         }
-        val pendingIntent = android.app.PendingIntent.getActivity(
+        val pendingIntent = PendingIntent.getActivity(
             context,
             appWidgetId,
             launchIntent,
             flags
         )
 
-        views.setOnClickPendingIntent(R.id.quick_listen_widget_root, pendingIntent)
+        views.setOnClickPendingIntent(android.R.id.background, pendingIntent)
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 }
