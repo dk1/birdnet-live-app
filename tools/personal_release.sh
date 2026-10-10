@@ -10,6 +10,10 @@ set -euo pipefail
 
 BRANCH="local/ebird-widget-ntfy"
 REPO="dk1/birdnet-live-app"
+# Marks these builds as fork builds so they never read as upstream's release of
+# the same number. Kept here rather than in pubspec.yaml: upstream bumps that
+# version line every release, so a suffix there would conflict on every merge.
+FORK_SUFFIX="dk"
 
 current_branch=$(git branch --show-current)
 if [[ "$current_branch" != "$BRANCH" ]]; then
@@ -37,11 +41,17 @@ flutter analyze
 echo "==> flutter test"
 flutter test
 
-echo "==> building debug apk"
-flutter build apk --debug
+pubspec_version=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+build_name="${pubspec_version%%+*}-${FORK_SUFFIX}"
+build_number="${pubspec_version##*+}"
+if ! [[ "$build_number" =~ ^[0-9]+$ ]]; then
+  echo "error: could not read a build number from pubspec version '$pubspec_version'" >&2
+  exit 1
+fi
+tag="v${build_name}+${build_number}"
 
-version=$(grep '^version:' pubspec.yaml | sed 's/version: //')
-tag="v${version}"
+echo "==> building debug apk ($build_name+$build_number)"
+flutter build apk --debug --build-name="$build_name" --build-number="$build_number"
 
 echo "==> tagging $tag"
 git push origin HEAD:refs/tags/"$tag"
