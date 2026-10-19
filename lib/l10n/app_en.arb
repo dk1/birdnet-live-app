@@ -2467,6 +2467,10 @@
   "@settingsHelpSpectrogramQuality": {
     "description": "Help text for spectrogram quality setting"
   },
+  "settingsHelpSpectrogramSize": "Sets how much of the screen the live spectrogram takes in Live Mode, Point Count, Survey, and ARU. 'Full' is the usual height; 'Medium' and 'Small' shrink it to 75% and 50% of that so the detection list gets more room. 'Off' removes the spectrogram entirely. In landscape, 'Medium' and 'Small' shorten the spectrogram in its half of the screen, and 'Off' hands the whole screen to the detection list. Spectrograms of saved sessions and clip playback are not affected.",
+  "@settingsHelpSpectrogramSize": {
+    "description": "Help text for the spectrogram size setting (Full/Medium/Small/Off)"
+  },
   "settingsHelpRecordingMode": "Whether and how audio is saved to disk. 'Full' keeps everything (large files); 'Detections only' saves short clips around each detection; 'Off' analyzes in real time without writing audio.",
   "@settingsHelpRecordingMode": {
     "description": "Help text for recording mode setting"
@@ -3750,6 +3754,26 @@
   "settingsSpectrogramQualityHigh": "High",
   "@settingsSpectrogramQualityHigh": {
     "description": "Spectrogram quality option: high"
+  },
+  "settingsSpectrogramSize": "Spectrogram size",
+  "@settingsSpectrogramSize": {
+    "description": "Setting title for how much room the live spectrogram takes (Full/Medium/Small/Off)"
+  },
+  "settingsSpectrogramSizeFull": "Full",
+  "@settingsSpectrogramSizeFull": {
+    "description": "Spectrogram size option: usual height"
+  },
+  "settingsSpectrogramSizeMedium": "Medium",
+  "@settingsSpectrogramSizeMedium": {
+    "description": "Spectrogram size option: 75% of the usual height"
+  },
+  "settingsSpectrogramSizeSmall": "Small",
+  "@settingsSpectrogramSizeSmall": {
+    "description": "Spectrogram size option: 50% of the usual height"
+  },
+  "settingsSpectrogramSizeOff": "Off",
+  "@settingsSpectrogramSizeOff": {
+    "description": "Spectrogram size option: spectrogram hidden"
   },
   "settingsIncludeAudioFiles": "Include audio files",
   "@settingsIncludeAudioFiles": {
@@ -5158,5 +5182,18 @@
   "helpBackToTop": "Back to top",
   "@helpBackToTop": {
     "description": "Quick-reference Help screen: helpBackToTop"
+  },
+  "settingsInferenceRateDeviceLimit": "This device is known to be too slow for inference rates above {rate} Hz. The rate was lowered automatically.",
+  "@settingsInferenceRateDeviceLimit": {
+    "description": "Note under every inference-rate slider (Settings, Point Count, Survey, and ARU setup) once a live mode has had to lower the rate because the device fell behind; stays for good, since a slow device stays slow",
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionInterruptedBySystem": "The app was closed by the system before this session was stopped. Detections and audio up to the last checkpoint were recovered.",
+  "@sessionInterruptedBySystem": {
+    "description": "Session Review banner for a session recovered from its last checkpoint after the system ended the app"
   }
 }

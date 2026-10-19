@@ -118,6 +118,18 @@ stavu **0,70 Hz** jako střední cestu; **0,30 Hz** zůstává výslovnou volbou
 maximální výdrž baterie. Analýza souborů frekvenci odvozování nemá — místo ní
 používá nastavení [překryvu](file-analysis.md).
 
+Pokud zařízení zvolenou frekvenci nestíhá — odvozování za zachytáváním
+zaostává o celý krok u několika oken po sobě —, Session frekvenci sníží o
+0,30 Hz, a dokud zařízení zaostává dál, snižuje ji znovu, nejníže na 0,10 Hz.
+Snížená frekvence se pak stane nastavením všech režimů: Live, Point Count,
+Survey i ARU včetně jejich průvodců nastavením, takže další Session kdekoli
+začne frekvencí, kterou toto zařízení zvládne. Nastavení i průvodci pak pod
+posuvníkem zobrazují poznámku, že zařízení je nad touto frekvencí prokazatelně
+příliš pomalé. Poznámka zůstává, protože pomalé zařízení zůstává pomalé;
+posuvníky lze dál libovolně nastavit. Bez toho se na pomalém zařízení hromadí
+zpoždění, které nakonec přepíše zvuk, z něhož se vystřihují ukázky detekcí, a
+detekce zůstanou bez zvuku.
+
 ### Ignorovat druhy
 
 Otevře panel s binárními filtry inference. Zaškrtnutím **Ptáci**, **Savci**, **Obojživelníci** nebo **Hmyz** potlačíte celou taxonomickou třídu. Ve výchozím nastavení jsou všechna čtyři políčka vypnutá.
@@ -137,6 +149,10 @@ sdružování na detekce stejně: detekce začíná v nejstarším podpůrném o
 nejvyšší podložené skóre a končí na konci posledního podpůrného okna.
 
 ## Spektrogram
+
+### Velikost
+
+Určuje, kolik místa na obrazovce zabírá živě rolující spektrogram v režimech Live Mode, Point Count, Survey a ARU. **Plná** je obvyklá výška. **Střední** a **Malá** ji zmenší na 75 % a 50 % a rozdíl přenechají seznamu detekcí – to se hodí, když na telefonu na výšku sledujete hlavně seznam. **Vypnuto** spektrogram zcela odstraní; v režimech Survey a ARU zmizí i karta spektrogramu. Na šířku **Střední** a **Malá** zkrátí spektrogram v jeho polovině obrazovky (místo pod ním zatím zůstává prázdné) a **Vypnuto** přenechá celou obrazovku seznamu detekcí. Spektrogramy uložených záznamů a při přehrávání nejsou ovlivněny.
 
 ### Velikost FFT
 

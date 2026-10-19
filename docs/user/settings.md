@@ -119,6 +119,18 @@ miss. New Surveys default to **0.70 Hz** as a middle ground; **0.30 Hz**
 remains an explicit maximum-battery option. File Analysis has no inference rate
 — it uses an [overlap](file-analysis.md) setting instead.
 
+If a device cannot keep up with the selected rate — inference falls a whole
+hop behind capture for several windows in a row — the session lowers the
+rate by 0.30 Hz, and again each time it keeps falling behind, down to
+0.10 Hz. The lowered rate then becomes the rate setting of every mode: Live
+Mode, Point Count, Survey, and ARU, and so of their setup wizards, so the next
+session anywhere starts at a rate this device can sustain. Settings and the
+wizards show a note under the rate slider saying the device is known to be
+too slow above that rate. The note stays, since a slow device stays slow,
+and the sliders remain free to set. Without this, a slow device piles up a
+backlog that eventually overwrites the audio detection clips are cut from,
+and detections end up without audio.
+
 ### Ignore species
 
 Opens an overlay with binary inference filters. Check **Birds**, **Mammals**, **Amphibians**, or **Insects** to suppress that entire taxonomic class. All four checkboxes are off by default.
@@ -138,6 +150,10 @@ supporting window, carries the strongest supported score, and ends at the end
 of the last supporting window.
 
 ## Spectrogram
+
+### Size
+
+Sets how much of the screen the live scrolling spectrogram takes in Live Mode, Point Count, Survey, and ARU. **Full** is the usual height. **Medium** and **Small** shrink it to 75% and 50% of that and hand the difference to the detection list — the setting to reach for when you mostly watch the list on a phone in portrait. **Off** removes the spectrogram entirely; in Survey and ARU the spectrogram tab disappears as well. In landscape, **Medium** and **Small** shorten the spectrogram within its half of the screen (the space below it stays empty for now), and **Off** hands the whole screen to the detection list. Session Review and other playback spectrograms are not affected.
 
 ### FFT size
 

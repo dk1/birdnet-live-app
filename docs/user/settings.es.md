@@ -120,6 +120,21 @@ forma predeterminada como término medio; **0,30 Hz** sigue siendo la opción
 explícita de máxima autonomía. El análisis de archivos no tiene frecuencia de
 inferencia: usa un ajuste de [solapamiento](file-analysis.md) en su lugar.
 
+Si un dispositivo no puede seguir la frecuencia elegida (la inferencia se
+queda un paso completo por detrás de la captura durante varias ventanas
+seguidas), la Session reduce la frecuencia en 0,30 Hz, y lo repite mientras
+el dispositivo siga quedándose atrás, hasta un mínimo de 0,10 Hz. La
+frecuencia reducida pasa a ser el ajuste de todos los modos: Live, Point
+Count, Survey y ARU, y por tanto de sus asistentes de configuración, de modo
+que la siguiente Session en cualquier modo empiece con una frecuencia que
+este dispositivo pueda mantener. Los ajustes y los asistentes muestran bajo
+el control deslizante una nota que indica que el dispositivo es demasiado
+lento por encima de esa frecuencia. La nota se mantiene, porque un
+dispositivo lento sigue siendo lento, y los controles se pueden seguir
+ajustando libremente. Sin esto, un dispositivo lento acumula un retraso que
+acaba sobrescribiendo el audio del que se recortan los fragmentos de
+detección, y las detecciones se quedan sin audio.
+
 ### Ignorar especies
 
 Abre un panel con filtros binarios de inferencia. Marca **Aves**, **Mamíferos**, **Anfibios** o **Insectos** para suprimir toda esa clase taxonómica. Las cuatro casillas están desactivadas de forma predeterminada.
@@ -141,6 +156,10 @@ comienza en su ventana de apoyo más temprana, lleva la puntuación respaldada
 más alta y termina al final de la última ventana de apoyo.
 
 ## Espectrograma
+
+### Tamaño
+
+Define cuánto espacio de la pantalla ocupa el espectrograma en vivo en Live Mode, Point Count, Survey y ARU. **Completo** es la altura habitual. **Medio** y **Pequeño** la reducen al 75 % y al 50 % y ceden la diferencia a la lista de detecciones, la opción adecuada cuando en el teléfono en vertical miras sobre todo la lista. **Desactivado** quita el espectrograma por completo; en Survey y ARU desaparece también la pestaña del espectrograma. En horizontal, **Medio** y **Pequeño** acortan el espectrograma en su mitad de la pantalla (el espacio debajo queda vacío por ahora), y **Desactivado** deja toda la pantalla a la lista de detecciones. Los espectrogramas de las sesiones guardadas y de la reproducción no se ven afectados.
 
 ### Tamaño de FFT
 

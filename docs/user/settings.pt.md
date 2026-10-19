@@ -120,6 +120,20 @@ configurações de Survey usam **0,70 Hz** por padrão como meio-termo;
 arquivos não tem taxa de inferência — ela usa uma configuração de
 [sobreposição](file-analysis.md).
 
+Se um dispositivo não consegue acompanhar a taxa escolhida — a inferência fica
+um passo inteiro atrás da captura por várias janelas seguidas —, a Session
+reduz a taxa em 0,30 Hz, e de novo enquanto o dispositivo continuar ficando
+para trás, até o mínimo de 0,10 Hz. A taxa reduzida passa então a ser a
+configuração de todos os modos: Live, Point Count, Survey e ARU, e portanto
+dos seus assistentes de configuração, para que a próxima Session em qualquer
+modo comece com uma taxa que este dispositivo consiga sustentar. As
+configurações e os assistentes mostram, abaixo do controle deslizante, uma
+nota dizendo que o dispositivo é lento demais acima dessa taxa. A nota
+permanece, porque um dispositivo lento continua lento; os controles seguem
+livres para ajustar. Sem isso, um dispositivo lento acumula um atraso que
+acaba sobrescrevendo o áudio do qual os trechos de detecção são cortados, e
+as detecções ficam sem áudio.
+
 ### Ignorar espécies
 
 Abre um painel com filtros binários de inferência. Marque **Aves**, **Mamíferos**, **Anfíbios** ou **Insetos** para suprimir toda a classe taxonômica. As quatro caixas ficam desmarcadas por padrão.
@@ -140,6 +154,10 @@ detecção começa na sua janela de apoio mais antiga, carrega a maior pontuaç�
 respaldada e termina no fim da última janela de apoio.
 
 ## Espectrograma
+
+### Tamanho
+
+Define quanto da tela o espectrograma ao vivo ocupa em Live Mode, Point Count, Survey e ARU. **Completo** é a altura habitual. **Médio** e **Pequeno** a reduzem para 75% e 50% e cedem a diferença à lista de detecções, a escolha certa quando você olha sobretudo para a lista no celular em pé. **Desligado** remove o espectrograma por completo; em Survey e ARU a aba do espectrograma também desaparece. Na horizontal, **Médio** e **Pequeno** encurtam o espectrograma na sua metade da tela (o espaço abaixo fica vazio por enquanto), e **Desligado** deixa a tela inteira para a lista de detecções. Os espectrogramas das sessões salvas e da reprodução não são afetados.
 
 ### Tamanho da FFT
 

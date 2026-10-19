@@ -120,6 +120,20 @@ Mittelweg; **0,30 Hz** bleibt die ausdrückliche Option für maximale
 Akkulaufzeit. Die Dateianalyse hat keine Inferenzrate — sie verwendet
 stattdessen eine [Überlappung](file-analysis.md).
 
+Kommt ein Gerät mit der gewählten Rate nicht mit — die Inferenz liegt bei
+mehreren Fenstern hintereinander einen ganzen Schritt hinter der Aufnahme
+zurück —, senkt die Session die Rate um 0,30 Hz, und solange das Gerät
+weiter zurückfällt erneut, bis minimal 0,10 Hz. Die gesenkte Rate wird dann
+zur Einstellung aller Modi: Live-Modus, Point Count, Survey und ARU samt
+ihren Einrichtungsassistenten, damit die nächste Session überall mit einer
+Rate startet, die dieses Gerät durchhält. Die Einstellungen und die
+Assistenten zeigen unter dem Schieberegler einen Hinweis, dass das Gerät
+oberhalb dieser Rate bekanntermaßen zu langsam ist. Der Hinweis bleibt, denn
+ein langsames Gerät bleibt langsam; die Regler lassen sich weiterhin frei
+einstellen. Ohne diese Absenkung staut sich auf einem langsamen Gerät ein
+Rückstand an, der irgendwann das Audio überschreibt, aus dem die
+Detektionsclips geschnitten werden, und Detektionen bleiben ohne Audio.
+
 ### Arten ignorieren
 
 Öffnet ein Fenster mit binären Inferenzfiltern. Aktivieren Sie **Vögel**, **Säugetiere**, **Amphibien** oder **Insekten**, um die gesamte taxonomische Klasse zu unterdrücken. Alle vier Kontrollkästchen sind standardmäßig deaktiviert.
@@ -140,6 +154,10 @@ um: Eine Detektion beginnt bei ihrem frühesten stützenden Fenster, trägt den
 stärksten gestützten Score und endet am Ende des letzten stützenden Fensters.
 
 ## Spektrogramm
+
+### Größe
+
+Legt fest, wie viel Platz das live mitlaufende Spektrogramm in Live Mode, Point Count, Survey und ARU auf dem Bildschirm einnimmt. **Voll** ist die gewohnte Höhe. **Mittel** und **Klein** verkleinern sie auf 75 % bzw. 50 % und geben den Unterschied an die Erkennungsliste ab – die richtige Wahl, wenn Sie auf dem Telefon im Hochformat vor allem die Liste im Blick haben. **Aus** entfernt das Spektrogramm ganz; in Survey und ARU verschwindet auch der Spektrogramm-Tab. Im Querformat verkürzen **Mittel** und **Klein** das Spektrogramm in seiner Bildschirmhälfte (der Platz darunter bleibt vorerst leer), und **Aus** überlässt der Erkennungsliste den ganzen Bildschirm. Spektrogramme gespeicherter Sessions und bei der Wiedergabe sind nicht betroffen.
 
 ### FFT-Größe
 
