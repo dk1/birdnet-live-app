@@ -532,11 +532,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       ntfyTopic = ref.read(ntfyTopicProvider);
       final taxonomy = ref.read(taxonomyServiceProvider).value;
       if (taxonomy != null) {
-        isBirdSpecies = (name) {
-          final entry = taxonomy.lookup(name);
-          return entry == null || entry.taxonGroup.isEmpty ||
-              entry.taxonGroup == 'Aves';
-        };
+        isBirdSpecies = (name) =>
+            EbirdLifeList.isBirdTaxonGroup(taxonomy.lookup(name)?.taxonGroup);
       }
     }
 
@@ -1888,8 +1885,12 @@ class _SurveySummaryTab extends ConsumerWidget {
                           ),
                           if (sp.scientificName !=
                                   DetectionRecord.unknownSpeciesName &&
-                              !lifeList.isEmpty &&
-                              !lifeList.contains(sp.scientificName))
+                              lifeList.isLifer(
+                                sp.scientificName,
+                                taxonGroup: taxonomy
+                                    ?.lookup(sp.scientificName)
+                                    ?.taxonGroup,
+                              ))
                             Padding(
                               padding: const EdgeInsets.only(left: 4),
                               child: Tooltip(

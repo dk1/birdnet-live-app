@@ -52,8 +52,7 @@ void main() {
     expect(list.contains('Turdus migratorius'), isTrue);
   });
 
-  test('matches the Scientific Name column by header, not position',
-      () async {
+  test('matches the Scientific Name column by header, not position', () async {
     final list = await freshList();
     const csv =
         'Scientific Name,Common Name,Row #\n'
@@ -62,39 +61,41 @@ void main() {
     expect(list.contains('Turdus migratorius'), isTrue);
   });
 
-  test('throws EbirdCsvFormatException when Scientific Name column is missing',
-      () async {
-    final list = await freshList();
-    const csv = 'Common Name,Count\nAmerican Robin,1\n';
-    expect(
-      () => list.importCsv(csv),
-      throwsA(isA<EbirdCsvFormatException>()),
-    );
-  });
+  test(
+    'throws EbirdCsvFormatException when Scientific Name column is missing',
+    () async {
+      final list = await freshList();
+      const csv = 'Common Name,Count\nAmerican Robin,1\n';
+      expect(
+        () => list.importCsv(csv),
+        throwsA(isA<EbirdCsvFormatException>()),
+      );
+    },
+  );
 
   test('throws EbirdCsvFormatException for empty content', () async {
     final list = await freshList();
     expect(() => list.importCsv(''), throwsA(isA<EbirdCsvFormatException>()));
   });
 
-  test('skips blank lines and rows missing the scientific name field',
-      () async {
-    final list = await freshList();
-    const csv =
-        'Common Name,Scientific Name\n'
-        '\n'
-        'American Robin,Turdus migratorius\n'
-        'Unknown,\n';
-    final count = await list.importCsv(csv);
-    expect(count, 1);
-    expect(list.contains('Turdus migratorius'), isTrue);
-  });
+  test(
+    'skips blank lines and rows missing the scientific name field',
+    () async {
+      final list = await freshList();
+      const csv =
+          'Common Name,Scientific Name\n'
+          '\n'
+          'American Robin,Turdus migratorius\n'
+          'Unknown,\n';
+      final count = await list.importCsv(csv);
+      expect(count, 1);
+      expect(list.contains('Turdus migratorius'), isTrue);
+    },
+  );
 
   test('re-importing replaces the previous list entirely', () async {
     final list = await freshList();
-    await list.importCsv(
-      'Scientific Name\nTurdus migratorius\n',
-    );
+    await list.importCsv('Scientific Name\nTurdus migratorius\n');
     expect(list.contains('Turdus migratorius'), isTrue);
 
     await list.importCsv('Scientific Name\nParus major\n');
@@ -135,5 +136,44 @@ void main() {
 
     await list.clear();
     expect(notifications, 2);
+  });
+
+  group('isLifer', () {
+    const csv =
+        'Row #,Taxon Order,Category,Common Name,Scientific Name,Count\n'
+        '1,6064,species,American Woodcock,Scolopax minor,2\n';
+
+    test('is never true before a list is imported', () async {
+      final list = await freshList();
+      expect(list.isLifer('Turdus merula', taxonGroup: 'Aves'), isFalse);
+    });
+
+    test('flags a bird missing from the list', () async {
+      final list = await freshList();
+      await list.importCsv(csv);
+      expect(list.isLifer('Turdus merula', taxonGroup: 'Aves'), isTrue);
+      expect(list.isLifer('Scolopax minor', taxonGroup: 'Aves'), isFalse);
+    });
+
+    test('never flags non-birds, which an eBird list cannot contain', () async {
+      final list = await freshList();
+      await list.importCsv(csv);
+      expect(
+        list.isLifer('Sciurus carolinensis', taxonGroup: 'Mammalia'),
+        isFalse,
+      );
+      expect(
+        list.isLifer('Gryllus pennsylvanicus', taxonGroup: 'Insecta'),
+        isFalse,
+      );
+      expect(list.isLifer('Acris gryllus', taxonGroup: 'Amphibia'), isFalse);
+    });
+
+    test('treats an unknown taxon group as a bird', () async {
+      final list = await freshList();
+      await list.importCsv(csv);
+      expect(list.isLifer('Turdus merula'), isTrue);
+      expect(list.isLifer('Turdus merula', taxonGroup: ''), isTrue);
+    });
   });
 }
