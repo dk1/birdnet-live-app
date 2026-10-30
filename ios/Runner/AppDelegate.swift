@@ -22,6 +22,20 @@ import UserNotifications
   /// Text-to-speech for spoken announcements; see TtsChannel.swift.
   private var ttsChannel: TtsChannel?
 
+  /// Keychain-backed credential store for upload destinations; see
+  /// SecureStoreChannel.swift.
+  private var secureStoreChannel: SecureStoreChannel?
+
+  /// Network type for "Upload on Wi-Fi only"; see ConnectivityChannel.swift.
+  private var connectivityChannel: ConnectivityChannel?
+
+  /// A Quick Listen action (App Intent, `birdnetlive://` URL, or home-screen
+  /// quick action; see QuickAction.swift) waiting for Dart. Same contract as
+  /// Android's `pendingQuickAction` in MainActivity.kt: set on cold and warm
+  /// starts, drained by `takePendingAction`.
+  private var pendingQuickAction: String?
+  private var quickActionChannel: FlutterMethodChannel?
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -41,6 +55,8 @@ import UserNotifications
     let messenger = engineBridge.applicationRegistrar.messenger()
 
     ttsChannel = TtsChannel(messenger: messenger)
+    secureStoreChannel = SecureStoreChannel(messenger: messenger)
+    connectivityChannel = ConnectivityChannel(messenger: messenger)
 
     let deviceDescriptionChannel = FlutterMethodChannel(
       name: "com.birdnet/device_description",
@@ -195,6 +211,36 @@ import UserNotifications
       }
     }
     self.sharedMediaChannel = sharedMediaChannel
+
+    // Quick action channel — Quick Listen entry points (QuickAction.swift).
+    // Mirrors the Android channel of the same name: Dart reads the queued
+    // action at launch with `takePendingAction`, is told about later ones via
+    // `onQuickAction`, and confirms with `clearPendingAction` so the cold-start
+    // duplicate (the launch read plus the buffered `onQuickAction`) is harmless.
+    let quickActionChannel = FlutterMethodChannel(
+      name: "com.birdnet/quick_action_intents",
+      binaryMessenger: messenger
+    )
+    quickActionChannel.setMethodCallHandler { [weak self] (call, result) in
+      guard let self = self else {
+        result(nil)
+        return
+      }
+      switch call.method {
+      case "takePendingAction":
+        let action = self.pendingQuickAction
+        self.pendingQuickAction = nil
+        result(action)
+      case "clearPendingAction":
+        if let action = call.arguments as? String, self.pendingQuickAction == action {
+          self.pendingQuickAction = nil
+        }
+        result(nil)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+    self.quickActionChannel = quickActionChannel
   }
 
   /// Drains the same queue whether Dart reads at launch or after a notification.
@@ -202,6 +248,32 @@ import UserNotifications
     let pending = pendingSharedFile
     pendingSharedFile = nil
     return pending
+  }
+
+  /// Queues a Quick Listen action and tells Dart about it.
+  ///
+  /// Before the engine is up the channel is nil and Dart's launch read drains
+  /// the queue; afterwards the mounted listener handles `onQuickAction`. Both
+  /// paths exist on Android too, so Dart treats them identically.
+  func queueQuickAction(_ action: String) {
+    pendingQuickAction = action
+    quickActionChannel?.invokeMethod("onQuickAction", arguments: action)
+  }
+
+  /// Called by SceneDelegate for URLs that are not shared documents.
+  @discardableResult
+  func queueQuickAction(url: URL) -> Bool {
+    guard let action = QuickAction.action(for: url) else { return false }
+    queueQuickAction(action)
+    return true
+  }
+
+  /// Called by SceneDelegate for home-screen quick actions (icon long-press).
+  @discardableResult
+  func queueQuickAction(shortcutItem: UIApplicationShortcutItem) -> Bool {
+    guard let action = QuickAction.action(for: shortcutItem) else { return false }
+    queueQuickAction(action)
+    return true
   }
 
   /// Called by SceneDelegate before forwarding the scene event to Flutter.
